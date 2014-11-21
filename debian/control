@@ -1,0 +1,21 @@
+Source: python-scattnlay
+Section: science
+Priority: optional
+Maintainer: Ovidio Peña Rodríguez <ovidio@bytesfall.com>
+Build-Depends: debhelper (>=7.0.0), python-numpy (>= 1.0), python-support (>= 0.6), cdbs (>= 0.4.49), python-all-dev, python-numpy-dev
+XS-Python-Version: >=2.4
+Standards-Version: 3.8.3
+
+Package: python-scattnlay
+Architecture: any
+Homepage: http://scattering.sourceforge.net/
+XB-Python-Version: ${python:Versions}
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-numpy (>= 1.0)
+Description: Calculation of the scattering of EM radiation by a multilayered sphere
+ The Python version of scattnlay, a computer implementation of the algorithm
+ for the calculation of electromagnetic radiation scattering by a multilayered
+ sphere developed by Yang. It has been shown that the program is effective,
+ resulting in very accurate values of scattering efficiencies for a wide range
+ of size parameters, which is a considerable improvement over previous
+ implementations of similar algorithms. For details see:
+ O. Peña, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.
