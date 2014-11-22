@@ -24,15 +24,20 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 
+#include <vector>
+#include <string>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
 #include "ucomplex.h"
 #include "nmie.h"
-#define MAXLAYERS 1100
-#define MAXTHETA 800
-#define PI 3.14159
+//#define MAXLAYERS 1100
+const int MAXLAYERS = 1100;
+//#define MAXTHETA 800
+const int MAXTHETA = 800;
+//#define PI 3.14159
+const double PI=3.14159265358979323846;
 
 //***********************************************************************************//
 // This is the main function of 'scattnlay', here we read the parameters as          //
@@ -54,14 +59,16 @@
 //***********************************************************************************//
 int main(int argc, char *argv[]) {
   char comment[200];
+  std::string comment_std;
   int has_comment = 0;
   int i, j, L;
   double *x, *Theta;
+  std::vector<double> x_std, Theta_std;
   complex *m, *S1, *S2;
   double Qext, Qabs, Qsca, Qbk, Qpr, g, Albedo;
   double ti = 0.0, tf = 90.0;
   int nt = 0;
-
+  
   if (argc < 5) {
     printf("Insufficient parameters.\nUsage: %s -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-t ti tf nt] [-c comment]\n", argv[0]);
     return -1;
@@ -115,21 +122,22 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  //  printf("Debug run!\n");
   nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
 
-  if (has_comment) {
-    printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-  } else {
-    printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-  }
+  // if (has_comment) {
+  //   printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+  // } else {
+  //   printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+  // }
 
-  if (nt > 0) {
-    printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i\n");
+  // if (nt > 0) {
+  //   printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i\n");
 
-    for (i = 0; i < nt; i++) {
-      printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e\n", Theta[i]*180.0/PI, S1[i].r, S1[i].i, S2[i].r, S2[i].i);
-    }
-  }
+  //   for (i = 0; i < nt; i++) {
+  //     printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e\n", Theta[i]*180.0/PI, S1[i].r, S1[i].i, S2[i].r, S2[i].i);
+  //   }
+  // }
   return 0;
 }
 

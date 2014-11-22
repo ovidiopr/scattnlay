@@ -1,21 +1,13 @@
 #!/bin/bash
-echo Run test of complex libs
-cd ./tests/dev
-echo **Debug
-echo ***Clang
+echo Compile with gcc -O2
 rm -rf *.bin
-clang++ -std=c++11 test-complex-lib.cc ../../ucomplex.cc -o test-complex-lib.cc.bin
-./test-complex-lib.cc.bin
-echo ***Gcc
-rm -rf *.bin
-g++ -std=c++11 test-complex-lib.cc ../../ucomplex.cc -o test-complex-lib.cc.bin
-./test-complex-lib.cc.bin
-echo **Build
-echo ***Clang
-rm -rf *.bin
-clang++ -std=c++11 -O2 test-complex-lib.cc ../../ucomplex.cc -o test-complex-lib.cc.bin
-./test-complex-lib.cc.bin
-echo ***Gcc
-rm -rf *.bin
-g++ -std=c++11 -O2  test-complex-lib.cc ../../ucomplex.cc -o test-complex-lib.cc.bin
-./test-complex-lib.cc.bin
+g++ -O2 standalone.cc nmie.cc ucomplex.cc -lm -o scattnlay.bin
+cp scattnlay.bin ../scattnlay
+cd tests/shell
+# for file in `ls *.sh`; do ./$file; done
+repeats=30
+echo Run test for $repeats times
+time for i in `seq $repeats`; do ./test01.sh; done
+echo Run test with original binary for $repeats times
+cp ../../../scattnlay-0.3.0 ../../../scattnlay
+time for i in `seq $repeats`; do ./test01.sh; done
