@@ -194,6 +194,56 @@ int main() {
     c2 = std::atan(b2);
     output("saTan", c1, c2);
 
+    // Hyperbolic
+ 
+    c1 = Cch(a1);
+    c2 = std::cosh(a2);
+    output("Cosh", c1, c2);
+    c1 = Cch(b1);
+    c2 = std::cosh(b2);
+    output("sCosh", c1, c2);
+
+    c1 = Csh(a1);
+    c2 = std::sinh(a2);
+    output("Sinh", c1, c2);
+    c1 = Csh(b1);
+    c2 = std::sinh(b2);
+    output("sSinh", c1, c2);
+
+    c1 = Cth(a1);
+    c2 = std::tanh(a2);
+    output("Tanh", c1, c2);
+    c1 = Cth(b1);
+    c2 = std::tanh(b2);
+    output("sTanh", c1, c2);
+
+    c1 = Carc_ch(a1);
+    c2 = std::acosh(a2);
+    output("aCosh", c1, c2);
+    c1 = Carc_ch(b1);
+    c2 = std::acosh(b2);
+    output("saCosh", c1, c2);
+
+    c1 = Cch(Carc_ch(b1));
+    output("saCosh_cosh_b1", c1, b1);
+    c2 = std::cosh(std::acosh(b2));
+    output("saCosh_cosh_b2", c2, b2);
+
+
+    c1 = Carc_sh(a1);
+    c2 = std::asinh(a2);
+    output("aSinh", c1, c2);
+    c1 = Carc_sh(b1);
+    c2 = std::asinh(b2);
+    output("saSinh", c1, c2);
+
+    c1 = Carc_th(a1);
+    c2 = std::atanh(a2);
+    output("aTan", c1, c2);
+    c1 = Carc_th(b1);
+    c2 = std::atanh(b2);
+    output("saTanh", c1, c2);
+
     
     return 0;
 }
