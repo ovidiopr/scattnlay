@@ -1,7 +1,7 @@
 #include <complex>
 #include <string>
 #include <stdio.h>
-#include "../../ucomplex.h"
+#include "ucomplex.h"
 void output(std::string operation, complex c1, std::complex<double> c2) {
     double diff_r = c1.r - c2.real();
     double diff_i = c1.i - c2.imag();
@@ -11,8 +11,8 @@ void output(std::string operation, complex c1, std::complex<double> c2) {
 	   c1.r, c1.i,
 	   c2.real(), c2.imag());
     // Epsilon for double is 1e-16, check it 1.0 + 1e-16 = 1.0
-    //if (diff_r > 1e-16||diff_i > 1e-16) 
-    if (diff_r > 1e-15||diff_i > 1e-15) 
+    if (diff_r > 1e-16||diff_i > 1e-16) 
+	//if (diff_r > 1e-15||diff_i > 1e-15) 
 	printf("\n********\n\t\tWARNING!! Non-zero diff!!!\n********\n");
 }
 /********************************************************************/
@@ -239,7 +239,7 @@ int main() {
 
     c1 = Carc_th(a1);
     c2 = std::atanh(a2);
-    output("aTan", c1, c2);
+    output("aTanh", c1, c2);
     c1 = Carc_th(b1);
     c2 = std::atanh(b2);
     output("saTanh", c1, c2);
