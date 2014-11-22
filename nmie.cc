@@ -556,10 +556,15 @@ int ScattCoeff_std(double x[], complex m[], complex **an, complex **bn,
     if (n_max != tmp_n_max) printf("n_max mismatch 2\n");
   }
   
-  complex z1, z2, cn;
-  complex Num, Denom;
-  complex G1, G2;
-  complex Temp;
+  // complex z1, z2, cn;
+  // complex Num, Denom;
+  // complex G1, G2;
+  // complex Temp;
+  std::complex<double> z1, z2, cn;
+  std::complex<double> Num, Denom;
+  std::complex<double> G1, G2;
+  std::complex<double> Temp;
+
   double Tmp;
 
   int n, l, t;
@@ -573,49 +578,81 @@ int ScattCoeff_std(double x[], complex m[], complex **an, complex **bn,
   //**************************************************************************//
 
   // Allocate memory to the arrays
-  complex **D1_mlxl = (complex **) malloc(L*sizeof(complex *));
-  complex **D1_mlxlM1 = (complex **) malloc(L*sizeof(complex *));
+  //complex **D1_mlxl = (complex **) malloc(L*sizeof(complex *));
+  //complex **D1_mlxlM1 = (complex **) malloc(L*sizeof(complex *));
+  std::vector< std::vector< std::complex<double> > > D1_mlxl;
+  D1_mlxl.resize(L);
+  std::vector< std::vector< std::complex<double> > >D1_mlxlM1;
+  D1_mlxlM1.resize(L);
 
-  complex **D3_mlxl = (complex **) malloc(L*sizeof(complex *));
-  complex **D3_mlxlM1 = (complex **) malloc(L*sizeof(complex *));
+  // complex **D3_mlxl = (complex **) malloc(L*sizeof(complex *));
+  // complex **D3_mlxlM1 = (complex **) malloc(L*sizeof(complex *));
+  std::vector< std::vector< std::complex<double> > > D3_mlxl;
+  D3_mlxl.resize(L);
+  std::vector< std::vector< std::complex<double> > > D3_mlxlM1;
+  D3_mlxlM1.resize(L);
 
-  complex **Q = (complex **) malloc(L*sizeof(complex *));
+  //complex **Q = (complex **) malloc(L*sizeof(complex *));
+  std::vector< std::vector< std::complex<double> > > Q;
+  Q.resize(L);
 
-  complex **Ha = (complex **) malloc(L*sizeof(complex *));
-  complex **Hb = (complex **) malloc(L*sizeof(complex *));
+  //complex **Ha = (complex **) malloc(L*sizeof(complex *));
+  std::vector< std::vector< std::complex<double> > > Ha;
+  Ha.resize(L);
+  //complex **Hb = (complex **) malloc(L*sizeof(complex *));
+  std::vector< std::vector< std::complex<double> > > Hb;
+  Hb.resize(L);
 
   for (l = 0; l < L; l++) {
-    D1_mlxl[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
-    D1_mlxlM1[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+    // D1_mlxl[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+    // D1_mlxlM1[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+    D1_mlxl[l].resize(n_max +1);
+    D1_mlxlM1[l].resize(n_max +1);
 
-    D3_mlxl[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
-    D3_mlxlM1[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+    // D3_mlxl[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+    // D3_mlxlM1[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+    D3_mlxl[l].resize(n_max +1);
+    D3_mlxlM1[l].resize(n_max +1);
 
-    Q[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+    //Q[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+    Q[l].resize(n_max + 1);
 
-    Ha[l] = (complex *) malloc(n_max*sizeof(complex));
-    Hb[l] = (complex *) malloc(n_max*sizeof(complex));
+    // Ha[l] = (complex *) malloc(n_max*sizeof(complex));
+    // Hb[l] = (complex *) malloc(n_max*sizeof(complex));
+    Ha[l].resize(n_max);
+    Hb[l].resize(n_max);
   }
 
   (*an) = (complex *) malloc(n_max*sizeof(complex));
   (*bn) = (complex *) malloc(n_max*sizeof(complex));
+  an_std.resize(n_max);
+  bn_std.resize(n_max);
 
-  complex *D1XL = (complex *) malloc((n_max + 1)*sizeof(complex));
-  complex *D3XL = (complex *) malloc((n_max + 1)*sizeof(complex));
+  // complex *D1XL = (complex *) malloc((n_max + 1)*sizeof(complex));
+  // complex *D3XL = (complex *) malloc((n_max + 1)*sizeof(complex));
+  std::vector< std::complex<double> > D1XL;
+  D1XL.resize(n_max+1);
+  std::vector< std::complex<double> > D3XL;
+  D3XL.resize(n_max+1);
 
-  complex *PsiXL = (complex *) malloc((n_max + 1)*sizeof(complex));
-  complex *ZetaXL = (complex *) malloc((n_max + 1)*sizeof(complex));
+
+  // complex *PsiXL = (complex *) malloc((n_max + 1)*sizeof(complex));
+  // complex *ZetaXL = (complex *) malloc((n_max + 1)*sizeof(complex));
+  std::vector< std::complex<double> > PsiXL;
+  PsiXL.resize(n_max+1);
+  std::vector< std::complex<double> > ZetaXL;
+  ZetaXL.resize(n_max+1);
 
   //*************************************************//
   // Calculate D1 and D3 for z1 in the first layer   //
   //*************************************************//
   if (fl == pl) {  // PEC layer
     for (n = 0; n <= n_max; n++) {
-      D1_mlxl[fl][n] = Complex(0, -1);
-      D3_mlxl[fl][n] = C_I;
+      D1_mlxl[fl][n] = std::complex<double>(0, -1);
+      D3_mlxl[fl][n] = std::complex<double>(0, 1);
     }
   } else { // Regular layer
-    z1 = RCmul(x[fl], m[fl]);
+    z1 = x_std[fl]* m_std[fl];
 
     // Calculate D1 and D3
     calcD1D3(z1, n_max, &(D1_mlxl[fl]), &(D3_mlxl[fl]));
@@ -715,6 +752,7 @@ int ScattCoeff_std(double x[], complex m[], complex **an, complex **bn,
   // first layer is 0 (zero), in future versions all arrays will follow  //
   // this convention to save memory. (13 Nov, 2014)                      //
   //*********************************************************************//
+  // TODO: Check an, bn and an_std, bn_std are equal
   for (n = 0; n < n_max; n++) {
     //********************************************************************//
     //Expressions for calculating an and bn coefficients are not valid if //
