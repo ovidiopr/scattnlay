@@ -503,6 +503,232 @@ int ScattCoeff(int L, int pl, double x[], complex m[], int n_max, complex **an, 
 
   return n_max;
 }
+//**********************************************************************************//
+//**********************************************************************************//
+//**********************************************************************************//
+int ScattCoeff_std(double x[], complex m[], complex **an, complex **bn, 
+		   int L, int pl, std::vector<double> x_std,
+		   std::vector<std::complex<double> > m_std, int n_max,
+		   std::vector< std::complex<double> > an_std, 
+		   std::vector< std::complex<double> > bn_std){
+  //************************************************************************//
+  // Calculate the index of the first layer. It can be either 0 (default)   //
+  // or the index of the outermost PEC layer. In the latter case all layers //
+  // below the PEC are discarded.                                           //
+  //************************************************************************//
+  int fl = firstLayer(L, pl);
+
+  if (n_max <= 0) {
+    n_max = Nmax(L, fl, pl, x, m);
+  }
+  
+  complex z1, z2, cn;
+  complex Num, Denom;
+  complex G1, G2;
+  complex Temp;
+  double Tmp;
+
+  int n, l, t;
+
+  //**************************************************************************//
+  // Note that since Fri, Nov 14, 2014 all arrays start from 0 (zero), which  //
+  // means that index = layer number - 1 or index = n - 1. The only exception //
+  // are the arrays for representing D1, D3 and Q because they need a value   //
+  // for the index 0 (zero), hence it is important to consider this shift     //
+  // between different arrays. The change was done to optimize memory usage.  //
+  //**************************************************************************//
+
+  // Allocate memory to the arrays
+  complex **D1_mlxl = (complex **) malloc(L*sizeof(complex *));
+  complex **D1_mlxlM1 = (complex **) malloc(L*sizeof(complex *));
+
+  complex **D3_mlxl = (complex **) malloc(L*sizeof(complex *));
+  complex **D3_mlxlM1 = (complex **) malloc(L*sizeof(complex *));
+
+  complex **Q = (complex **) malloc(L*sizeof(complex *));
+
+  complex **Ha = (complex **) malloc(L*sizeof(complex *));
+  complex **Hb = (complex **) malloc(L*sizeof(complex *));
+
+  for (l = 0; l < L; l++) {
+    D1_mlxl[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+    D1_mlxlM1[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+
+    D3_mlxl[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+    D3_mlxlM1[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+
+    Q[l] = (complex *) malloc((n_max + 1)*sizeof(complex));
+
+    Ha[l] = (complex *) malloc(n_max*sizeof(complex));
+    Hb[l] = (complex *) malloc(n_max*sizeof(complex));
+  }
+
+  (*an) = (complex *) malloc(n_max*sizeof(complex));
+  (*bn) = (complex *) malloc(n_max*sizeof(complex));
+
+  complex *D1XL = (complex *) malloc((n_max + 1)*sizeof(complex));
+  complex *D3XL = (complex *) malloc((n_max + 1)*sizeof(complex));
+
+  complex *PsiXL = (complex *) malloc((n_max + 1)*sizeof(complex));
+  complex *ZetaXL = (complex *) malloc((n_max + 1)*sizeof(complex));
+
+  //*************************************************//
+  // Calculate D1 and D3 for z1 in the first layer   //
+  //*************************************************//
+  if (fl == pl) {  // PEC layer
+    for (n = 0; n <= n_max; n++) {
+      D1_mlxl[fl][n] = Complex(0, -1);
+      D3_mlxl[fl][n] = C_I;
+    }
+  } else { // Regular layer
+    z1 = RCmul(x[fl], m[fl]);
+
+    // Calculate D1 and D3
+    calcD1D3(z1, n_max, &(D1_mlxl[fl]), &(D3_mlxl[fl]));
+  }
+
+  //******************************************************************//
+  // Calculate Ha and Hb in the first layer - equations (7a) and (8a) //
+  //******************************************************************//
+  for (n = 0; n < n_max; n++) {
+    Ha[fl][n] = D1_mlxl[fl][n + 1];
+    Hb[fl][n] = D1_mlxl[fl][n + 1];
+  }
+
+  //*****************************************************//
+  // Iteration from the second layer to the last one (L) //
+  //*****************************************************//
+  for (l = fl + 1; l < L; l++) {
+    //************************************************************//
+    //Calculate D1 and D3 for z1 and z2 in the layers fl+1..L     //
+    //************************************************************//
+    z1 = RCmul(x[l], m[l]);
+    z2 = RCmul(x[l - 1], m[l]);
+
+    //Calculate D1 and D3 for z1
+    calcD1D3(z1, n_max, &(D1_mlxl[l]), &(D3_mlxl[l]));
+
+    //Calculate D1 and D3 for z2
+    calcD1D3(z2, n_max, &(D1_mlxlM1[l]), &(D3_mlxlM1[l]));
+
+    //*********************************************//
+    //Calculate Q, Ha and Hb in the layers fl+1..L //
+    //*********************************************//
+
+    // Upward recurrence for Q - equations (19a) and (19b)
+    Num = RCmul(exp(-2*(z1.i - z2.i)), Complex(cos(-2*z2.r) - exp(-2*z2.i), sin(-2*z2.r)));
+    Denom = Complex(cos(-2*z1.r) - exp(-2*z1.i), sin(-2*z1.r));
+    Q[l][0] = Cdiv(Num, Denom);
+
+    for (n = 1; n <= n_max; n++) {
+      cn = Complex(n, 0);
+      Num = Cmul(Cadd(Cmul(z1, D1_mlxl[l][n]), cn), Csub(cn, Cmul(z1, D3_mlxl[l][n - 1])));
+      Denom = Cmul(Cadd(Cmul(z2, D1_mlxlM1[l][n]), cn), Csub(cn, Cmul(z2, D3_mlxlM1[l][n - 1])));
+
+      Q[l][n] = Cdiv(Cmul(RCmul((x[l - 1]*x[l - 1])/(x[l]*x[l]), Q[l][n - 1]), Num), Denom);
+    }
+
+    // Upward recurrence for Ha and Hb - equations (7b), (8b) and (12) - (15)
+    for (n = 1; n <= n_max; n++) {
+      //Ha
+      if ((l - 1) == pl) { // The layer below the current one is a PEC layer
+        G1 = RCmul(-1.0, D1_mlxlM1[l][n]);
+        G2 = RCmul(-1.0, D3_mlxlM1[l][n]);
+      } else {
+        G1 = Csub(Cmul(m[l], Ha[l - 1][n - 1]), Cmul(m[l - 1], D1_mlxlM1[l][n]));
+        G2 = Csub(Cmul(m[l], Ha[l - 1][n - 1]), Cmul(m[l - 1], D3_mlxlM1[l][n]));
+      }
+
+      Temp = Cmul(Q[l][n], G1);
+
+      Num = Csub(Cmul(G2, D1_mlxl[l][n]), Cmul(Temp, D3_mlxl[l][n]));
+      Denom = Csub(G2, Temp);
+
+      Ha[l][n - 1] = Cdiv(Num, Denom);
+
+      //Hb
+      if ((l - 1) == pl) { // The layer below the current one is a PEC layer
+        G1 = Hb[l - 1][n - 1];
+        G2 = Hb[l - 1][n - 1];
+      } else {
+        G1 = Csub(Cmul(m[l - 1], Hb[l - 1][n - 1]), Cmul(m[l], D1_mlxlM1[l][n]));
+        G2 = Csub(Cmul(m[l - 1], Hb[l - 1][n - 1]), Cmul(m[l], D3_mlxlM1[l][n]));
+      }
+
+      Temp = Cmul(Q[l][n], G1);
+
+      Num = Csub(Cmul(G2, D1_mlxl[l][n]), Cmul(Temp, D3_mlxl[l][n]));
+      Denom = Csub(G2, Temp);
+
+      Hb[l][n - 1] = Cdiv(Num, Denom);
+    }
+  }
+
+  //**************************************//
+  //Calculate D1, D3, Psi and Zeta for XL //
+  //**************************************//
+  z1 = Complex(x[L - 1], 0);
+
+  // Calculate D1XL and D3XL
+  calcD1D3(z1, n_max, &D1XL, &D3XL);
+
+  // Calculate PsiXL and ZetaXL
+  calcPsiZeta(z1, n_max, D1XL, D3XL, &PsiXL, &ZetaXL);
+
+  //*********************************************************************//
+  // Finally, we calculate the scattering coefficients (an and bn) and   //
+  // the angular functions (Pi and Tau). Note that for these arrays the  //
+  // first layer is 0 (zero), in future versions all arrays will follow  //
+  // this convention to save memory. (13 Nov, 2014)                      //
+  //*********************************************************************//
+  for (n = 0; n < n_max; n++) {
+    //********************************************************************//
+    //Expressions for calculating an and bn coefficients are not valid if //
+    //there is only one PEC layer (ie, for a simple PEC sphere).          //
+    //********************************************************************//
+    if (pl < (L - 1)) {
+      (*an)[n] = calc_an(n + 1, x[L - 1], Ha[L - 1][n], m[L - 1], PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
+      (*bn)[n] = calc_bn(n + 1, x[L - 1], Hb[L - 1][n], m[L - 1], PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
+    } else {
+      (*an)[n] = calc_an(n + 1, x[L - 1], C_ZERO, C_ONE, PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
+      (*bn)[n] = Cdiv(PsiXL[n + 1], ZetaXL[n + 1]);
+    }
+  }
+
+  // Free the memory used for the arrays
+  for (l = 0; l < L; l++) {
+    free(D1_mlxl[l]);
+    free(D1_mlxlM1[l]);
+
+    free(D3_mlxl[l]);
+    free(D3_mlxlM1[l]);
+
+    free(Q[l]);
+
+    free(Ha[l]);
+    free(Hb[l]);
+  }
+
+  free(D1_mlxl);
+  free(D1_mlxlM1);
+
+  free(D3_mlxl);
+  free(D3_mlxlM1);
+
+  free(Q);
+
+  free(Ha);
+  free(Hb);
+
+  free(D1XL);
+  free(D3XL);
+
+  free(PsiXL);
+  free(ZetaXL);
+
+  return n_max;
+}
+
 
 //**********************************************************************************//
 // This function is just a wrapper to call the function 'nMieScatt' with fewer      //
@@ -515,6 +741,13 @@ int nMie(int L, double x[], complex m[], int nTheta, double Theta[], double *Qex
 
   return nMieScatt(L, -1, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
 }
+
+
+int nMie_std(double x[], complex m[], double Theta[], complex S1[], complex S2[],
+int L, std::vector<double> &x_std, std::vector<std::complex<double> > &m_std, int nTheta, std::vector<double> &Theta_std, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector< std::complex<double> > &S1_std, std::vector< std::complex<double> >  &S2_std) {
+  return nMieScatt_std(x, m, Theta, S1, S2, L, -1, x_std, m_std, nTheta, Theta_std, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1_std, S2_std);
+}
+
 
 //**********************************************************************************//
 // This function is just a wrapper to call the function 'nMieScatt' with fewer      //
@@ -697,6 +930,105 @@ int nMieScatt(int L, int pl, double x[], complex m[], int nTheta, double Theta[]
 
   return n_max;
 }
+
+
+
+int nMieScatt_std(double x[], complex m[], double Theta[], complex S1[], complex S2[],
+		  int L, int pl,
+		  std::vector<double> &x_std, std::vector<std::complex<double> > &m_std,
+		  int nTheta, std::vector<double> &Theta_std,
+		  int n_max, double *Qext, double *Qsca, double *Qabs, double *Qbk,
+		  double *Qpr, double *g, double *Albedo,
+		  std::vector< std::complex<double> > &S1_std,
+		  std::vector< std::complex<double> >  &S2_std)  {
+  int i, n, t;
+  double **Pi, **Tau;
+  std::vector< std::vector<double> > Pi_std, Tau_std;
+  complex *an, *bn;
+  std::vector< std::complex<double> > an_std, bn_std;
+  complex Qbktmp;
+  std::complex<double> Qbktmp_std;
+  {
+    int tmp_n_max = ScattCoeff(L, pl, x, m, n_max, &an, &bn);
+    n_max = ScattCoeff(L, pl, x, m, n_max, &an, &bn);
+  }
+  Pi = (double **) malloc(n_max*sizeof(double *));
+  Tau = (double **) malloc(n_max*sizeof(double *));
+  for (n = 0; n < n_max; n++) {
+    Pi[n] = (double *) malloc(nTheta*sizeof(double));
+    Tau[n] = (double *) malloc(nTheta*sizeof(double));
+  }
+
+  calcPiTau(n_max, nTheta, Theta, &Pi, &Tau);
+
+  double x2 = x[L - 1]*x[L - 1];
+
+  // Initialize the scattering parameters
+  *Qext = 0;
+  *Qsca = 0;
+  *Qabs = 0;
+  *Qbk = 0;
+  Qbktmp = C_ZERO;
+  *Qpr = 0;
+  *g = 0;
+  *Albedo = 0;
+
+  // Initialize the scattering amplitudes
+  for (t = 0; t < nTheta; t++) {
+    S1[t] = C_ZERO;
+    S2[t] = C_ZERO;
+  }
+
+  // By using downward recurrence we avoid loss of precision due to float rounding errors
+  // See: https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
+  //      http://en.wikipedia.org/wiki/Loss_of_significance
+  for (i = n_max - 2; i >= 0; i--) {
+    n = i + 1;
+    // Equation (27)
+    *Qext = *Qext + (double)(n + n + 1)*(an[i].r + bn[i].r);
+    // Equation (28)
+    *Qsca = *Qsca + (double)(n + n + 1)*(an[i].r*an[i].r + an[i].i*an[i].i + bn[i].r*bn[i].r + bn[i].i*bn[i].i);
+    // Equation (29)
+    *Qpr = *Qpr + ((n*(n + 2)/(n + 1))*((Cadd(Cmul(an[i], Conjg(an[n])), Cmul(bn[i], Conjg(bn[n])))).r) + ((double)(n + n + 1)/(n*(n + 1)))*(Cmul(an[i], Conjg(bn[i])).r));
+
+    // Equation (33)
+    Qbktmp = Cadd(Qbktmp, RCmul((double)((n + n + 1)*(1 - 2*(n % 2))), Csub(an[i], bn[i])));
+
+    //****************************************************//
+    // Calculate the scattering amplitudes (S1 and S2)    //
+    // Equations (25a) - (25b)                            //
+    //****************************************************//
+    for (t = 0; t < nTheta; t++) {
+      S1[t] = Cadd(S1[t], calc_S1_n(n, an[i], bn[i], Pi[i][t], Tau[i][t]));
+      S2[t] = Cadd(S2[t], calc_S2_n(n, an[i], bn[i], Pi[i][t], Tau[i][t]));
+    }
+  }
+
+  *Qext = 2*(*Qext)/x2;                                 // Equation (27)
+  *Qsca = 2*(*Qsca)/x2;                                 // Equation (28)
+  *Qpr = *Qext - 4*(*Qpr)/x2;                           // Equation (29)
+
+  *Qabs = *Qext - *Qsca;                                // Equation (30)
+  *Albedo = *Qsca / *Qext;                              // Equation (31)
+  *g = (*Qext - *Qpr) / *Qsca;                          // Equation (32)
+
+  *Qbk = (Qbktmp.r*Qbktmp.r + Qbktmp.i*Qbktmp.i)/x2;    // Equation (33)
+
+  // Free the memory used for the arrays
+  for (n = 0; n < n_max; n++) {
+    free(Pi[n]);
+    free(Tau[n]);
+  }
+
+  free(Pi);
+  free(Tau);
+
+  free(an);
+  free(bn);
+
+  return n_max;
+}
+
 
 //**********************************************************************************//
 // This function calculates complex electric and magnetic field in the surroundings //

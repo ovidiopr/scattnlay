@@ -31,7 +31,7 @@ builddeb:
 	dpkg-buildpackage -i -I -rfakeroot
 
 standalone: standalone.cc nmie.cc ucomplex.cc
-	cc standalone.cc nmie.cc ucomplex.cc -lm -o scattnlay
+	c++ -DNDEBUG -O2 -std=c++11 standalone.cc nmie.cc ucomplex.cc -lm -o scattnlay
 	mv scattnlay ../
 
 clean:

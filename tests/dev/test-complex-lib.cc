@@ -11,7 +11,7 @@ void output(std::string operation, complex c1, std::complex<double> c2) {
 	   c1.r, c1.i,
 	   c2.real(), c2.imag());
     // Epsilon for double is 1e-16, check it 1.0 + 1e-16 = 1.0
-    if (diff_r > 1e-16||diff_i > 1e-16) 
+    if (std::abs(diff_r) > 1e-16||std::abs(diff_i) > 1e-16) 
 	//if (diff_r > 1e-15||diff_i > 1e-15) 
 	printf("\n********\n\t\tWARNING!! Non-zero diff!!!\n********\n");
 }
@@ -27,7 +27,7 @@ void output(std::string operation, complex c1, complex c2) {
 	   c1.r, c1.i,
 	   c2.r, c2.i);
     // Epsilon for double is 1e-16, check it 1.0 + 1e-16 = 1.0
-    if (diff_r > 1e-16||diff_i > 1e-16) 
+    if (std::abs(diff_r) > 1e-16||std::abs(diff_i) > 1e-16) 
 	//if (diff_r > 1e-15||diff_i > 1e-15) 
 	printf("\n********\n\t\tWARNING!! Non-zero diff!!!\n********\n");
 }
@@ -43,7 +43,7 @@ void output(std::string operation, std::complex<double> c1, std::complex<double>
 	   c1.real(), c1.imag(),
 	   c2.real(), c2.imag());
     // Epsilon for double is 1e-16, check it 1.0 + 1e-16 = 1.0
-    if (diff_r > 1e-16||diff_i > 1e-16) 
+    if (std::abs(diff_r) > 1e-16||std::abs(diff_i) > 1e-16) 
 	//if (diff_r > 1e-15||diff_i > 1e-15) 
 	printf("\n********\n\t\tWARNING!! Non-zero diff!!!\n********\n");
 }
@@ -56,7 +56,7 @@ void output_double(std::string operation, double c1, double c2) {
 	   operation.c_str(),
 	   diff, c1, c2);
     // Epsilon for double is 1e-16, check it 1.0 + 1e-16 = 1.0
-    if (diff > 1e-16)
+    if (std::abs(diff) > 1e-16)
 	printf("\n********\n\t\tWARNING!! Non-zero diff!!!\n********\n");
 }
 /********************************************************************/
