@@ -42,6 +42,7 @@
 #include "ucomplex.h"
 #include "nmie.h"
 
+// TODO should be replaced with std::round() or std::lround()
 #define round(x) ((x) >= 0 ? (int)((x) + 0.5):(int)((x) - 0.5))
 
 complex C_ZERO = {0.0, 0.0};
@@ -61,11 +62,11 @@ int Nstop(double xL) {
   int result;
 
   if (xL <= 8) {
-    result = round(xL + 4*pow(xL, 1/3) + 1);
+    result = std::lround(xL + 4*pow(xL, 1/3) + 1);
   } else if (xL <= 4200) {
-    result = round(xL + 4.05*pow(xL, 1/3) + 2);
+    result = std::lround(xL + 4.05*pow(xL, 1/3) + 2);
   } else {
-    result = round(xL + 4*pow(xL, 1/3) + 2);
+    result = std::lround(xL + 4*pow(xL, 1/3) + 2);
   }
 
   return result;
@@ -98,6 +99,32 @@ int Nmax(int L, int fl, int pl, double x[], complex m[]) {
   return result + 15;
 }
 
+//**********************************************************************************//
+int Nmax_std(int L, int fl, int pl, std::vector<double> x,
+		   std::vector<std::complex<double> > m) {
+  int i, result, ri, riM1;
+  result = Nstop(x[L - 1]);
+  for (i = fl; i < L; i++) {
+    if (i > pl) {
+      ri = std::lround(std::abs(x[i]*m[i]));
+    } else {
+      ri = 0;
+    }
+    if (result < ri) {
+      result = ri;
+    }
+
+    if ((i > fl) && ((i - 1) > pl)) {
+      riM1 = std::lround(std::abs(x[i - 1]* m[i]));
+    } else {
+      riM1 = 0;
+    }
+    if (result < riM1) {
+      result = riM1;
+    }
+  }
+  return result + 15;
+}
 //**********************************************************************************//
 // This function calculates the spherical Bessel functions (jn and hn) for a given  //
 // value of r.                                                                      //
@@ -509,17 +536,24 @@ int ScattCoeff(int L, int pl, double x[], complex m[], int n_max, complex **an, 
 int ScattCoeff_std(double x[], complex m[], complex **an, complex **bn, 
 		   int L, int pl, std::vector<double> x_std,
 		   std::vector<std::complex<double> > m_std, int n_max,
-		   std::vector< std::complex<double> > an_std, 
-		   std::vector< std::complex<double> > bn_std){
+		   std::vector< std::complex<double> > &an_std, 
+		   std::vector< std::complex<double> > &bn_std){
   //************************************************************************//
   // Calculate the index of the first layer. It can be either 0 (default)   //
   // or the index of the outermost PEC layer. In the latter case all layers //
   // below the PEC are discarded.                                           //
   //************************************************************************//
-  int fl = firstLayer(L, pl);
+  
+  //TODO: Why?
+  //  int fl = firstLayer(L, pl);
+  // instead of
+  int fl = (pl > 0) ? pl : 0;
+  // fl - first layer, pl - pec layer.
 
   if (n_max <= 0) {
-    n_max = Nmax(L, fl, pl, x, m);
+    int tmp_n_max = Nmax(L, fl, pl, x, m);
+    n_max = Nmax_std(L, fl, pl, x_std, m_std);
+    if (n_max != tmp_n_max) printf("n_max mismatch 2\n");
   }
   
   complex z1, z2, cn;
@@ -950,7 +984,8 @@ int nMieScatt_std(double x[], complex m[], double Theta[], complex S1[], complex
   std::complex<double> Qbktmp_std;
   {
     int tmp_n_max = ScattCoeff(L, pl, x, m, n_max, &an, &bn);
-    n_max = ScattCoeff(L, pl, x, m, n_max, &an, &bn);
+    n_max = ScattCoeff_std(x, m, &an, &bn, L, pl, x_std, m_std, n_max, an_std, bn_std);
+    if (n_max != tmp_n_max) printf("n_max mismatch\n");
   }
   Pi = (double **) malloc(n_max*sizeof(double *));
   Tau = (double **) malloc(n_max*sizeof(double *));
