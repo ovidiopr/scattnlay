@@ -49,6 +49,28 @@ complex C_ZERO = {0.0, 0.0};
 complex C_ONE = {1.0, 0.0};
 complex C_I = {0.0, 1.0};
 
+int compare(std::string operation,  complex *a, std::vector< std::complex<double> > b) {
+  for (int i = 0; i < b.size(); ++i) {
+    //if (i > 50) continue;
+    double diff_r = std::abs((a[i].r - b[i].real())/a[i].r);
+    double diff_i = std::abs((a[i].i - b[i].imag())/a[i].i);
+    double epsilon= 1e-16;
+    if (diff_r > epsilon ||diff_i > epsilon) {
+      printf("\n*** WARNING!! Non-zero diff!!! ***\n");
+      printf("Op: %s at i=%i, diff_r=%g, diff_i=%g, a_r=%g, a_i = %g\n",
+    	     operation.c_str(), i, diff_r, diff_i, a[i].r, a[i].i);
+    }
+    double factor = 1.0;
+    if ((diff_r > epsilon * factor && a[i].r/a[0].r > epsilon)
+	|| (diff_i > epsilon*factor && a[i].i/a[0].i > epsilon)) {
+      printf("\n******** ERROR!! Non-zero diff!!! ********\n");
+      printf("Op: %s at i=%i, diff_r=%g, diff_i=%g, a_r=%g, a_i = %g\n",
+	     operation.c_str(), i, diff_r, diff_i, a[i].r, a[i].i);
+    }
+  }
+  return 0;
+}
+
 int firstLayer(int L, int pl) {
   if (pl >= 0) {
     return pl;
@@ -1064,6 +1086,7 @@ int nMieScatt_std(double x[], complex m[], double Theta[], complex S1[], complex
     n_max = ScattCoeff_std(x, m, L, pl, x_std, m_std, n_max, an_std, bn_std);
     if (n_max != tmp_n_max) printf("n_max mismatch\n");
     // TODO: Check an, bn and an_std, bn_std are equal
+    compare("an vs an_std: ", an, an_std);
 
   }
   Pi = (double **) malloc(n_max*sizeof(double *));
