@@ -164,21 +164,21 @@ int main(int argc, char *argv[]) {
 	      L, x_std, m_std, nt, Theta_std, &Qext, &Qsca, &Qabs,
 	      &Qbk, &Qpr, &g, &Albedo, S1_std, S2_std);
     std::vector<double> new_result({Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo});
-    // if (has_comment) {
-    //   printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e **After\n", comment, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-    // } else {
-    //   printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e **After\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-    // }
+    if (has_comment) {
+      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+    } else {
+      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+    }
     
-    // if (nt > 0) {
-    //   printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i **After\n");
+    if (nt > 0) {
+      printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i\n");
       
-    //   for (i = 0; i < nt; i++) {
-    //     printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e **After\n", Theta[i]*180.0/PI, S1[i].r, S1[i].i, S2[i].r, S2[i].i);
-    //   }
-    // }
+      for (i = 0; i < nt; i++) {
+        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e\n", Theta[i]*180.0/PI, S1[i].r, S1[i].i, S2[i].r, S2[i].i);
+      }
+    }
     for (int i =0; i < old_result.size(); ++i) {
-      double diff = new_result[i] - old_result[i];
+      double diff = std::abs((new_result[i] - old_result[i])/new_result[i]);
       // printf("%g ", diff);
       if (std::abs(diff) > 1e-16) printf(" ********* WARNING!!! Final diff = %g ********* \n", diff);
     }
