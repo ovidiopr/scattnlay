@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
     for (int i =0; i < old_result.size(); ++i) {
       double diff = new_result[i] - old_result[i];
       // printf("%g ", diff);
-      if (std::abs(diff) > 1e-16) printf(" ********* WARNING!!! diff = %g ********* \n", diff);
+      if (std::abs(diff) > 1e-16) printf(" ********* WARNING!!! Final diff = %g ********* \n", diff);
     }
     // std::vector<double> diff_result(old_result.size(), 0.0);
     // std::transform(new_result.begin(), new_result.end(), old_result.begin(),

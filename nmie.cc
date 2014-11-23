@@ -180,6 +180,15 @@ complex calc_an(int n, double XL, complex Ha, complex mL, complex PsiXL, complex
 
   return Cdiv(Num, Denom);
 }
+/////////////////////////////////////////////
+std::complex<double>
+calc_an_std(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
+	    std::complex<double> PsiXL, std::complex<double> ZetaXL,
+	    std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1) {
+  std::complex<double> Num = (( (Ha/mL) + std::complex<double>(n/XL, 0) ) * PsiXL) - PsiXLM1;
+  std::complex<double> Denom = (( (Ha/mL) + std::complex<double>(n/XL, 0) ) * ZetaXL) - ZetaXLM1;
+  return Num/Denom;
+}
 
 // Calculate bn - equation (6)
 complex calc_bn(int n, double XL, complex Hb, complex mL, complex PsiXL, complex ZetaXL, complex PsiXLM1, complex ZetaXLM1) {
@@ -187,6 +196,16 @@ complex calc_bn(int n, double XL, complex Hb, complex mL, complex PsiXL, complex
   complex Denom = Csub(Cmul(Cadd(Cmul(Hb, mL), Complex(n/XL, 0)), ZetaXL), ZetaXLM1);
 
   return Cdiv(Num, Denom);
+}
+// Calculate bn - equation (6)
+std::complex<double>
+calc_bn_std(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
+	    std::complex<double> PsiXL, std::complex<double> ZetaXL,
+	    std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1) {
+ std::complex<double> Num = (( (Hb*mL) + std::complex<double>(n/XL,0) ) * PsiXL) - PsiXLM1;
+ std::complex<double> Denom = (( (Hb*mL) + std::complex<double>(n/XL,0) ) * ZetaXL) - ZetaXLM1;
+
+  return Num/Denom;
 }
 
 // Calculates S1_n - equation (25a)
@@ -223,6 +242,24 @@ void calcPsiZeta(complex z, int n_max, complex *D1, complex *D3, complex **Psi, 
     (*Zeta)[n] = Cmul((*Zeta)[n - 1], Csub(Cdiv(cn, z), D3[n - 1]));
   }
 }
+//**********************************************************************************//
+void calcPsiZeta_std(std::complex<double> z, int n_max,
+		     std::vector< std::complex<double> > D1,
+		     std::vector< std::complex<double> > D3,
+		     std::vector< std::complex<double> > &Psi,
+		     std::vector< std::complex<double> > &Zeta) {
+  int n;
+  std::complex<double> cn;
+
+  //Upward recurrence for Psi and Zeta - equations (20a) - (21b)
+  Psi[0] = std::complex<double>(sin(z.real()), 0);
+  Zeta[0] = std::complex<double>(sin(z.real()), -cos(z.real()));
+  for (n = 1; n <= n_max; n++) {
+    cn = std::complex<double>(n, 0);
+    Psi[n] = Psi[n-1] * ( (cn/z) - D1[n-1] );
+    Zeta[n] = Zeta[n-1] * ( (cn/z) - D3[n-1] );
+  }
+}
 
 //**********************************************************************************//
 // This function calculates the logarithmic derivatives of the Riccati-Bessel       //
@@ -257,6 +294,33 @@ void calcD1D3(complex z, int n_max, complex **D1, complex **D3) {
   }
 
   free(PsiZeta);
+}
+//**********************************************************************************//
+void calcD1D3_std(std::complex<double> z, int n_max,
+		  std::vector< std::complex<double> > &D1,
+		  std::vector< std::complex<double> > &D3) {
+  int n;
+  std::complex<double> cn;
+  //complex *PsiZeta = (complex *) malloc((n_max + 1)*sizeof(complex));
+  std::vector< std::complex<double> > PsiZeta;
+  PsiZeta.resize(n_max + 1);
+  // Downward recurrence for D1 - equations (16a) and (16b)
+  D1[n_max] = std::complex<double>(0.0, 0.0);
+  for (n = n_max; n > 0; n--) {
+    cn = std::complex<double>(n, 0.0); 
+    D1[n - 1] = cn/z - 1.0/(D1[n] + (cn/z));
+  }
+
+  // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
+  PsiZeta[0] = 0.5 * (1.0 - (std::complex<double>(cos(2*z.real()), sin(2*z.real()))
+			     * std::complex<double>(exp(-2*z.imag()), 0)));
+  D3[0] = std::complex<double>(0.0, 1.0);
+  for (n = 1; n <= n_max; n++) {
+    cn = std::complex<double>(n, 0.0); 
+    PsiZeta[n] = PsiZeta[n-1] * (((cn/ z) - D1[n - 1]) * ((cn/ z)- D3[n - 1]));
+    D3[n] = D1[n]+ (std::complex<double>(0.0, 1.0)/ PsiZeta[n]);
+  }
+  // free(PsiZeta);
 }
 
 //**********************************************************************************//
@@ -533,7 +597,7 @@ int ScattCoeff(int L, int pl, double x[], complex m[], int n_max, complex **an, 
 //**********************************************************************************//
 //**********************************************************************************//
 //**********************************************************************************//
-int ScattCoeff_std(double x[], complex m[], complex **an, complex **bn, 
+int ScattCoeff_std(double x[], complex m[], 
 		   int L, int pl, std::vector<double> x_std,
 		   std::vector<std::complex<double> > m_std, int n_max,
 		   std::vector< std::complex<double> > &an_std, 
@@ -623,8 +687,8 @@ int ScattCoeff_std(double x[], complex m[], complex **an, complex **bn,
     Hb[l].resize(n_max);
   }
 
-  (*an) = (complex *) malloc(n_max*sizeof(complex));
-  (*bn) = (complex *) malloc(n_max*sizeof(complex));
+  // (*an) = (complex *) malloc(n_max*sizeof(complex));
+  // (*bn) = (complex *) malloc(n_max*sizeof(complex));
   an_std.resize(n_max);
   bn_std.resize(n_max);
 
@@ -655,7 +719,7 @@ int ScattCoeff_std(double x[], complex m[], complex **an, complex **bn,
     z1 = x_std[fl]* m_std[fl];
 
     // Calculate D1 and D3
-    calcD1D3(z1, n_max, &(D1_mlxl[fl]), &(D3_mlxl[fl]));
+    calcD1D3_std(z1, n_max, D1_mlxl[fl], D3_mlxl[fl]);
   }
 
   //******************************************************************//
@@ -673,78 +737,81 @@ int ScattCoeff_std(double x[], complex m[], complex **an, complex **bn,
     //************************************************************//
     //Calculate D1 and D3 for z1 and z2 in the layers fl+1..L     //
     //************************************************************//
-    z1 = RCmul(x[l], m[l]);
-    z2 = RCmul(x[l - 1], m[l]);
+    z1 = x_std[l] * m_std[l];
+    z2 = x_std[l - 1] * m_std[l];
 
     //Calculate D1 and D3 for z1
-    calcD1D3(z1, n_max, &(D1_mlxl[l]), &(D3_mlxl[l]));
+    calcD1D3_std(z1, n_max, D1_mlxl[l], D3_mlxl[l]);
 
     //Calculate D1 and D3 for z2
-    calcD1D3(z2, n_max, &(D1_mlxlM1[l]), &(D3_mlxlM1[l]));
+    calcD1D3_std(z2, n_max, D1_mlxlM1[l], D3_mlxlM1[l]);
 
     //*********************************************//
     //Calculate Q, Ha and Hb in the layers fl+1..L //
     //*********************************************//
 
     // Upward recurrence for Q - equations (19a) and (19b)
-    Num = RCmul(exp(-2*(z1.i - z2.i)), Complex(cos(-2*z2.r) - exp(-2*z2.i), sin(-2*z2.r)));
-    Denom = Complex(cos(-2*z1.r) - exp(-2*z1.i), sin(-2*z1.r));
-    Q[l][0] = Cdiv(Num, Denom);
+    //Num = RCmul(exp(-2*(z1.i - z2.i)), Complex(cos(-2*z2.r) - exp(-2*z2.i), sin(-2*z2.r)));
+    Num = exp( -2.0 * ( z1.imag() - z2.imag() ) ) *
+      std::complex<double>(cos(-2.0*z2.real()) - exp(-2.0*z2.imag()), sin(-2.0*z2.real()));
+    Denom = std::complex<double>(cos(-2.0*z1.real()) - exp(-2.0*z1.imag()),
+				 sin(-2.0*z1.real()));
+    Q[l][0] = Num/Denom;
 
     for (n = 1; n <= n_max; n++) {
-      cn = Complex(n, 0);
-      Num = Cmul(Cadd(Cmul(z1, D1_mlxl[l][n]), cn), Csub(cn, Cmul(z1, D3_mlxl[l][n - 1])));
-      Denom = Cmul(Cadd(Cmul(z2, D1_mlxlM1[l][n]), cn), Csub(cn, Cmul(z2, D3_mlxlM1[l][n - 1])));
+      cn = std::complex<double>(n, 0);
+      Num = ( (z1*D1_mlxl[l][n]) + cn) * (cn - (z1*D3_mlxl[l][n - 1]) );
+      Denom = ( (z2*D1_mlxlM1[l][n]) + cn) * (cn- (z2* D3_mlxlM1[l][n - 1]) );
 
-      Q[l][n] = Cdiv(Cmul(RCmul((x[l - 1]*x[l - 1])/(x[l]*x[l]), Q[l][n - 1]), Num), Denom);
+      Q[l][n] = (((x[l - 1]*x[l - 1])/(x[l]*x[l])* Q[l][n - 1]) * Num)/Denom;
     }
 
     // Upward recurrence for Ha and Hb - equations (7b), (8b) and (12) - (15)
     for (n = 1; n <= n_max; n++) {
       //Ha
       if ((l - 1) == pl) { // The layer below the current one is a PEC layer
-        G1 = RCmul(-1.0, D1_mlxlM1[l][n]);
-        G2 = RCmul(-1.0, D3_mlxlM1[l][n]);
+        G1 = -1.0 * D1_mlxlM1[l][n];
+        G2 = -1.0 * D3_mlxlM1[l][n];
       } else {
-        G1 = Csub(Cmul(m[l], Ha[l - 1][n - 1]), Cmul(m[l - 1], D1_mlxlM1[l][n]));
-        G2 = Csub(Cmul(m[l], Ha[l - 1][n - 1]), Cmul(m[l - 1], D3_mlxlM1[l][n]));
+        G1 = (m_std[l] * Ha[l - 1][n - 1]) - (m_std[l - 1] * D1_mlxlM1[l][n]);
+        G2 = (m_std[l] * Ha[l - 1][n - 1]) - (m_std[l - 1] * D3_mlxlM1[l][n]);
       }
 
-      Temp = Cmul(Q[l][n], G1);
+      Temp = Q[l][n] * G1;
 
-      Num = Csub(Cmul(G2, D1_mlxl[l][n]), Cmul(Temp, D3_mlxl[l][n]));
-      Denom = Csub(G2, Temp);
+      Num = (G2*D1_mlxl[l][n]) - (Temp*D3_mlxl[l][n]);
+      Denom = G2 - Temp;
 
-      Ha[l][n - 1] = Cdiv(Num, Denom);
+      Ha[l][n - 1] = Num / Denom;
 
       //Hb
       if ((l - 1) == pl) { // The layer below the current one is a PEC layer
         G1 = Hb[l - 1][n - 1];
         G2 = Hb[l - 1][n - 1];
       } else {
-        G1 = Csub(Cmul(m[l - 1], Hb[l - 1][n - 1]), Cmul(m[l], D1_mlxlM1[l][n]));
-        G2 = Csub(Cmul(m[l - 1], Hb[l - 1][n - 1]), Cmul(m[l], D3_mlxlM1[l][n]));
+        G1 = (m_std[l - 1] * Hb[l - 1][n - 1]) - (m_std[l] * D1_mlxlM1[l][n]);
+        G2 = (m_std[l - 1] * Hb[l - 1][n - 1]) - (m_std[l] * D3_mlxlM1[l][n]);
       }
 
-      Temp = Cmul(Q[l][n], G1);
+      Temp = Q[l][n] * G1;
 
-      Num = Csub(Cmul(G2, D1_mlxl[l][n]), Cmul(Temp, D3_mlxl[l][n]));
-      Denom = Csub(G2, Temp);
+      Num = (G2*D1_mlxl[l][n]) - (Temp* D3_mlxl[l][n]);
+      Denom = (G2- Temp);
 
-      Hb[l][n - 1] = Cdiv(Num, Denom);
+      Hb[l][n - 1] = (Num/ Denom);
     }
   }
 
   //**************************************//
   //Calculate D1, D3, Psi and Zeta for XL //
   //**************************************//
-  z1 = Complex(x[L - 1], 0);
+  z1 = std::complex<double>(x_std[L - 1], 0);
 
   // Calculate D1XL and D3XL
-  calcD1D3(z1, n_max, &D1XL, &D3XL);
+  calcD1D3_std(z1, n_max, D1XL, D3XL);
 
   // Calculate PsiXL and ZetaXL
-  calcPsiZeta(z1, n_max, D1XL, D3XL, &PsiXL, &ZetaXL);
+  calcPsiZeta_std(z1, n_max, D1XL, D3XL, PsiXL, ZetaXL);
 
   //*********************************************************************//
   // Finally, we calculate the scattering coefficients (an and bn) and   //
@@ -752,51 +819,23 @@ int ScattCoeff_std(double x[], complex m[], complex **an, complex **bn,
   // first layer is 0 (zero), in future versions all arrays will follow  //
   // this convention to save memory. (13 Nov, 2014)                      //
   //*********************************************************************//
-  // TODO: Check an, bn and an_std, bn_std are equal
   for (n = 0; n < n_max; n++) {
     //********************************************************************//
     //Expressions for calculating an and bn coefficients are not valid if //
     //there is only one PEC layer (ie, for a simple PEC sphere).          //
     //********************************************************************//
     if (pl < (L - 1)) {
-      (*an)[n] = calc_an(n + 1, x[L - 1], Ha[L - 1][n], m[L - 1], PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
-      (*bn)[n] = calc_bn(n + 1, x[L - 1], Hb[L - 1][n], m[L - 1], PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
+      an_std[n] = calc_an_std(n + 1, x_std[L-1], Ha[L-1][n], m_std[L-1],
+			  PsiXL[n + 1], ZetaXL[n+1], PsiXL[n], ZetaXL[n]);
+      bn_std[n] = calc_bn_std(n + 1, x_std[L-1], Hb[L-1][n], m_std[L-1],
+			  PsiXL[n+1], ZetaXL[n+1], PsiXL[n], ZetaXL[n]);
     } else {
-      (*an)[n] = calc_an(n + 1, x[L - 1], C_ZERO, C_ONE, PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
-      (*bn)[n] = Cdiv(PsiXL[n + 1], ZetaXL[n + 1]);
+      an_std[n] = calc_an_std(n+1, x_std[L-1], std::complex<double>(0.0,0.0),
+			  std::complex<double>(1.0,0.0),
+			  PsiXL[n+1], ZetaXL[n+1], PsiXL[n], ZetaXL[n]);
+      bn_std[n] = PsiXL[n+1] / ZetaXL[n+1];
     }
   }
-
-  // Free the memory used for the arrays
-  for (l = 0; l < L; l++) {
-    free(D1_mlxl[l]);
-    free(D1_mlxlM1[l]);
-
-    free(D3_mlxl[l]);
-    free(D3_mlxlM1[l]);
-
-    free(Q[l]);
-
-    free(Ha[l]);
-    free(Hb[l]);
-  }
-
-  free(D1_mlxl);
-  free(D1_mlxlM1);
-
-  free(D3_mlxl);
-  free(D3_mlxlM1);
-
-  free(Q);
-
-  free(Ha);
-  free(Hb);
-
-  free(D1XL);
-  free(D3XL);
-
-  free(PsiXL);
-  free(ZetaXL);
 
   return n_max;
 }
@@ -1022,8 +1061,10 @@ int nMieScatt_std(double x[], complex m[], double Theta[], complex S1[], complex
   std::complex<double> Qbktmp_std;
   {
     int tmp_n_max = ScattCoeff(L, pl, x, m, n_max, &an, &bn);
-    n_max = ScattCoeff_std(x, m, &an, &bn, L, pl, x_std, m_std, n_max, an_std, bn_std);
+    n_max = ScattCoeff_std(x, m, L, pl, x_std, m_std, n_max, an_std, bn_std);
     if (n_max != tmp_n_max) printf("n_max mismatch\n");
+    // TODO: Check an, bn and an_std, bn_std are equal
+
   }
   Pi = (double **) malloc(n_max*sizeof(double *));
   Tau = (double **) malloc(n_max*sizeof(double *));
