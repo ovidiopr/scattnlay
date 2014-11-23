@@ -2,7 +2,7 @@
 echo Compile with gcc -O2
 rm -rf *.bin
 
-clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 standalone.cc nmie.cc ucomplex.cc -lm -o scattnlay.bin
+# clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 standalone.cc nmie.cc ucomplex.cc -lm -o scattnlay.bin
 g++ -O2 -std=c++11 standalone.cc nmie.cc ucomplex.cc -lm -o scattnlay.bin
 cp scattnlay.bin ../scattnlay
 cd tests/shell

@@ -234,11 +234,22 @@ calc_bn_std(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
 complex calc_S1_n(int n, complex an, complex bn, double Pin, double Taun) {
   return RCmul((double)(n + n + 1)/(double)(n*n + n), Cadd(RCmul(Pin, an), RCmul(Taun, bn)));
 }
+//////////////////////
+std::complex<double> calc_S1_n_std(int n, std::complex<double> an, std::complex<double> bn,
+		      double Pin, double Taun) {
+  return (double)(n + n + 1)/(double)(n*n + n) * ((Pin*an) + (Taun*bn));
+}
 
 // Calculates S2_n - equation (25b) (it's the same as (25a), just switches Pin and Taun)
 complex calc_S2_n(int n, complex an, complex bn, double Pin, double Taun) {
   return calc_S1_n(n, an, bn, Taun, Pin);
 }
+//////////////////////
+std::complex<double> calc_S2_n_std(int n, std::complex<double> an, std::complex<double> bn,
+				   double Pin, double Taun) {
+  return calc_S1_n_std(n, an, bn, Taun, Pin);
+}
+
 
 //**********************************************************************************//
 // This function calculates the Riccati-Bessel functions (Psi and Zeta) for a       //
@@ -374,6 +385,30 @@ void calcPiTau(int n_max, int nTheta, double Theta[], double ***Pi, double ***Ta
         (*Pi)[n][t] = ((n == 1) ?  ((n + n + 1)*cos(Theta[t])*(*Pi)[n - 1][t]/n)
                                 : (((n + n + 1)*cos(Theta[t])*(*Pi)[n - 1][t] - (n + 1)*(*Pi)[n - 2][t])/n));
         (*Tau)[n][t] = (n + 1)*cos(Theta[t])*(*Pi)[n][t] - (n + 2)*(*Pi)[n - 1][t];
+      }
+    }
+  }
+}
+//**********************************************************************************//
+void calcPiTau_std(int n_max, int nTheta, std::vector<double> Theta,
+		   std::vector< std::vector<double> > &Pi,
+		   std::vector< std::vector<double> > &Tau) {
+  int n, t;
+  for (n = 0; n < n_max; n++) {
+    //****************************************************//
+    // Equations (26a) - (26c)                            //
+    //****************************************************//
+    for (t = 0; t < nTheta; t++) {
+      if (n == 0) {
+        // Initialize Pi and Tau
+        Pi[n][t] = 1.0;
+        Tau[n][t] = (n + 1)*cos(Theta[t]);
+      } else {
+        // Calculate the actual values
+        Pi[n][t] = ((n == 1) ?  ((n + n + 1)*cos(Theta[t])*Pi[n - 1][t]/n)
+                                :
+		    (((n + n + 1)*cos(Theta[t])*Pi[n - 1][t] - (n + 1)*Pi[n - 2][t])/n));
+        Tau[n][t] = (n + 1)*cos(Theta[t])*Pi[n][t] - (n + 2)*Pi[n - 1][t];
       }
     }
   }
@@ -1075,28 +1110,33 @@ int nMieScatt_std(double x[], complex m[], double Theta[], complex S1[], complex
 		  std::vector< std::complex<double> > &S1_std,
 		  std::vector< std::complex<double> >  &S2_std)  {
   int i, n, t;
-  double **Pi, **Tau;
+  // double **Pi, **Tau;
   std::vector< std::vector<double> > Pi_std, Tau_std;
   complex *an, *bn;
   std::vector< std::complex<double> > an_std, bn_std;
-  complex Qbktmp;
-  std::complex<double> Qbktmp_std;
+  //complex Qbktmp;
+  std::complex<double> Qbktmp;
   {
     int tmp_n_max = ScattCoeff(L, pl, x, m, n_max, &an, &bn);
     n_max = ScattCoeff_std(x, m, L, pl, x_std, m_std, n_max, an_std, bn_std);
     if (n_max != tmp_n_max) printf("n_max mismatch\n");
-    // TODO: Check an, bn and an_std, bn_std are equal
     compare("an vs an_std: ", an, an_std);
-
+    compare("bn vs bn_std: ", an, an_std);
   }
-  Pi = (double **) malloc(n_max*sizeof(double *));
-  Tau = (double **) malloc(n_max*sizeof(double *));
+  // Pi = (double **) malloc(n_max*sizeof(double *));  
+  // Tau = (double **) malloc(n_max*sizeof(double *));
+  std::vector< std::vector<double> > Pi;
+  Pi.resize(n_max);
+  std::vector< std::vector<double> > Tau;
+  Tau.resize(n_max);
   for (n = 0; n < n_max; n++) {
-    Pi[n] = (double *) malloc(nTheta*sizeof(double));
-    Tau[n] = (double *) malloc(nTheta*sizeof(double));
+    // Pi[n] = (double *) malloc(nTheta*sizeof(double));
+    // Tau[n] = (double *) malloc(nTheta*sizeof(double));
+    Pi[n].resize(nTheta);
+    Tau[n].resize(nTheta);
   }
 
-  calcPiTau(n_max, nTheta, Theta, &Pi, &Tau);
+  calcPiTau_std(n_max, nTheta, Theta_std, Pi, Tau);
 
   double x2 = x[L - 1]*x[L - 1];
 
@@ -1105,15 +1145,15 @@ int nMieScatt_std(double x[], complex m[], double Theta[], complex S1[], complex
   *Qsca = 0;
   *Qabs = 0;
   *Qbk = 0;
-  Qbktmp = C_ZERO;
+  Qbktmp = std::complex<double>(0.0, 0.0);
   *Qpr = 0;
   *g = 0;
   *Albedo = 0;
 
   // Initialize the scattering amplitudes
   for (t = 0; t < nTheta; t++) {
-    S1[t] = C_ZERO;
-    S2[t] = C_ZERO;
+    S1_std[t] = std::complex<double>(0.0, 0.0);
+    S2_std[t] = std::complex<double>(0.0, 0.0);
   }
 
   // By using downward recurrence we avoid loss of precision due to float rounding errors
@@ -1122,22 +1162,36 @@ int nMieScatt_std(double x[], complex m[], double Theta[], complex S1[], complex
   for (i = n_max - 2; i >= 0; i--) {
     n = i + 1;
     // Equation (27)
-    *Qext = *Qext + (double)(n + n + 1)*(an[i].r + bn[i].r);
+    *Qext = *Qext + (double)(n + n + 1)*(an_std[i].real() + bn_std[i].real());
     // Equation (28)
-    *Qsca = *Qsca + (double)(n + n + 1)*(an[i].r*an[i].r + an[i].i*an[i].i + bn[i].r*bn[i].r + bn[i].i*bn[i].i);
+    *Qsca = *Qsca + (double)(n + n + 1)*(an_std[i].real()*an_std[i].real() + an_std[i].imag()*an_std[i].imag() + bn_std[i].real()*bn_std[i].real() + bn_std[i].imag()*bn_std[i].imag());
     // Equation (29)
-    *Qpr = *Qpr + ((n*(n + 2)/(n + 1))*((Cadd(Cmul(an[i], Conjg(an[n])), Cmul(bn[i], Conjg(bn[n])))).r) + ((double)(n + n + 1)/(n*(n + 1)))*(Cmul(an[i], Conjg(bn[i])).r));
-
+  // Qpr = *Qpr + ((n*(n + 2)/(n + 1))*((Cadd(Cmul(an[i], Conjg(an[n])), Cmul(bn[i], Conjg(bn[n])))).r) + ((double)(n + n + 1)/(n*(n + 1)))*(Cmul(an[i], Conjg(bn[i])).r));
+    *Qpr = *Qpr +
+      (
+       (n*(n + 2)/(n + 1))
+       *(
+	 (
+	  (an_std[i]*std::conj(an_std[n]))
+	  + (bn_std[i]*std::conj(bn_std[n]))
+	  ).real()
+	 )
+       + ((double)(n + n + 1)/(n*(n + 1)))
+	  *(
+	    (an_std[i] * std::conj(bn_std[i])
+	     ).real()
+	    )
+       );
     // Equation (33)
-    Qbktmp = Cadd(Qbktmp, RCmul((double)((n + n + 1)*(1 - 2*(n % 2))), Csub(an[i], bn[i])));
+    Qbktmp = Qbktmp + ((double)((n + n + 1)*(1 - 2*(n % 2))) * (an_std[i]- bn_std[i]));
 
     //****************************************************//
     // Calculate the scattering amplitudes (S1 and S2)    //
     // Equations (25a) - (25b)                            //
     //****************************************************//
     for (t = 0; t < nTheta; t++) {
-      S1[t] = Cadd(S1[t], calc_S1_n(n, an[i], bn[i], Pi[i][t], Tau[i][t]));
-      S2[t] = Cadd(S2[t], calc_S2_n(n, an[i], bn[i], Pi[i][t], Tau[i][t]));
+      S1_std[t] = S1_std[t] + calc_S1_n_std(n, an_std[i], bn_std[i], Pi[i][t], Tau[i][t]);
+      S2_std[t] = S2_std[t] + calc_S2_n_std(n, an_std[i], bn_std[i], Pi[i][t], Tau[i][t]);
     }
   }
 
@@ -1149,16 +1203,16 @@ int nMieScatt_std(double x[], complex m[], double Theta[], complex S1[], complex
   *Albedo = *Qsca / *Qext;                              // Equation (31)
   *g = (*Qext - *Qpr) / *Qsca;                          // Equation (32)
 
-  *Qbk = (Qbktmp.r*Qbktmp.r + Qbktmp.i*Qbktmp.i)/x2;    // Equation (33)
+  *Qbk = (Qbktmp.real()*Qbktmp.real() + Qbktmp.imag()*Qbktmp.imag())/x2;    // Equation (33)
 
   // Free the memory used for the arrays
-  for (n = 0; n < n_max; n++) {
-    free(Pi[n]);
-    free(Tau[n]);
-  }
+  // for (n = 0; n < n_max; n++) {
+  //   free(Pi[n]);
+  //   free(Tau[n]);
+  // }
 
-  free(Pi);
-  free(Tau);
+  // free(Pi);
+  // free(Tau);
 
   free(an);
   free(bn);
