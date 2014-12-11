@@ -36,6 +36,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <vector>
+
 namespace nmie {  
   // ********************************************************************** //
   // ********************************************************************** //
@@ -61,6 +62,7 @@ namespace nmie {
   /// nMie starts layer numeration from 1 (no separation of target
   /// and coating). So the first elment (zero-indexed) is not used
   /// and has some unused value.
+  /// Kostya, that's no longer the case. Now the layer numbering starts at zero.
   void MultiLayerMie::GenerateSizeParameter() {
     // size_parameter_.clear();
     // size_parameter_.push_back(0.0);
@@ -91,7 +93,7 @@ namespace nmie {
     double *x = &(size_parameter_.front());
     complex *m = &(index_.front());
     int terms = 0;
-    terms = nMieFast(L, x, m, nt, Theta,
+    terms = nMie(L, x, m, nt, Theta,
                  &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo,
                  S1,S2);
     free(Theta);
