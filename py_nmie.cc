@@ -24,50 +24,56 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "ucomplex.h"
 #include "nmie.h"
 #include "py_nmie.h"
 
-//Same as nMieScatt but only uses doubles (useful for python)
-int nfMieScatt(int L, int pl, double x[], double mr[], double mi[], int nTheta, double Theta[], int n_max, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, double S1r[], double S1i[], double S2r[], double S2i[]){
+// Same as nMie in 'nmie.h' but uses double arrays to return the results (useful for python).
+// This is a workaround because I have not been able to return the results using 
+// std::vector<std::complex<double> >
+int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m,
+         int nTheta, std::vector<double> Theta, int n_max,
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+		 double S1r[], double S1i[], double S2r[], double S2i[]) {
+
   int i, result;
-  complex m[L], S1[nTheta], S2[nTheta];
+  std::vector<std::complex<double> > S1, S2;
+  S1.resize(nTheta);
+  S2.resize(nTheta);
 
-  for (i = 0; i < L; i++) {
-    m[i].r = mr[i];
-    m[i].i = mi[i];
-  }
-
-  result = nMieScatt(L, pl, x, m, nTheta, Theta, n_max, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+  result = nMie(L, pl, x, m, nTheta, Theta, n_max, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
 
   for (i = 0; i < nTheta; i++) {
-    S1r[i] = S1[i].r;
-    S1i[i] = S1[i].i;
-    S2r[i] = S2[i].r;
-    S2i[i] = S2[i].i;
+    S1r[i] = S1[i].real();
+    S1i[i] = S1[i].imag();
+    S2r[i] = S2[i].real();
+    S2i[i] = S2[i].imag();
   }
 
   return result;
 }
 
-int nfMieField(int L, int pl, double x[], double mr[], double mi[], int n_max, int nCoords, double Xp[], double Yp[], double Zp[], double Er[], double Ei[], double Hr[], double Hi[]){
+// Same as nField in 'nmie.h' but uses double arrays to return the results (useful for python).
+// This is a workaround because I have not been able to return the results using 
+// std::vector<std::complex<double> >
+int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int n_max,
+           int nCoords, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
+           double Er[], double Ei[], double Hr[], double Hi[]) {
+
   int i, result;
-  complex m[L], E[nCoords], H[nCoords];
+  std::vector<std::complex<double> > E, H;
+  E.resize(nCoords);
+  H.resize(nCoords);
 
-  for (i = 0; i < L; i++) {
-    m[i].r = mr[i];
-    m[i].i = mi[i];
-  }
-
-  result = nMieField(L, pl, x, m, n_max, nCoords, Xp, Yp, Zp, E, H);
+  result = nField(L, pl, x, m, n_max, nCoords, Xp, Yp, Zp, E, H);
 
   for (i = 0; i < nCoords; i++) {
-    Er[i] = E[i].r;
-    Ei[i] = E[i].i;
-    Hr[i] = H[i].r;
-    Hi[i] = H[i].i;
+    Er[i] = E[i].real();
+    Ei[i] = E[i].imag();
+    Hr[i] = H[i].real();
+    Hi[i] = H[i].imag();
   }
 
   return result;

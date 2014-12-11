@@ -26,34 +26,33 @@
 
 #define VERSION "0.3.1"
 #include <complex>
-#include <string>
 #include <vector>
 
-int nMie(int L, double x[], complex m[], int nTheta, double Theta[], double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, complex S1[], complex S2[]);
+int ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int n_max,
+		        std::vector<std::complex<double> > &an, std::vector<std::complex<double> > &bn);
 
-int nMiePEC(int L, int pl, double x[], complex m[], int nTheta, double Theta[], double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, complex S1[], complex S2[]);
+int nMie(int L, std::vector<double> x, std::vector<std::complex<double> > m,
+         int nTheta, std::vector<double> Theta,
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+         std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
-int nMieMax(int L, double x[], complex m[], int nTheta, double Theta[], int n_max, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, complex S1[], complex S2[]);
+int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m,
+         int nTheta, std::vector<double> Theta,
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+         std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
-int nMieScatt(int L, int pl, double x[], complex m[], int nTheta, double Theta[], int n_max, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, complex S1[], complex S2[]);
+int nMie(int L, std::vector<double> x, std::vector<std::complex<double> > m,
+         int nTheta, std::vector<double> Theta, int n_max,
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+         std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
-int nMieField(int L, int pl, double x[], complex m[], int n_max, int nCoords, double Xp[], double Yp[], double Zp[], complex E[], complex H[]);
+int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m,
+         int nTheta, std::vector<double> Theta, int n_max,
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+		 std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
-
-int nMie_std(double x[], complex m[], double Theta[], complex S1[], complex S2[],
-int L, std::vector<double> &x_std, std::vector<std::complex<double> > &m_std, int nTheta, std::vector<double> &Theta_std, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector< std::complex<double> > &S1_std, std::vector< std::complex<double> >  &S2_std);
-
-
-int nMieScatt_std(double x[], complex m[], double Theta[], complex S1[], complex S2[],
-		  int L, int pl,
-		  std::vector<double> &x_std, std::vector<std::complex<double> > &m_std,
-		  int nTheta, std::vector<double> &Theta_std,
-		  int n_max, double *Qext, double *Qsca, double *Qabs, double *Qbk,
-		  double *Qpr, double *g, double *Albedo,
-		  std::vector< std::complex<double> > &S1_std,
-		  std::vector< std::complex<double> >  &S2_std);
-
-
-
+int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int n_max,
+           int nCoords, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
+           std::vector<std::complex<double> > &E, std::vector<std::complex<double> >  &H);
 
 

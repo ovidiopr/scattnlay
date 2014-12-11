@@ -24,7 +24,15 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 
-int nfMieScatt(int L, int pl, double x[], double mr[], double mi[], int nTheta, double Theta[], int n_max, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, double S1r[], double S1i[], double S2r[], double S2i[]);
+#include <complex>
+#include <vector>
 
-int nfMieField(int L, int pl, double x[], double mr[], double mi[], int n_max, int nCoords, double Xp[], double Yp[], double Zp[], double Er[], double Ei[], double Hr[], double Hi[]);
+int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m,
+         int nTheta, std::vector<double> Theta, int n_max,
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+		 double S1r[], double S1i[], double S2r[], double S2i[]);
+
+int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int n_max,
+           int nCoords, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
+           double Er[], double Ei[], double Hr[], double Hi[]);
 

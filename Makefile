@@ -2,7 +2,7 @@ PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/python-scattnlay
 PROJECT=python-scattnlay
-VERSION=0.3.0
+VERSION=0.3.1
 
 all:
 	@echo "make source - Create source package"
@@ -30,8 +30,8 @@ builddeb:
 	# build the package
 	dpkg-buildpackage -i -I -rfakeroot
 
-standalone: standalone.cc nmie.cc ucomplex.cc
-	c++ -DNDEBUG -O2 -std=c++11 standalone.cc nmie.cc ucomplex.cc -lm -o scattnlay
+standalone: standalone.cc nmie.cc
+	c++ -DNDEBUG -O2 -std=c++11 standalone.cc nmie.cc -lm -o scattnlay
 	mv scattnlay ../
 
 clean:

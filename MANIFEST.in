@@ -4,10 +4,9 @@ include README
 include CHANGES
 include MANIFEST.in
 include setup.py
-include ucomplex.h
 include nmie.h
 include py_nmie.h
-include standalone.c
+include standalone.cc
 include Makefile
 include tests/python/*
 include tests/shell/*
