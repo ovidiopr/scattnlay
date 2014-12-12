@@ -87,50 +87,57 @@ int Nmax(int L, int fl, int pl,
 }
 
 //**********************************************************************************//
-// This function calculates the spherical Bessel functions (jn and hn) for a given  //
-// value of z.                                                                      //
+// This function calculates the spherical Bessel functions (jn and yn) for a given  //
+// real value r. See pag. 87 B&H.                                                   //
 //                                                                                  //
 // Input parameters:                                                                //
-//   z: Real argument to evaluate jn and hn                                         //
-//   n_max: Maximum number of terms to calculate jn and hn                          //
+//   r: Real argument to evaluate jn and yn                                         //
+//   n_max: Maximum number of terms to calculate jn and yn                          //
 //                                                                                  //
 // Output parameters:                                                               //
-//   jn, hn: Spherical Bessel functions (complex)                                   //
+//   jn, yn: Spherical Bessel functions (double)                                    //
 //**********************************************************************************//
-void sphericalBessel(std::complex<double> r, int n_max, std::vector<std::complex<double> > &j, std::vector<std::complex<double> > &h) {
+void sphericalBessel(double r, int n_max, std::vector<double> &j, std::vector<double> &y) {
   int n;
 
-  j[0] = sin(r)/r;
-  j[1] = sin(r)/r/r - cos(r)/r;
-  h[0] = -cos(r)/r;
-  h[1] = -cos(r)/r/r - sin(r)/r;
+  if (n_max >= 1) {
+    j[0] = sin(r)/r;
+    y[0] = -cos(r)/r;
+  }
+
+  if (n_max >= 2) {
+    j[1] = sin(r)/r/r - cos(r)/r;
+    y[1] = -cos(r)/r/r - sin(r)/r;
+  }
+
   for (n = 2; n < n_max; n++) {
     j[n] = double(n + n + 1)*j[n - 1]/r - j[n - 2];
-    h[n] = double(n + n + 1)*h[n - 1]/r - h[n - 2];
+    y[n] = double(n + n + 1)*y[n - 1]/r - h[n - 2];
   }
 }
 
 //**********************************************************************************//
-// This function calculates the spherical Bessel functions (jn and hn) for a given  //
-// value of r.                                                                      //
+// This function calculates the spherical Hankel functions (h1n and h2n) for a      //
+// given real value r. See eqs. (4.13) and (4.14), pag. 87 B&H.                     //
 //                                                                                  //
 // Input parameters:                                                                //
-//   r: Real argument to evaluate jn and hn                                         //
-//   n_max: Maximum number of terms to calculate jn and hn                          //
+//   r: Real argument to evaluate h1n and h2n                                       //
+//   n_max: Maximum number of terms to calculate h1n and h2n                        //
 //                                                                                  //
 // Output parameters:                                                               //
-//   jn, hn: Spherical Bessel functions (double)                                    //
+//   h1n, h2n: Spherical Hankel functions (complex)                                 //
 //**********************************************************************************//
-void sphericalBessel(double r, int n_max, std::vector<double> &j, std::vector<double> &h) {
+void sphericalHankel(double r, int n_max, std::vector<std::complex<double> > &h1, std::vector<std::complex<double> > &h2) {
   int n;
+  std::complex<double> j, y;
+  j.resize(n_max);
+  h.resize(n_max);
 
-  j[0] = sin(r)/r;
-  j[1] = sin(r)/r/r - cos(r)/r;
-  h[0] = -cos(r)/r;
-  h[1] = -cos(r)/r/r - sin(r)/r;
-  for (n = 2; n < n_max; n++) {
-    j[n] = double(n + n + 1)*j[n - 1]/r - j[n - 2];
-    h[n] = double(n + n + 1)*h[n - 1]/r - h[n - 2];
+  sphericalBessel(r, n_max, j, y);
+
+  for (n = 0; n < n_max; n++) {
+    h1[n] = std::complex<double> (j[n], y[n]);
+    h2[n] = std::complex<double> (j[n], -y[n]);
   }
 }
 
@@ -733,69 +740,62 @@ int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double
 		   std::vector<std::complex<double> > &E, std::vector<std::complex<double> >  &H)  {
 
   int i, n, c;
-/*  double **Pi, **Tau;
-  complex *an, *bn;
-  double *Rho = (double *) malloc(nCoords*sizeof(double));
-  double *Phi = (double *) malloc(nCoords*sizeof(double));
-  double *Theta = (double *) malloc(nCoords*sizeof(double));
+  std::vector<std::complex<double> > an, bn;
 
-  for (c = 0; c < nCoords; c++) {
-    Rho[c] = sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c] + Zp[c]*Zp[c]);
-    if (Rho[c] < 1e-3) {
-      Rho[c] = 1e-3;
-    }
-    Phi[c] = acos(Xp[c]/sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c]));
-    Theta[c] = acos(Xp[c]/Rho[c]);
-  }
-
+  // Calculate scattering coefficients
   n_max = ScattCoeffs(L, pl, x, m, n_max, an, bn);
 
-  Pi = (double **) malloc(n_max*sizeof(double *));
-  Tau = (double **) malloc(n_max*sizeof(double *));
+  std::vector< std::vector<double> > Pi, Tau;
+  Pi.resize(n_max);
+  Tau.resize(n_max);
   for (n = 0; n < n_max; n++) {
-    Pi[n] = (double *) malloc(nCoords*sizeof(double));
-    Tau[n] = (double *) malloc(nCoords*sizeof(double));
+    Pi[n].resize(nCoords);
+    Tau[n].resize(nCoords);
   }
 
-  calcPiTau(n_max, nCoords, Theta, &Pi, &Tau);
+  std::vector<double> Rho, Phi, Theta;
+  Rho.resize(nCoords);
+  Phi.resize(nCoords);
+  Theta.resize(nCoords);
 
-  double x2 = x[L - 1]*x[L - 1];
-
-  // Initialize the fields
   for (c = 0; c < nCoords; c++) {
-    E[c] = C_ZERO;
-    H[c] = C_ZERO;
-  }*/
+    // Convert to spherical coordinates
+    Rho = sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c] + Zp[c]*Zp[c]);
+    if (Rho < 1e-3) {
+      Rho = 1e-3;
+    }
+    Phi = acos(Xp[c]/sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c]));
+    Theta = acos(Xp[c]/Rho[c]);
+  }
 
-  //*******************************************************//
-  // external scattering field = incident + scattered      //
-  // BH p.92 (4.37), 94 (4.45), 95 (4.50)                  //
-  // assume: medium is non-absorbing; refim = 0; Uabs = 0  //
-  //*******************************************************//
+  calcPiTau(n_max, nCoords, Theta, Pi, Tau);
 
-  // Firstly the easiest case, we want the field outside the particle
-//  if (Rho[c] >= x[L - 1]) {
-//  }
-  for (i = 1; i < (n_max - 1); i++) {
-//    n = i - 1;
-/*    // Equation (27)
-    *Qext = *Qext + (double)(n + n + 1)*(an[i].r + bn[i].r);
-    // Equation (28)
-    *Qsca = *Qsca + (double)(n + n + 1)*(an[i].r*an[i].r + an[i].i*an[i].i + bn[i].r*bn[i].r + bn[i].i*bn[i].i);
-    // Equation (29)
-    *Qpr = *Qpr + ((n*(n + 2)/(n + 1))*((Cadd(Cmul(an[i], std::conj(an[n])), Cmul(bn[i], std::conj(bn[n])))).r) + ((double)(n + n + 1)/(n*(n + 1)))*(Cmul(an[i], std::conj(bn[i])).r));
+  std::vector<double > j, y;
+  std::vector<std::complex<double> > h1, h2;
+  j.resize(n_max);
+  y.resize(n_max);
+  h1.resize(n_max);
+  h2.resize(n_max);
 
-    // Equation (33)
-    Qbktmp = Cadd(Qbktmp, RCmul((double)((n + n + 1)*(1 - 2*(n % 2))), Csub(an[i], bn[i])));
-*/
-    //****************************************************//
-    // Calculate the scattering amplitudes (S1 and S2)    //
-    // Equations (25a) - (25b)                            //
-    //****************************************************//
-/*    for (t = 0; t < nTheta; t++) {
-      S1[t] = Cadd(S1[t], calc_S1(n, an[i], bn[i], Pi[i][t], Tau[i][t]));
-      S2[t] = Cadd(S2[t], calc_S2(n, an[i], bn[i], Pi[i][t], Tau[i][t]));
-    }*/
+  for (c = 0; c < nCoords; c++) {
+    //*******************************************************//
+    // external scattering field = incident + scattered      //
+    // BH p.92 (4.37), 94 (4.45), 95 (4.50)                  //
+    // assume: medium is non-absorbing; refim = 0; Uabs = 0  //
+    //*******************************************************//
+
+    // Calculate spherical Bessel and Hankel functions
+    sphericalBessel(Rho, n_max, j, y);
+    sphericalHankel(Rho, n_max, h1, h2);
+
+    // Initialize the fields
+    E[c] = std::complex<double>(0.0, 0.0);
+    H[c] = std::complex<double>(0.0, 0.0);
+
+    // Firstly the easiest case, we want the field outside the particle
+    if (Rho >= x[L - 1]) {
+      
+    }
   }
 
   return n_max;
