@@ -1,5 +1,0 @@
-python:Versions=2.7
-python:Provides=python2.7-scattnlay
-python:Depends=python (<< 2.8), python (>= 2.7), python-support (>= 0.90.0)
-shlibs:Depends=libc6 (>= 2.4), libgcc1 (>= 1:4.1.1), libstdc++6 (>= 4.1.1)
-misc:Depends=
