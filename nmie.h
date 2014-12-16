@@ -28,7 +28,7 @@
 #include <complex>
 #include <vector>
 
-int ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int n_max,
+int ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
 		        std::vector<std::complex<double> > &an, std::vector<std::complex<double> > &bn);
 
 int nMie(int L, std::vector<double> x, std::vector<std::complex<double> > m,
@@ -42,12 +42,12 @@ int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> 
          std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
 int nMie(int L, std::vector<double> x, std::vector<std::complex<double> > m,
-         int nTheta, std::vector<double> Theta, int n_max,
+         int nTheta, std::vector<double> Theta, int nmax,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
          std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
 int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m,
-         int nTheta, std::vector<double> Theta, int n_max,
+         int nTheta, std::vector<double> Theta, int nmax,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
 		 std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
