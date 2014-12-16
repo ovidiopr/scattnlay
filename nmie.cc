@@ -43,6 +43,12 @@
 
 #define round(x) ((x) >= 0 ? (int)((x) + 0.5):(int)((x) - 0.5))
 
+const double PI=3.14159265358979323846;
+// light speed [m s-1]
+double const cc = 2.99792458e8;
+// assume non-magnetic (MU=MU0=const) [N A-2]
+double const mu = 4.0*PI*1.0e-7;
+
 // Calculate Nstop - equation (17)
 int Nstop(double xL) {
   int result;
@@ -223,7 +229,7 @@ int sbesjh(std::complex<double> z, int nmax, std::vector<std::complex<double> >&
 //   bj, by: Spherical Bessel functions                                             //
 //   bd: Logarithmic derivative                                                     //
 //**********************************************************************************//
-void sphericalBessel(std::complex<double> z, int nmax, std::vector<double>& bj, std::vector<double>& by, std::vector<double>& bd) {
+void sphericalBessel(std::complex<double> z, int nmax, std::vector<std::complex<double>>& bj, std::vector<std::complex<double>>& by, std::vector<std::complex<double>>& bd) {
 
     std::vector<std::complex<double> > jn, jnp, h1n, h1np;
     jn.resize(nmax);
@@ -312,7 +318,7 @@ int fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double>
   Ei[2] = -(eifac*std::sin(Phi));
 
   // magnetic field
-  std::complex<double> hffact = std::complex<double>(refmed, 0.0)/(cc*mu);
+  double hffact = 1.0/(cc*mu);
   for (i = 0; i < 3; i++) {
     Hs[i] = hffact*Hs[i];
   }
@@ -446,26 +452,22 @@ void calcD1D3(std::complex<double> z, int nmax,
 // Output parameters:                                                               //
 //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
 //**********************************************************************************//
-void calcPiTau(int nmax, int nTheta, std::vector<double> Theta,
-		       std::vector< std::vector<double> >& Pi,
-		       std::vector< std::vector<double> >& Tau) {
+void calcPiTau(int nmax, double Theta, std::vector<double>& Pi, std::vector<double>& Tau) {
 
-  int n, t;
+  int n;
   //****************************************************//
   // Equations (26a) - (26c)                            //
   //****************************************************//
-  for (t = 0; t < nTheta; t++) {
-    for (n = 0; n < nmax; n++) {
-      if (n == 0) {
-        // Initialize Pi and Tau
-        Pi[t][n] = 1.0;
-        Tau[t][n] = (n + 1)*cos(Theta[t]);
-      } else {
-        // Calculate the actual values
-        Pi[t][n] = ((n == 1) ? ((n + n + 1)*cos(Theta[t])*Pi[t][n - 1]/n)
-                             : (((n + n + 1)*cos(Theta[t])*Pi[t][n - 1] - (n + 1)*Pi[t][n - 2])/n));
-        Tau[t][n] = (n + 1)*cos(Theta[t])*Pi[t][n] - (n + 2)*Pi[t][n - 1];
-      }
+  for (n = 0; n < nmax; n++) {
+    if (n == 0) {
+      // Initialize Pi and Tau
+      Pi[n] = 1.0;
+      Tau[n] = (n + 1)*cos(Theta);
+    } else {
+      // Calculate the actual values
+      Pi[n] = ((n == 1) ? ((n + n + 1)*cos(Theta)*Pi[n - 1]/n)
+                           : (((n + n + 1)*cos(Theta)*Pi[n - 1] - (n + 1)*Pi[n - 2])/n));
+      Tau[n] = (n + 1)*cos(Theta)*Pi[n] - (n + 2)*Pi[n - 1];
     }
   }
 }
@@ -724,15 +726,9 @@ int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> 
   // Calculate scattering coefficients
   nmax = ScattCoeffs(L, pl, x, m, nmax, an, bn);
 
-  std::vector< std::vector<double> > Pi, Tau;
-  Pi.resize(nTheta);
-  Tau.resize(nTheta);
-  for (t = 0; t < nTheta; t++) {
-    Pi[t].resize(nmax);
-    Tau[t].resize(nmax);
-  }
-
-  calcPiTau(nmax, nTheta, Theta, Pi, Tau);
+  std::vector<double> Pi, Tau;
+  Pi.resize(nmax);
+  Tau.resize(nmax);
 
   double x2 = x[L - 1]*x[L - 1];
 
@@ -772,8 +768,10 @@ int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> 
     // Equations (25a) - (25b)                            //
     //****************************************************//
     for (t = 0; t < nTheta; t++) {
-      S1[t] += calc_S1(n, an[i], bn[i], Pi[t][i], Tau[t][i]);
-      S2[t] += calc_S2(n, an[i], bn[i], Pi[t][i], Tau[t][i]);
+      calcPiTau(nmax, Theta[t], Pi, Tau);
+
+      S1[t] += calc_S1(n, an[i], bn[i], Pi[i], Tau[i]);
+      S2[t] += calc_S2(n, an[i], bn[i], Pi[i], Tau[i]);
     }
   }
 
@@ -930,15 +928,15 @@ int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double
 		   std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
 
   int i, n, c;
+  double Rho, Phi, Theta;
   std::vector<std::complex<double> > an, bn;
 
   // Calculate scattering coefficients
   nmax = ScattCoeffs(L, pl, x, m, nmax, an, bn);
 
-  std::vector<double> Rho, Phi, Theta;
-  Rho.resize(ncoord);
-  Phi.resize(ncoord);
-  Theta.resize(ncoord);
+  std::vector<double> Pi, Tau;
+  Pi.resize(nmax);
+  Tau.resize(nmax);
 
   for (c = 0; c < ncoord; c++) {
     // Convert to spherical coordinates
@@ -947,33 +945,19 @@ int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double
       Rho = 1e-3;
     }
     Phi = acos(Xp[c]/sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c]));
-    Theta = acos(Xp[c]/Rho[c]);
-  }
+    Theta = acos(Xp[c]/Rho);
 
-  std::vector< std::vector<double> > Pi, Tau;
-  Pi.resize(ncoord);
-  Tau.resize(ncoord);
-  for (c = 0; c < ncoord; c++) {
-    Pi[c].resize(nmax);
-    Tau[c].resize(nmax);
-  }
+    calcPiTau(nmax, Theta, Pi, Tau);
 
-  calcPiTau(nmax, ncoord, Theta, Pi, Tau);
-
-  for (c = 0; c < ncoord; c++) {
     //*******************************************************//
     // external scattering field = incident + scattered      //
     // BH p.92 (4.37), 94 (4.45), 95 (4.50)                  //
     // assume: medium is non-absorbing; refim = 0; Uabs = 0  //
     //*******************************************************//
 
-    // Initialize the fields
-    E[c] = std::complex<double>(0.0, 0.0);
-    H[c] = std::complex<double>(0.0, 0.0);
-
     // Firstly the easiest case, we want the field outside the particle
     if (Rho >= x[L - 1]) {
-      fieldExt(nmax, Rho, Phi, Theta, Pi[c], Tau[c], an, bn, E[c], H[c]);
+      fieldExt(nmax, Rho, Phi, Theta, Pi, Tau, an, bn, E[c], H[c]);
     }
   }
 
