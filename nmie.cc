@@ -127,7 +127,7 @@ int sbesjh(std::complex<double> z, int nmax, std::vector<std::complex<double> >&
   int n;
   double absc;
   std::complex<double> zi, w;
-  std::complex<double> pl, f, b, d, c, del, jn0, xdb, h1nldb, h1nbdb;
+  std::complex<double> pl, f, b, d, c, del, jn0, jndb, h1nldb, h1nbdb;
 
   absc = std::abs(std::real(z)) + std::abs(std::imag(z));
   if ((absc < accur) || (std::imag(z) < -3.0)) {
@@ -202,7 +202,7 @@ int sbesjh(std::complex<double> z, int nmax, std::vector<std::complex<double> >&
 
       // check if hankel is increasing (upward stable)
       if (std::abs(h1n[n]) < std::abs(h1n[n - 1])) {
-        xdb = z;
+        jndb = z;
         h1nldb = h1n[n];
         h1nbdb = h1n[n - 1];
       }
@@ -237,6 +237,7 @@ void sphericalBessel(std::complex<double> z, int nmax, std::vector<std::complex<
     h1n.resize(nmax);
     h1np.resize(nmax);
 
+    // TODO verify that the function succeeds
     int ifail = sbesjh(z, nmax, jn, jnp, h1n, h1np);
 
     for (int n = 0; n < nmax; n++) {
@@ -482,8 +483,8 @@ void calcPiTau(int nmax, double Theta, std::vector<double>& Pi, std::vector<doub
 //   x: Array containing the size parameters of the layers [0..L-1]                 //
 //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
 //   nmax: Maximum number of multipolar expansion terms to be used for the          //
-//          calculations. Only used if you know what you are doing, otherwise set   //
-//          this parameter to -1 and the function will calculate it.                //
+//         calculations. Only use it if you know what you are doing, otherwise      //
+//         set this parameter to -1 and the function will calculate it.             //
 //                                                                                  //
 // Output parameters:                                                               //
 //   an, bn: Complex scattering amplitudes                                          //
@@ -697,8 +698,8 @@ int ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<d
 //   Theta: Array containing all the scattering angles where the scattering         //
 //          amplitudes will be calculated                                           //
 //   nmax: Maximum number of multipolar expansion terms to be used for the          //
-//          calculations. Only used if you know what you are doing, otherwise set   //
-//          this parameter to -1 and the function will calculate it                 //
+//         calculations. Only use it if you know what you are doing, otherwise      //
+//         set this parameter to -1 and the function will calculate it              //
 //                                                                                  //
 // Output parameters:                                                               //
 //   Qext: Efficiency factor for extinction                                         //
@@ -874,8 +875,8 @@ int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> 
 //   Theta: Array containing all the scattering angles where the scattering         //
 //          amplitudes will be calculated                                           //
 //   nmax: Maximum number of multipolar expansion terms to be used for the          //
-//          calculations. Only used if you know what you are doing, otherwise set   //
-//          this parameter to -1 and the function will calculate it                 //
+//         calculations. Only use it if you know what you are doing, otherwise      //
+//         set this parameter to -1 and the function will calculate it              //
 //                                                                                  //
 // Output parameters:                                                               //
 //   Qext: Efficiency factor for extinction                                         //
@@ -910,9 +911,9 @@ int nMie(int L, std::vector<double> x, std::vector<std::complex<double> > m,
 //   x: Array containing the size parameters of the layers [0..L-1]                 //
 //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
 //   nmax: Maximum number of multipolar expansion terms to be used for the          //
-//          calculations. Only used if you know what you are doing, otherwise set   //
-//          this parameter to 0 (zero) and the function will calculate it.          //
-//   ncoord: Number of coordinate points                                           //
+//         calculations. Only use it if you know what you are doing, otherwise      //
+//         set this parameter to 0 (zero) and the function will calculate it.       //
+//   ncoord: Number of coordinate points                                            //
 //   Coords: Array containing all coordinates where the complex electric and        //
 //           magnetic fields will be calculated                                     //
 //                                                                                  //
@@ -927,9 +928,15 @@ int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double
            int ncoord, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
 		   std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
 
-  int i, n, c;
+  int i, c;
   double Rho, Phi, Theta;
   std::vector<std::complex<double> > an, bn;
+
+  // This array contains the fields in spherical coordinates
+  std::vector<std::complex<double> > Es, Hs;
+  Es.resize(3);
+  Hs.resize(3);
+
 
   // Calculate scattering coefficients
   nmax = ScattCoeffs(L, pl, x, m, nmax, an, bn);
@@ -942,6 +949,7 @@ int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double
     // Convert to spherical coordinates
     Rho = sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c] + Zp[c]*Zp[c]);
     if (Rho < 1e-3) {
+      // Avoid convergence problems
       Rho = 1e-3;
     }
     Phi = acos(Xp[c]/sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c]));
@@ -955,10 +963,25 @@ int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double
     // assume: medium is non-absorbing; refim = 0; Uabs = 0  //
     //*******************************************************//
 
-    // Firstly the easiest case, we want the field outside the particle
+    // Firstly the easiest case: the field outside the particle
     if (Rho >= x[L - 1]) {
-      fieldExt(nmax, Rho, Phi, Theta, Pi, Tau, an, bn, E[c], H[c]);
+      fieldExt(nmax, Rho, Phi, Theta, Pi, Tau, an, bn, Es, Hs);
+    } else {
+      // TODO, for now just set all the fields to zero
+      for (i = 0; i < 3; i++) {
+        Es[i] = std::complex<double>(0.0, 0.0);
+        Hs[i] = std::complex<double>(0.0, 0.0);
+      }
     }
+
+    //Now, convert the fields back to cartesian coordinates
+    E[c][0] = std::sin(Theta)*std::cos(Phi)*Es[0] + std::cos(Theta)*std::cos(Phi)*Es[1] - std::sin(Phi)*Es[2];
+    E[c][1] = std::sin(Theta)*std::sin(Phi)*Es[0] + std::cos(Theta)*std::sin(Phi)*Es[1] + std::cos(Phi)*Es[2];
+    E[c][2] = std::cos(Theta)*Es[0] - std::sin(Theta)*Es[1];
+
+    H[c][0] = std::sin(Theta)*std::cos(Phi)*Hs[0] + std::cos(Theta)*std::cos(Phi)*Hs[1] - std::sin(Phi)*Hs[2];
+    H[c][1] = std::sin(Theta)*std::sin(Phi)*Hs[0] + std::cos(Theta)*std::sin(Phi)*Hs[1] + std::cos(Phi)*Hs[2];
+    H[c][2] = std::cos(Theta)*Hs[0] - std::sin(Theta)*Hs[1];
   }
 
   return nmax;
