@@ -51,8 +51,8 @@ int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> 
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
 		 std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
-int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int n_max,
-           int nCoords, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
-           std::vector<std::complex<double> > &E, std::vector<std::complex<double> >  &H);
+int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
+           int ncoord, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
+		   std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
 
 
