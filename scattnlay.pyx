@@ -51,7 +51,7 @@ cdef inline double *npy2c(np.ndarray a):
 
 cdef extern from "py_nmie.h":
     cdef int nMie(int L, int pl, vector[double] x, vector[complex] m, int nTheta, vector[double] Theta, int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, double S1r[], double S1i[], double S2r[], double S2i[])
-    cdef int nField(int L, int pl, vector[double] x, vector[complex] m, int nmax, int nCoords, vector[double] Xp, vector[double] Yp, vector[double] Zp, double Er[], double Ei[], double Hr[], double Hi[])
+    cdef int nField(int L, int pl, vector[double] x, vector[complex] m, int nmax, int nCoords, vector[double] Xp, vector[double] Yp, vector[double] Zp, double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[], double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[])
 
 def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t pl = -1, np.int_t nmax = -1):
     cdef Py_ssize_t i
@@ -92,24 +92,44 @@ def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, 
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
 
-    cdef np.ndarray[np.complex128_t, ndim = 2] E = np.zeros((x.shape[0], coords.shape[0]), dtype = np.complex128)
-    cdef np.ndarray[np.complex128_t, ndim = 2] H = np.zeros((x.shape[0], coords.shape[0]), dtype = np.complex128)
+    cdef np.ndarray[np.complex128_t, ndim = 3] E = np.zeros((x.shape[0], coords.shape[0], 3), dtype = np.complex128)
+    cdef np.ndarray[np.complex128_t, ndim = 3] H = np.zeros((x.shape[0], coords.shape[0], 3), dtype = np.complex128)
 
-    cdef np.ndarray[np.float64_t, ndim = 1] Er
-    cdef np.ndarray[np.float64_t, ndim = 1] Ei
-    cdef np.ndarray[np.float64_t, ndim = 1] Hr
-    cdef np.ndarray[np.float64_t, ndim = 1] Hi
+    cdef np.ndarray[np.float64_t, ndim = 1] Erx
+    cdef np.ndarray[np.float64_t, ndim = 1] Ery
+    cdef np.ndarray[np.float64_t, ndim = 1] Erz
+    cdef np.ndarray[np.float64_t, ndim = 1] Eix
+    cdef np.ndarray[np.float64_t, ndim = 1] Eiy
+    cdef np.ndarray[np.float64_t, ndim = 1] Eiz
+    cdef np.ndarray[np.float64_t, ndim = 1] Hrx
+    cdef np.ndarray[np.float64_t, ndim = 1] Hry
+    cdef np.ndarray[np.float64_t, ndim = 1] Hrz
+    cdef np.ndarray[np.float64_t, ndim = 1] Hix
+    cdef np.ndarray[np.float64_t, ndim = 1] Hiy
+    cdef np.ndarray[np.float64_t, ndim = 1] Hiz
 
     for i in range(x.shape[0]):
-        Er = np.zeros(coords.shape[0], dtype = np.float64)
-        Ei = np.zeros(coords.shape[0], dtype = np.float64)
-        Hr = np.zeros(coords.shape[0], dtype = np.float64)
-        Hi = np.zeros(coords.shape[0], dtype = np.float64)
+        Erx = np.zeros(coords.shape[0], dtype = np.float64)
+        Ery = np.zeros(coords.shape[0], dtype = np.float64)
+        Erz = np.zeros(coords.shape[0], dtype = np.float64)
+        Eix = np.zeros(coords.shape[0], dtype = np.float64)
+        Eiy = np.zeros(coords.shape[0], dtype = np.float64)
+        Eiz = np.zeros(coords.shape[0], dtype = np.float64)
+        Hrx = np.zeros(coords.shape[0], dtype = np.float64)
+        Hry = np.zeros(coords.shape[0], dtype = np.float64)
+        Hrz = np.zeros(coords.shape[0], dtype = np.float64)
+        Hix = np.zeros(coords.shape[0], dtype = np.float64)
+        Hiy = np.zeros(coords.shape[0], dtype = np.float64)
+        Hiz = np.zeros(coords.shape[0], dtype = np.float64)
 
-        terms[i] = nField(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, coords.shape[0], coords[:, 0].copy('C'), coords[:, 1].copy('C'), coords[:, 2].copy('C'), npy2c(Er), npy2c(Ei), npy2c(Hr), npy2c(Hi))
+        terms[i] = nField(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, coords.shape[0], coords[:, 0].copy('C'), coords[:, 1].copy('C'), coords[:, 2].copy('C'), npy2c(Erx), npy2c(Ery), npy2c(Erz), npy2c(Eix), npy2c(Eiy), npy2c(Eiz), npy2c(Hrx), npy2c(Hry), npy2c(Hrz), npy2c(Hix), npy2c(Hiy), npy2c(Hiz))
 
-        E[i] = Er.copy('C') + 1.0j*Ei.copy('C')
-        H[i] = Hr.copy('C') + 1.0j*Hi.copy('C')
+        E[i][0] = Erx.copy('C') + 1.0j*Eix.copy('C')
+        E[i][1] = Ery.copy('C') + 1.0j*Eiy.copy('C')
+        E[i][2] = Erz.copy('C') + 1.0j*Eiz.copy('C')
+        H[i][0] = Hrx.copy('C') + 1.0j*Hix.copy('C')
+        H[i][1] = Hry.copy('C') + 1.0j*Hiy.copy('C')
+        H[i][2] = Hrz.copy('C') + 1.0j*Hiz.copy('C')
 
     return terms, E, H
 

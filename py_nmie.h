@@ -34,5 +34,6 @@ int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> 
 
 int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
            int nCoords, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
-           double Er[], double Ei[], double Hr[], double Hi[]);
+           double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[],
+           double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[]);
 

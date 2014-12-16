@@ -60,20 +60,33 @@ int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> 
 // std::vector<std::complex<double> >
 int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
            int nCoords, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
-           double Er[], double Ei[], double Hr[], double Hi[]) {
+           double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[],
+           double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[]) {
 
   int i, result;
-  std::vector<std::complex<double> > E, H;
+  std::vector<std::vector<std::complex<double> > > E, H;
   E.resize(nCoords);
   H.resize(nCoords);
+  for (i = 0; i < nCoords; i++) {
+    E[i].resize(3);
+    H[i].resize(3);
+  }
 
   result = nField(L, pl, x, m, nmax, nCoords, Xp, Yp, Zp, E, H);
 
   for (i = 0; i < nCoords; i++) {
-    Er[i] = E[i].real();
-    Ei[i] = E[i].imag();
-    Hr[i] = H[i].real();
-    Hi[i] = H[i].imag();
+    Erx[i] = E[i][0].real();
+    Ery[i] = E[i][1].real();
+    Erz[i] = E[i][2].real();
+    Eix[i] = E[i][0].imag();
+    Eiy[i] = E[i][1].imag();
+    Eiz[i] = E[i][2].imag();
+    Hrx[i] = H[i][0].real();
+    Hry[i] = H[i][1].real();
+    Hrz[i] = H[i][2].real();
+    Hix[i] = H[i][0].imag();
+    Hiy[i] = H[i][1].imag();
+    Hiz[i] = H[i][2].imag();
   }
 
   return result;

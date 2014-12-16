@@ -229,7 +229,7 @@ int sbesjh(std::complex<double> z, int nmax, std::vector<std::complex<double> >&
 //   bj, by: Spherical Bessel functions                                             //
 //   bd: Logarithmic derivative                                                     //
 //**********************************************************************************//
-void sphericalBessel(std::complex<double> z, int nmax, std::vector<std::complex<double>>& bj, std::vector<std::complex<double>>& by, std::vector<std::complex<double>>& bd) {
+void sphericalBessel(std::complex<double> z, int nmax, std::vector<std::complex<double> >& bj, std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd) {
 
     std::vector<std::complex<double> > jn, jnp, h1n, h1np;
     jn.resize(nmax);
@@ -250,7 +250,7 @@ void sphericalBessel(std::complex<double> z, int nmax, std::vector<std::complex<
 // external scattering field = incident + scattered
 // BH p.92 (4.37), 94 (4.45), 95 (4.50)
 // assume: medium is non-absorbing; refim = 0; Uabs = 0
-int fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
+void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
              std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
 		     std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
