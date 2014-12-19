@@ -59,57 +59,128 @@ const double PI=3.14159265358979323846;
 //***********************************************************************************//
 int main(int argc, char *argv[]) {
   try {
-    char comment[200];
+    std::vector<std::string> args;
+    args.assign(argv, argv + argc);
+    std::string error_msg(std::string("Insufficient parameters.\nUsage: ") + args[0]
+			  + " -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] "
+			  + "[-t ti tf nt] [-c comment]\n");
+    enum mode_states {read_L, read_x, read_mr, read_mi, read_ti, read_tf, read_nt, read_comment};
+    // for (auto arg : args) std::cout<< arg <<std::endl;
+    std::string comment;
     int has_comment = 0;
-    int i, l, L;
+    int i, l, L = 0;
     std::vector<double> x, Theta;
     std::vector<std::complex<double> > m, S1, S2;
     double Qext, Qabs, Qsca, Qbk, Qpr, g, Albedo;
     double ti = 0.0, tf = 90.0;
-    int nt = 0;
+    int nt = 0;    
+    if (argc < 5) throw std::invalid_argument(error_msg);
     
-    if (argc < 5) {
-      printf("Insufficient parameters.\n");
-      printf("Usage: %s -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-t ti tf nt] [-c comment]\n", argv[0]);
-      return -1;
-    }
-    
-    strcpy(comment, "");
-    for (i = 1; i < argc; i++) {
-      if (strcmp(argv[i], "-l") == 0) {
-        i++;
-        L = atoi(argv[i]);
-        x.resize(L);
-        m.resize(L);
-        if (argc < 3*(L + 1)) {
-          printf("Insufficient parameters.\nUsage: %s -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-t ti tf nt] [-c comment]\n", argv[0]);
-          return -1;
-        } else {
-          for (l = 0; l < L; l++) {
-            i++;
-            x[l] = atof(argv[i]);
-            i++;
-            m[l] = std::complex<double>(atof(argv[i]), atof(argv[i + 1]));
-            i++;
-          }
-        }
-      } else if (strcmp(argv[i], "-t") == 0) {
-        i++;
-        ti = atof(argv[i]);
-        i++;
-        tf = atof(argv[i]);
-        i++;
-        nt = atoi(argv[i]);
-
+    //strcpy(comment, "");
+    // for (i = 1; i < argc; i++) {
+    int mode = -1; 
+    double tmp_mr;
+    for (auto arg : args) {
+      //std::cout<< arg << std::endl;
+      if (arg == "-l") {
+	mode = read_L;
+	continue;
+      }
+      if (arg == "-t") {
+	if ((mode != read_x) && (mode != read_comment))
+	  throw std::invalid_argument(std::string("Unfinished layer!\n")
+							 +error_msg);
+	mode = read_ti;
+	continue;
+      }
+      if (arg == "-c") {
+	if ((mode != read_x) && (mode != read_nt))
+	  throw std::invalid_argument(std::string("Unfinished layer or theta!\n") + error_msg);
+	mode = read_comment;
+	continue;
+      }
+      if (mode == read_L) {
+	L = std::stoi(arg);
+	mode = read_x;
+	continue;
+      }
+      if (mode == read_x) {
+	x.push_back(std::stod(arg));
+	mode = read_mr;
+	continue;
+      }
+      if (mode == read_mr) {
+	tmp_mr = std::stod(arg);
+	mode = read_mi;
+	continue;
+      }
+      if (mode == read_mi) {
+	m.push_back(std::complex<double>( tmp_mr,std::stod(arg) ));
+	mode = read_x;
+	continue;
+      }
+      // if (strcmp(argv[i], "-l") == 0) {
+      //   i++;
+      //   L = atoi(argv[i]);
+      //   x.resize(L);
+      //   m.resize(L);
+      //   if (argc < 3*(L + 1)) {
+      // 	  throw std::invalid_argument(error_msg);
+      //   } else {
+      //     for (l = 0; l < L; l++) {
+      //       i++;
+      //       x[l] = atof(argv[i]);
+      //       i++;
+      //       m[l] = std::complex<double>(atof(argv[i]), atof(argv[i + 1]));
+      //       i++;
+      //     }
+      //   }
+      if (mode == read_ti) {
+	ti = std::stod(arg);
+	mode = read_tf;
+	continue;
+      }
+      if (mode == read_tf) {
+	tf = std::stod(arg);
+	mode = read_nt;
+	continue;
+      }
+      if (mode == read_nt) {
+	nt = std::stoi(arg);
         Theta.resize(nt);
         S1.resize(nt);
         S2.resize(nt);
-      } else if (strcmp(argv[i], "-c") == 0) {
-        i++;
-        strcpy(comment, argv[i]);
+	continue;
+      }
+      //} else if (strcmp(argv[i], "-t") == 0) {
+        // i++;
+        // ti = atof(argv[i]);
+        // i++;
+        // tf = atof(argv[i]);
+        // i++;
+        // nt = atoi(argv[i]);
+
+        // Theta.resize(nt);
+        // S1.resize(nt);
+        // S2.resize(nt);
+      if (mode ==  read_comment) {
+	comment = arg;
         has_comment = 1;
-      } else { i++; }
+	continue;
+      }
+      // } else if (strcmp(argv[i], "-c") == 0) {
+      //   i++;
+      // 	comment = args[i];
+      //   //strcpy(comment, argv[i]);
+      //   has_comment = 1;
+      // } else { i++; }
     }
+    if ( (x.size() != m.size()) || (L != x.size()) ) 
+      throw std::invalid_argument(std::string("Broken structure!\n")
+							 +error_msg);
+    if ( (0 == m.size()) || ( 0 == x.size()) ) 
+      throw std::invalid_argument(std::string("Broken structure!\n")
+							 +error_msg);
     
     if (nt < 0) {
       printf("Error reading Theta.\n");
@@ -122,10 +193,14 @@ int main(int argc, char *argv[]) {
       }
     }
 
+
+
+
+
     nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
 
     if (has_comment) {
-      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
     } else {
       printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
     }
