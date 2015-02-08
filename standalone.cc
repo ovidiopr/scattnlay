@@ -81,7 +81,11 @@ int main(int argc, char *argv[]) {
     int mode = -1; 
     double tmp_mr;
     for (auto arg : args) {
-      //std::cout<< arg << std::endl;
+      // For each arg in args list we detect the change of the current
+      // read mode or read the arg. The reading args algorithm works
+      // as a finite-state machine.
+
+      // Detecting new read mode (if it is a valid -key) 
       if (arg == "-l") {
 	mode = read_L;
 	continue;
@@ -99,6 +103,8 @@ int main(int argc, char *argv[]) {
 	mode = read_comment;
 	continue;
       }
+      // Reading data. For invalid date the exception will be thrown
+      // with the std:: and catched in the end.
       if (mode == read_L) {
 	L = std::stoi(arg);
 	mode = read_x;
@@ -179,7 +185,7 @@ int main(int argc, char *argv[]) {
       throw std::invalid_argument(std::string("Broken structure!\n")
 							 +error_msg);
     if ( (0 == m.size()) || ( 0 == x.size()) ) 
-      throw std::invalid_argument(std::string("Broken structure!\n")
+      throw std::invalid_argument(std::string("Empty structure!\n")
 							 +error_msg);
     
     if (nt < 0) {
