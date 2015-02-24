@@ -29,7 +29,6 @@
 ///
 /// @brief  Wrapper class around nMie function for ease of use
 ///
-#include "ucomplex.h"
 #include "nmie-wrapper.h"
 #include "nmie.h"
 #include <cstdio>
