@@ -51,19 +51,42 @@ namespace nmie {
 
     multi_layer_mie.SetWidthSP(x);
     multi_layer_mie.SetIndexSP(m);
+    multi_layer_mie.SetAngles(Theta);
+
+
+    *Qext = multi_layer_mie.GetQext();
+    *Qsca = multi_layer_mie.GetQext();
+    *Qabs = multi_layer_mie.GetQext();
+    *Qbk = multi_layer_mie.GetQext();
+    *Qpr = multi_layer_mie.GetQext();
+    *g = multi_layer_mie.GetAsymmetryFactor();
+    *Albedo = multi_layer_mie.GetAlbedo();
+
     return 0;
   }
 
-
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-    void MultiLayerMie::SetWidthSP(std::vector<double> size_parameter) {
+  void SetAngles(std::vector<double> angles) {
+    theta_.clear();
+    for (auto value : angles) theta_.push_back(value);
+  }  // end of SetAngles()
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void MultiLayerMie::SetWidthSP(std::vector<double> size_parameter) {
     size_parameter_.clear();
-    for (auto layer_size_parameter : size_parameter)
+    double prev_size_parameter = 0.0;
+    for (auto layer_size_parameter : size_parameter) {
       if (layer_size_parameter <= 0.0)
         throw std::invalid_argument("Size parameter should be positive!");
-      else size_parameter_.push_back(layer_size_parameter);
+      if (prev_size_parameter > layer_size_parameter) 
+        throw std::invalid_argument
+	  ("Size parameter for next layer should be larger than the previous one!");
+      prev_size_parameter = layer_size_parameter;
+      size_parameter_.push_back(layer_size_parameter);
+    }
   }
   // end of void MultiLayerMie::SetWidthSP(...);
   // ********************************************************************** //

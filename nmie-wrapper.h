@@ -160,6 +160,9 @@ namespace nmie {
     std::vector<double> size_parameter_;
     /// Complex index values for each layers.
     std::vector< std::complex<double> > index_;
+    /// Scattering angles for RCS pattern in radians
+    std::vector<double> theta_;
+    /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0;
   };  // end of class MultiLayerMie
 
