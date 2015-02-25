@@ -1,4 +1,4 @@
-#ifNdef SRC_NMIE_NMIE_WRAPPER_H_
+#ifndef SRC_NMIE_NMIE_WRAPPER_H_
 #define SRC_NMIE_NMIE_WRAPPER_H_
 ///
 /// @file   nmie-wrapper.h
@@ -32,6 +32,7 @@
 /// @brief  Wrapper class around nMie function for ease of use
 /// 
 ///
+#include <array>
 #include <complex>
 #include <cstdlib>
 #include <iostream>
@@ -51,6 +52,11 @@
 #endif
 
 namespace nmie {
+  int nMie_wrapper(int L, std::vector<double> x, std::vector<std::complex<double> > m,
+         int nTheta, std::vector<double> Theta,
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+	   std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+
   class MultiLayerMie {
     // Will throw for any error!
     // SP stands for size parameter units.
@@ -76,6 +82,7 @@ namespace nmie {
 
     // Set common parameters
     void SetAnglesForPattern(double from_angle, double to_angle, int samples);
+    void SetAngles(std::vector<double> angles);
     std::vector<double> GetAngles();
     
     void ClearTarget();
@@ -90,10 +97,10 @@ namespace nmie {
     std::vector< std::complex<double> >  GetTargetLayersIndex();
     std::vector<double>                  GetCoatingLayersWidth();
     std::vector< std::complex<double> >  GetCoatingLayersIndex();
-    std::vector< std::vector<double> >   GetFieldPoints();
+    std::vector< std::array<double,3> >   GetFieldPoints();
     std::vector<std::array< std::complex<double>,3 > >  GetFieldE();
     std::vector<std::array< std::complex<double>,3 > >  GetFieldH();
-    std::vector< std::array<double,4> >   GetSpectra(double from_WL, double to_WL,
+    std::vector< std::array<double,5> >   GetSpectra(double from_WL, double to_WL,
                                                    int samples);  // ext, sca, abs, bk
     double GetRCSext();
     double GetRCSsca();
@@ -109,12 +116,12 @@ namespace nmie {
     std::vector<double>                  GetLayerWidthSP();
     // Same as to get target and coating index
     std::vector< std::complex<double> >  GetLayerIndex();  
-    std::vector< std::vector<double> >   GetFieldPointsSP();
+    std::vector< std::array<double,3> >   GetFieldPointsSP();
     // Do we need normalize field to size parameter?
     /* std::vector<std::vector<std::complex<double> > >  GetFieldESP(); */
     /* std::vector<std::vector<std::complex<double> > >  GetFieldHSP(); */
-    std::vector< std::array<double,4> >   GetSpectraSP(double from_SP, double to_SP,
-						       int samples);  // ext, sca, abs, bk
+    std::vector< std::array<double,5> >   GetSpectraSP(double from_SP, double to_SP,
+						       int samples);  // WL,ext, sca, abs, bk
     double GetQext();
     double GetQsca();
     double GetQabs();
@@ -137,6 +144,8 @@ namespace nmie {
     void PlotSpectraSP();
     void PlotField();
     void PlotFieldSP();
+    void PlotPattern();
+    void PlotPatternSP();
 
   private:
     const double PI=3.14159265358979323846;
@@ -151,6 +160,7 @@ namespace nmie {
     std::vector<double> size_parameter_;
     /// Complex index values for each layers.
     std::vector< std::complex<double> > index_;
+    double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0;
   };  // end of class MultiLayerMie
 
 }  // end of namespace nmie

@@ -36,6 +36,7 @@
 #include <time.h>
 #include <string.h>
 #include "nmie.h"
+#include "nmie-wrapper.h"
 
 const double PI=3.14159265358979323846;
 
@@ -204,6 +205,7 @@ int main(int argc, char *argv[]) {
 
 
     nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+   
 
     if (has_comment) {
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
@@ -218,6 +220,24 @@ int main(int argc, char *argv[]) {
         printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
       }
     }
+
+
+    nmie::nMie_wrapper(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+
+    if (has_comment) {
+      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+    } else {
+      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+    }
+    
+    if (nt > 0) {
+      printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i  wrapper\n");
+      
+      for (i = 0; i < nt; i++) {
+        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
+      }
+    }
+
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
