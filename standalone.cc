@@ -221,7 +221,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
-
+    Qext = 0.0; Qsca = 0.0; Qabs = 0.0; Qbk = 0.0;
     nmie::nMie_wrapper(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
 
     if (has_comment) {

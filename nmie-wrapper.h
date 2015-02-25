@@ -84,6 +84,8 @@ namespace nmie {
     void SetAnglesForPattern(double from_angle, double to_angle, int samples);
     void SetAngles(std::vector<double> angles);
     std::vector<double> GetAngles();
+    void SetPEC(int layer_position = 0);  // By default set PEC layer to be the first one
+    
     
     void ClearTarget();
     void ClearCoating();
@@ -148,9 +150,42 @@ namespace nmie {
     void PlotPatternSP();
 
   private:
-    const double PI=3.14159265358979323846;
     void GenerateSizeParameter();
     void GenerateIndex();
+
+    int Nstop(double xL);
+int Nmax(int L, int fl, int pl,
+         std::vector<double> x,
+			std::vector<std::complex<double> > m);
+ int sbesjh(std::complex<double> z, int nmax, std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np);
+ void sphericalBessel(std::complex<double> z, int nmax, std::vector<std::complex<double> >& bj, std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd);
+void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
+             std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
+			     std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
+std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
+	                         std::complex<double> PsiXL, std::complex<double> ZetaXL,
+					    std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
+std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
+	                         std::complex<double> PsiXL, std::complex<double> ZetaXL,
+					    std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
+std::complex<double> calc_S1(int n, std::complex<double> an, std::complex<double> bn,
+					    double Pi, double Tau);
+std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
+					    double Pi, double Tau);
+void calcPsiZeta(double x, int nmax,
+		         std::vector<std::complex<double> > D1,
+		         std::vector<std::complex<double> > D3,
+		         std::vector<std::complex<double> >& Psi,
+				std::vector<std::complex<double> >& Zeta);
+void calcD1D3(std::complex<double> z, int nmax,
+		      std::vector<std::complex<double> >& D1,
+			     std::vector<std::complex<double> >& D3);
+ void calcPiTau(int nmax, double Theta, std::vector<double>& Pi, std::vector<double>& Tau);
+int ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
+			       std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
+
+    const double PI=3.14159265358979323846;
+    bool isMieCalculated_ = false;
     double wavelength_ = 1.0;
     double total_radius_ = 0.0;
     /// Width and index for each layer of the structure
@@ -162,8 +197,11 @@ namespace nmie {
     std::vector< std::complex<double> > index_;
     /// Scattering angles for RCS pattern in radians
     std::vector<double> theta_;
+    //
+    int PEC_layer_position_ = -1;
     /// Store result
-    double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0;
+    double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
+    std::vector<std::complex<double> > S1_, S2_;
   };  // end of class MultiLayerMie
 
 }  // end of namespace nmie
