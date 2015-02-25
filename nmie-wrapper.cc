@@ -43,12 +43,12 @@ namespace nmie {
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
 		   std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     
-    MultiLayerMie multi_layer_mie;  
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
     if (Theta.size() != nTheta)
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
 
+    MultiLayerMie multi_layer_mie;  
     multi_layer_mie.SetWidthSP(x);
     multi_layer_mie.SetIndexSP(m);
     multi_layer_mie.SetAngles(Theta);
