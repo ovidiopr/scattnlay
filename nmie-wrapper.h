@@ -53,6 +53,7 @@
 namespace nmie {
   class MultiLayerMie {
     // Will throw for any error!
+    // SP stands for size parameter units.
    public:
     // Set parameters in applied units 
     void SetWavelength(double wavelength) {wavelength_ = wavelength;};
@@ -66,12 +67,12 @@ namespace nmie {
     void SetTargetIndex(std::vector< std::complex<double> > index);
     void SetCoatingWidth(std::vector<double> width);
     void SetCoatingIndex(std::vector< std::complex<double> > index);
-    void SetFieldPoints(std::vector< std::vector<double> > coords);
+    void SetFieldPoints(std::vector< std::array<double,3> > coords);
 
     //Set parameters in size parameter units
     void SetWidthSP(std::vector<double> width);
     void SetIndexSP(std::vector< std::complex<double> > index);
-    void SetFieldPointsSP(std::vector< std::vector<double> > coords);
+    void SetFieldPointsSP(std::vector< std::array<double,3> > coords);
 
     // Set common parameters
     void SetAnglesForPattern(double from_angle, double to_angle, int samples);
@@ -90,10 +91,10 @@ namespace nmie {
     std::vector<double>                  GetCoatingLayersWidth();
     std::vector< std::complex<double> >  GetCoatingLayersIndex();
     std::vector< std::vector<double> >   GetFieldPoints();
-    std::vector<std::vector<std::complex<double> > >  GetFieldE();
-    std::vector<std::vector<std::complex<double> > >  GetFieldH();
-    std::vector< std::vector<double> >   GetSpectra(double from_WL, double to_WL,
-                                                   int samples);
+    std::vector<std::array< std::complex<double>,3 > >  GetFieldE();
+    std::vector<std::array< std::complex<double>,3 > >  GetFieldH();
+    std::vector< std::array<double,4> >   GetSpectra(double from_WL, double to_WL,
+                                                   int samples);  // ext, sca, abs, bk
     double GetRCSext();
     double GetRCSsca();
     double GetRCSabs();
@@ -112,8 +113,8 @@ namespace nmie {
     // Do we need normalize field to size parameter?
     /* std::vector<std::vector<std::complex<double> > >  GetFieldESP(); */
     /* std::vector<std::vector<std::complex<double> > >  GetFieldHSP(); */
-    std::vector< std::vector<double> >   GetSpectraSP(double from_SP, double to_SP,
-                                                   int samples);
+    std::vector< std::array<double,4> >   GetSpectraSP(double from_SP, double to_SP,
+						       int samples);  // ext, sca, abs, bk
     double GetQext();
     double GetQsca();
     double GetQabs();
@@ -126,9 +127,17 @@ namespace nmie {
     std::vector<double> GetPatternEkSP();
     std::vector<double> GetPatternHkSP();
     std::vector<double> GetPatternUnpolarizedSP();
-
+    
+    // Run calculation
     void RunMieCalculations();
     void RunFieldCalculations();
+
+    // Output results (data file + python script to plot it with matplotlib)
+    void PlotSpectra();
+    void PlotSpectraSP();
+    void PlotField();
+    void PlotFieldSP();
+
   private:
     const double PI=3.14159265358979323846;
     void GenerateSizeParameter();
