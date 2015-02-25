@@ -154,36 +154,38 @@ namespace nmie {
     void GenerateIndex();
 
     int Nstop(double xL);
-int Nmax(int L, int fl, int pl,
-         std::vector<double> x,
+    int Nmax(int L, int fl, int pl, std::vector<double> x,
 			std::vector<std::complex<double> > m);
- int sbesjh(std::complex<double> z, int nmax, std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np);
- void sphericalBessel(std::complex<double> z, int nmax, std::vector<std::complex<double> >& bj, std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd);
-void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
-             std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
-			     std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
-std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
+    int sbesjh(std::complex<double> z, int nmax, std::vector<std::complex<double> >& jn,
+	       std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n,
+	       std::vector<std::complex<double> >& h1np);
+    void sphericalBessel(std::complex<double> z, int nmax, std::vector<std::complex<double> >& bj,
+			 std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd);
+    void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
+		  std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
+		  std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
+    std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
 	                         std::complex<double> PsiXL, std::complex<double> ZetaXL,
-					    std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
-std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
+				 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
+    std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
 	                         std::complex<double> PsiXL, std::complex<double> ZetaXL,
-					    std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
-std::complex<double> calc_S1(int n, std::complex<double> an, std::complex<double> bn,
-					    double Pi, double Tau);
-std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
-					    double Pi, double Tau);
-void calcPsiZeta(double x, int nmax,
-		         std::vector<std::complex<double> > D1,
-		         std::vector<std::complex<double> > D3,
-		         std::vector<std::complex<double> >& Psi,
-				std::vector<std::complex<double> >& Zeta);
-void calcD1D3(std::complex<double> z, int nmax,
-		      std::vector<std::complex<double> >& D1,
-			     std::vector<std::complex<double> >& D3);
- void calcPiTau(int nmax, double Theta, std::vector<double>& Pi, std::vector<double>& Tau);
-int ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
-			       std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
-
+				 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
+    std::complex<double> calc_S1(int n, std::complex<double> an, std::complex<double> bn,
+				 double Pi, double Tau);
+    std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
+				 double Pi, double Tau);
+    void calcPsiZeta(double x, int nmax,
+		     std::vector<std::complex<double> > D1,
+		     std::vector<std::complex<double> > D3,
+		     std::vector<std::complex<double> >& Psi,
+		     std::vector<std::complex<double> >& Zeta);
+    void calcD1D3(std::complex<double> z, int nmax,
+		  std::vector<std::complex<double> >& D1,
+		  std::vector<std::complex<double> >& D3);
+    void calcPiTau(int nmax, double Theta, std::vector<double>& Pi, std::vector<double>& Tau);
+    int ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
+		    std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
+    
     const double PI=3.14159265358979323846;
     bool isMieCalculated_ = false;
     double wavelength_ = 1.0;

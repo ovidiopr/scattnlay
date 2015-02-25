@@ -986,30 +986,30 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
 
 
 
-// //**********************************************************************************//
-// // This function calculates complex electric and magnetic field in the surroundings //
-// // and inside (TODO) the particle.                                                  //
-// //                                                                                  //
-// // Input parameters:                                                                //
-// //   L: Number of layers                                                            //
-// //   pl: Index of PEC layer. If there is none just send 0 (zero)                    //
-// //   x: Array containing the size parameters of the layers [0..L-1]                 //
-// //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
-// //   nmax: Maximum number of multipolar expansion terms to be used for the          //
-// //         calculations. Only use it if you know what you are doing, otherwise      //
-// //         set this parameter to 0 (zero) and the function will calculate it.       //
-// //   ncoord: Number of coordinate points                                            //
-// //   Coords: Array containing all coordinates where the complex electric and        //
-// //           magnetic fields will be calculated                                     //
-// //                                                                                  //
-// // Output parameters:                                                               //
-// //   E, H: Complex electric and magnetic field at the provided coordinates          //
-// //                                                                                  //
-// // Return value:                                                                    //
-// //   Number of multipolar expansion terms used for the calculations                 //
-// //**********************************************************************************//
+//**********************************************************************************//
+// This function calculates complex electric and magnetic field in the surroundings //
+// and inside (TODO) the particle.                                                  //
+//                                                                                  //
+// Input parameters:                                                                //
+//   L: Number of layers                                                            //
+//   pl: Index of PEC layer. If there is none just send 0 (zero)                    //
+//   x: Array containing the size parameters of the layers [0..L-1]                 //
+//   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+//   nmax: Maximum number of multipolar expansion terms to be used for the          //
+//         calculations. Only use it if you know what you are doing, otherwise      //
+//         set this parameter to 0 (zero) and the function will calculate it.       //
+//   ncoord: Number of coordinate points                                            //
+//   Coords: Array containing all coordinates where the complex electric and        //
+//           magnetic fields will be calculated                                     //
+//                                                                                  //
+// Output parameters:                                                               //
+//   E, H: Complex electric and magnetic field at the provided coordinates          //
+//                                                                                  //
+// Return value:                                                                    //
+//   Number of multipolar expansion terms used for the calculations                 //
+//**********************************************************************************//
 
-// int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
+//   int MultiLayerMie::nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
 //            int ncoord, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
 // 		   std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
 
