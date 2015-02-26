@@ -544,20 +544,50 @@ namespace nmie {
   // Output parameters:                                                               //
   //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
   //**********************************************************************************//
-  void MultiLayerMie::calcPiTau(double Theta, std::vector<double>& Pi, std::vector<double>& Tau) {
+  void MultiLayerMie::calcPiTau(std::vector< std::vector<double> >& Pi,
+				std::vector< std::vector<double> >& Tau) {
     //****************************************************//
     // Equations (26a) - (26c)                            //
     //****************************************************//
+    // // // Assume nmax_ > 0;
+    // // int n = 0;
+
+    // // double Pin, Pinm1, Pinm2;
+    // // Pi[n] = 1.0;
+    // // Pinm2 = 1.0;
+    // // Tau[n] = (n + 1)*cos(Theta);    
+    // // if (nmax_ == 1) return;
+    // // n = 1;
+    // // Pinm1 = (n + n + 1)*cos(Theta)*Pi[n - 1]/n;
+    // // Pi[n] = Pinm1;
+    // // Tau[n] = (n + 1)*cos(Theta)*Pi[n] - (n + 2)*Pi[n - 1];
+    // // if (nmax_ == 2) return;
+    // // double nf = 2.0, cosTheta = std::cos(Theta);
+    // // for (n = 2; n < nmax_; n++) {      
+    // //   // Calculate the actual values
+    // //   //Pin =  ((nf + nf + 1.0)*cosTheta*Pinm1 - (nf + 1)*Pinm2)/nf;
+    // //   Pi[n] =  ((nf + nf + 1.0)*std::cos(Theta)*Pi[n - 1] - (nf + 1)*Pi[n - 2])/nf;
+    // //   // Pi[n] = Pin;
+    // //   Tau[n] = (nf + 1.0)*cosTheta*Pin - (nf + 2)*Pinm1;
+    // //   // Tau[n] = (nf + 1.0)*cos(Theta)*Pi[n] - (nf + 2)*Pi[n - 1];
+    // //   nf+=1.0;
+    // //   // Pinm2 = Pinm1;
+    // //   // Pinm1 = Pin;
+    // // }
+    // Unoptimized
     for (int n = 0; n < nmax_; n++) {
-      if (n == 0) {
-	// Initialize Pi and Tau
-	Pi[n] = 1.0;
-	Tau[n] = (n + 1)*cos(Theta);
-      } else {
-	// Calculate the actual values
-	Pi[n] = ((n == 1) ? ((n + n + 1)*cos(Theta)*Pi[n - 1]/n)
-		 : (((n + n + 1)*cos(Theta)*Pi[n - 1] - (n + 1)*Pi[n - 2])/n));
-	Tau[n] = (n + 1)*cos(Theta)*Pi[n] - (n + 2)*Pi[n - 1];
+      for (int t = 0; t < theta_.size(); t++) {	
+	if (n == 0) {
+	  // Initialize Pi and Tau
+	  Pi[n][t] = 1.0;
+	  Tau[n][t] = (n + 1)*cos(theta_[t]);
+	} else {
+	  // Calculate the actual values
+	  Pi[n][t] = ((n == 1) ? ((n + n + 1)*cos(theta_[t])*Pi[n - 1][t]/n)
+		   : (((n + n + 1)*cos(theta_[t])*Pi[n - 1][t]
+		       - (n + 1)*Pi[n - 2][t])/n));
+	  Tau[n][t] = (n + 1)*cos(theta_[t])*Pi[n][t] - (n + 2)*Pi[n - 1][t];
+	}
       }
     }
   }
@@ -787,7 +817,12 @@ namespace nmie {
     // Calculate scattering coefficients
     ScattCoeffs(an, bn);
 
-    std::vector<double> Pi(nmax_), Tau(nmax_);
+    std::vector< std::vector<double> > Pi(nmax_), Tau(nmax_);
+    for (int i =0; i< nmax_; ++i) {
+      Pi[i].resize(theta_.size());
+      Tau[i].resize(theta_.size());
+    }
+    calcPiTau(Pi, Tau);
     InitMieCalculations();
 
     // By using downward recurrence we avoid loss of precision due to float rounding errors
@@ -812,9 +847,8 @@ namespace nmie {
       // Calculate the scattering amplitudes (S1 and S2)    //
       // Equations (25a) - (25b)                            //
       for (int t = 0; t < theta_.size(); t++) {
-	calcPiTau(theta_[t], Pi, Tau);
-	S1_[t] += calc_S1(n, an[i], bn[i], Pi[i], Tau[i]);
-	S2_[t] += calc_S2(n, an[i], bn[i], Pi[i], Tau[i]);
+	S1_[t] += calc_S1(n, an[i], bn[i], Pi[i][t], Tau[i][t]);
+	S2_[t] += calc_S2(n, an[i], bn[i], Pi[i][t], Tau[i][t]);
       }
     }
     double x2 = pow2(x.back());
