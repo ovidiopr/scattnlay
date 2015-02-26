@@ -154,8 +154,7 @@ namespace nmie {
     void GenerateIndex();
 
     int Nstop(double xL);
-    int Nmax(int L, int fl, int pl, std::vector<double> x,
-			std::vector<std::complex<double> > m);
+    int Nmax(int L, int fl);
     int sbesjh(std::complex<double> z, std::vector<std::complex<double> >& jn,
 	       std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n,
 	       std::vector<std::complex<double> >& h1np);
@@ -183,7 +182,7 @@ namespace nmie {
 		  std::vector<std::complex<double> >& D1,
 		  std::vector<std::complex<double> >& D3);
     void calcPiTau( double Theta, std::vector<double>& Pi, std::vector<double>& Tau);
-    void ScattCoeffs(int L, int pl, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
+    void ScattCoeffs(int L, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
     
     const double PI=3.14159265358979323846;
     bool isMieCalculated_ = false;

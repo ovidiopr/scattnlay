@@ -1,7 +1,7 @@
 #!/bin/bash
 echo Compile with gcc -O2
-rm -rf *.bin
-
+rm -f *.bin
+rm -f ../scattnlay
 #g++ -O2 -std=c++11 standalone.cc nmie.cc -lm -o scattnlay.bin
 
 clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 standalone.cc nmie.cc nmie-wrapper.cc -lm -o scattnlay.bin

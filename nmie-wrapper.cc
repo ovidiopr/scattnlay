@@ -258,10 +258,12 @@ int MultiLayerMie::Nstop(double xL) {
 }
 
 //**********************************************************************************//
-int MultiLayerMie::Nmax(int L, int fl, int pl,
-         std::vector<double> x,
-		 std::vector<std::complex<double> > m) {
+int MultiLayerMie::Nmax(int L, int fl) {
   int i, result, ri, riM1;
+  const std::vector<double>& x = size_parameter_;
+  const std::vector<std::complex<double> >& m = index_;
+  const int& pl = PEC_layer_position_;
+
   result = Nstop(x[L - 1]);
   for (i = fl; i < L; i++) {
     if (i > pl) {
@@ -687,20 +689,21 @@ void MultiLayerMie::calcPiTau(double Theta, std::vector<double>& Pi, std::vector
 // Return value:                                                                    //
 //   Number of multipolar expansion terms used for the calculations                 //
 //**********************************************************************************//
-void MultiLayerMie::ScattCoeffs(int L, int pl, 
+void MultiLayerMie::ScattCoeffs(int L,
 		        std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
   //************************************************************************//
   // Calculate the index of the first layer. It can be either 0 (default)   //
   // or the index of the outermost PEC layer. In the latter case all layers //
   // below the PEC are discarded.                                           //
   //************************************************************************//
-  std::vector<double>& x = size_parameter_;
-  std::vector<std::complex<double> >& m = index_;
+  const std::vector<double>& x = size_parameter_;
+  const std::vector<std::complex<double> >& m = index_;
+  const int& pl = PEC_layer_position_;
 
   int fl = (pl > 0) ? pl : 0;
 
   if (nmax_ <= 0) {
-    nmax_ = Nmax(L, fl, pl, x, m);
+    nmax_ = Nmax(L, fl);
   }
 
   std::complex<double> z1, z2;
@@ -923,12 +926,11 @@ void MultiLayerMie::ScattCoeffs(int L, int pl,
   int i, n, t;
   std::vector<std::complex<double> > an, bn;
   std::complex<double> Qbktmp;
-  std::vector<double>& x = size_parameter_;
-  std::vector<std::complex<double> >& m = index_;
-  int& pl = PEC_layer_position_;
+  const std::vector<double>& x = size_parameter_;
+  const std::vector<std::complex<double> >& m = index_;
   int L = index_.size();
   // Calculate scattering coefficients
-  ScattCoeffs(L, pl, an, bn);
+  ScattCoeffs(L, an, bn);
 
   std::vector<double> Pi, Tau;
   Pi.resize(nmax_);
