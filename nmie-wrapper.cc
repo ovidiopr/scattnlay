@@ -274,19 +274,15 @@ namespace nmie {
       else 
 	ri = 0;      
       nmax_ = std::max(nmax_, ri);
-
       // first layer is pec, if pec is present
       if ((i > first_layer) && ((i - 1) > PEC_layer_position_)) 
 	riM1 = round(std::abs(x[i - 1]* m[i]));
-	// TODO Ovidio, should we check?
-	// riM2 = round(std::abs(x[i]* m[i-1]))
       else 
 	riM1 = 0;      
       nmax_ = std::max(nmax_, riM1);
     }
     nmax_ += 15;  // Final nmax_ value
   }
-
   //**********************************************************************************//
   // This function calculates the spherical Bessel (jn) and Hankel (h1n) functions    //
   // and their derivatives for a given complex value z. See pag. 87 B&H.              //
@@ -313,13 +309,15 @@ namespace nmie {
   //                                                   = -i*exp(i*z)/z                //
   // Using complex CF1, and trigonometric forms for n=0 solutions.                    //
   //**********************************************************************************//
-  void MultiLayerMie::sbesjh(std::complex<double> z, std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np) {
-
+  void MultiLayerMie::sbesjh(std::complex<double> z,
+			     std::vector<std::complex<double> >& jn,
+			     std::vector<std::complex<double> >& jnp,
+			     std::vector<std::complex<double> >& h1n,
+			     std::vector<std::complex<double> >& h1np) {
     const int limit = 20000;
     const double accur = 1.0e-12;
     const double tm30 = 1e-30;
 
-    int n;
     double absc;
     std::complex<double> zi, w;
     std::complex<double> pl, f, b, d, c, del, jn0, jndb, h1nldb, h1nbdb;
@@ -338,7 +336,7 @@ namespace nmie {
     b = f + f + zi;
     d = 0.0;
     c = f;
-    for (n = 0; n < limit; n++) {
+    for (int n = 0; n < limit; n++) {
       d = b - d;
       c = b - 1.0/c;
 
@@ -373,7 +371,7 @@ namespace nmie {
     jnp[nmax_ - 1] = f*jn[nmax_ - 1];
 
     // Downward recursion to n=0 (N.B.  Coulomb Functions)
-    for (n = nmax_ - 2; n >= 0; n--) {
+    for (int n = nmax_ - 2; n >= 0; n--) {
       jn[n] = pl*jn[n + 1] + jnp[n + 1];
       jnp[n] = pl*jn[n] - jn[n + 1];
       pl = pl - zi;
@@ -388,7 +386,7 @@ namespace nmie {
     // Recur   h1[n], h1'[n] as spherical Bessel functions.
     w = 1.0/jn[0];
     pl = zi;
-    for (n = 0; n < nmax_; n++) {
+    for (int n = 0; n < nmax_; n++) {
       jn[n] = jn0*(w*jn[n]);
       jnp[n] = jn0*(w*jnp[n]) - zi*jn[n];
       if (n != 0) {
@@ -420,14 +418,11 @@ namespace nmie {
   //   bj, by: Spherical Bessel functions                                             //
   //   bd: Logarithmic derivative                                                     //
   //**********************************************************************************//
-  void MultiLayerMie::sphericalBessel(std::complex<double> z, std::vector<std::complex<double> >& bj, std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd) {
-
-    std::vector<std::complex<double> > jn, jnp, h1n, h1np;
-    jn.resize(nmax_);
-    jnp.resize(nmax_);
-    h1n.resize(nmax_);
-    h1np.resize(nmax_);
-
+  void MultiLayerMie::sphericalBessel(std::complex<double> z,
+				      std::vector<std::complex<double> >& bj,
+				      std::vector<std::complex<double> >& by,
+				      std::vector<std::complex<double> >& bd) {
+    std::vector<std::complex<double> > jn(nmax_), jnp(nmax_), h1n(nmax_), h1np(nmax_);
     sbesjh(z, jn, jnp, h1n, h1np);
 
     for (int n = 0; n < nmax_; n++) {
@@ -495,13 +490,10 @@ namespace nmie {
 				  std::vector<std::complex<double> > D3,
 				  std::vector<std::complex<double> >& Psi,
 				  std::vector<std::complex<double> >& Zeta) {
-
-    int n;
-
     //Upward recurrence for Psi and Zeta - equations (20a) - (21b)
     Psi[0] = std::complex<double>(sin(x), 0);
     Zeta[0] = std::complex<double>(sin(x), -cos(x));
-    for (n = 1; n <= nmax_; n++) {
+    for (int n = 1; n <= nmax_; n++) {
       Psi[n] = Psi[n - 1]*(n/x - D1[n - 1]);
       Zeta[n] = Zeta[n - 1]*(n/x - D3[n - 1]);
     }
@@ -522,20 +514,19 @@ namespace nmie {
 			       std::vector<std::complex<double> >& D1,
 			       std::vector<std::complex<double> >& D3) {
 
-    int n;
     std::vector<std::complex<double> > PsiZeta;
     PsiZeta.resize(nmax_ + 1);
 
     // Downward recurrence for D1 - equations (16a) and (16b)
     D1[nmax_] = std::complex<double>(0.0, 0.0);
-    for (n = nmax_; n > 0; n--) {
+    for (int n = nmax_; n > 0; n--) {
       D1[n - 1] = double(n)/z - 1.0/(D1[n] + double(n)/z);
     }
 
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))*exp(-2.0*z.imag()));
     D3[0] = std::complex<double>(0.0, 1.0);
-    for (n = 1; n <= nmax_; n++) {
+    for (int n = 1; n <= nmax_; n++) {
       PsiZeta[n] = PsiZeta[n - 1]*(double(n)/z - D1[n - 1])*(double(n)/z- D3[n - 1]);
       D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta[n];
     }
@@ -554,12 +545,10 @@ namespace nmie {
   //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
   //**********************************************************************************//
   void MultiLayerMie::calcPiTau(double Theta, std::vector<double>& Pi, std::vector<double>& Tau) {
-
-    int n;
     //****************************************************//
     // Equations (26a) - (26c)                            //
     //****************************************************//
-    for (n = 0; n < nmax_; n++) {
+    for (int n = 0; n < nmax_; n++) {
       if (n == 0) {
 	// Initialize Pi and Tau
 	Pi[n] = 1.0;
@@ -605,14 +594,9 @@ namespace nmie {
     // TODO, is it possible for PEC to have a zero index? If yes than is should be:
     // int fl = (pl > -1) ? pl : 0;
     int fl = (pl > 0) ? pl : 0;
-
     if (nmax_ <= 0) Nmax(fl);
 
     std::complex<double> z1, z2;
-    std::complex<double> Num, Denom;
-    std::complex<double> G1, G2;
-    std::complex<double> Temp;
-
     //**************************************************************************//
     // Note that since Fri, Nov 14, 2014 all arrays start from 0 (zero), which  //
     // means that index = layer number - 1 or index = n - 1. The only exception //
@@ -620,47 +604,22 @@ namespace nmie {
     // for the index 0 (zero), hence it is important to consider this shift     //
     // between different arrays. The change was done to optimize memory usage.  //
     //**************************************************************************//
-
     // Allocate memory to the arrays
-    std::vector<std::vector<std::complex<double> > > D1_mlxl, D1_mlxlM1;
-    D1_mlxl.resize(L);
-    D1_mlxlM1.resize(L);
-
-    std::vector<std::vector<std::complex<double> > > D3_mlxl, D3_mlxlM1;
-    D3_mlxl.resize(L);
-    D3_mlxlM1.resize(L);
-
-    std::vector<std::vector<std::complex<double> > > Q;
-    Q.resize(L);
-
-    std::vector<std::vector<std::complex<double> > > Ha, Hb;
-    Ha.resize(L);
-    Hb.resize(L);
-
+    std::vector<std::vector<std::complex<double> > > D1_mlxl(L), D1_mlxlM1(L),
+      D3_mlxl(L), D3_mlxlM1(L), Q(L), Ha(L), Hb(L);
     for (int l = 0; l < L; l++) {
       D1_mlxl[l].resize(nmax_ + 1);
       D1_mlxlM1[l].resize(nmax_ + 1);
-
       D3_mlxl[l].resize(nmax_ + 1);
       D3_mlxlM1[l].resize(nmax_ + 1);
-
       Q[l].resize(nmax_ + 1);
-
       Ha[l].resize(nmax_);
       Hb[l].resize(nmax_);
     }
-
     an.resize(nmax_);
     bn.resize(nmax_);
-
-    std::vector<std::complex<double> > D1XL, D3XL;
-    D1XL.resize(nmax_ + 1);
-    D3XL.resize(nmax_ + 1);
-
-    std::vector<std::complex<double> > PsiXL, ZetaXL;
-    PsiXL.resize(nmax_ + 1);
-    ZetaXL.resize(nmax_ + 1);
-
+    std::vector<std::complex<double> > D1XL(nmax_ + 1), D3XL(nmax_ + 1), 
+      PsiXL(nmax_ + 1), ZetaXL(nmax_ + 1);
     //*************************************************//
     // Calculate D1 and D3 for z1 in the first layer   //
     //*************************************************//
@@ -671,11 +630,9 @@ namespace nmie {
       }
     } else { // Regular layer
       z1 = x[fl]* m[fl];
-
       // Calculate D1 and D3
       calcD1D3(z1, D1_mlxl[fl], D3_mlxl[fl]);
     }
-
     //******************************************************************//
     // Calculate Ha and Hb in the first layer - equations (7a) and (8a) //
     //******************************************************************//
@@ -683,7 +640,6 @@ namespace nmie {
       Ha[fl][n] = D1_mlxl[fl][n + 1];
       Hb[fl][n] = D1_mlxl[fl][n + 1];
     }
-
     //*****************************************************//
     // Iteration from the second layer to the last one (L) //
     //*****************************************************//
@@ -693,31 +649,30 @@ namespace nmie {
       //************************************************************//
       z1 = x[l]*m[l];
       z2 = x[l - 1]*m[l];
-
       //Calculate D1 and D3 for z1
       calcD1D3(z1, D1_mlxl[l], D3_mlxl[l]);
-
       //Calculate D1 and D3 for z2
       calcD1D3(z2, D1_mlxlM1[l], D3_mlxlM1[l]);
-
       //*********************************************//
       //Calculate Q, Ha and Hb in the layers fl+1..L //
       //*********************************************//
-
       // Upward recurrence for Q - equations (19a) and (19b)
-      Num = exp(-2.0*(z1.imag() - z2.imag()))*std::complex<double>(cos(-2.0*z2.real()) - exp(-2.0*z2.imag()), sin(-2.0*z2.real()));
+      std::complex<double> Num, Denom;
+      Num = exp(-2.0*(z1.imag() - z2.imag()))
+	* std::complex<double>(cos(-2.0*z2.real()) - exp(-2.0*z2.imag()), sin(-2.0*z2.real()));
       Denom = std::complex<double>(cos(-2.0*z1.real()) - exp(-2.0*z1.imag()), sin(-2.0*z1.real()));
       Q[l][0] = Num/Denom;
 
       for (int n = 1; n <= nmax_; n++) {
+	std::complex<double> Num, Denom;
 	Num = (z1*D1_mlxl[l][n] + double(n))*(double(n) - z1*D3_mlxl[l][n - 1]);
 	Denom = (z2*D1_mlxlM1[l][n] + double(n))*(double(n) - z2*D3_mlxlM1[l][n - 1]);
-
 	Q[l][n] = (((x[l - 1]*x[l - 1])/(x[l]*x[l])* Q[l][n - 1])*Num)/Denom;
       }
 
       // Upward recurrence for Ha and Hb - equations (7b), (8b) and (12) - (15)
       for (int n = 1; n <= nmax_; n++) {
+	std::complex<double> G1, G2;
 	//Ha
 	if ((l - 1) == pl) { // The layer below the current one is a PEC layer
 	  G1 = -D1_mlxlM1[l][n];
@@ -726,14 +681,11 @@ namespace nmie {
 	  G1 = (m[l]*Ha[l - 1][n - 1]) - (m[l - 1]*D1_mlxlM1[l][n]);
 	  G2 = (m[l]*Ha[l - 1][n - 1]) - (m[l - 1]*D3_mlxlM1[l][n]);
 	}
-
+	std::complex<double> Temp, Num, Denom;
 	Temp = Q[l][n]*G1;
-
 	Num = (G2*D1_mlxl[l][n]) - (Temp*D3_mlxl[l][n]);
 	Denom = G2 - Temp;
-
 	Ha[l][n - 1] = Num/Denom;
-
 	//Hb
 	if ((l - 1) == pl) { // The layer below the current one is a PEC layer
 	  G1 = Hb[l - 1][n - 1];
@@ -744,24 +696,18 @@ namespace nmie {
 	}
 
 	Temp = Q[l][n]*G1;
-
 	Num = (G2*D1_mlxl[l][n]) - (Temp* D3_mlxl[l][n]);
 	Denom = (G2- Temp);
-
 	Hb[l][n - 1] = (Num/ Denom);
       }
     }
-
     //**************************************//
     //Calculate D1, D3, Psi and Zeta for XL //
     //**************************************//
-
     // Calculate D1XL and D3XL
     calcD1D3(x[L - 1],  D1XL, D3XL);
-
     // Calculate PsiXL and ZetaXL
     calcPsiZeta(x[L - 1], D1XL, D3XL, PsiXL, ZetaXL);
-
     //*********************************************************************//
     // Finally, we calculate the scattering coefficients (an and bn) and   //
     // the angular functions (Pi and Tau). Note that for these arrays the  //
@@ -799,20 +745,10 @@ namespace nmie {
     std::vector<std::complex<double> >	tmp1(theta_.size(),std::complex<double>(0.0, 0.0));
     S1_.swap(tmp1);
     S2_ = S1_;
-    // int nTheta = theta_.size();  
-    // S1_.resize(nTheta);
-    // S2_.resize(nTheta);
-    // for (t = 0; t < nTheta; t++) {
-    //   S1_[t] = std::complex<double>(0.0, 0.0);
-    //   S2_[t] = std::complex<double>(0.0, 0.0);
-    // }
-  
-
   }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-
   //**********************************************************************************//
   // This function calculates the actual scattering parameters and amplitudes         //
   //                                                                                  //
@@ -841,12 +777,9 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-
   void MultiLayerMie::RunMieCalculations() {
     if (size_parameter_.size() != index_.size())
       throw std::invalid_argument("Each size parameter should have only one index!");
-
-    int i, n, t;
     std::vector<std::complex<double> > an, bn;
     std::complex<double> Qbktmp(0.0, 0.0);
     const std::vector<double>& x = size_parameter_;
@@ -854,36 +787,32 @@ namespace nmie {
     // Calculate scattering coefficients
     ScattCoeffs(an, bn);
 
-    std::vector<double> Pi, Tau;
-    Pi.resize(nmax_);
-    Tau.resize(nmax_);
+    std::vector<double> Pi(nmax_), Tau(nmax_);
     InitMieCalculations();
 
     // By using downward recurrence we avoid loss of precision due to float rounding errors
     // See: https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
     //      http://en.wikipedia.org/wiki/Loss_of_significance
-    for (i = nmax_ - 2; i >= 0; i--) {
-      n = i + 1;
+    for (int i = nmax_ - 2; i >= 0; i--) {
+      int n = i + 1;
       // Equation (27)
       Qext_ += (n + n + 1)*(an[i].real() + bn[i].real());
       // Equation (28)
-      Qsca_ += (n + n + 1)*(an[i].real()*an[i].real() + an[i].imag()*an[i].imag() + bn[i].real()*bn[i].real() + bn[i].imag()*bn[i].imag());
+      Qsca_ += (n + n + 1)*(an[i].real()*an[i].real() + an[i].imag()*an[i].imag()
+			    + bn[i].real()*bn[i].real() + bn[i].imag()*bn[i].imag());
       // Equation (29) TODO We must check carefully this equation. If we
       // remove the typecast to double then the result changes. Which is
       // the correct one??? Ovidio (2014/12/10) With cast ratio will
       // give double, without cast (n + n + 1)/(n*(n + 1)) will be
       // rounded to integer. Tig (2015/02/24)
-      Qpr_ += ((n*(n + 2)/(n + 1))*((an[i]*std::conj(an[n]) + bn[i]*std::conj(bn[n])).real()) + ((double)(n + n + 1)/(n*(n + 1)))*(an[i]*std::conj(bn[i])).real());
+      Qpr_ += ((n*(n + 2)/(n + 1))*((an[i]*std::conj(an[n]) + bn[i]*std::conj(bn[n])).real())
+	       + ((double)(n + n + 1)/(n*(n + 1)))*(an[i]*std::conj(bn[i])).real());
       // Equation (33)
       Qbktmp = Qbktmp + (double)(n + n + 1)*(1 - 2*(n % 2))*(an[i]- bn[i]);
-
-      //****************************************************//
       // Calculate the scattering amplitudes (S1 and S2)    //
       // Equations (25a) - (25b)                            //
-      //****************************************************//
-      for (t = 0; t < theta_.size(); t++) {
+      for (int t = 0; t < theta_.size(); t++) {
 	calcPiTau(theta_[t], Pi, Tau);
-
 	S1_[t] += calc_S1(n, an[i], bn[i], Pi[i], Tau[i]);
 	S2_[t] += calc_S2(n, an[i], bn[i], Pi[i], Tau[i]);
       }
@@ -912,7 +841,6 @@ namespace nmie {
 			       std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
 			       std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
-    int i, n;
     double rn = 0.0;
     std::complex<double> zn, xxip, encap;
     std::vector<std::complex<double> > vm3o1n, vm3e1n, vn3o1n, vn3e1n;
@@ -926,7 +854,7 @@ namespace nmie {
     Hi.resize(3);
     Es.resize(3);
     Hs.resize(3);
-    for (i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
       Ei[i] = std::complex<double>(0.0, 0.0);
       Hi[i] = std::complex<double>(0.0, 0.0);
       Es[i] = std::complex<double>(0.0, 0.0);
@@ -941,7 +869,7 @@ namespace nmie {
     // Calculate spherical Bessel and Hankel functions
     sphericalBessel(Rho, bj, by, bd);
 
-    for (n = 0; n < nmax_; n++) {
+    for (int n = 0; n < nmax_; n++) {
       rn = double(n + 1);
 
       zn = bj[n] + std::complex<double>(0.0, 1.0)*by[n];
@@ -962,7 +890,7 @@ namespace nmie {
 
       // scattered field: BH p.94 (4.45)
       encap = std::pow(std::complex<double>(0.0, 1.0), rn)*(2.0*rn + 1.0)/(rn*(rn + 1.0));
-      for (i = 0; i < 3; i++) {
+      for (int i = 0; i < 3; i++) {
 	Es[i] = Es[i] + encap*(std::complex<double>(0.0, 1.0)*an[n]*vn3e1n[i] - bn[n]*vm3o1n[i]);
 	Hs[i] = Hs[i] + encap*(std::complex<double>(0.0, 1.0)*bn[n]*vn3o1n[i] + an[n]*vm3e1n[i]);
       }
@@ -978,7 +906,7 @@ namespace nmie {
 
     // magnetic field
     double hffact = 1.0/(cc*mu);
-    for (i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
       Hs[i] = hffact*Hs[i];
     }
 
@@ -990,7 +918,7 @@ namespace nmie {
     Hi[1] = hifac*std::cos(Theta)*std::sin(Phi);
     Hi[2] = hifac*std::cos(Phi);
 
-    for (i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
       // electric field E [V m-1] = EF*E0
       E[i] = Ei[i] + Es[i];
       H[i] = Hi[i] + Hs[i];
@@ -1028,7 +956,6 @@ namespace nmie {
   //            int ncoord, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
   // 		   std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
 
-  //   int i, c;
   //   double Rho, Phi, Theta;
   //   std::vector<std::complex<double> > an, bn;
 
@@ -1045,7 +972,7 @@ namespace nmie {
   //   Pi.resize(nmax_);
   //   Tau.resize(nmax_);
 
-  //   for (c = 0; c < ncoord; c++) {
+  //   for (int c = 0; c < ncoord; c++) {
   //     // Convert to spherical coordinates
   //     Rho = sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c] + Zp[c]*Zp[c]);
   //     if (Rho < 1e-3) {
@@ -1068,7 +995,7 @@ namespace nmie {
   //       fieldExt(Rho, Phi, Theta, Pi, Tau, an, bn, Es, Hs);
   //     } else {
   //       // TODO, for now just set all the fields to zero
-  //       for (i = 0; i < 3; i++) {
+  //       for (int i = 0; i < 3; i++) {
   //         Es[i] = std::complex<double>(0.0, 0.0);
   //         Hs[i] = std::complex<double>(0.0, 0.0);
   //       }

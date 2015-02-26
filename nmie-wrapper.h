@@ -161,9 +161,6 @@ namespace nmie {
 	       std::vector<std::complex<double> >& h1np);
     void sphericalBessel(std::complex<double> z, std::vector<std::complex<double> >& bj,
 			 std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd);
-    void fieldExt( double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
-		  std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
-		  std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
     std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
 	                         std::complex<double> PsiXL, std::complex<double> ZetaXL,
 				 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
@@ -184,6 +181,9 @@ namespace nmie {
 		  std::vector<std::complex<double> >& D3);
     void calcPiTau( double Theta, std::vector<double>& Pi, std::vector<double>& Tau);
     void ScattCoeffs(std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
+    void fieldExt( double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
+		  std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
+		  std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
     
     bool isMieCalculated_ = false;
     double wavelength_ = 1.0;
