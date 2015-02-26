@@ -152,6 +152,7 @@ namespace nmie {
   private:
     void GenerateSizeParameter();
     void GenerateIndex();
+    void InitMieCalculations();
 
     void Nstop();
     void Nmax(int first_layer);
@@ -182,7 +183,7 @@ namespace nmie {
 		  std::vector<std::complex<double> >& D1,
 		  std::vector<std::complex<double> >& D3);
     void calcPiTau( double Theta, std::vector<double>& Pi, std::vector<double>& Tau);
-    void ScattCoeffs(int L, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
+    void ScattCoeffs(std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
     
     bool isMieCalculated_ = false;
     double wavelength_ = 1.0;

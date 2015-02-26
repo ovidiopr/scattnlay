@@ -591,8 +591,8 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  void MultiLayerMie::ScattCoeffs(int L,
-				  std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
+  void MultiLayerMie::ScattCoeffs(std::vector<std::complex<double> >& an,
+				  std::vector<std::complex<double> >& bn) {
     //************************************************************************//
     // Calculate the index of the first layer. It can be either 0 (default)   //
     // or the index of the outermost PEC layer. In the latter case all layers //
@@ -601,7 +601,7 @@ namespace nmie {
     const std::vector<double>& x = size_parameter_;
     const std::vector<std::complex<double> >& m = index_;
     const int& pl = PEC_layer_position_;
-
+    const int L = index_.size();
     // TODO, is it possible for PEC to have a zero index? If yes than is should be:
     // int fl = (pl > -1) ? pl : 0;
     int fl = (pl > 0) ? pl : 0;
@@ -612,8 +612,6 @@ namespace nmie {
     std::complex<double> Num, Denom;
     std::complex<double> G1, G2;
     std::complex<double> Temp;
-
-    int n, l;
 
     //**************************************************************************//
     // Note that since Fri, Nov 14, 2014 all arrays start from 0 (zero), which  //
@@ -639,7 +637,7 @@ namespace nmie {
     Ha.resize(L);
     Hb.resize(L);
 
-    for (l = 0; l < L; l++) {
+    for (int l = 0; l < L; l++) {
       D1_mlxl[l].resize(nmax_ + 1);
       D1_mlxlM1[l].resize(nmax_ + 1);
 
@@ -667,7 +665,7 @@ namespace nmie {
     // Calculate D1 and D3 for z1 in the first layer   //
     //*************************************************//
     if (fl == pl) {  // PEC layer
-      for (n = 0; n <= nmax_; n++) {
+      for (int n = 0; n <= nmax_; n++) {
 	D1_mlxl[fl][n] = std::complex<double>(0.0, -1.0);
 	D3_mlxl[fl][n] = std::complex<double>(0.0, 1.0);
       }
@@ -681,7 +679,7 @@ namespace nmie {
     //******************************************************************//
     // Calculate Ha and Hb in the first layer - equations (7a) and (8a) //
     //******************************************************************//
-    for (n = 0; n < nmax_; n++) {
+    for (int n = 0; n < nmax_; n++) {
       Ha[fl][n] = D1_mlxl[fl][n + 1];
       Hb[fl][n] = D1_mlxl[fl][n + 1];
     }
@@ -689,7 +687,7 @@ namespace nmie {
     //*****************************************************//
     // Iteration from the second layer to the last one (L) //
     //*****************************************************//
-    for (l = fl + 1; l < L; l++) {
+    for (int l = fl + 1; l < L; l++) {
       //************************************************************//
       //Calculate D1 and D3 for z1 and z2 in the layers fl+1..L     //
       //************************************************************//
@@ -711,7 +709,7 @@ namespace nmie {
       Denom = std::complex<double>(cos(-2.0*z1.real()) - exp(-2.0*z1.imag()), sin(-2.0*z1.real()));
       Q[l][0] = Num/Denom;
 
-      for (n = 1; n <= nmax_; n++) {
+      for (int n = 1; n <= nmax_; n++) {
 	Num = (z1*D1_mlxl[l][n] + double(n))*(double(n) - z1*D3_mlxl[l][n - 1]);
 	Denom = (z2*D1_mlxlM1[l][n] + double(n))*(double(n) - z2*D3_mlxlM1[l][n - 1]);
 
@@ -719,7 +717,7 @@ namespace nmie {
       }
 
       // Upward recurrence for Ha and Hb - equations (7b), (8b) and (12) - (15)
-      for (n = 1; n <= nmax_; n++) {
+      for (int n = 1; n <= nmax_; n++) {
 	//Ha
 	if ((l - 1) == pl) { // The layer below the current one is a PEC layer
 	  G1 = -D1_mlxlM1[l][n];
@@ -770,7 +768,7 @@ namespace nmie {
     // first layer is 0 (zero), in future versions all arrays will follow  //
     // this convention to save memory. (13 Nov, 2014)                      //
     //*********************************************************************//
-    for (n = 0; n < nmax_; n++) {
+    for (int n = 0; n < nmax_; n++) {
       //********************************************************************//
       //Expressions for calculating an and bn coefficients are not valid if //
       //there is only one PEC layer (ie, for a simple PEC sphere).          //
@@ -783,6 +781,32 @@ namespace nmie {
 	bn[n] = PsiXL[n + 1]/ZetaXL[n + 1];
       }
     }
+
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void MultiLayerMie::InitMieCalculations() {
+    // Initialize the scattering parameters
+    Qext_ = 0;
+    Qsca_ = 0;
+    Qabs_ = 0;
+    Qbk_ = 0;
+    Qpr_ = 0;
+    asymmetry_factor_ = 0;
+    albedo_ = 0;
+    // Initialize the scattering amplitudes
+    std::vector<std::complex<double> >	tmp1(theta_.size(),std::complex<double>(0.0, 0.0));
+    S1_.swap(tmp1);
+    S2_ = S1_;
+    // int nTheta = theta_.size();  
+    // S1_.resize(nTheta);
+    // S2_.resize(nTheta);
+    // for (t = 0; t < nTheta; t++) {
+    //   S1_[t] = std::complex<double>(0.0, 0.0);
+    //   S2_[t] = std::complex<double>(0.0, 0.0);
+    // }
+  
 
   }
   // ********************************************************************** //
@@ -824,39 +848,16 @@ namespace nmie {
 
     int i, n, t;
     std::vector<std::complex<double> > an, bn;
-    std::complex<double> Qbktmp;
+    std::complex<double> Qbktmp(0.0, 0.0);
     const std::vector<double>& x = size_parameter_;
     const std::vector<std::complex<double> >& m = index_;
-    int L = index_.size();
     // Calculate scattering coefficients
-    ScattCoeffs(L, an, bn);
+    ScattCoeffs(an, bn);
 
     std::vector<double> Pi, Tau;
     Pi.resize(nmax_);
     Tau.resize(nmax_);
-
-    double x2 = x[L - 1]*x[L - 1];
-
-    // Initialize the scattering parameters
-    Qext_ = 0;
-    Qsca_ = 0;
-    Qabs_ = 0;
-    Qbk_ = 0;
-    Qbktmp = std::complex<double>(0.0, 0.0);
-    Qpr_ = 0;
-    asymmetry_factor_ = 0;
-    albedo_ = 0;
-
-    // Initialize the scattering amplitudes
-    int nTheta = theta_.size();  
-    S1_.resize(nTheta);
-    S2_.resize(nTheta);
-    for (t = 0; t < nTheta; t++) {
-      S1_[t] = std::complex<double>(0.0, 0.0);
-      S2_[t] = std::complex<double>(0.0, 0.0);
-    }
-  
-
+    InitMieCalculations();
 
     // By using downward recurrence we avoid loss of precision due to float rounding errors
     // See: https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
@@ -880,14 +881,14 @@ namespace nmie {
       // Calculate the scattering amplitudes (S1 and S2)    //
       // Equations (25a) - (25b)                            //
       //****************************************************//
-      for (t = 0; t < nTheta; t++) {
+      for (t = 0; t < theta_.size(); t++) {
 	calcPiTau(theta_[t], Pi, Tau);
 
 	S1_[t] += calc_S1(n, an[i], bn[i], Pi[i], Tau[i]);
 	S2_[t] += calc_S2(n, an[i], bn[i], Pi[i], Tau[i]);
       }
     }
-
+    double x2 = pow2(x.back());
     Qext_ = 2*(Qext_)/x2;                                 // Equation (27)
     Qsca_ = 2*(Qsca_)/x2;                                 // Equation (28)
     Qpr_ = Qext_ - 4*(Qpr_)/x2;                           // Equation (29)
