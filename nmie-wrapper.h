@@ -85,7 +85,7 @@ namespace nmie {
     void SetAngles(std::vector<double> angles);
     std::vector<double> GetAngles();
     void SetPEC(int layer_position = 0);  // By default set PEC layer to be the first one
-    
+    void SetMaxTermsNumber(int nmax);
     
     void ClearTarget();
     void ClearCoating();
@@ -201,6 +201,7 @@ namespace nmie {
     std::vector<double> theta_;
     //
     int PEC_layer_position_ = -1;
+    int nmax_ = -1;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::complex<double> > S1_, S2_;
