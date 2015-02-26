@@ -549,44 +549,22 @@ namespace nmie {
     //****************************************************//
     // Equations (26a) - (26c)                            //
     //****************************************************//
-    // // // Assume nmax_ > 0;
-    // // int n = 0;
-
-    // // double Pin, Pinm1, Pinm2;
-    // // Pi[n] = 1.0;
-    // // Pinm2 = 1.0;
-    // // Tau[n] = (n + 1)*cos(Theta);    
-    // // if (nmax_ == 1) return;
-    // // n = 1;
-    // // Pinm1 = (n + n + 1)*cos(Theta)*Pi[n - 1]/n;
-    // // Pi[n] = Pinm1;
-    // // Tau[n] = (n + 1)*cos(Theta)*Pi[n] - (n + 2)*Pi[n - 1];
-    // // if (nmax_ == 2) return;
-    // // double nf = 2.0, cosTheta = std::cos(Theta);
-    // // for (n = 2; n < nmax_; n++) {      
-    // //   // Calculate the actual values
-    // //   //Pin =  ((nf + nf + 1.0)*cosTheta*Pinm1 - (nf + 1)*Pinm2)/nf;
-    // //   Pi[n] =  ((nf + nf + 1.0)*std::cos(Theta)*Pi[n - 1] - (nf + 1)*Pi[n - 2])/nf;
-    // //   // Pi[n] = Pin;
-    // //   Tau[n] = (nf + 1.0)*cosTheta*Pin - (nf + 2)*Pinm1;
-    // //   // Tau[n] = (nf + 1.0)*cos(Theta)*Pi[n] - (nf + 2)*Pi[n - 1];
-    // //   nf+=1.0;
-    // //   // Pinm2 = Pinm1;
-    // //   // Pinm1 = Pin;
-    // // }
-    // Unoptimized
+    std::vector<double> costheta(theta_.size(), 0.0);
+    for (int t = 0; t < theta_.size(); t++) {	
+      costheta[t] = cos(theta_[t]);
+    }
     for (int n = 0; n < nmax_; n++) {
       for (int t = 0; t < theta_.size(); t++) {	
 	if (n == 0) {
 	  // Initialize Pi and Tau
 	  Pi[n][t] = 1.0;
-	  Tau[n][t] = (n + 1)*cos(theta_[t]);
+	  Tau[n][t] = (n + 1)*costheta[t]; 
 	} else {
 	  // Calculate the actual values
-	  Pi[n][t] = ((n == 1) ? ((n + n + 1)*cos(theta_[t])*Pi[n - 1][t]/n)
-		   : (((n + n + 1)*cos(theta_[t])*Pi[n - 1][t]
+	  Pi[n][t] = ((n == 1) ? ((n + n + 1)*costheta[t]*Pi[n - 1][t]/n)
+		   : (((n + n + 1)*costheta[t]*Pi[n - 1][t]
 		       - (n + 1)*Pi[n - 2][t])/n));
-	  Tau[n][t] = (n + 1)*cos(theta_[t])*Pi[n][t] - (n + 2)*Pi[n - 1][t];
+	  Tau[n][t] = (n + 1)*costheta[t]*Pi[n][t] - (n + 2)*Pi[n - 1][t];
 	}
       }
     }
