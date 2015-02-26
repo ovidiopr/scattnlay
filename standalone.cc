@@ -73,6 +73,10 @@ int main(int argc, char *argv[]) {
     std::vector<double> x, Theta;
     std::vector<std::complex<double> > m, S1, S2;
     double Qext, Qabs, Qsca, Qbk, Qpr, g, Albedo;
+
+    std::vector<std::complex<double> > mw, S1w, S2w;
+    double Qextw, Qabsw, Qscaw, Qbkw, Qprw, gw, Albedow;
+
     double ti = 0.0, tf = 90.0;
     int nt = 0;    
     if (argc < 5) throw std::invalid_argument(error_msg);
@@ -157,6 +161,8 @@ int main(int argc, char *argv[]) {
         Theta.resize(nt);
         S1.resize(nt);
         S2.resize(nt);
+        S1w.resize(nt);
+        S2w.resize(nt);
 	continue;
       }
       //} else if (strcmp(argv[i], "-t") == 0) {
@@ -205,12 +211,15 @@ int main(int argc, char *argv[]) {
 
 
     nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+    nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
    
 
     if (has_comment) {
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     } else {
       printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     }
     
     if (nt > 0) {
@@ -218,25 +227,10 @@ int main(int argc, char *argv[]) {
       
       for (i = 0; i < nt; i++) {
         printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
+        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
       }
     }
 
-    Qext = 0.0; Qsca = 0.0; Qabs = 0.0; Qbk = 0.0;
-    nmie::nMie_wrapper(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
-
-    if (has_comment) {
-      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-    } else {
-      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-    }
-    
-    if (nt > 0) {
-      printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i  wrapper\n");
-      
-      for (i = 0; i < nt; i++) {
-        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
-      }
-    }
 
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
