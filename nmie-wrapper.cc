@@ -280,7 +280,7 @@ int MultiLayerMie::Nmax(int L, int fl, int pl,
 //                                                                                  //
 // Input parameters:                                                                //
 //   z: Real argument to evaluate jn and h1n                                        //
-//   nmax: Maximum number of terms to calculate jn and h1n                          //
+//   nmax_: Maximum number of terms to calculate jn and h1n                          //
 //                                                                                  //
 // Output parameters:                                                               //
 //   jn, h1n: Spherical Bessel and Hankel functions                                 //
@@ -289,7 +289,7 @@ int MultiLayerMie::Nmax(int L, int fl, int pl,
 // The implementation follows the algorithm by I.J. Thompson and A.R. Barnett,      //
 // Comp. Phys. Comm. 47 (1987) 245-257.                                             //
 //                                                                                  //
-// Complex spherical Bessel functions from n=0..nmax-1 for z in the upper half      //
+// Complex spherical Bessel functions from n=0..nmax_-1 for z in the upper half      //
 // plane (Im(z) > -3).                                                              //
 //                                                                                  //
 //     j[n]   = j/n(z)                Regular solution: j[0]=sin(z)/z               //
@@ -300,7 +300,7 @@ int MultiLayerMie::Nmax(int L, int fl, int pl,
 //                                                   = -i*exp(i*z)/z                //
 // Using complex CF1, and trigonometric forms for n=0 solutions.                    //
 //**********************************************************************************//
-int MultiLayerMie::sbesjh(std::complex<double> z, int nmax, std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np) {
+int MultiLayerMie::sbesjh(std::complex<double> z, std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np) {
 
   const int limit = 20000;
   double const accur = 1.0e-12;
@@ -319,7 +319,7 @@ int MultiLayerMie::sbesjh(std::complex<double> z, int nmax, std::vector<std::com
   zi = 1.0/z;
   w = zi + zi;
 
-  pl = double(nmax)*zi;
+  pl = double(nmax_)*zi;
 
   f = pl + zi;
   b = f + f + zi;
@@ -357,11 +357,11 @@ int MultiLayerMie::sbesjh(std::complex<double> z, int nmax, std::vector<std::com
     return -2;
   }
 
-  jn[nmax - 1] = tm30;
-  jnp[nmax - 1] = f*jn[nmax - 1];
+  jn[nmax_ - 1] = tm30;
+  jnp[nmax_ - 1] = f*jn[nmax_ - 1];
 
   // Downward recursion to n=0 (N.B.  Coulomb Functions)
-  for (n = nmax - 2; n >= 0; n--) {
+  for (n = nmax_ - 2; n >= 0; n--) {
     jn[n] = pl*jn[n + 1] + jnp[n + 1];
     jnp[n] = pl*jn[n] - jn[n + 1];
     pl = pl - zi;
@@ -376,7 +376,7 @@ int MultiLayerMie::sbesjh(std::complex<double> z, int nmax, std::vector<std::com
   // Recur   h1[n], h1'[n] as spherical Bessel functions.
   w = 1.0/jn[0];
   pl = zi;
-  for (n = 0; n < nmax; n++) {
+  for (n = 0; n < nmax_; n++) {
     jn[n] = jn0*(w*jn[n]);
     jnp[n] = jn0*(w*jnp[n]) - zi*jn[n];
     if (n != 0) {
@@ -405,24 +405,24 @@ int MultiLayerMie::sbesjh(std::complex<double> z, int nmax, std::vector<std::com
 //                                                                                  //
 // Input parameters:                                                                //
 //   z: Complex argument to evaluate bj, by and bd                                  //
-//   nmax: Maximum number of terms to calculate bj, by and bd                       //
+//   nmax_: Maximum number of terms to calculate bj, by and bd                       //
 //                                                                                  //
 // Output parameters:                                                               //
 //   bj, by: Spherical Bessel functions                                             //
 //   bd: Logarithmic derivative                                                     //
 //**********************************************************************************//
-void MultiLayerMie::sphericalBessel(std::complex<double> z, int nmax, std::vector<std::complex<double> >& bj, std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd) {
+void MultiLayerMie::sphericalBessel(std::complex<double> z, std::vector<std::complex<double> >& bj, std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd) {
 
     std::vector<std::complex<double> > jn, jnp, h1n, h1np;
-    jn.resize(nmax);
-    jnp.resize(nmax);
-    h1n.resize(nmax);
-    h1np.resize(nmax);
+    jn.resize(nmax_);
+    jnp.resize(nmax_);
+    h1n.resize(nmax_);
+    h1np.resize(nmax_);
 
     // TODO verify that the function succeeds
-    int ifail = sbesjh(z, nmax, jn, jnp, h1n, h1np);
+    int ifail = sbesjh(z, jn, jnp, h1n, h1np);
 
-    for (int n = 0; n < nmax; n++) {
+    for (int n = 0; n < nmax_; n++) {
       bj[n] = jn[n];
       by[n] = (h1n[n] - jn[n])/std::complex<double>(0.0, 1.0);
       bd[n] = jnp[n]/jn[n] + 1.0/z;
@@ -432,7 +432,7 @@ void MultiLayerMie::sphericalBessel(std::complex<double> z, int nmax, std::vecto
 // external scattering field = incident + scattered
 // BH p.92 (4.37), 94 (4.45), 95 (4.50)
 // assume: medium is non-absorbing; refim = 0; Uabs = 0
-void MultiLayerMie::fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
+void MultiLayerMie::fieldExt(double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
              std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
 		     std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
@@ -458,14 +458,14 @@ void MultiLayerMie::fieldExt(int nmax, double Rho, double Phi, double Theta, std
   }
 
   std::vector<std::complex<double> > bj, by, bd;
-  bj.resize(nmax);
-  by.resize(nmax);
-  bd.resize(nmax);
+  bj.resize(nmax_);
+  by.resize(nmax_);
+  bd.resize(nmax_);
 
   // Calculate spherical Bessel and Hankel functions
-  sphericalBessel(Rho, nmax, bj, by, bd);
+  sphericalBessel(Rho, bj, by, bd);
 
-  for (n = 0; n < nmax; n++) {
+  for (n = 0; n < nmax_; n++) {
     rn = double(n + 1);
 
     zn = bj[n] + std::complex<double>(0.0, 1.0)*by[n];
@@ -570,7 +570,7 @@ std::complex<double> MultiLayerMie::calc_S2(int n, std::complex<double> an, std:
 // Output parameters:                                                               //
 //   Psi, Zeta: Riccati-Bessel functions                                            //
 //**********************************************************************************//
-void MultiLayerMie::calcPsiZeta(double x, int nmax,
+void MultiLayerMie::calcPsiZeta(double x,
 		         std::vector<std::complex<double> > D1,
 		         std::vector<std::complex<double> > D3,
 		         std::vector<std::complex<double> >& Psi,
@@ -581,7 +581,7 @@ void MultiLayerMie::calcPsiZeta(double x, int nmax,
   //Upward recurrence for Psi and Zeta - equations (20a) - (21b)
   Psi[0] = std::complex<double>(sin(x), 0);
   Zeta[0] = std::complex<double>(sin(x), -cos(x));
-  for (n = 1; n <= nmax; n++) {
+  for (n = 1; n <= nmax_; n++) {
     Psi[n] = Psi[n - 1]*(n/x - D1[n - 1]);
     Zeta[n] = Zeta[n - 1]*(n/x - D3[n - 1]);
   }
@@ -594,29 +594,29 @@ void MultiLayerMie::calcPsiZeta(double x, int nmax,
 //                                                                                  //
 // Input parameters:                                                                //
 //   z: Complex argument to evaluate D1 and D3                                      //
-//   nmax: Maximum number of terms to calculate D1 and D3                           //
+//   nmax_: Maximum number of terms to calculate D1 and D3                           //
 //                                                                                  //
 // Output parameters:                                                               //
 //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions                //
 //**********************************************************************************//
-void MultiLayerMie::calcD1D3(std::complex<double> z, int nmax,
+void MultiLayerMie::calcD1D3(std::complex<double> z,
 		      std::vector<std::complex<double> >& D1,
 		      std::vector<std::complex<double> >& D3) {
 
   int n;
   std::vector<std::complex<double> > PsiZeta;
-  PsiZeta.resize(nmax + 1);
+  PsiZeta.resize(nmax_ + 1);
 
   // Downward recurrence for D1 - equations (16a) and (16b)
-  D1[nmax] = std::complex<double>(0.0, 0.0);
-  for (n = nmax; n > 0; n--) {
+  D1[nmax_] = std::complex<double>(0.0, 0.0);
+  for (n = nmax_; n > 0; n--) {
     D1[n - 1] = double(n)/z - 1.0/(D1[n] + double(n)/z);
   }
 
   // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
   PsiZeta[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))*exp(-2.0*z.imag()));
   D3[0] = std::complex<double>(0.0, 1.0);
-  for (n = 1; n <= nmax; n++) {
+  for (n = 1; n <= nmax_; n++) {
     PsiZeta[n] = PsiZeta[n - 1]*(double(n)/z - D1[n - 1])*(double(n)/z- D3[n - 1]);
     D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta[n];
   }
@@ -627,7 +627,7 @@ void MultiLayerMie::calcD1D3(std::complex<double> z, int nmax,
 // Equations (26a) - (26c)                                                          //
 //                                                                                  //
 // Input parameters:                                                                //
-//   nmax: Maximum number of terms to calculate Pi and Tau                          //
+//   nmax_: Maximum number of terms to calculate Pi and Tau                          //
 //   nTheta: Number of scattering angles                                            //
 //   Theta: Array containing all the scattering angles where the scattering         //
 //          amplitudes will be calculated                                           //
@@ -635,13 +635,13 @@ void MultiLayerMie::calcD1D3(std::complex<double> z, int nmax,
 // Output parameters:                                                               //
 //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
 //**********************************************************************************//
-void MultiLayerMie::calcPiTau(int nmax, double Theta, std::vector<double>& Pi, std::vector<double>& Tau) {
+void MultiLayerMie::calcPiTau(double Theta, std::vector<double>& Pi, std::vector<double>& Tau) {
 
   int n;
   //****************************************************//
   // Equations (26a) - (26c)                            //
   //****************************************************//
-  for (n = 0; n < nmax; n++) {
+  for (n = 0; n < nmax_; n++) {
     if (n == 0) {
       // Initialize Pi and Tau
       Pi[n] = 1.0;
@@ -674,18 +674,20 @@ void MultiLayerMie::calcPiTau(int nmax, double Theta, std::vector<double>& Pi, s
 // Return value:                                                                    //
 //   Number of multipolar expansion terms used for the calculations                 //
 //**********************************************************************************//
-int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
+void MultiLayerMie::ScattCoeffs(int L, int pl, 
 		        std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
   //************************************************************************//
   // Calculate the index of the first layer. It can be either 0 (default)   //
   // or the index of the outermost PEC layer. In the latter case all layers //
   // below the PEC are discarded.                                           //
   //************************************************************************//
+  std::vector<double>& x = size_parameter_;
+  std::vector<std::complex<double> >& m = index_;
 
   int fl = (pl > 0) ? pl : 0;
 
-  if (nmax <= 0) {
-    nmax = Nmax(L, fl, pl, x, m);
+  if (nmax_ <= 0) {
+    nmax_ = Nmax(L, fl, pl, x, m);
   }
 
   std::complex<double> z1, z2;
@@ -720,35 +722,35 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
   Hb.resize(L);
 
   for (l = 0; l < L; l++) {
-    D1_mlxl[l].resize(nmax + 1);
-    D1_mlxlM1[l].resize(nmax + 1);
+    D1_mlxl[l].resize(nmax_ + 1);
+    D1_mlxlM1[l].resize(nmax_ + 1);
 
-    D3_mlxl[l].resize(nmax + 1);
-    D3_mlxlM1[l].resize(nmax + 1);
+    D3_mlxl[l].resize(nmax_ + 1);
+    D3_mlxlM1[l].resize(nmax_ + 1);
 
-    Q[l].resize(nmax + 1);
+    Q[l].resize(nmax_ + 1);
 
-    Ha[l].resize(nmax);
-    Hb[l].resize(nmax);
+    Ha[l].resize(nmax_);
+    Hb[l].resize(nmax_);
   }
 
-  an.resize(nmax);
-  bn.resize(nmax);
+  an.resize(nmax_);
+  bn.resize(nmax_);
 
   std::vector<std::complex<double> > D1XL, D3XL;
-  D1XL.resize(nmax + 1);
-  D3XL.resize(nmax + 1);
+  D1XL.resize(nmax_ + 1);
+  D3XL.resize(nmax_ + 1);
 
 
   std::vector<std::complex<double> > PsiXL, ZetaXL;
-  PsiXL.resize(nmax + 1);
-  ZetaXL.resize(nmax + 1);
+  PsiXL.resize(nmax_ + 1);
+  ZetaXL.resize(nmax_ + 1);
 
   //*************************************************//
   // Calculate D1 and D3 for z1 in the first layer   //
   //*************************************************//
   if (fl == pl) {  // PEC layer
-    for (n = 0; n <= nmax; n++) {
+    for (n = 0; n <= nmax_; n++) {
       D1_mlxl[fl][n] = std::complex<double>(0.0, -1.0);
       D3_mlxl[fl][n] = std::complex<double>(0.0, 1.0);
     }
@@ -756,13 +758,13 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
     z1 = x[fl]* m[fl];
 
     // Calculate D1 and D3
-    calcD1D3(z1, nmax, D1_mlxl[fl], D3_mlxl[fl]);
+    calcD1D3(z1, D1_mlxl[fl], D3_mlxl[fl]);
   }
 
   //******************************************************************//
   // Calculate Ha and Hb in the first layer - equations (7a) and (8a) //
   //******************************************************************//
-  for (n = 0; n < nmax; n++) {
+  for (n = 0; n < nmax_; n++) {
     Ha[fl][n] = D1_mlxl[fl][n + 1];
     Hb[fl][n] = D1_mlxl[fl][n + 1];
   }
@@ -778,10 +780,10 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
     z2 = x[l - 1]*m[l];
 
     //Calculate D1 and D3 for z1
-    calcD1D3(z1, nmax, D1_mlxl[l], D3_mlxl[l]);
+    calcD1D3(z1, D1_mlxl[l], D3_mlxl[l]);
 
     //Calculate D1 and D3 for z2
-    calcD1D3(z2, nmax, D1_mlxlM1[l], D3_mlxlM1[l]);
+    calcD1D3(z2, D1_mlxlM1[l], D3_mlxlM1[l]);
 
     //*********************************************//
     //Calculate Q, Ha and Hb in the layers fl+1..L //
@@ -792,7 +794,7 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
     Denom = std::complex<double>(cos(-2.0*z1.real()) - exp(-2.0*z1.imag()), sin(-2.0*z1.real()));
     Q[l][0] = Num/Denom;
 
-    for (n = 1; n <= nmax; n++) {
+    for (n = 1; n <= nmax_; n++) {
       Num = (z1*D1_mlxl[l][n] + double(n))*(double(n) - z1*D3_mlxl[l][n - 1]);
       Denom = (z2*D1_mlxlM1[l][n] + double(n))*(double(n) - z2*D3_mlxlM1[l][n - 1]);
 
@@ -800,7 +802,7 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
     }
 
     // Upward recurrence for Ha and Hb - equations (7b), (8b) and (12) - (15)
-    for (n = 1; n <= nmax; n++) {
+    for (n = 1; n <= nmax_; n++) {
       //Ha
       if ((l - 1) == pl) { // The layer below the current one is a PEC layer
         G1 = -D1_mlxlM1[l][n];
@@ -840,10 +842,10 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
   //**************************************//
 
   // Calculate D1XL and D3XL
-  calcD1D3(x[L - 1], nmax, D1XL, D3XL);
+  calcD1D3(x[L - 1],  D1XL, D3XL);
 
   // Calculate PsiXL and ZetaXL
-  calcPsiZeta(x[L - 1], nmax, D1XL, D3XL, PsiXL, ZetaXL);
+  calcPsiZeta(x[L - 1], D1XL, D3XL, PsiXL, ZetaXL);
 
   //*********************************************************************//
   // Finally, we calculate the scattering coefficients (an and bn) and   //
@@ -851,7 +853,7 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
   // first layer is 0 (zero), in future versions all arrays will follow  //
   // this convention to save memory. (13 Nov, 2014)                      //
   //*********************************************************************//
-  for (n = 0; n < nmax; n++) {
+  for (n = 0; n < nmax_; n++) {
     //********************************************************************//
     //Expressions for calculating an and bn coefficients are not valid if //
     //there is only one PEC layer (ie, for a simple PEC sphere).          //
@@ -865,7 +867,6 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
     }
   }
 
-  return nmax;
 }
 
 //**********************************************************************************//
@@ -879,7 +880,7 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
 //   nTheta: Number of scattering angles                                            //
 //   Theta: Array containing all the scattering angles where the scattering         //
 //          amplitudes will be calculated                                           //
-//   nmax: Maximum number of multipolar expansion terms to be used for the          //
+//   nmax_: Maximum number of multipolar expansion terms to be used for the          //
 //         calculations. Only use it if you know what you are doing, otherwise      //
 //         set this parameter to -1 and the function will calculate it              //
 //                                                                                  //
@@ -909,17 +910,16 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
   int i, n, t;
   std::vector<std::complex<double> > an, bn;
   std::complex<double> Qbktmp;
-  int nmax = -1;
   std::vector<double>& x = size_parameter_;
   std::vector<std::complex<double> >& m = index_;
   int& pl = PEC_layer_position_;
   int L = index_.size();
   // Calculate scattering coefficients
-  nmax = ScattCoeffs(L, pl, x, m, nmax, an, bn);
+  ScattCoeffs(L, pl, an, bn);
 
   std::vector<double> Pi, Tau;
-  Pi.resize(nmax);
-  Tau.resize(nmax);
+  Pi.resize(nmax_);
+  Tau.resize(nmax_);
 
   double x2 = x[L - 1]*x[L - 1];
 
@@ -947,7 +947,7 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
   // By using downward recurrence we avoid loss of precision due to float rounding errors
   // See: https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
   //      http://en.wikipedia.org/wiki/Loss_of_significance
-  for (i = nmax - 2; i >= 0; i--) {
+  for (i = nmax_ - 2; i >= 0; i--) {
     n = i + 1;
     // Equation (27)
     Qext_ += (n + n + 1)*(an[i].real() + bn[i].real());
@@ -967,7 +967,7 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
     // Equations (25a) - (25b)                            //
     //****************************************************//
     for (t = 0; t < nTheta; t++) {
-      calcPiTau(nmax, theta_[t], Pi, Tau);
+      calcPiTau(theta_[t], Pi, Tau);
 
       S1_[t] += calc_S1(n, an[i], bn[i], Pi[i], Tau[i]);
       S2_[t] += calc_S2(n, an[i], bn[i], Pi[i], Tau[i]);
@@ -1030,11 +1030,11 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
 
 
 //   // Calculate scattering coefficients
-//   nmax = ScattCoeffs(L, pl, x, m, nmax, an, bn);
+//   ScattCoeffs(L, pl, an, bn);
 
 //   std::vector<double> Pi, Tau;
-//   Pi.resize(nmax);
-//   Tau.resize(nmax);
+//   Pi.resize(nmax_);
+//   Tau.resize(nmax_);
 
 //   for (c = 0; c < ncoord; c++) {
 //     // Convert to spherical coordinates
@@ -1046,7 +1046,7 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
 //     Phi = acos(Xp[c]/sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c]));
 //     Theta = acos(Xp[c]/Rho);
 
-//     calcPiTau(nmax, Theta, Pi, Tau);
+//     calcPiTau(Theta, Pi, Tau);
 
 //     //*******************************************************//
 //     // external scattering field = incident + scattered      //
@@ -1056,7 +1056,7 @@ int MultiLayerMie::ScattCoeffs(int L, int pl, std::vector<double> x, std::vector
 
 //     // Firstly the easiest case: the field outside the particle
 //     if (Rho >= x[L - 1]) {
-//       fieldExt(nmax, Rho, Phi, Theta, Pi, Tau, an, bn, Es, Hs);
+//       fieldExt(Rho, Phi, Theta, Pi, Tau, an, bn, Es, Hs);
 //     } else {
 //       // TODO, for now just set all the fields to zero
 //       for (i = 0; i < 3; i++) {

@@ -156,12 +156,12 @@ namespace nmie {
     int Nstop(double xL);
     int Nmax(int L, int fl, int pl, std::vector<double> x,
 			std::vector<std::complex<double> > m);
-    int sbesjh(std::complex<double> z, int nmax, std::vector<std::complex<double> >& jn,
+    int sbesjh(std::complex<double> z, std::vector<std::complex<double> >& jn,
 	       std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n,
 	       std::vector<std::complex<double> >& h1np);
-    void sphericalBessel(std::complex<double> z, int nmax, std::vector<std::complex<double> >& bj,
+    void sphericalBessel(std::complex<double> z, std::vector<std::complex<double> >& bj,
 			 std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd);
-    void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
+    void fieldExt( double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
 		  std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
 		  std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
     std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
@@ -174,17 +174,16 @@ namespace nmie {
 				 double Pi, double Tau);
     std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
 				 double Pi, double Tau);
-    void calcPsiZeta(double x, int nmax,
+    void calcPsiZeta(double x, 
 		     std::vector<std::complex<double> > D1,
 		     std::vector<std::complex<double> > D3,
 		     std::vector<std::complex<double> >& Psi,
 		     std::vector<std::complex<double> >& Zeta);
-    void calcD1D3(std::complex<double> z, int nmax,
+    void calcD1D3(std::complex<double> z,
 		  std::vector<std::complex<double> >& D1,
 		  std::vector<std::complex<double> >& D3);
-    void calcPiTau(int nmax, double Theta, std::vector<double>& Pi, std::vector<double>& Tau);
-    int ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
-		    std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
+    void calcPiTau( double Theta, std::vector<double>& Pi, std::vector<double>& Tau);
+    void ScattCoeffs(int L, int pl, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
     
     const double PI=3.14159265358979323846;
     bool isMieCalculated_ = false;
@@ -201,6 +200,8 @@ namespace nmie {
     std::vector<double> theta_;
     //
     int PEC_layer_position_ = -1;
+    // Set nmax_ manualy with SetMaxTermsNumber(int nmax) or in ScattCoeffs(..)
+    // nmax_ = Nmax(L, fl, pl, x, m);
     int nmax_ = -1;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
