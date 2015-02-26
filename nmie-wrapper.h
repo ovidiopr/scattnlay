@@ -153,8 +153,8 @@ namespace nmie {
     void GenerateSizeParameter();
     void GenerateIndex();
 
-    int Nstop(double xL);
-    int Nmax(int L, int fl);
+    void Nstop();
+    void Nmax(int first_layer);
     void sbesjh(std::complex<double> z, std::vector<std::complex<double> >& jn,
 	       std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n,
 	       std::vector<std::complex<double> >& h1np);
@@ -196,10 +196,10 @@ namespace nmie {
     std::vector< std::complex<double> > index_;
     /// Scattering angles for RCS pattern in radians
     std::vector<double> theta_;
-    //
+    // Should be -1 if there is no PEC.
     int PEC_layer_position_ = -1;
     // Set nmax_ manualy with SetMaxTermsNumber(int nmax) or in ScattCoeffs(..)
-    // nmax_ = Nmax(L, fl, pl, x, m);
+    // with Nmax(int first_layer);
     int nmax_ = -1;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
@@ -212,7 +212,6 @@ namespace nmie {
     // assume non-magnetic (MU=MU0=const) [N A-2]
     double const mu = 4.0*PI*1.0e-7;
 
-#define round(x) ((x) >= 0 ? (int)((x) + 0.5):(int)((x) - 0.5))
 
   };  // end of class MultiLayerMie
 

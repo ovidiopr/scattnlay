@@ -32,12 +32,20 @@
 #include "nmie-wrapper.h"
 //#include "nmie.h"
 #include <array>
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <stdexcept>
 #include <vector>
 
 namespace nmie {  
+  //helpers
+  template<class T> inline T pow2(const T value) {return value*value;}
+#define round(x) ((x) >= 0 ? (int)((x) + 0.5):(int)((x) - 0.5))
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  //emulate C call.
   int nMie_wrapper(int L, std::vector<double> x, std::vector<std::complex<double> > m,
          int nTheta, std::vector<double> Theta,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
@@ -240,51 +248,43 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // Calculate Nstop - equation (17)
-  int MultiLayerMie::Nstop(double xL) {
-    int result;
-
+  //
+  void MultiLayerMie::Nstop() {
+    const double& xL = size_parameter_.back();
     if (xL <= 8) {
-      result = round(xL + 4*pow(xL, 1/3) + 1);
+      nmax_ = round(xL + 4*pow(xL, 1/3) + 1);
     } else if (xL <= 4200) {
-      result = round(xL + 4.05*pow(xL, 1/3) + 2);
+      nmax_ = round(xL + 4.05*pow(xL, 1/3) + 2);
     } else {
-      result = round(xL + 4*pow(xL, 1/3) + 2);
-    }
-    
-    return result;
+      nmax_ = round(xL + 4*pow(xL, 1/3) + 2);
+    }    
   }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  int MultiLayerMie::Nmax(int L, int fl) {
-    int i, result, ri, riM1;
+  void MultiLayerMie::Nmax(int first_layer) {
+    int ri, riM1;
     const std::vector<double>& x = size_parameter_;
     const std::vector<std::complex<double> >& m = index_;
     const int& pl = PEC_layer_position_;
-    
-    result = Nstop(x[L - 1]);
-    for (i = fl; i < L; i++) {
-      if (i > pl) {
+    Nstop();  // Set initial nmax_ value
+    for (int i = first_layer; i < x.size(); i++) {
+      if (i > PEC_layer_position_) 
 	ri = round(std::abs(x[i]*m[i]));
-      } else {
-	ri = 0;
-      }
-      if (result < ri) {
-	result = ri;
-      }
+      else 
+	ri = 0;      
+      nmax_ = std::max(nmax_, ri);
 
-      if ((i > fl) && ((i - 1) > pl)) {
+      // first layer is pec, if pec is present
+      if ((i > first_layer) && ((i - 1) > PEC_layer_position_)) 
 	riM1 = round(std::abs(x[i - 1]* m[i]));
 	// TODO Ovidio, should we check?
 	// riM2 = round(std::abs(x[i]* m[i-1]))
-      } else {
-	riM1 = 0;
-      }
-      if (result < riM1) {
-	result = riM1;
-      }
+      else 
+	riM1 = 0;      
+      nmax_ = std::max(nmax_, riM1);
     }
-    return result + 15;
+    nmax_ += 15;  // Final nmax_ value
   }
 
   //**********************************************************************************//
@@ -602,11 +602,11 @@ namespace nmie {
     const std::vector<std::complex<double> >& m = index_;
     const int& pl = PEC_layer_position_;
 
+    // TODO, is it possible for PEC to have a zero index? If yes than is should be:
+    // int fl = (pl > -1) ? pl : 0;
     int fl = (pl > 0) ? pl : 0;
 
-    if (nmax_ <= 0) {
-      nmax_ = Nmax(L, fl);
-    }
+    if (nmax_ <= 0) Nmax(fl);
 
     std::complex<double> z1, z2;
     std::complex<double> Num, Denom;
