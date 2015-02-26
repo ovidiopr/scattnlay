@@ -155,7 +155,7 @@ namespace nmie {
 
     int Nstop(double xL);
     int Nmax(int L, int fl);
-    int sbesjh(std::complex<double> z, std::vector<std::complex<double> >& jn,
+    void sbesjh(std::complex<double> z, std::vector<std::complex<double> >& jn,
 	       std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n,
 	       std::vector<std::complex<double> >& h1np);
     void sphericalBessel(std::complex<double> z, std::vector<std::complex<double> >& bj,
@@ -184,7 +184,6 @@ namespace nmie {
     void calcPiTau( double Theta, std::vector<double>& Pi, std::vector<double>& Tau);
     void ScattCoeffs(int L, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
     
-    const double PI=3.14159265358979323846;
     bool isMieCalculated_ = false;
     double wavelength_ = 1.0;
     double total_radius_ = 0.0;
@@ -205,6 +204,16 @@ namespace nmie {
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::complex<double> > S1_, S2_;
+
+    //Used constants
+    const double PI=3.14159265358979323846;  
+    // light speed [m s-1]
+    double const cc = 2.99792458e8;
+    // assume non-magnetic (MU=MU0=const) [N A-2]
+    double const mu = 4.0*PI*1.0e-7;
+
+#define round(x) ((x) >= 0 ? (int)((x) + 0.5):(int)((x) - 0.5))
+
   };  // end of class MultiLayerMie
 
 }  // end of namespace nmie
