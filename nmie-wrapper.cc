@@ -538,17 +538,14 @@ namespace nmie {
 // }
 
   //tig
-  void MultiLayerMie::calcD1D3(std::complex<double> z,
+  void MultiLayerMie::calcD1D3(const std::complex<double> z,
 			       std::vector<std::complex<double> >& D1,
 			       std::vector<std::complex<double> >& D3) {
-
-
     // Downward recurrence for D1 - equations (16a) and (16b)
     D1[nmax_] = std::complex<double>(0.0, 0.0);
     for (int n = nmax_; n > 0; n--) {
       D1[n - 1] = double(n)/z - 1.0/(D1[n] + double(n)/z);
     }
-
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))*exp(-2.0*z.imag()));
     D3[0] = std::complex<double>(0.0, 1.0);
