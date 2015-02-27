@@ -462,10 +462,10 @@ void calcPiTau(int nmax, double Theta, std::vector<double>& Pi, std::vector<doub
   // Initialize Pi and Tau
   Pi[0] = 1.0;
   Tau[0] = cos(Theta);
+  // Calculate the actual values
   Pi[1] = 3*Tau[0]*Pi[0];
   Tau[1] = 2*Tau[0]*Pi[1] - 3*Pi[0];
   for (n = 2; n < nmax; n++) {
-    // Calculate the actual values
     Pi[n] = ((n + n + 1)*Tau[0]*Pi[n - 1] - (n + 1)*Pi[n - 2])/n;
     Tau[n] = (n + 1)*Tau[0]*Pi[n] - (n + 2)*Pi[n - 1];
   }
