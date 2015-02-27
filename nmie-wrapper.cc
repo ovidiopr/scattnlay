@@ -553,27 +553,21 @@ namespace nmie {
     for (int t = 0; t < theta_.size(); t++) {	
       costheta[t] = cos(theta_[t]);
     }
-    int n = 0;
-    for (int t = 0; t < theta_.size(); t++) {	
-      // Initialize Pi and Tau
-      Pi[n][t] = 1.0;
-      Tau[n][t] = (n + 1)*costheta[t]; 
-    }
-    n = 1;
-    for (int t = 0; t < theta_.size(); t++) {	
-      // Calculate the actual values
-      Pi[n][t] =  ((n + n + 1)*costheta[t]*Pi[n - 1][t]/n);
-      Tau[n][t] = (n + 1)*costheta[t]*Pi[n][t] - (n + 2)*Pi[n - 1][t];
-    }
-
-    for (n = 2; n < nmax_; n++) {
+    for (int n = 0; n < nmax_; n++) {
       for (int t = 0; t < theta_.size(); t++) {	
+	if (n == 0) {
+	  // Initialize Pi and Tau
+	  Pi[n][t] = 1.0;
+	  Tau[n][t] = (n + 1)*costheta[t]; 
+	} else {
 	  // Calculate the actual values
-	  Pi[n][t] = (((n + n + 1)*costheta[t]*Pi[n - 1][t]
-		       - (n + 1)*Pi[n - 2][t])/n);
+	  Pi[n][t] = ((n == 1) ? ((n + n + 1)*costheta[t]*Pi[n - 1][t]/n)
+		   : (((n + n + 1)*costheta[t]*Pi[n - 1][t]
+		       - (n + 1)*Pi[n - 2][t])/n));
 	  Tau[n][t] = (n + 1)*costheta[t]*Pi[n][t] - (n + 2)*Pi[n - 1][t];
 	}
-    }    
+      }
+    }
   }
   //**********************************************************************************//
   // This function calculates the scattering coefficients required to calculate       //
