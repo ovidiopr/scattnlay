@@ -35,6 +35,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+//sudo aptitude install libgoogle-perftools-dev
+#include <google/heap-profiler.h>
 #include "nmie.h"
 #include "nmie-wrapper.h"
 
@@ -215,7 +217,9 @@ int main(int argc, char *argv[]) {
     long cpptime_nsec, best_cpp;
     long ctime_nsec, best_c;
 
+    //HeapProfilerStart("heapprof");    
     for (int i = 0; i<150000; ++i) {
+      //for (int i = 0; i<100; ++i) {
       // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
       // nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
       // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
@@ -235,16 +239,18 @@ int main(int argc, char *argv[]) {
       //printf("-- C/C++ time ratio: %Lg\n", static_cast<long double>(ctime_nsec)/static_cast<long double>(cpptime_nsec));
       //printf("--best C/C++ time ratio: %Lg\n", static_cast<long double>(best_c)/static_cast<long double>(best_cpp));
     }  
+    //HeapProfilerStop();
+
     //printf("--best C/C++ time ratio: %Lg\n", static_cast<long double>(best_c)/static_cast<long double>(best_cpp));
 
     // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
-    nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+    //nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
     // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
     //  ctime_nsec = diff(time1,time2).tv_nsec;
     // printf("-- C time consumed %ld sec : %ld nsec\n",diff(time1,time2).tv_sec, ctime_nsec);
 
     // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
-    // nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
+       ///    nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
     // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
     // cpptime_nsec = diff(time1,time2).tv_nsec;
     // printf("-- C++ time consumed %ld sec : %ld nsec\n",diff(time1,time2).tv_sec,cpptime_nsec);
