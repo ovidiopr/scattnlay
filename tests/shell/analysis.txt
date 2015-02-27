@@ -1,45 +1,23 @@
 Flat profile:
 
 Each sample counts as 0.01 seconds.
+ no time accumulated
+
   %   cumulative   self              self     total           
- time   seconds   seconds    calls  us/call  us/call  name    
- 38.03     12.73    12.73 15000000     0.85     0.85  nmie::MultiLayerMie::calcD1D3(std::complex<double>, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&)
- 27.31     21.87     9.14  1500000     6.09    14.87  nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&)
-  5.98     23.87     2.00                             _int_malloc
-  4.03     25.22     1.35  1500000     0.90    16.73  nmie::MultiLayerMie::RunMieCalculations()
-  3.76     26.48     1.26                             _int_free
-  3.59     27.68     1.20 93000000     0.01     0.01  std::vector<std::complex<double>, std::allocator<std::complex<double> > >::_M_default_append(unsigned long)
-  2.72     28.59     0.91                             malloc_consolidate
-  2.33     29.37     0.78                             malloc
-  2.06     30.06     0.69                             __cos_avx
-  1.79     30.66     0.60                             __dubsin
-  1.70     31.23     0.57                             __sin_avx
-  1.67     31.79     0.56  1500000     0.37     0.37  nmie::MultiLayerMie::calcPiTau(std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&)
-  1.43     32.27     0.48                             __ieee754_exp_avx
-  0.57     32.46     0.19                             cfree
-  0.45     32.61     0.15                             memset
-  0.30     32.71     0.10                             operator new(unsigned long)
-  0.27     32.80     0.09                             brk
-  0.24     32.88     0.08  1500000     0.05     0.05  nmie::MultiLayerMie::Nmax(int)
-  0.21     32.95     0.07                             __malloc_check_init
-  0.21     33.02     0.07  1500000     0.05     0.05  nmie::MultiLayerMie::SetWidthSP(std::vector<double, std::allocator<double> > const&)
-  0.21     33.09     0.07                             nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&)
-  0.16     33.15     0.06                             sincos
-  0.15     33.20     0.05                             __profile_frequency
-  0.15     33.25     0.05                             _mid_memalign
-  0.15     33.30     0.05                             free_check
-  0.12     33.34     0.04  3000000     0.01     0.01  std::vector<std::complex<double>, std::allocator<std::complex<double> > >::operator=(std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&)
-  0.10     33.37     0.04                             csloww
-  0.09     33.40     0.03                             int_mallinfo
-  0.06     33.42     0.02  1500000     0.01     0.03  nmie::MultiLayerMie::InitMieCalculations()
-  0.06     33.44     0.02                             void std::vector<std::array<double, 5ul>, std::allocator<std::array<double, 5ul> > >::_M_emplace_back_aux<std::array<double, 5ul> >(std::array<double, 5ul>&&)
-  0.04     33.46     0.02                             __sin_sse2
-  0.03     33.47     0.01                             bsloww2
-  0.01     33.47     0.01                             bsloww
-  0.00     33.47     0.00  1500000     0.00     0.00  std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&)
-  0.00     33.47     0.00        1     0.00     0.00  _GLOBAL__sub_I__ZN4nmie12nMie_wrapperEiRKSt6vectorIdSaIdEERKS0_ISt7complexIdESaIS6_EEiS4_PdSB_SB_SB_SB_SB_SB_RS8_SC_
-  0.00     33.47     0.00        1     0.00     0.00  _GLOBAL__sub_I_main
-  0.00     33.47     0.00        1     0.00     0.00  main
+ time   seconds   seconds    calls  Ts/call  Ts/call  name    
+  0.00      0.00     0.00       62     0.00     0.00  std::vector<std::complex<double>, std::allocator<std::complex<double> > >::_M_default_append(unsigned long)
+  0.00      0.00     0.00       10     0.00     0.00  nmie::MultiLayerMie::calcD1D3(std::complex<double>, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&)
+  0.00      0.00     0.00        2     0.00     0.00  std::vector<std::complex<double>, std::allocator<std::complex<double> > >::operator=(std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&)
+  0.00      0.00     0.00        1     0.00     0.00  _GLOBAL__sub_I__ZN4nmie12nMie_wrapperEiRKSt6vectorIdSaIdEERKS0_ISt7complexIdESaIS6_EEiS4_PdSB_SB_SB_SB_SB_SB_RS8_SC_
+  0.00      0.00     0.00        1     0.00     0.00  _GLOBAL__sub_I_main
+  0.00      0.00     0.00        1     0.00     0.00  nmie::MultiLayerMie::SetWidthSP(std::vector<double, std::allocator<double> > const&)
+  0.00      0.00     0.00        1     0.00     0.00  nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&)
+  0.00      0.00     0.00        1     0.00     0.00  nmie::MultiLayerMie::RunMieCalculations()
+  0.00      0.00     0.00        1     0.00     0.00  nmie::MultiLayerMie::InitMieCalculations()
+  0.00      0.00     0.00        1     0.00     0.00  nmie::MultiLayerMie::Nmax(int)
+  0.00      0.00     0.00        1     0.00     0.00  nmie::MultiLayerMie::calcPiTau(std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&)
+  0.00      0.00     0.00        1     0.00     0.00  std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&)
+  0.00      0.00     0.00        1     0.00     0.00  main
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -77,133 +55,57 @@ notice and this notice are preserved.
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 0.03% of 33.47 seconds
+granularity: each sample hit covers 2 byte(s) no time propagated
 
 index % time    self  children    called     name
-                                                 <spontaneous>
-[1]     75.5    0.07   25.19                 nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [1]
-                1.35   23.75 1500000/1500000     nmie::MultiLayerMie::RunMieCalculations() [2]
-                0.07    0.00 1500000/1500000     nmie::MultiLayerMie::SetWidthSP(std::vector<double, std::allocator<double> > const&) [21]
-                0.02    0.00 1500000/3000000     std::vector<std::complex<double>, std::allocator<std::complex<double> > >::operator=(std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&) [26]
-                0.00    0.00 1500000/1500000     std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [449]
+                0.00    0.00       1/1           __libc_start_main [2933]
+[1]      0.0    0.00    0.00       1         main [1]
 -----------------------------------------------
-                1.35   23.75 1500000/1500000     nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [1]
-[2]     75.0    1.35   23.75 1500000         nmie::MultiLayerMie::RunMieCalculations() [2]
-                9.14   13.16 1500000/1500000     nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [3]
-                0.85    0.00 66000000/93000000     std::vector<std::complex<double>, std::allocator<std::complex<double> > >::_M_default_append(unsigned long) [7]
-                0.56    0.00 1500000/1500000     nmie::MultiLayerMie::calcPiTau(std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&) [13]
-                0.02    0.02 1500000/1500000     nmie::MultiLayerMie::InitMieCalculations() [27]
+                0.00    0.00      18/62          nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [433]
+                0.00    0.00      44/62          nmie::MultiLayerMie::RunMieCalculations() [434]
+[427]    0.0    0.00    0.00      62         std::vector<std::complex<double>, std::allocator<std::complex<double> > >::_M_default_append(unsigned long) [427]
 -----------------------------------------------
-                9.14   13.16 1500000/1500000     nmie::MultiLayerMie::RunMieCalculations() [2]
-[3]     66.6    9.14   13.16 1500000         nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [3]
-               12.73    0.00 15000000/15000000     nmie::MultiLayerMie::calcD1D3(std::complex<double>, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [4]
-                0.35    0.00 27000000/93000000     std::vector<std::complex<double>, std::allocator<std::complex<double> > >::_M_default_append(unsigned long) [7]
-                0.08    0.00 1500000/1500000     nmie::MultiLayerMie::Nmax(int) [19]
+                0.00    0.00      10/10          nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [433]
+[428]    0.0    0.00    0.00      10         nmie::MultiLayerMie::calcD1D3(std::complex<double>, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [428]
 -----------------------------------------------
-               12.73    0.00 15000000/15000000     nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [3]
-[4]     38.0   12.73    0.00 15000000         nmie::MultiLayerMie::calcD1D3(std::complex<double>, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [4]
+                0.00    0.00       1/2           nmie::MultiLayerMie::InitMieCalculations() [435]
+                0.00    0.00       1/2           nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [847]
+[429]    0.0    0.00    0.00       2         std::vector<std::complex<double>, std::allocator<std::complex<double> > >::operator=(std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&) [429]
 -----------------------------------------------
-                                                 <spontaneous>
-[5]      6.0    2.00    0.00                 _int_malloc [5]
+                0.00    0.00       1/1           __libc_csu_init [2918]
+[430]    0.0    0.00    0.00       1         _GLOBAL__sub_I__ZN4nmie12nMie_wrapperEiRKSt6vectorIdSaIdEERKS0_ISt7complexIdESaIS6_EEiS4_PdSB_SB_SB_SB_SB_SB_RS8_SC_ [430]
 -----------------------------------------------
-                                                 <spontaneous>
-[6]      3.8    1.26    0.00                 _int_free [6]
+                0.00    0.00       1/1           __libc_csu_init [2918]
+[431]    0.0    0.00    0.00       1         _GLOBAL__sub_I_main [431]
 -----------------------------------------------
-                0.35    0.00 27000000/93000000     nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [3]
-                0.85    0.00 66000000/93000000     nmie::MultiLayerMie::RunMieCalculations() [2]
-[7]      3.6    1.20    0.00 93000000         std::vector<std::complex<double>, std::allocator<std::complex<double> > >::_M_default_append(unsigned long) [7]
+                0.00    0.00       1/1           nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [847]
+[432]    0.0    0.00    0.00       1         nmie::MultiLayerMie::SetWidthSP(std::vector<double, std::allocator<double> > const&) [432]
 -----------------------------------------------
-                                                 <spontaneous>
-[8]      2.7    0.91    0.00                 malloc_consolidate [8]
+                0.00    0.00       1/1           nmie::MultiLayerMie::RunMieCalculations() [434]
+[433]    0.0    0.00    0.00       1         nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [433]
+                0.00    0.00      18/62          std::vector<std::complex<double>, std::allocator<std::complex<double> > >::_M_default_append(unsigned long) [427]
+                0.00    0.00      10/10          nmie::MultiLayerMie::calcD1D3(std::complex<double>, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [428]
+                0.00    0.00       1/1           nmie::MultiLayerMie::Nmax(int) [436]
 -----------------------------------------------
-                                                 <spontaneous>
-[9]      2.3    0.78    0.00                 malloc [9]
+                0.00    0.00       1/1           nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [847]
+[434]    0.0    0.00    0.00       1         nmie::MultiLayerMie::RunMieCalculations() [434]
+                0.00    0.00      44/62          std::vector<std::complex<double>, std::allocator<std::complex<double> > >::_M_default_append(unsigned long) [427]
+                0.00    0.00       1/1           nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [433]
+                0.00    0.00       1/1           nmie::MultiLayerMie::calcPiTau(std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&) [437]
+                0.00    0.00       1/1           nmie::MultiLayerMie::InitMieCalculations() [435]
 -----------------------------------------------
-                                                 <spontaneous>
-[10]     2.1    0.69    0.00                 __cos_avx [10]
+                0.00    0.00       1/1           nmie::MultiLayerMie::RunMieCalculations() [434]
+[435]    0.0    0.00    0.00       1         nmie::MultiLayerMie::InitMieCalculations() [435]
+                0.00    0.00       1/2           std::vector<std::complex<double>, std::allocator<std::complex<double> > >::operator=(std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&) [429]
 -----------------------------------------------
-                                                 <spontaneous>
-[11]     1.8    0.60    0.00                 __dubsin [11]
+                0.00    0.00       1/1           nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [433]
+[436]    0.0    0.00    0.00       1         nmie::MultiLayerMie::Nmax(int) [436]
 -----------------------------------------------
-                                                 <spontaneous>
-[12]     1.7    0.57    0.00                 __sin_avx [12]
+                0.00    0.00       1/1           nmie::MultiLayerMie::RunMieCalculations() [434]
+[437]    0.0    0.00    0.00       1         nmie::MultiLayerMie::calcPiTau(std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&) [437]
 -----------------------------------------------
-                0.56    0.00 1500000/1500000     nmie::MultiLayerMie::RunMieCalculations() [2]
-[13]     1.7    0.56    0.00 1500000         nmie::MultiLayerMie::calcPiTau(std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&) [13]
------------------------------------------------
-                                                 <spontaneous>
-[14]     1.4    0.48    0.00                 __ieee754_exp_avx [14]
------------------------------------------------
-                                                 <spontaneous>
-[15]     0.6    0.19    0.00                 cfree [15]
------------------------------------------------
-                                                 <spontaneous>
-[16]     0.4    0.15    0.00                 memset [16]
------------------------------------------------
-                                                 <spontaneous>
-[17]     0.3    0.10    0.00                 operator new(unsigned long) [17]
------------------------------------------------
-                                                 <spontaneous>
-[18]     0.3    0.09    0.00                 brk [18]
------------------------------------------------
-                0.08    0.00 1500000/1500000     nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [3]
-[19]     0.2    0.08    0.00 1500000         nmie::MultiLayerMie::Nmax(int) [19]
------------------------------------------------
-                                                 <spontaneous>
-[20]     0.2    0.07    0.00                 __malloc_check_init [20]
------------------------------------------------
-                0.07    0.00 1500000/1500000     nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [1]
-[21]     0.2    0.07    0.00 1500000         nmie::MultiLayerMie::SetWidthSP(std::vector<double, std::allocator<double> > const&) [21]
------------------------------------------------
-                                                 <spontaneous>
-[22]     0.2    0.06    0.00                 sincos [22]
------------------------------------------------
-                                                 <spontaneous>
-[23]     0.1    0.05    0.00                 free_check [23]
------------------------------------------------
-                                                 <spontaneous>
-[24]     0.1    0.05    0.00                 __profile_frequency [24]
------------------------------------------------
-                                                 <spontaneous>
-[25]     0.1    0.05    0.00                 _mid_memalign [25]
------------------------------------------------
-                0.02    0.00 1500000/3000000     nmie::MultiLayerMie::InitMieCalculations() [27]
-                0.02    0.00 1500000/3000000     nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [1]
-[26]     0.1    0.04    0.00 3000000         std::vector<std::complex<double>, std::allocator<std::complex<double> > >::operator=(std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&) [26]
------------------------------------------------
-                0.02    0.02 1500000/1500000     nmie::MultiLayerMie::RunMieCalculations() [2]
-[27]     0.1    0.02    0.02 1500000         nmie::MultiLayerMie::InitMieCalculations() [27]
-                0.02    0.00 1500000/3000000     std::vector<std::complex<double>, std::allocator<std::complex<double> > >::operator=(std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&) [26]
------------------------------------------------
-                                                 <spontaneous>
-[28]     0.1    0.04    0.00                 csloww [28]
------------------------------------------------
-                                                 <spontaneous>
-[29]     0.1    0.03    0.00                 int_mallinfo [29]
------------------------------------------------
-                                                 <spontaneous>
-[30]     0.1    0.02    0.00                 void std::vector<std::array<double, 5ul>, std::allocator<std::array<double, 5ul> > >::_M_emplace_back_aux<std::array<double, 5ul> >(std::array<double, 5ul>&&) [30]
------------------------------------------------
-                                                 <spontaneous>
-[31]     0.0    0.02    0.00                 __sin_sse2 [31]
------------------------------------------------
-                                                 <spontaneous>
-[32]     0.0    0.01    0.00                 bsloww2 [32]
------------------------------------------------
-                                                 <spontaneous>
-[33]     0.0    0.01    0.00                 bsloww [33]
------------------------------------------------
-                0.00    0.00       1/1           __libc_start_main [2940]
-[34]     0.0    0.00    0.00       1         main [34]
------------------------------------------------
-                0.00    0.00 1500000/1500000     nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [1]
-[449]    0.0    0.00    0.00 1500000         std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [449]
------------------------------------------------
-                0.00    0.00       1/1           __libc_csu_init [2925]
-[450]    0.0    0.00    0.00       1         _GLOBAL__sub_I__ZN4nmie12nMie_wrapperEiRKSt6vectorIdSaIdEERKS0_ISt7complexIdESaIS6_EEiS4_PdSB_SB_SB_SB_SB_SB_RS8_SC_ [450]
------------------------------------------------
-                0.00    0.00       1/1           __libc_csu_init [2925]
-[451]    0.0    0.00    0.00       1         _GLOBAL__sub_I_main [451]
+                0.00    0.00       1/1           nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [847]
+[438]    0.0    0.00    0.00       1         std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [438]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -296,16 +198,8 @@ notice and this notice are preserved.
 
 Index by function name
 
- [450] _GLOBAL__sub_I__ZN4nmie12nMie_wrapperEiRKSt6vectorIdSaIdEERKS0_ISt7complexIdESaIS6_EEiS4_PdSB_SB_SB_SB_SB_SB_RS8_SC_ [449] std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&) [33] bsloww
- [451] _GLOBAL__sub_I_main    [17] operator new(unsigned long) [32] bsloww2
-   [1] nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [10] __cos_avx [15] cfree
-  [21] nmie::MultiLayerMie::SetWidthSP(std::vector<double, std::allocator<double> > const&) [11] __dubsin [28] csloww
-   [3] nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [14] __ieee754_exp_avx [23] free_check
-   [2] nmie::MultiLayerMie::RunMieCalculations() [20] __malloc_check_init [29] int_mallinfo
-  [27] nmie::MultiLayerMie::InitMieCalculations() [24] __profile_frequency [34] main
-  [19] nmie::MultiLayerMie::Nmax(int) [12] __sin_avx       [9] malloc
-   [4] nmie::MultiLayerMie::calcD1D3(std::complex<double>, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [31] __sin_sse2 [8] malloc_consolidate
-  [13] nmie::MultiLayerMie::calcPiTau(std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&) [6] _int_free [16] memset
-  [30] void std::vector<std::array<double, 5ul>, std::allocator<std::array<double, 5ul> > >::_M_emplace_back_aux<std::array<double, 5ul> >(std::array<double, 5ul>&&) [5] _int_malloc [22] sincos
-   [7] std::vector<std::complex<double>, std::allocator<std::complex<double> > >::_M_default_append(unsigned long) [25] _mid_memalign
-  [26] std::vector<std::complex<double>, std::allocator<std::complex<double> > >::operator=(std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&) [18] brk
+ [430] _GLOBAL__sub_I__ZN4nmie12nMie_wrapperEiRKSt6vectorIdSaIdEERKS0_ISt7complexIdESaIS6_EEiS4_PdSB_SB_SB_SB_SB_SB_RS8_SC_ [435] nmie::MultiLayerMie::InitMieCalculations() [429] std::vector<std::complex<double>, std::allocator<std::complex<double> > >::operator=(std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&)
+ [431] _GLOBAL__sub_I_main   [436] nmie::MultiLayerMie::Nmax(int) [438] std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&)
+ [432] nmie::MultiLayerMie::SetWidthSP(std::vector<double, std::allocator<double> > const&) [428] nmie::MultiLayerMie::calcD1D3(std::complex<double>, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [1] main
+ [433] nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&) [437] nmie::MultiLayerMie::calcPiTau(std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&)
+ [434] nmie::MultiLayerMie::RunMieCalculations() [427] std::vector<std::complex<double>, std::allocator<std::complex<double> > >::_M_default_append(unsigned long)
