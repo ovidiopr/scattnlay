@@ -243,19 +243,19 @@ int main(int argc, char *argv[]) {
 
     //printf("--best C/C++ time ratio: %Lg\n", static_cast<long double>(best_c)/static_cast<long double>(best_cpp));
 
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
-    nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
-     ctime_nsec = diff(time1,time2).tv_nsec;
-    printf("-- C time consumed %ld sec : %ld nsec\n",diff(time1,time2).tv_sec, ctime_nsec);
+    // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
+       nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+    // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
+    //  ctime_nsec = diff(time1,time2).tv_nsec;
+    // printf("-- C time consumed %ld sec : %ld nsec\n",diff(time1,time2).tv_sec, ctime_nsec);
 
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
-          nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
-    cpptime_nsec = diff(time1,time2).tv_nsec;
-    printf("-- C++ time consumed %ld sec : %ld nsec\n",diff(time1,time2).tv_sec,cpptime_nsec);
+    // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
+       nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
+    // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
+    // cpptime_nsec = diff(time1,time2).tv_nsec;
+    // printf("-- C++ time consumed %ld sec : %ld nsec\n",diff(time1,time2).tv_sec,cpptime_nsec);
 
-    printf("-- C/C++ time ratio: %Lg\n", static_cast<long double>(ctime_nsec)/static_cast<long double>(cpptime_nsec));
+    // printf("-- C/C++ time ratio: %Lg\n", static_cast<long double>(ctime_nsec)/static_cast<long double>(cpptime_nsec));
     
     if (has_comment) {
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
