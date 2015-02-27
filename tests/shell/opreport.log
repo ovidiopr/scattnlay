@@ -1,0 +1,43 @@
+CPU: Intel Haswell microarchitecture, speed 2900 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (No unit mask) count 100000
+samples  %        image name               symbol name
+32438    42.5975  scattnlay-g              nmie::MultiLayerMie::calcD1D3(std::complex<double>, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&)
+22678    29.7807  scattnlay-g              nmie::MultiLayerMie::ScattCoeffs(std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&)
+4994      6.5581  libtcmalloc.so.4.1.2     /usr/lib/libtcmalloc.so.4.1.2
+3649      4.7919  scattnlay-g              nmie::MultiLayerMie::RunMieCalculations()
+2064      2.7104  libm-2.19.so             __cos_avx
+1542      2.0250  libm-2.19.so             __sin_avx
+1523      2.0000  libm-2.19.so             __ieee754_exp_avx
+1490      1.9567  scattnlay-g              std::vector<std::complex<double>, std::allocator<std::complex<double> > >::_M_default_append(unsigned long)
+1472      1.9330  scattnlay-g              nmie::MultiLayerMie::calcPiTau(std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&, std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >&)
+1286      1.6888  libm-2.19.so             __dubsin
+1003      1.3171  scattnlay-g              std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [clone .part.138]
+488       0.6408  no-vmlinux               /no-vmlinux
+303       0.3979  scattnlay-g              nmie::MultiLayerMie::Nmax(int)
+265       0.3480  libc-2.19.so             memset
+222       0.2915  scattnlay-g              std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > >::_M_default_append(unsigned long) [clone .part.146]
+189       0.2482  libm-2.19.so             sincos
+147       0.1930  scattnlay-g              nmie::nMie_wrapper(int, std::vector<double, std::allocator<double> > const&, std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&, int, std::vector<double, std::allocator<double> > const&, double*, double*, double*, double*, double*, double*, double*, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&, std::vector<std::complex<double>, std::allocator<std::complex<double> > >&)
+127       0.1668  scattnlay-g              nmie::MultiLayerMie::SetWidthSP(std::vector<double, std::allocator<double> > const&)
+96        0.1261  libm-2.19.so             csloww
+80        0.1051  scattnlay-g              std::vector<std::complex<double>, std::allocator<std::complex<double> > >::operator=(std::vector<std::complex<double>, std::allocator<std::complex<double> > > const&)
+29        0.0381  scattnlay-g              nmie::MultiLayerMie::InitMieCalculations()
+29        0.0381  scattnlay-g              std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&)
+8         0.0105  scattnlay-g              main
+4         0.0053  ld-2.19.so               _dl_relocate_object
+4         0.0053  ld-2.19.so               do_lookup_x
+3         0.0039  ld-2.19.so               check_match.9459
+3         0.0039  libstdc++.so.6.0.20      /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.20
+2         0.0026  ld-2.19.so               _dl_lookup_symbol_x
+1         0.0013  ld-2.19.so               _dl_cache_libcmp
+1         0.0013  ld-2.19.so               _dl_check_map_versions
+1         0.0013  ld-2.19.so               strcmp
+1         0.0013  libc-2.19.so             __GI_strncmp
+1         0.0013  libc-2.19.so             ____strtod_l_internal
+1         0.0013  libc-2.19.so             __mpn_mul
+1         0.0013  libc-2.19.so             __printf_chk
+1         0.0013  libc-2.19.so             __strcmp_sse2_unaligned
+1         0.0013  libc-2.19.so             getenv
+1         0.0013  libm-2.19.so             __ieee754_log_avx
+1         0.0013  libunwind.so.8.0.1       /usr/lib/x86_64-linux-gnu/libunwind.so.8.0.1
+1         0.0013  scattnlay-g              calcPiTau(int, double, std::vector<double, std::allocator<double> >&, std::vector<double, std::allocator<double> >&)
