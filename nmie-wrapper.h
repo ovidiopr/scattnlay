@@ -51,7 +51,9 @@
 #   define ASSERT(condition, message) do { } while (false)
 #endif
 
+
 namespace nmie {
+
   int nMie_wrapper(int L, const std::vector<double>& x, const std::vector<std::complex<double> >& m,
          int nTheta, const std::vector<double>& Theta,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
@@ -61,6 +63,14 @@ namespace nmie {
     // Will throw for any error!
     // SP stands for size parameter units.
    public:
+    long iformat = 0;
+    void prn(double var) {
+      do {
+	++iformat;
+	printf("%23.13e",var);	     
+	if (iformat%4 == 0) printf("\n");
+      } while (false);
+    }
     // Set parameters in applied units 
     void SetWavelength(double wavelength) {wavelength_ = wavelength;};
     // It is possible to set only a multilayer target to run calculaitons.

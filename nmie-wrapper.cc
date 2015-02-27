@@ -520,7 +520,10 @@ namespace nmie {
     const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
     for (int n = nmax_; n > 0; n--) {
       D1[n - 1] = double(n)*zinv - 1.0/(D1[n] + double(n)*zinv);
+      printf(" D:");prn((D1[n-1]).real()); printf("\t diff:");
+      prn((D1[n] + double(n)*zinv).real());
     }
+    printf("\n\n"); iformat=0;
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))*exp(-2.0*z.imag()));
     D3[0] = std::complex<double>(0.0, 1.0);
@@ -641,6 +644,10 @@ namespace nmie {
       // Calculate D1 and D3
       calcD1D3(z1, D1_mlxl, D3_mlxl);
     }
+    // do { \
+    //   ++iformat;\
+    //   if (iformat%5 == 0) printf("%24.16e",z1.real());	\
+    // } while (false);
     //******************************************************************//
     // Calculate Ha and Hb in the first layer - equations (7a) and (8a) //
     //******************************************************************//
@@ -663,6 +670,11 @@ namespace nmie {
       calcD1D3(z1, D1_mlxl, D3_mlxl);
       //Calculate D1 and D3 for z2
       calcD1D3(z2, D1_mlxlM1, D3_mlxlM1);
+      // prn(z1.real());
+      // for ( auto i : D1_mlxl) { prn(i.real());
+      //   // prn(i.imag());
+      // 	} printf("\n");
+
       //*********************************************//
       //Calculate Q, Ha and Hb in the layers fl+1..L //
       //*********************************************//
@@ -710,6 +722,7 @@ namespace nmie {
     //**************************************//
     // Calculate D1XL and D3XL
     calcD1D3(x[L - 1],  D1XL, D3XL);
+    //printf("%5.20f\n",Ha[L-1][0].real());
     // Calculate PsiXL and ZetaXL
     calcPsiZeta(x[L - 1], D1XL, D3XL, PsiXL, ZetaXL);
     //*********************************************************************//
