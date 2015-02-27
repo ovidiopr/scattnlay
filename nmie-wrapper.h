@@ -52,8 +52,8 @@
 #endif
 
 namespace nmie {
-  int nMie_wrapper(int L, std::vector<double> x, std::vector<std::complex<double> > m,
-         int nTheta, std::vector<double> Theta,
+  int nMie_wrapper(int L, const std::vector<double>& x, const std::vector<std::complex<double> >& m,
+         int nTheta, const std::vector<double>& Theta,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
 	   std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
 
@@ -76,13 +76,13 @@ namespace nmie {
     void SetFieldPoints(std::vector< std::array<double,3> > coords);
 
     //Set parameters in size parameter units
-    void SetWidthSP(std::vector<double> width);
-    void SetIndexSP(std::vector< std::complex<double> > index);
+    void SetWidthSP(const std::vector<double>& width);
+    void SetIndexSP(const std::vector< std::complex<double> >& index);
     void SetFieldPointsSP(std::vector< std::array<double,3> > coords);
 
     // Set common parameters
     void SetAnglesForPattern(double from_angle, double to_angle, int samples);
-    void SetAngles(std::vector<double> angles);
+    void SetAngles(const std::vector<double>& angles);
     std::vector<double> GetAngles();
     void SetPEC(int layer_position = 0);  // By default set PEC layer to be the first one
     void SetMaxTermsNumber(int nmax);

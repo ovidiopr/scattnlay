@@ -46,8 +46,8 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   //emulate C call.
-  int nMie_wrapper(int L, std::vector<double> x, std::vector<std::complex<double> > m,
-         int nTheta, std::vector<double> Theta,
+  int nMie_wrapper(int L, const std::vector<double>& x, const std::vector<std::complex<double> >& m,
+         int nTheta, const std::vector<double>& Theta,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
 		   std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     
@@ -151,15 +151,16 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::SetAngles(std::vector<double> angles) {
+  void MultiLayerMie::SetAngles(const std::vector<double>& angles) {
     isMieCalculated_ = false;
-    theta_.clear();
-    for (auto value : angles) theta_.push_back(value);
+    theta_ = angles;
+    // theta_.clear();
+    // for (auto value : angles) theta_.push_back(value);
   }  // end of SetAngles()
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::SetWidthSP(std::vector<double> size_parameter) {
+  void MultiLayerMie::SetWidthSP(const std::vector<double>& size_parameter) {
     isMieCalculated_ = false;
     size_parameter_.clear();
     double prev_size_parameter = 0.0;
@@ -177,10 +178,11 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::SetIndexSP(std::vector< std::complex<double> > index) {
+  void MultiLayerMie::SetIndexSP(const std::vector< std::complex<double> >& index) {
     isMieCalculated_ = false;
-    index_.clear();
-    for (auto value : index) index_.push_back(value);
+    //index_.clear();
+    index_ = index;
+    // for (auto value : index) index_.push_back(value);
   }  // end of void MultiLayerMie::SetIndexSP(...);  
   // ********************************************************************** //
   // ********************************************************************** //
