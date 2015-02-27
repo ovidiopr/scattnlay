@@ -512,38 +512,12 @@ namespace nmie {
   // Output parameters:                                                               //
   //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions                //
   //**********************************************************************************//
-//   //ovidio
-//   void MultiLayerMie::calcD1D3(std::complex<double> z, 
-// 		      std::vector<std::complex<double> >& D1,
-// 		      std::vector<std::complex<double> >& D3) {
-
-//   int n;
-//   std::complex<double> nz, PsiZeta;
-
-//   // Downward recurrence for D1 - equations (16a) and (16b)
-//   D1[nmax_] = std::complex<double>(0.0, 0.0);
-//   for (n = nmax_; n > 0; n--) {
-//     nz = double(n)/z;
-//     D1[n - 1] = nz - 1.0/(D1[n] + nz);
-//   }
-
-//   // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
-//   PsiZeta = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))*exp(-2.0*z.imag()));
-//   D3[0] = std::complex<double>(0.0, 1.0);
-//   for (n = 1; n <= nmax_; n++) {
-//     nz = double(n)/z;
-//     PsiZeta = PsiZeta*(nz - D1[n - 1])*(nz - D3[n - 1]);
-//     D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta;
-//   }
-// }
-
-  //tig
   void MultiLayerMie::calcD1D3(const std::complex<double> z,
 			       std::vector<std::complex<double> >& D1,
 			       std::vector<std::complex<double> >& D3) {
     // Downward recurrence for D1 - equations (16a) and (16b)
     D1[nmax_] = std::complex<double>(0.0, 0.0);
-    const std::complex<double> zinv = 1.0/z;
+    const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
     for (int n = nmax_; n > 0; n--) {
       D1[n - 1] = double(n)*zinv - 1.0/(D1[n] + double(n)*zinv);
     }

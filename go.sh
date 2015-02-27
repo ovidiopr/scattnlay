@@ -5,14 +5,16 @@ rm -f ../scattnlay
 #g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay.bin -static
 # g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay-pg.bin -static -pg
 
-#google profiler
-g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free 
- g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay-g.bin -ltcmalloc -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -g
+#google profiler  ######## FAST!!!
+# g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 
-#clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay.bin
+#  g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay-g.bin -ltcmalloc -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -g
+
+#DEBUG!
+clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay.bin
 
 cp scattnlay.bin ../scattnlay
-cp scattnlay-g.bin ../scattnlay-g
+# cp scattnlay-g.bin ../scattnlay-g
 cd tests/shell
 # for file in `ls *.sh`;  do 
 #     if [ "$file" != "test03.sh" ]; then
@@ -25,17 +27,16 @@ cd tests/shell
 #time 
 time $PROGRAM -l 5 0.4642 1.8000 1.7000 0.7114 0.8000 0.7000 0.7393 1.2000 0.0900 0.9168 2.8000 0.2000 1.0000 1.5000 0.4000  -t 0.0 90.0 5 -c test01
 
-#apt-get install oprofile
-echo oprofile
-PROGRAM='../../../scattnlay-g'
-# time ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-3.4 
-#time 
-rm -rf oprofiletmp
-rm -rf oprofile_data
-time operf $PROGRAM -l 5 0.4642 1.8000 1.7000 0.7114 0.8000 0.7000 0.7393 1.2000 0.0900 0.9168 2.8000 0.2000 1.0000 1.5000 0.4000  -t 0.0 90.0 5 -c test01
-#opreport --symbols > opreport.log
-mkdir oprofiletmp
-opannotate --source --output-dir=./oprofiletmp/
+
+#  #apt-get install oprofile
+# echo oprofile
+# PROGRAM='../../../scattnlay-g'
+# rm -rf oprofiletmp
+# rm -rf oprofile_data
+# time operf $PROGRAM -l 5 0.4642 1.8000 1.7000 0.7114 0.8000 0.7000 0.7393 1.2000 0.0900 0.9168 2.8000 0.2000 1.0000 1.5000 0.4000  -t 0.0 90.0 5 -c test01
+# #opreport --symbols > opreport.log
+# mkdir oprofiletmp
+# opannotate --source --output-dir=./oprofiletmp/
 
 #echo valgring
 # valgrind --tool=callgrind $PROGRAM -l 5 0.4642 1.8000 1.7000 0.7114 0.8000 0.7000 0.7393 1.2000 0.0900 0.9168 2.8000 0.2000 1.0000 1.5000 0.4000  -t 0.0 90.0 5 -c test01
