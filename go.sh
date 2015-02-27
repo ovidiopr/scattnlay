@@ -33,7 +33,7 @@ PROGRAM='../../../scattnlay-g'
 rm -rf oprofiletmp
 rm -rf oprofile_data
 time operf $PROGRAM -l 5 0.4642 1.8000 1.7000 0.7114 0.8000 0.7000 0.7393 1.2000 0.0900 0.9168 2.8000 0.2000 1.0000 1.5000 0.4000  -t 0.0 90.0 5 -c test01
-opreport --symbols > opreport.log
+#opreport --symbols > opreport.log
 mkdir oprofiletmp
 opannotate --source --output-dir=./oprofiletmp/
 
