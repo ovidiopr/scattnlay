@@ -611,13 +611,14 @@ namespace nmie {
     // between different arrays. The change was done to optimize memory usage.  //
     //**************************************************************************//
     // Allocate memory to the arrays
-    std::vector<std::vector<std::complex<double> > > D1_mlxl(L), D1_mlxlM1(L),
-      D3_mlxl(L), D3_mlxlM1(L), Q(L), Ha(L), Hb(L);
+    std::vector<std::complex<double> > D1_mlxl(nmax_ + 1), D1_mlxlM1(nmax_ + 1),
+      D3_mlxl(nmax_ + 1), D3_mlxlM1(nmax_ + 1);
+    std::vector<std::vector<std::complex<double> > > Q(L), Ha(L), Hb(L);
     for (int l = 0; l < L; l++) {
-      D1_mlxl[l].resize(nmax_ + 1);
-      D1_mlxlM1[l].resize(nmax_ + 1);
-      D3_mlxl[l].resize(nmax_ + 1);
-      D3_mlxlM1[l].resize(nmax_ + 1);
+      // D1_mlxl[l].resize(nmax_ + 1);
+      // D1_mlxlM1[l].resize(nmax_ + 1);
+      // D3_mlxl[l].resize(nmax_ + 1);
+      // D3_mlxlM1[l].resize(nmax_ + 1);
       Q[l].resize(nmax_ + 1);
       Ha[l].resize(nmax_);
       Hb[l].resize(nmax_);
@@ -632,24 +633,26 @@ namespace nmie {
     //*************************************************//
     if (fl == pl) {  // PEC layer
       for (int n = 0; n <= nmax_; n++) {
-	D1_mlxl[fl][n] = std::complex<double>(0.0, -1.0);
-	D3_mlxl[fl][n] = std::complex<double>(0.0, 1.0);
+	D1_mlxl[n] = std::complex<double>(0.0, -1.0);
+	D3_mlxl[n] = std::complex<double>(0.0, 1.0);
       }
     } else { // Regular layer
       z1 = x[fl]* m[fl];
       // Calculate D1 and D3
-      calcD1D3(z1, D1_mlxl[fl], D3_mlxl[fl]);
+      calcD1D3(z1, D1_mlxl, D3_mlxl);
     }
     //******************************************************************//
     // Calculate Ha and Hb in the first layer - equations (7a) and (8a) //
     //******************************************************************//
     for (int n = 0; n < nmax_; n++) {
-      Ha[fl][n] = D1_mlxl[fl][n + 1];
-      Hb[fl][n] = D1_mlxl[fl][n + 1];
+      Ha[fl][n] = D1_mlxl[n + 1];
+      Hb[fl][n] = D1_mlxl[n + 1];
     }
     //*****************************************************//
     // Iteration from the second layer to the last one (L) //
     //*****************************************************//
+    std::complex<double> Temp, Num, Denom;
+    std::complex<double> G1, G2;
     for (int l = fl + 1; l < L; l++) {
       //************************************************************//
       //Calculate D1 and D3 for z1 and z2 in the layers fl+1..L     //
@@ -657,40 +660,34 @@ namespace nmie {
       z1 = x[l]*m[l];
       z2 = x[l - 1]*m[l];
       //Calculate D1 and D3 for z1
-      calcD1D3(z1, D1_mlxl[l], D3_mlxl[l]);
+      calcD1D3(z1, D1_mlxl, D3_mlxl);
       //Calculate D1 and D3 for z2
-      calcD1D3(z2, D1_mlxlM1[l], D3_mlxlM1[l]);
+      calcD1D3(z2, D1_mlxlM1, D3_mlxlM1);
       //*********************************************//
       //Calculate Q, Ha and Hb in the layers fl+1..L //
       //*********************************************//
       // Upward recurrence for Q - equations (19a) and (19b)
-      std::complex<double> Num, Denom;
       Num = exp(-2.0*(z1.imag() - z2.imag()))
 	* std::complex<double>(cos(-2.0*z2.real()) - exp(-2.0*z2.imag()), sin(-2.0*z2.real()));
       Denom = std::complex<double>(cos(-2.0*z1.real()) - exp(-2.0*z1.imag()), sin(-2.0*z1.real()));
       Q[l][0] = Num/Denom;
-
       for (int n = 1; n <= nmax_; n++) {
-	std::complex<double> Num, Denom;
-	Num = (z1*D1_mlxl[l][n] + double(n))*(double(n) - z1*D3_mlxl[l][n - 1]);
-	Denom = (z2*D1_mlxlM1[l][n] + double(n))*(double(n) - z2*D3_mlxlM1[l][n - 1]);
-	Q[l][n] = (((x[l - 1]*x[l - 1])/(x[l]*x[l])* Q[l][n - 1])*Num)/Denom;
+	Num = (z1*D1_mlxl[n] + double(n))*(double(n) - z1*D3_mlxl[n - 1]);
+	Denom = (z2*D1_mlxlM1[n] + double(n))*(double(n) - z2*D3_mlxlM1[n - 1]);
+	Q[l][n] = ((pow2(x[l - 1]/x[l])* Q[l][n - 1])*Num)/Denom;
       }
-
       // Upward recurrence for Ha and Hb - equations (7b), (8b) and (12) - (15)
       for (int n = 1; n <= nmax_; n++) {
-	std::complex<double> G1, G2;
 	//Ha
 	if ((l - 1) == pl) { // The layer below the current one is a PEC layer
-	  G1 = -D1_mlxlM1[l][n];
-	  G2 = -D3_mlxlM1[l][n];
+	  G1 = -D1_mlxlM1[n];
+	  G2 = -D3_mlxlM1[n];
 	} else {
-	  G1 = (m[l]*Ha[l - 1][n - 1]) - (m[l - 1]*D1_mlxlM1[l][n]);
-	  G2 = (m[l]*Ha[l - 1][n - 1]) - (m[l - 1]*D3_mlxlM1[l][n]);
-	}
-	std::complex<double> Temp, Num, Denom;
+	  G1 = (m[l]*Ha[l - 1][n - 1]) - (m[l - 1]*D1_mlxlM1[n]);
+	  G2 = (m[l]*Ha[l - 1][n - 1]) - (m[l - 1]*D3_mlxlM1[n]);
+	}  // end of if PEC
 	Temp = Q[l][n]*G1;
-	Num = (G2*D1_mlxl[l][n]) - (Temp*D3_mlxl[l][n]);
+	Num = (G2*D1_mlxl[n]) - (Temp*D3_mlxl[n]);
 	Denom = G2 - Temp;
 	Ha[l][n - 1] = Num/Denom;
 	//Hb
@@ -698,16 +695,16 @@ namespace nmie {
 	  G1 = Hb[l - 1][n - 1];
 	  G2 = Hb[l - 1][n - 1];
 	} else {
-	  G1 = (m[l - 1]*Hb[l - 1][n - 1]) - (m[l]*D1_mlxlM1[l][n]);
-	  G2 = (m[l - 1]*Hb[l - 1][n - 1]) - (m[l]*D3_mlxlM1[l][n]);
-	}
+	  G1 = (m[l - 1]*Hb[l - 1][n - 1]) - (m[l]*D1_mlxlM1[n]);
+	  G2 = (m[l - 1]*Hb[l - 1][n - 1]) - (m[l]*D3_mlxlM1[n]);
+	}  // end of if PEC
 
 	Temp = Q[l][n]*G1;
-	Num = (G2*D1_mlxl[l][n]) - (Temp* D3_mlxl[l][n]);
+	Num = (G2*D1_mlxl[n]) - (Temp* D3_mlxl[n]);
 	Denom = (G2- Temp);
 	Hb[l][n - 1] = (Num/ Denom);
-      }
-    }
+      }  // end of for Ha and Hb terms
+    }  // end of for layers iteration
     //**************************************//
     //Calculate D1, D3, Psi and Zeta for XL //
     //**************************************//
@@ -733,9 +730,8 @@ namespace nmie {
 	an[n] = calc_an(n + 1, x[L - 1], std::complex<double>(0.0, 0.0), std::complex<double>(1.0, 0.0), PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
 	bn[n] = PsiXL[n + 1]/ZetaXL[n + 1];
       }
-    }
-
-  }
+    }  // end of for an and bn terms
+  }  // end of void MultiLayerMie::ScattCoeffs(...)
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
