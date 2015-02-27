@@ -214,6 +214,9 @@ namespace nmie {
     // assume non-magnetic (MU=MU0=const) [N A-2]
     double const mu = 4.0*PI*1.0e-7;
 
+    //Temporary variables
+    std::vector<std::complex<double> > PsiZeta_;
+
 
   };  // end of class MultiLayerMie
 

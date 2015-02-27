@@ -514,8 +514,6 @@ namespace nmie {
 			       std::vector<std::complex<double> >& D1,
 			       std::vector<std::complex<double> >& D3) {
 
-    std::vector<std::complex<double> > PsiZeta;
-    PsiZeta.resize(nmax_ + 1);
 
     // Downward recurrence for D1 - equations (16a) and (16b)
     D1[nmax_] = std::complex<double>(0.0, 0.0);
@@ -524,11 +522,11 @@ namespace nmie {
     }
 
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
-    PsiZeta[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))*exp(-2.0*z.imag()));
+    PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))*exp(-2.0*z.imag()));
     D3[0] = std::complex<double>(0.0, 1.0);
     for (int n = 1; n <= nmax_; n++) {
-      PsiZeta[n] = PsiZeta[n - 1]*(double(n)/z - D1[n - 1])*(double(n)/z- D3[n - 1]);
-      D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta[n];
+      PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)/z - D1[n - 1])*(static_cast<double>(n)/z- D3[n - 1]);
+      D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
     }
   }
   //**********************************************************************************//
@@ -626,6 +624,7 @@ namespace nmie {
     }
     an.resize(nmax_);
     bn.resize(nmax_);
+    PsiZeta_.resize(nmax_ + 1);
     std::vector<std::complex<double> > D1XL(nmax_ + 1), D3XL(nmax_ + 1), 
       PsiXL(nmax_ + 1), ZetaXL(nmax_ + 1);
     //*************************************************//
@@ -795,7 +794,10 @@ namespace nmie {
     // Calculate scattering coefficients
     ScattCoeffs(an, bn);
 
-    std::vector< std::vector<double> > Pi(nmax_), Tau(nmax_);
+    // std::vector< std::vector<double> > Pi(nmax_), Tau(nmax_);
+    std::vector< std::vector<double> > Pi, Tau;
+    Pi.resize(nmax_);
+    Tau.resize(nmax_);
     for (int i =0; i< nmax_; ++i) {
       Pi[i].resize(theta_.size());
       Tau[i].resize(theta_.size());
