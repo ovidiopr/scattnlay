@@ -244,7 +244,7 @@ int main(int argc, char *argv[]) {
     //printf("--best C/C++ time ratio: %Lg\n", static_cast<long double>(best_c)/static_cast<long double>(best_cpp));
 
     // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
-    //nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+    nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
     // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
     //  ctime_nsec = diff(time1,time2).tv_nsec;
     // printf("-- C time consumed %ld sec : %ld nsec\n",diff(time1,time2).tv_sec, ctime_nsec);
