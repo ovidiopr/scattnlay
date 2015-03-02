@@ -658,12 +658,16 @@ c    MM       + 1  and - 1, alternately
       // prn((D1[n] + double(n)*zinv).real());
     }
     //     printf("\n\n"); iformat=0;
-    if (std::abs(D1[0].real()) > 100.0 ) throw std::invalid_argument("Unstable D1!\n");
+    if (std::abs(D1[0]) > 1000.0 )
+      throw std::invalid_argument
+	("Unstable D1! Please, try to change input parameters!\n");
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
-    PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))*exp(-2.0*z.imag()));
+    PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))
+		       *exp(-2.0*z.imag()));
     D3[0] = std::complex<double>(0.0, 1.0);
     for (int n = 1; n <= nmax_; n++) {
-      PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)*zinv - D1[n - 1])*(static_cast<double>(n)*zinv- D3[n - 1]);
+      PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)*zinv - D1[n - 1])
+	*(static_cast<double>(n)*zinv- D3[n - 1]);
       D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
     }
   }
