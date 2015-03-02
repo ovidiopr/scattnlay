@@ -262,7 +262,7 @@ int main(int argc, char *argv[]) {
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     } else {
-      //printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
       printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     }
     

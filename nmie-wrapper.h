@@ -64,7 +64,7 @@ namespace nmie {
     // SP stands for size parameter units.
    public:
     long iformat = 0;
-    bool output = false;
+    bool output = true;
     void prn(double var) {
       do {
 	if (!output) break;

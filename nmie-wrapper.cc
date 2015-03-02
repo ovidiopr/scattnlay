@@ -618,19 +618,20 @@ c    MM       + 1  and - 1, alternately
 			       std::vector<std::complex<double> >& D1,
 			       std::vector<std::complex<double> >& D3) {
     // Downward recurrence for D1 - equations (16a) and (16b)
-    //D1[nmax_] = std::complex<double>(0.0, 0.0);
-    D1[nmax_] = calcD1confra(nmax_, z);
+    D1[nmax_] = std::complex<double>(0.0, 0.0);
+    //D1[nmax_] = calcD1confra(nmax_, z);
     const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
     
     // printf(" D:");prn((D1[nmax_]).real()); printf("\t diff:");
     // prn((D1[nmax_] + double(nmax_)*zinv).real());
     for (int n = nmax_; n > 0; n--) {
-      //D1[n - 1] = double(n)*zinv - 1.0/(D1[n] + double(n)*zinv);
-      D1[n-1] = calcD1confra(n-1, z);
+      D1[n - 1] = double(n)*zinv - 1.0/(D1[n] + double(n)*zinv);
+      //D1[n-1] = calcD1confra(n-1, z);
       // printf(" D:");prn((D1[n-1]).real()); printf("\t diff:");
       // prn((D1[n] + double(n)*zinv).real());
     }
     // printf("\n\n"); iformat=0;
+    //if (D1[0].real() > 100.0 ) throw std::invalid_argument("Unstable D1!\n");
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))*exp(-2.0*z.imag()));
     D3[0] = std::complex<double>(0.0, 1.0);
