@@ -499,6 +499,108 @@ namespace nmie {
       Psi[n] = Psi[n - 1]*(n/x - D1[n - 1]);
       Zeta[n] = Zeta[n - 1]*(n/x - D3[n - 1]);
     }
+
+  }
+  //**********************************************************************************//
+  // Function CONFRA ported from MIEV0.f (Wiscombe,1979)
+  // Ref. to NCAR Technical Notes, Wiscombe, 1979
+  /*
+c         Compute Bessel function ratio A-sub-N from its
+c         continued fraction using Lentz method
+
+c         ZINV = Reciprocal of argument of A
+
+
+c    I N T E R N A L    V A R I A B L E S
+c    ------------------------------------
+
+c    CAK      Term in continued fraction expansion of A (Eq. R25)
+c     a_k
+
+c    CAPT     Factor used in Lentz iteration for A (Eq. R27)
+c     T_k
+
+c    CNUMER   Numerator   in capT  ( Eq. R28A )
+c     N_k
+c    CDENOM   Denominator in capT  ( Eq. R28B )
+c     D_k
+
+c    CDTD     Product of two successive denominators of capT factors
+c                 ( Eq. R34C )
+c     xi_1
+
+c    CNTN     Product of two successive numerators of capT factors
+c                 ( Eq. R34B )
+c     xi_2
+
+c    EPS1     Ill-conditioning criterion
+c    EPS2     Convergence criterion
+
+c    KK       Subscript k of cAk  ( Eq. R25B )
+c     k
+
+c    KOUNT    Iteration counter ( used to prevent infinite looping )
+
+c    MAXIT    Max. allowed no. of iterations
+
+c    MM       + 1  and - 1, alternately
+*/
+  std::complex<double> MultiLayerMie::calcD1confra(const std::complex<double> z) {
+  // NTMR -> nmax_ -1  \\TODO nmax_ ?
+    int N = nmax_ - 1;
+    int KK, KOUNT, MAXIT = 10000, MM;
+    double EPS1=1.0e-2, EPS2=1.0e-8;
+    std::complex<double> CAK, CAPT, CDENOM, CDTD, CNTN, CNUMER;
+    std::complex<double> one = std::complex<double>(1.0,0.0);
+    std::complex<double> ZINV = one/z;
+// c                                 ** Eq. R25a
+    std::complex<double> CONFRA = static_cast<std::complex<double> >(N+1)*ZINV;  
+    MM = -1;
+    KK = 2*N +3;
+// c                                 ** Eq. R25b, k=2
+    CAK    = static_cast<std::complex<double> >(MM*KK) * ZINV;
+    CDENOM = CAK;
+    CNUMER = CDENOM + one / CONFRA;
+    KOUNT  = 1;
+    //10 CONTINUE
+    do {      ++KOUNT;
+      if (KOUNT > MAXIT) {	printf("re(%g):im(%g)\t\n", CONFRA.real(), CONFRA.imag()); break;
+	throw std::invalid_argument("ConFra--Iteration failed to converge!\n"); }
+      MM *= -1;      KK += 2;
+      CAK = static_cast<std::complex<double> >(MM*KK) * ZINV; //    ** Eq. R25b
+     //  //c ** Eq. R32    Ill-conditioned case -- stride two terms instead of one
+     //  if (std::abs( CNUMER / CAK ) >= EPS1 ||  std::abs( CDENOM / CAK ) >= EPS1) {
+     // 	//c                       ** Eq. R34
+     // 	CNTN   = CAK * CNUMER + 1.0;
+     // 	CDTD   = CAK * CDENOM + 1.0;
+     // 	CONFRA = ( CNTN / CDTD ) * CONFRA; // ** Eq. R33
+     // 	MM  *= -1;	KK  += 2;
+     // 	CAK = static_cast<std::complex<double> >(MM*KK) * ZINV; // ** Eq. R25b
+     // 	//c                        ** Eq. R35
+     // 	CNUMER = CAK + CNUMER / CNTN;
+     // 	CDENOM = CAK + CDENOM / CDTD;
+     // 	++KOUNT;
+     // 	//GO TO  10
+     // 	continue;
+     // } else { //c                           *** Well-conditioned case
+      {
+	CAPT   = CNUMER / CDENOM; // ** Eq. R27
+       printf("re(%g):im(%g)**\t", CAPT.real(), CAPT.imag());
+       CONFRA = CAPT * CONFRA; // ** Eq. R26
+       //       printf("re(%g):im(%g)\t", CONFRA.real(), CONFRA.imag());
+//c                                  ** Check for convergence; Eq. R31
+       if ( std::abs(CAPT.real() - 1.0) >= EPS2 ||  std::abs(CAPT.imag()) >= EPS2 ) {
+//c                                        ** Eq. R30
+	 CNUMER = CAK + one/CNUMER;
+	 CDENOM = CAK + one/CDENOM;
+	 continue;
+	 //GO TO  10
+       }  // end of if < eps2
+      }
+      break;
+    } while(1);    
+    printf(" return confra\n");
+    return CONFRA;
   }
   //**********************************************************************************//
   // This function calculates the logarithmic derivatives of the Riccati-Bessel       //
@@ -507,7 +609,7 @@ namespace nmie {
   //                                                                                  //
   // Input parameters:                                                                //
   //   z: Complex argument to evaluate D1 and D3                                      //
-  //   nmax_: Maximum number of terms to calculate D1 and D3                           //
+  //   nmax_: Maximum number of terms to calculate D1 and D3                          //
   //                                                                                  //
   // Output parameters:                                                               //
   //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions                //
@@ -516,8 +618,12 @@ namespace nmie {
 			       std::vector<std::complex<double> >& D1,
 			       std::vector<std::complex<double> >& D3) {
     // Downward recurrence for D1 - equations (16a) and (16b)
-    D1[nmax_] = std::complex<double>(0.0, 0.0);
+    //D1[nmax_] = std::complex<double>(0.0, 0.0);
+    D1[nmax_] = calcD1confra(z);
     const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
+    
+    printf(" D:");prn((D1[nmax_]).real()); printf("\t diff:");
+    prn((D1[nmax_] + double(nmax_)*zinv).real());
     for (int n = nmax_; n > 0; n--) {
       D1[n - 1] = double(n)*zinv - 1.0/(D1[n] + double(n)*zinv);
       printf(" D:");prn((D1[n-1]).real()); printf("\t diff:");

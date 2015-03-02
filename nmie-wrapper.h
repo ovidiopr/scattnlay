@@ -186,6 +186,7 @@ namespace nmie {
 		     std::vector<std::complex<double> > D3,
 		     std::vector<std::complex<double> >& Psi,
 		     std::vector<std::complex<double> >& Zeta);
+    std::complex<double> calcD1confra(const std::complex<double> z);
     void calcD1D3(std::complex<double> z,
 		  std::vector<std::complex<double> >& D1,
 		  std::vector<std::complex<double> >& D3);
