@@ -62,7 +62,7 @@ namespace nmie {
       multi_layer_mie.SetAngles(Theta);
     
       multi_layer_mie.RunMieCalculations();
-
+      
       *Qext = multi_layer_mie.GetQext();
       *Qsca = multi_layer_mie.GetQsca();
       *Qabs = multi_layer_mie.GetQabs();
@@ -72,13 +72,40 @@ namespace nmie {
       *Albedo = multi_layer_mie.GetAlbedo();
       S1 = multi_layer_mie.GetS1();
       S2 = multi_layer_mie.GetS2();
+      multi_layer_mie.GetFailed();
     } catch( const std::invalid_argument& ia ) {
       // Will catch if  multi_layer_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
+      throw std::invalid_argument(ia);
       return -1;
     }  
 
     return 0;
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void MultiLayerMie::GetFailed() {
+    double faild_x = 9.42477796076938;
+    //double faild_x = 9.42477796076937;
+    std::complex<double> z(faild_x, 0.0);
+    std::vector<int> nmax_local_array = {20, 100, 500, 2500};
+    for (auto nmax_local : nmax_local_array) {
+      std::vector<std::complex<double> > D1_failed(nmax_local +1);
+      // Downward recurrence for D1 - equations (16a) and (16b)
+      D1_failed[nmax_local] = std::complex<double>(0.0, 0.0);
+      const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
+      for (int n = nmax_local; n > 0; n--) {
+	D1_failed[n - 1] = double(n)*zinv - 1.0/(D1_failed[n] + double(n)*zinv);
+      }
+      printf("Faild D1[0] from reccurence (z = %16.14f, nmax = %d): %g\n",
+	     faild_x, nmax_local, D1_failed[0].real());
+    }
+    printf("Faild D1[0] from continued fraction (z = %16.14f): %g\n", faild_x,
+	   calcD1confra(0,z).real());
+    //D1[nmax_] = calcD1confra(nmax_, z);
+  
+    
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -554,20 +581,20 @@ c    MM       + 1  and - 1, alternately
     std::complex<double> one = std::complex<double>(1.0,0.0);
     std::complex<double> ZINV = one/z;
 // c                                 ** Eq. R25a
-    std::complex<double> CONFRA = static_cast<std::complex<double> >(N+1)*ZINV;  
-    MM = -1;
-    KK = 2*N +3;
+    std::complex<double> CONFRA = static_cast<std::complex<double> >(N+1)*ZINV;   //debug ZINV
+    MM = -1; 
+    KK = 2*N +3; //debug 3
 // c                                 ** Eq. R25b, k=2
-    CAK    = static_cast<std::complex<double> >(MM*KK) * ZINV;
+    CAK    = static_cast<std::complex<double> >(MM*KK) * ZINV; //debug -3 ZINV
     CDENOM = CAK;
-    CNUMER = CDENOM + one / CONFRA;
+    CNUMER = CDENOM + one / CONFRA; //-3zinv+z
     KOUNT  = 1;
     //10 CONTINUE
     do {      ++KOUNT;
       if (KOUNT > MAXIT) {	printf("re(%g):im(%g)\t\n", CONFRA.real(), CONFRA.imag()); break;
 	throw std::invalid_argument("ConFra--Iteration failed to converge!\n"); }
-      MM *= -1;      KK += 2;
-      CAK = static_cast<std::complex<double> >(MM*KK) * ZINV; //    ** Eq. R25b
+      MM *= -1;      KK += 2;  //debug  mm=1 kk=5
+      CAK = static_cast<std::complex<double> >(MM*KK) * ZINV; //    ** Eq. R25b //debug 5zinv
      //  //c ** Eq. R32    Ill-conditioned case -- stride two terms instead of one
      //  if (std::abs( CNUMER / CAK ) >= EPS1 ||  std::abs( CDENOM / CAK ) >= EPS1) {
      // 	//c                       ** Eq. R34
@@ -584,10 +611,10 @@ c    MM       + 1  and - 1, alternately
      // 	continue;
      // } else { //c                           *** Well-conditioned case
       {
-	CAPT   = CNUMER / CDENOM; // ** Eq. R27
+	CAPT   = CNUMER / CDENOM; // ** Eq. R27 //debug (-3zinv + z)/(-3zinv)
 	// printf("re(%g):im(%g)**\t", CAPT.real(), CAPT.imag());
        CONFRA = CAPT * CONFRA; // ** Eq. R26
-       //       if (N == 0) {output=true;printf(" re:");prn(CONFRA.real());printf(" im:"); prn(CONFRA.imag());output=false;};
+       //if (N == 0) {output=true;printf(" re:");prn(CONFRA.real());printf(" im:"); prn(CONFRA.imag());output=false;};
        //c                                  ** Check for convergence; Eq. R31
        if ( std::abs(CAPT.real() - 1.0) >= EPS2 ||  std::abs(CAPT.imag()) >= EPS2 ) {
 //c                                        ** Eq. R30
@@ -599,7 +626,7 @@ c    MM       + 1  and - 1, alternately
       }
       break;
     } while(1);    
-    //printf(" return confra\n");
+    //if (N == 0)  printf(" return confra for z=(%g,%g)\n", ZINV.real(), ZINV.imag());
     return CONFRA;
   }
   //**********************************************************************************//
@@ -630,8 +657,8 @@ c    MM       + 1  and - 1, alternately
       // printf(" D:");prn((D1[n-1]).real()); printf("\t diff:");
       // prn((D1[n] + double(n)*zinv).real());
     }
-    // printf("\n\n"); iformat=0;
-    //if (D1[0].real() > 100.0 ) throw std::invalid_argument("Unstable D1!\n");
+    //     printf("\n\n"); iformat=0;
+    if (std::abs(D1[0].real()) > 100.0 ) throw std::invalid_argument("Unstable D1!\n");
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))*exp(-2.0*z.imag()));
     D3[0] = std::complex<double>(0.0, 1.0);

@@ -63,6 +63,7 @@ namespace nmie {
     // Will throw for any error!
     // SP stands for size parameter units.
    public:
+    void GetFailed();
     long iformat = 0;
     bool output = true;
     void prn(double var) {
