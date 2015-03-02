@@ -64,8 +64,10 @@ namespace nmie {
     // SP stands for size parameter units.
    public:
     long iformat = 0;
+    bool output = false;
     void prn(double var) {
       do {
+	if (!output) break;
 	++iformat;
 	printf("%23.13e",var);	     
 	if (iformat%4 == 0) printf("\n");
@@ -186,7 +188,7 @@ namespace nmie {
 		     std::vector<std::complex<double> > D3,
 		     std::vector<std::complex<double> >& Psi,
 		     std::vector<std::complex<double> >& Zeta);
-    std::complex<double> calcD1confra(const std::complex<double> z);
+    std::complex<double> calcD1confra(int N, const std::complex<double> z);
     void calcD1D3(std::complex<double> z,
 		  std::vector<std::complex<double> >& D1,
 		  std::vector<std::complex<double> >& D3);

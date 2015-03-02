@@ -545,9 +545,9 @@ c    MAXIT    Max. allowed no. of iterations
 
 c    MM       + 1  and - 1, alternately
 */
-  std::complex<double> MultiLayerMie::calcD1confra(const std::complex<double> z) {
+  std::complex<double> MultiLayerMie::calcD1confra(const int N, const std::complex<double> z) {
   // NTMR -> nmax_ -1  \\TODO nmax_ ?
-    int N = nmax_ - 1;
+    //int N = nmax_ - 1;
     int KK, KOUNT, MAXIT = 10000, MM;
     double EPS1=1.0e-2, EPS2=1.0e-8;
     std::complex<double> CAK, CAPT, CDENOM, CDTD, CNTN, CNUMER;
@@ -585,10 +585,10 @@ c    MM       + 1  and - 1, alternately
      // } else { //c                           *** Well-conditioned case
       {
 	CAPT   = CNUMER / CDENOM; // ** Eq. R27
-       printf("re(%g):im(%g)**\t", CAPT.real(), CAPT.imag());
+	// printf("re(%g):im(%g)**\t", CAPT.real(), CAPT.imag());
        CONFRA = CAPT * CONFRA; // ** Eq. R26
-       //       printf("re(%g):im(%g)\t", CONFRA.real(), CONFRA.imag());
-//c                                  ** Check for convergence; Eq. R31
+       //       if (N == 0) {output=true;printf(" re:");prn(CONFRA.real());printf(" im:"); prn(CONFRA.imag());output=false;};
+       //c                                  ** Check for convergence; Eq. R31
        if ( std::abs(CAPT.real() - 1.0) >= EPS2 ||  std::abs(CAPT.imag()) >= EPS2 ) {
 //c                                        ** Eq. R30
 	 CNUMER = CAK + one/CNUMER;
@@ -599,7 +599,7 @@ c    MM       + 1  and - 1, alternately
       }
       break;
     } while(1);    
-    printf(" return confra\n");
+    //printf(" return confra\n");
     return CONFRA;
   }
   //**********************************************************************************//
@@ -619,17 +619,18 @@ c    MM       + 1  and - 1, alternately
 			       std::vector<std::complex<double> >& D3) {
     // Downward recurrence for D1 - equations (16a) and (16b)
     //D1[nmax_] = std::complex<double>(0.0, 0.0);
-    D1[nmax_] = calcD1confra(z);
+    D1[nmax_] = calcD1confra(nmax_, z);
     const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
     
-    printf(" D:");prn((D1[nmax_]).real()); printf("\t diff:");
-    prn((D1[nmax_] + double(nmax_)*zinv).real());
+    // printf(" D:");prn((D1[nmax_]).real()); printf("\t diff:");
+    // prn((D1[nmax_] + double(nmax_)*zinv).real());
     for (int n = nmax_; n > 0; n--) {
-      D1[n - 1] = double(n)*zinv - 1.0/(D1[n] + double(n)*zinv);
-      printf(" D:");prn((D1[n-1]).real()); printf("\t diff:");
-      prn((D1[n] + double(n)*zinv).real());
+      //D1[n - 1] = double(n)*zinv - 1.0/(D1[n] + double(n)*zinv);
+      D1[n-1] = calcD1confra(n-1, z);
+      // printf(" D:");prn((D1[n-1]).real()); printf("\t diff:");
+      // prn((D1[n] + double(n)*zinv).real());
     }
-    printf("\n\n"); iformat=0;
+    // printf("\n\n"); iformat=0;
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))*exp(-2.0*z.imag()));
     D3[0] = std::complex<double>(0.0, 1.0);
