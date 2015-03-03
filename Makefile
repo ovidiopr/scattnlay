@@ -11,7 +11,7 @@ all:
 	@echo "make builddeb - Generate a deb package"
 	@echo "make standalone - Create a standalone program"
 	@echo "make clean - Delete temporal files"
-
+	make standalone
 source:
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 
@@ -31,7 +31,7 @@ builddeb:
 	dpkg-buildpackage -i -I -rfakeroot
 
 standalone: standalone.cc nmie.cc
-	c++ -DNDEBUG -O2 -std=c++11 standalone.cc nmie.cc -lm -o scattnlay
+	c++ -DNDEBUG -O2 -std=c++11 standalone.cc nmie.cc nmie-wrapper.cc -lm -o scattnlay
 	mv scattnlay ../
 
 clean:
