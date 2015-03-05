@@ -36,3 +36,6 @@ oprofiletmp
 callgrind
 oprofile_data
 out.dot
+cov-int*
+cov-int
+build*

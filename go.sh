@@ -71,3 +71,10 @@ echo
 # echo Run test with original binary for $repeats times
 # cp ../../../scattnlay-0.3.0 ../../../scattnlay
 # time for i in `seq $repeats`; do ./test01.sh; done
+
+#Run static analysis
+echo Run manually:
+echo make clean
+echo ~/../mmedia/soft/cov-analysis-linux64-7.6.0/bin/cov-build --dir cov-int make standalone
+echo      tar -zcvf cov-int.tar.gz cov-int
+echo to submit to coverity

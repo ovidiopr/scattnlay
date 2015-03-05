@@ -41,7 +41,10 @@
 namespace nmie {  
   //helpers
   template<class T> inline T pow2(const T value) {return value*value;}
-#define round(x) ((x) >= 0 ? (int)((x) + 0.5):(int)((x) - 0.5))
+  //#define round(x) ((x) >= 0 ? (int)((x) + 0.5):(int)((x) - 0.5))
+  int round(double x) {
+    return x >= 0 ? (int)(x + 0.5):(int)(x - 0.5);
+  }  
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -258,7 +261,6 @@ namespace nmie {
     double wavelength_backup = wavelength_;
     long fails = 0;
     for (double WL = from_WL; WL < to_WL; WL += step_WL) {
-      double Qext, Qsca, Qabs, Qbk;
       wavelength_ = WL;
       try {
         RunMieCalculations();
@@ -267,7 +269,7 @@ namespace nmie {
         continue;
       }
       //printf("%3.1f ",WL);
-      spectra.push_back({wavelength_, Qext, Qsca, Qabs, Qbk});
+      spectra.push_back({wavelength_, Qext_, Qsca_, Qabs_, Qbk_});
     }  // end of for each WL in spectra
     printf("fails %li\n",fails);
     wavelength_ = wavelength_backup;
@@ -281,11 +283,11 @@ namespace nmie {
   void MultiLayerMie::Nstop() {
     const double& xL = size_parameter_.back();
     if (xL <= 8) {
-      nmax_ = round(xL + 4*pow(xL, 1/3) + 1);
+      nmax_ = round(xL + 4.0*pow(xL, 1.0/3.0) + 1);
     } else if (xL <= 4200) {
-      nmax_ = round(xL + 4.05*pow(xL, 1/3) + 2);
+      nmax_ = round(xL + 4.05*pow(xL, 1.0/3.0) + 2);
     } else {
-      nmax_ = round(xL + 4*pow(xL, 1/3) + 2);
+      nmax_ = round(xL + 4.0*pow(xL, 1.0/3.0) + 2);
     }    
   }
   // ********************************************************************** //
@@ -591,8 +593,10 @@ c    MM       + 1  and - 1, alternately
     KOUNT  = 1;
     //10 CONTINUE
     do {      ++KOUNT;
-      if (KOUNT > MAXIT) {	printf("re(%g):im(%g)\t\n", CONFRA.real(), CONFRA.imag()); break;
-	throw std::invalid_argument("ConFra--Iteration failed to converge!\n"); }
+      if (KOUNT > MAXIT) {
+	printf("re(%g):im(%g)\t\n", CONFRA.real(), CONFRA.imag());
+	throw std::invalid_argument("ConFra--Iteration failed to converge!\n");
+      }
       MM *= -1;      KK += 2;  //debug  mm=1 kk=5
       CAK = static_cast<std::complex<double> >(MM*KK) * ZINV; //    ** Eq. R25b //debug 5zinv
      //  //c ** Eq. R32    Ill-conditioned case -- stride two terms instead of one

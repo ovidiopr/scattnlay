@@ -54,11 +54,11 @@ int Nstop(double xL) {
   int result;
 
   if (xL <= 8) {
-    result = round(xL + 4*pow(xL, 1/3) + 1);
+    result = round(xL + 4*pow(xL, 1.0/3.0) + 1);
   } else if (xL <= 4200) {
-    result = round(xL + 4.05*pow(xL, 1/3) + 2);
+    result = round(xL + 4.05*pow(xL, 1.0/3.0) + 2);
   } else {
-    result = round(xL + 4*pow(xL, 1/3) + 2);
+    result = round(xL + 4*pow(xL, 1.0/3.0) + 2);
   }
 
   return result;
