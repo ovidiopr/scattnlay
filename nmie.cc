@@ -965,6 +965,8 @@ c    MM       + 1  and - 1, alternately
   void MultiLayerMie::RunMieCalculations() {
     if (size_parameter_.size() != index_.size())
       throw std::invalid_argument("Each size parameter should have only one index!");
+    if (size_parameter_.size() == 0)
+      throw std::invalid_argument("Initialize model first!");
     std::vector<std::complex<double> > an, bn;
     std::complex<double> Qbktmp(0.0, 0.0);
     const std::vector<double>& x = size_parameter_;

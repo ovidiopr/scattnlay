@@ -1,5 +1,5 @@
-#ifndef SRC_NMIE_NMIE_WRAPPER_H_
-#define SRC_NMIE_NMIE_WRAPPER_H_
+#ifndef SRC_NMIE_NMIE_H_
+#define SRC_NMIE_NMIE_H_
 ///
 /// @file   nmie-wrapper.h
 /// @author Ladutenko Konstantin <kostyfisik at gmail (.) com>
@@ -235,4 +235,4 @@ namespace nmie {
   };  // end of class MultiLayerMie
 
 }  // end of namespace nmie
-#endif  // SRC_NMIE_NMIE_WRAPPER_H_
+#endif  // SRC_NMIE_NMIE_H_
