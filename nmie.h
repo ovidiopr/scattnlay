@@ -84,6 +84,7 @@ namespace nmie {
     // For all layers
     void SetTargetWidth(std::vector<double> width);
     void SetTargetIndex(std::vector< std::complex<double> > index);
+    void SetTargetPEC(double radius);
     void SetCoatingWidth(std::vector<double> width);
     void SetCoatingIndex(std::vector< std::complex<double> > index);
     void SetFieldPoints(std::vector< std::array<double,3> > coords);
@@ -163,6 +164,7 @@ namespace nmie {
     void PlotPatternSP();
 
   private:
+    void ConvertToSP();
     void GenerateSizeParameter();
     void GenerateIndex();
     void InitMieCalculations();

@@ -189,6 +189,17 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
+  void MultiLayerMie::SetTargetPEC(double radius) {
+    if (target_width_.size() != 0 || target_index_.size() != 0)
+      throw std::invalid_argument("Error! Define PEC target radius before any other layers!");
+    // Add layer of any index...
+    AddTargetLayer(radius, std::complex<double>(0.0, 0.0));
+    // ... and mark it as PEC
+    SetPEC(0.0);
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
   void MultiLayerMie::SetCoatingIndex(std::vector<std::complex<double> > index) {
     coating_index_.clear();
     for (auto value : index) coating_index_.push_back(value);
@@ -270,6 +281,15 @@ namespace nmie {
     }
     total_radius_ = radius;
   }  // end of void MultiLayerMie::GenerateSizeParameter();
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void MultiLayerMie::GenerateIndex() {
+    index_.clear();
+    //index_.push_back({0.0, 0.0});
+    for (auto index : target_index_) index_.push_back(index);
+    for (auto index : coating_index_) index_.push_back(index);
+  }  // end of void MultiLayerMie::GenerateIndex();
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -760,17 +780,20 @@ c    MM       + 1  and - 1, alternately
   //**********************************************************************************//
   void MultiLayerMie::ScattCoeffs(std::vector<std::complex<double> >& an,
 				  std::vector<std::complex<double> >& bn) {
-    //************************************************************************//
-    // Calculate the index of the first layer. It can be either 0 (default)   //
-    // or the index of the outermost PEC layer. In the latter case all layers //
-    // below the PEC are discarded.                                           //
-    //************************************************************************//
     const std::vector<double>& x = size_parameter_;
     const std::vector<std::complex<double> >& m = index_;
     const int& pl = PEC_layer_position_;
     const int L = index_.size();
-    // TODO, is it possible for PEC to have a zero index? If yes than is should be:
+    //************************************************************************//
+    // Calculate the index of the first layer. It can be either 0
+    // (default) // or the index of the outermost PEC layer. In the
+    // latter case all layers // below the PEC are discarded.  //
+    // ************************************************************************//
+    // TODO, is it possible for PEC to have a zero index? If yes than
+    // is should be:
     // int fl = (pl > -1) ? pl : 0;
+    // This will give the same result, however, it corresponds the
+    // logic - if there is PEC, than first layer is PEC.
     int fl = (pl > 0) ? pl : 0;
     if (nmax_ <= 0) Nmax(fl);
 
@@ -934,6 +957,17 @@ c    MM       + 1  and - 1, alternately
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
+  void MultiLayerMie::ConvertToSP() {
+    if (target_width_.size() + coating_width_.size() == 0)
+      return;  // Nothing to convert
+    GenerateSizeParameter();
+    GenerateIndex();
+    if (size_parameter_.size() != index_.size())
+      throw std::invalid_argument("Ivalid conversion of width to size parameter units!/n");
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
   //**********************************************************************************//
   // This function calculates the actual scattering parameters and amplitudes         //
   //                                                                                  //
@@ -963,6 +997,7 @@ c    MM       + 1  and - 1, alternately
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   void MultiLayerMie::RunMieCalculations() {
+    ConvertToSP();
     if (size_parameter_.size() != index_.size())
       throw std::invalid_argument("Each size parameter should have only one index!");
     if (size_parameter_.size() == 0)
