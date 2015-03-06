@@ -38,7 +38,7 @@
 //sudo aptitude install libgoogle-perftools-dev
 #include <google/heap-profiler.h>
 #include "nmie.h"
-#include "nmie-wrapper.h"
+#include "nmie-old.h"
 
 timespec diff(timespec start, timespec end);
 const double PI=3.14159265358979323846;

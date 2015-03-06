@@ -6,7 +6,7 @@ rm -f ../scattnlay
 # g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay-pg.bin -static -pg
 
 #google profiler  ######## FAST!!!
- g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
+ g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-old.cc -lm -lrt -o scattnlay.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 
 #  g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay-g.bin -ltcmalloc -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -g
 
@@ -73,8 +73,8 @@ echo
 # time for i in `seq $repeats`; do ./test01.sh; done
 
 #Run static analysis
-echo Run manually:
-echo make clean
-echo ~/../mmedia/soft/cov-analysis-linux64-7.6.0/bin/cov-build --dir cov-int make standalone
-echo      tar -zcvf cov-int.tar.gz cov-int
-echo to submit to coverity
+# echo Run manually:
+# echo make clean
+# echo ~/../mmedia/soft/cov-analysis-linux64-7.6.0/bin/cov-build --dir cov-int make standalone
+# echo      tar -zcvf cov-int.tar.gz cov-int
+# echo to submit to coverity

@@ -115,7 +115,7 @@ namespace nmie {
     std::vector< std::array<double,3> >   GetFieldPoints();
     std::vector<std::array< std::complex<double>,3 > >  GetFieldE();
     std::vector<std::array< std::complex<double>,3 > >  GetFieldH();
-    std::vector< std::array<double,5> >   GetSpectra(double from_WL, double to_WL,
+    std::vector< std::vector<double> >   GetSpectra(double from_WL, double to_WL,
                                                    int samples);  // ext, sca, abs, bk
     double GetRCSext();
     double GetRCSsca();

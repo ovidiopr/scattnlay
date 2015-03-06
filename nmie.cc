@@ -1,10 +1,10 @@
 ///
-/// @file   nmie-wrapper.cc
+/// @file   nmie.cc
 /// @author Ladutenko Konstantin <kostyfisik at gmail (.) com>
 /// @date   Tue Sep  3 00:38:27 2013
 /// @copyright 2013 Ladutenko Konstantin
 ///
-/// nmie-wrapper is free software: you can redistribute it and/or modify
+/// nmie is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU General Public License as published by
 /// the Free Software Foundation, either version 3 of the License, or
 /// (at your option) any later version.
@@ -17,8 +17,8 @@
 /// You should have received a copy of the GNU General Public License
 /// along with nmie-wrapper.  If not, see <http://www.gnu.org/licenses/>.
 ///
-/// nmie-wrapper uses nmie.c from scattnlay by Ovidio Pena
-/// <ovidio@bytesfall.com> as a linked library. He has an additional condition to 
+/// nmie uses nmie.c from scattnlay by Ovidio Pena
+/// <ovidio@bytesfall.com> . He has an additional condition to 
 /// his library:
 //    The only additional condition is that we expect that all publications         //
 //    describing  work using this software , or all commercial products             //
@@ -29,8 +29,7 @@
 ///
 /// @brief  Wrapper class around nMie function for ease of use
 ///
-#include "nmie-wrapper.h"
-//#include "nmie.h"
+#include "nmie.h"
 #include <array>
 #include <algorithm>
 #include <cstdio>
@@ -190,6 +189,17 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
+  void MultiLayerMie::SetCoatingWidth(std::vector<double> width) {
+    coating_width_.clear();
+    for (auto w : width)
+      if (w <= 0)
+        throw std::invalid_argument("Coating width should be positive!");
+      else coating_width_.push_back(w);
+  }
+  // end of void MultiLayerMie::SetCoatingWidth(...);
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
   void MultiLayerMie::SetWidthSP(const std::vector<double>& size_parameter) {
     isMieCalculated_ = false;
     size_parameter_.clear();
@@ -254,7 +264,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  std::vector< std::array<double,5> >
+  std::vector< std::vector<double> >
   MultiLayerMie::GetSpectra(double from_WL, double to_WL, int samples) {
     std::vector< std::array<double,5> > spectra;
     double step_WL = (to_WL - from_WL)/ static_cast<double>(samples);
@@ -269,9 +279,9 @@ namespace nmie {
         continue;
       }
       //printf("%3.1f ",WL);
-      spectra.push_back({wavelength_, Qext_, Qsca_, Qabs_, Qbk_});
+      spectra.push_back(std::vector<double>({wavelength_, Qext_, Qsca_, Qabs_, Qbk_}));
     }  // end of for each WL in spectra
-    printf("fails %li\n",fails);
+    printf("Spectrum has %li fails\n",fails);
     wavelength_ = wavelength_backup;
     return spectra;
   }
