@@ -99,7 +99,9 @@ namespace nmie {
     void SetAngles(const std::vector<double>& angles);
     std::vector<double> GetAngles();
     void SetPEC(int layer_position = 0);  // By default set PEC layer to be the first one
+    
     void SetMaxTermsNumber(int nmax);
+    int GetMaxTermsUsed() {return nmax_used_;};
     
     void ClearTarget();
     void ClearCoating();
@@ -219,6 +221,8 @@ namespace nmie {
     // Set nmax_ manualy with SetMaxTermsNumber(int nmax) or in ScattCoeffs(..)
     // with Nmax(int first_layer);
     int nmax_ = -1;
+    int nmax_used_ = -1;
+    int nmax_preset_ = -1;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::complex<double> > S1_, S2_;

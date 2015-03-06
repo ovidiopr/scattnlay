@@ -263,7 +263,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::SetMaxTermsNumber(int nmax) {
-    nmax_ = nmax;
+    nmax_preset_ = nmax;
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -998,6 +998,7 @@ c    MM       + 1  and - 1, alternately
   //**********************************************************************************//
   void MultiLayerMie::RunMieCalculations() {
     ConvertToSP();
+    nmax_ = nmax_preset_;
     if (size_parameter_.size() != index_.size())
       throw std::invalid_argument("Each size parameter should have only one index!");
     if (size_parameter_.size() == 0)
@@ -1057,6 +1058,7 @@ c    MM       + 1  and - 1, alternately
     Qbk_ = (Qbktmp.real()*Qbktmp.real() + Qbktmp.imag()*Qbktmp.imag())/x2;    // Equation (33)
 
     isMieCalculated_ = true;
+    nmax_used_ = nmax_;
     //return nmax;
   }
   // ********************************************************************** //
@@ -1068,6 +1070,7 @@ c    MM       + 1  and - 1, alternately
   void MultiLayerMie::fieldExt(double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
 			       std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
 			       std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
+    
 
     double rn = 0.0;
     std::complex<double> zn, xxip, encap;
