@@ -180,6 +180,22 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
+  void MultiLayerMie::AddTargetLayer(double width, std::complex<double> layer_index) {
+    if (width <= 0)
+      throw std::invalid_argument("Layer width should be positive!");
+    target_width_.push_back(width);
+    target_index_.push_back(layer_index);
+  }  // end of void  MultiLayerMie::AddTargetLayer(...)  
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void MultiLayerMie::SetCoatingIndex(std::vector<std::complex<double> > index) {
+    coating_index_.clear();
+    for (auto value : index) coating_index_.push_back(value);
+  }  // end of void MultiLayerMie::SetCoatingIndex(std::vector<complex> index);  
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
   void MultiLayerMie::SetAngles(const std::vector<double>& angles) {
     isMieCalculated_ = false;
     theta_ = angles;
@@ -266,7 +282,7 @@ namespace nmie {
   // ********************************************************************** //
   std::vector< std::vector<double> >
   MultiLayerMie::GetSpectra(double from_WL, double to_WL, int samples) {
-    std::vector< std::array<double,5> > spectra;
+    std::vector< std::vector<double> > spectra;
     double step_WL = (to_WL - from_WL)/ static_cast<double>(samples);
     double wavelength_backup = wavelength_;
     long fails = 0;
@@ -307,7 +323,6 @@ namespace nmie {
     int ri, riM1;
     const std::vector<double>& x = size_parameter_;
     const std::vector<std::complex<double> >& m = index_;
-    const int& pl = PEC_layer_position_;
     Nstop();  // Set initial nmax_ value
     for (int i = first_layer; i < x.size(); i++) {
       if (i > PEC_layer_position_) 
@@ -588,7 +603,8 @@ c    MM       + 1  and - 1, alternately
   // NTMR -> nmax_ -1  \\TODO nmax_ ?
     //int N = nmax_ - 1;
     int KK, KOUNT, MAXIT = 10000, MM;
-    double EPS1=1.0e-2, EPS2=1.0e-8;
+    //    double EPS1=1.0e-2;
+    double EPS2=1.0e-8;
     std::complex<double> CAK, CAPT, CDENOM, CDTD, CNTN, CNUMER;
     std::complex<double> one = std::complex<double>(1.0,0.0);
     std::complex<double> ZINV = one/z;
@@ -952,7 +968,6 @@ c    MM       + 1  and - 1, alternately
     std::vector<std::complex<double> > an, bn;
     std::complex<double> Qbktmp(0.0, 0.0);
     const std::vector<double>& x = size_parameter_;
-    const std::vector<std::complex<double> >& m = index_;
     // Calculate scattering coefficients
     ScattCoeffs(an, bn);
 
