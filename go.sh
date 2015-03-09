@@ -1,12 +1,16 @@
 #!/bin/bash
-echo Compile with gcc -O2
+path=$PWD
+file=compare.cc
+
+echo Compile with gcc
 rm -f *.bin
 rm -f ../scattnlay
 #g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay.bin -static
 # g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay-pg.bin -static -pg
 
 #google profiler  ######## FAST!!!
- g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-old.cc -lm -lrt -o scattnlay.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
+echo Uncomment next line to compile compare.cc
+# g++ -Ofast -std=c++11 $file nmie.cc nmie-old.cc -lm -lrt -o scattnlay.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 
 #  g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay-g.bin -ltcmalloc -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -g
 
@@ -22,6 +26,7 @@ cd tests/shell
 # 	echo $file
 #     fi
 # done
+
 PROGRAM='../../../scattnlay'
 time  ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-3.4  $PROGRAM -l 5 0.4642 1.8000 1.7000 0.7114 0.8000 0.7000 0.7393 1.2000 0.0900 0.9168 2.8000 0.2000 1.0000 1.5000 0.4000  -t 0.0 90.0 5 -c test01
 #result
@@ -78,3 +83,12 @@ echo
 # echo ~/../mmedia/soft/cov-analysis-linux64-7.6.0/bin/cov-build --dir cov-int make standalone
 # echo      tar -zcvf cov-int.tar.gz cov-int
 # echo to submit to coverity
+
+cd $path
+file=test-negative-epsilon.cc
+g++ -Ofast -std=c++11 $file nmie.cc -lm -lrt -o $file.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
+
+#DEBUG!
+#clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 $file nmie.cc -lm -lrt -o $file.bin
+
+./$file.bin
