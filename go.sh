@@ -86,9 +86,9 @@ echo
 
 cd $path
 file=test-negative-epsilon.cc
-g++ -Ofast -std=c++11 $file nmie.cc -lm -lrt -o $file.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
+#g++ -Ofast -std=c++11 $file nmie.cc -lm -lrt -o $file.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 
 #DEBUG!
-#clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 $file nmie.cc -lm -lrt -o $file.bin
+clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 $file nmie.cc -lm -lrt -o $file.bin
 
 ./$file.bin
