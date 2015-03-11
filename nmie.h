@@ -106,6 +106,7 @@ namespace nmie {
     void ClearTarget();
     void ClearCoating();
     void ClearLayers();
+    void ClearAllDesign(); //Layers + SP + index_
 
     // Applied units requests
     double GetTotalRadius();
