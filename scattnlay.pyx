@@ -87,7 +87,8 @@ def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, 
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 
-def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords = np.zeros((0, 3), dtype = np.float64), np.int_t pl = 0, np.int_t nmax = 0):
+#def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords = np.zeros((0, 3), dtype = np.float64), np.int_t pl = 0, np.int_t nmax = 0):
+def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords, np.int_t pl = 0, np.int_t nmax = 0):
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
@@ -124,12 +125,8 @@ def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, 
 
         terms[i] = nField(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, coords.shape[0], coords[:, 0].copy('C'), coords[:, 1].copy('C'), coords[:, 2].copy('C'), npy2c(Erx), npy2c(Ery), npy2c(Erz), npy2c(Eix), npy2c(Eiy), npy2c(Eiz), npy2c(Hrx), npy2c(Hry), npy2c(Hrz), npy2c(Hix), npy2c(Hiy), npy2c(Hiz))
 
-        E[i][0] = Erx.copy('C') + 1.0j*Eix.copy('C')
-        E[i][1] = Ery.copy('C') + 1.0j*Eiy.copy('C')
-        E[i][2] = Erz.copy('C') + 1.0j*Eiz.copy('C')
-        H[i][0] = Hrx.copy('C') + 1.0j*Hix.copy('C')
-        H[i][1] = Hry.copy('C') + 1.0j*Hiy.copy('C')
-        H[i][2] = Hrz.copy('C') + 1.0j*Hiz.copy('C')
+        E[i] = np.vstack((Erx.copy('C') + 1.0j*Eix.copy('C'), Ery.copy('C') + 1.0j*Eiy.copy('C'), Erz.copy('C') + 1.0j*Eiz.copy('C'))).transpose()
+        H[i] = np.vstack((Hrx.copy('C') + 1.0j*Hix.copy('C'), Hry.copy('C') + 1.0j*Hiy.copy('C'), Hrz.copy('C') + 1.0j*Hiz.copy('C'))).transpose()
 
     return terms, E, H
 

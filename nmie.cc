@@ -39,7 +39,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "nmie-old.h"
+#include "nmie.h"
 
 #define round(x) ((x) >= 0 ? (int)((x) + 0.5):(int)((x) - 0.5))
 
@@ -952,11 +952,16 @@ int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double
   for (c = 0; c < ncoord; c++) {
     // Convert to spherical coordinates
     Rho = sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c] + Zp[c]*Zp[c]);
+    // Avoid convergence problems
     if (Rho < 1e-3) {
-      // Avoid convergence problems
       Rho = 1e-3;
     }
-    Phi = acos(Xp[c]/sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c]));
+    //If Xp=Yp=0 Phi is undefined. Just set it to zero
+    if ((Xp[c] == 0.0) and (Yp[c] == 0.0)) {
+      Phi = 0.0;
+    } else {
+      Phi = acos(Xp[c]/sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c]));
+    }
     Theta = acos(Xp[c]/Rho);
 
     calcPiTau(nmax, Theta, Pi, Tau);

@@ -29,7 +29,7 @@
 ///
 /// @brief  Wrapper class around nMie function for ease of use
 ///
-#include "nmie.h"
+#include "nmie-wrapper.h"
 #include <array>
 #include <algorithm>
 #include <cstdio>
