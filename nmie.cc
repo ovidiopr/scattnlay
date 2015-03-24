@@ -144,8 +144,8 @@ namespace nmie {
     for (int i = 0; i < nmax_ - 1; ++i) {
       const int n = i+1;
       NACS[i] = Qsca_ch_[i]*x2/(2.0*(2.0*static_cast<double>(n)+1));
-      if (NACS[i] > 0.250000001)
-	throw std::invalid_argument("Unexpected normalized absorption cross-section value!");
+      // if (NACS[i] > 0.250000001)
+      // 	throw std::invalid_argument("Unexpected normalized absorption cross-section value!");
     }
     return NACS;    
   }
@@ -156,6 +156,14 @@ namespace nmie {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result reques!");
     return Qsca_;
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  std::vector<double> MultiLayerMie::GetQsca_channel() {
+    if (!isMieCalculated_)
+      throw std::invalid_argument("You should run calculations before result reques!");
+    return Qsca_ch_;
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -771,7 +779,7 @@ c    MM       + 1  and - 1, alternately
       // prn((D1[n] + double(n)*zinv).real());
     }
     //     printf("\n\n"); iformat=0;
-    if (std::abs(D1[0]) > 1000.0 )
+    if (std::abs(D1[0]) > 100000.0 )
       throw std::invalid_argument
 	("Unstable D1! Please, try to change input parameters!\n");
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
@@ -1105,6 +1113,7 @@ c    MM       + 1  and - 1, alternately
       Qsca_ch_[i] += (n + n + 1)*(an[i].real()*an[i].real() + an[i].imag()*an[i].imag()
 			    + bn[i].real()*bn[i].real() + bn[i].imag()*bn[i].imag());
       Qsca_ += Qsca_ch_[i];
+      //printf(" %g:%g", Qext_ch_[i], Qsca_ch_[i]);
       // Equation (29) TODO We must check carefully this equation. If we
       // remove the typecast to double then the result changes. Which is
       // the correct one??? Ovidio (2014/12/10) With cast ratio will

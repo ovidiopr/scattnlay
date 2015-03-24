@@ -146,6 +146,7 @@ namespace nmie {
     double GetQabs();
     double GetQbk();
     double GetQpr();
+    std::vector<double> GetQsca_channel();
     std::vector<double> GetQabs_channel();
     std::vector<double> GetQabs_channel_normalized();
 
