@@ -6,14 +6,20 @@ VERSION=0.3.1
 
 all:
 	@echo "make source - Create source package"
+	@echo "make cython - Convert Cython code to c++"
 	@echo "make install - Install on local system"
 	@echo "make buildrpm - Generate a rpm package"
 	@echo "make builddeb - Generate a deb package"
 	@echo "make standalone - Create a standalone program"
 	@echo "make clean - Delete temporal files"
 	make standalone
+
 source:
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
+
+cython: scattnlay.pyx
+	cython --cplus scattnlay.pyx
+	mv scattnlay.cpp scattnlay.cc
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
