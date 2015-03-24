@@ -259,10 +259,10 @@ int main(int argc, char *argv[]) {
     // printf("-- C/C++ time ratio: %Lg\n", static_cast<long double>(ctime_nsec)/static_cast<long double>(cpptime_nsec));
     
     if (has_comment) {
-      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  old\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     } else {
-      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  old\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
       printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     }
     
@@ -270,7 +270,7 @@ int main(int argc, char *argv[]) {
       printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i\n");
       
       for (i = 0; i < nt; i++) {
-        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
+        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  old\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
         printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
       }
     }

@@ -983,6 +983,16 @@ c    MM       + 1  and - 1, alternately
     Qpr_ = 0;
     asymmetry_factor_ = 0;
     albedo_ = 0;
+    Qsca_ch_.clear();
+    Qext_ch_.clear();
+    Qabs_ch_.clear();
+    Qbk_ch_.clear();
+    Qpr_ch_.clear();
+    Qsca_ch_.resize(nmax_-1);
+    Qext_ch_.resize(nmax_-1);
+    Qabs_ch_.resize(nmax_-1);
+    Qbk_ch_.resize(nmax_-1);
+    Qpr_ch_.resize(nmax_-1);
     // Initialize the scattering amplitudes
     std::vector<std::complex<double> >	tmp1(theta_.size(),std::complex<double>(0.0, 0.0));
     S1_.swap(tmp1);
@@ -1038,7 +1048,6 @@ c    MM       + 1  and - 1, alternately
     if (size_parameter_.size() == 0)
       throw std::invalid_argument("Initialize model first!");
     std::vector<std::complex<double> > an, bn;
-    std::complex<double> Qbktmp(0.0, 0.0);
     const std::vector<double>& x = size_parameter_;
     // Calculate scattering coefficients
     ScattCoeffs(an, bn);
@@ -1051,28 +1060,33 @@ c    MM       + 1  and - 1, alternately
       Pi[i].resize(theta_.size());
       Tau[i].resize(theta_.size());
     }
-    calcPiTau(Pi, Tau);
-    InitMieCalculations();
-
+    calcPiTau(Pi, Tau);    
+    InitMieCalculations(); //
+    std::complex<double> Qbktmp(0.0, 0.0);
+    std::vector< std::complex<double> > Qbktmp_ch(nmax_ - 1, Qbktmp);
     // By using downward recurrence we avoid loss of precision due to float rounding errors
     // See: https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
     //      http://en.wikipedia.org/wiki/Loss_of_significance
     for (int i = nmax_ - 2; i >= 0; i--) {
-      int n = i + 1;
+      const int n = i + 1;
       // Equation (27)
-      Qext_ += (n + n + 1)*(an[i].real() + bn[i].real());
+      Qext_ch_[i] = (n + n + 1)*(an[i].real() + bn[i].real());
+      Qext_ += Qext_ch_[i];
       // Equation (28)
-      Qsca_ += (n + n + 1)*(an[i].real()*an[i].real() + an[i].imag()*an[i].imag()
+      Qsca_ch_[i] += (n + n + 1)*(an[i].real()*an[i].real() + an[i].imag()*an[i].imag()
 			    + bn[i].real()*bn[i].real() + bn[i].imag()*bn[i].imag());
+      Qsca_ += Qsca_ch_[i];
       // Equation (29) TODO We must check carefully this equation. If we
       // remove the typecast to double then the result changes. Which is
       // the correct one??? Ovidio (2014/12/10) With cast ratio will
       // give double, without cast (n + n + 1)/(n*(n + 1)) will be
       // rounded to integer. Tig (2015/02/24)
-      Qpr_ += ((n*(n + 2)/(n + 1))*((an[i]*std::conj(an[n]) + bn[i]*std::conj(bn[n])).real())
+      Qpr_ch_[i]=((n*(n + 2)/(n + 1))*((an[i]*std::conj(an[n]) + bn[i]*std::conj(bn[n])).real())
 	       + ((double)(n + n + 1)/(n*(n + 1)))*(an[i]*std::conj(bn[i])).real());
-      // Equation (33)
-      Qbktmp = Qbktmp + (double)(n + n + 1)*(1 - 2*(n % 2))*(an[i]- bn[i]);
+      Qpr_ += Qpr_ch_[i];
+      // Equation (33)      
+      Qbktmp_ch[i] = (double)(n + n + 1)*(1 - 2*(n % 2))*(an[i]- bn[i]);
+      Qbktmp += Qbktmp_ch[i];
       // Calculate the scattering amplitudes (S1 and S2)    //
       // Equations (25a) - (25b)                            //
       for (int t = 0; t < theta_.size(); t++) {
@@ -1081,11 +1095,16 @@ c    MM       + 1  and - 1, alternately
       }
     }
     double x2 = pow2(x.back());
-    Qext_ = 2*(Qext_)/x2;                                 // Equation (27)
-    Qsca_ = 2*(Qsca_)/x2;                                 // Equation (28)
-    Qpr_ = Qext_ - 4*(Qpr_)/x2;                           // Equation (29)
+    Qext_ = 2.0*(Qext_)/x2;                                 // Equation (27)
+    for (double& Q : Qext_ch_) Q = 2.0*Q/x2;
+    Qsca_ = 2.0*(Qsca_)/x2;                                 // Equation (28)
+    for (double& Q : Qsca_ch_) Q = 2.0*Q/x2;
+    Qpr_ = Qext_ - 4.0*(Qpr_)/x2;                           // Equation (29)
+    for (int i = 0; i < nmax_ - 1; ++i) Qpr_ch_[i] = Qext_ch_[i] - 4.0*Qpr_ch_[i]/x2;
 
     Qabs_ = Qext_ - Qsca_;                                // Equation (30)
+    for (int i = 0; i < nmax_ - 1; ++i) Qabs_ch_[i] = Qext_ch_[i] - Qsca_ch_[i];
+    
     albedo_ = Qsca_ / Qext_;                              // Equation (31)
     asymmetry_factor_ = (Qext_ - Qpr_) / Qsca_;                          // Equation (32)
 

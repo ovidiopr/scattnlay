@@ -226,6 +226,8 @@ namespace nmie {
     int nmax_preset_ = -1;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
+    // Mie efficinecy from each multipole channel.
+    std::vector<double> Qsca_ch_, Qext_ch_, Qabs_ch_, Qbk_ch_, Qpr_ch_;
     std::vector<std::complex<double> > S1_, S2_;
 
     //Used constants
