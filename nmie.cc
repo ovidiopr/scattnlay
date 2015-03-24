@@ -128,6 +128,30 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
+  std::vector<double> MultiLayerMie::GetQabs_channel() {
+    if (!isMieCalculated_)
+      throw std::invalid_argument("You should run calculations before result reques!");
+    return Qabs_ch_;
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  std::vector<double> MultiLayerMie::GetQabs_channel_normalized() {
+    if (!isMieCalculated_)
+      throw std::invalid_argument("You should run calculations before result reques!");
+    std::vector<double> NACS(nmax_-1, 0.0);
+    double x2 = pow2(size_parameter_.back());
+    for (int i = 0; i < nmax_ - 1; ++i) {
+      const int n = i+1;
+      NACS[i] = Qsca_ch_[i]*x2/(2.0*(2.0*static_cast<double>(n)+1));
+      if (NACS[i] > 0.250000001)
+	throw std::invalid_argument("Unexpected normalized absorption cross-section value!");
+    }
+    return NACS;    
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
   double MultiLayerMie::GetQsca() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result reques!");
@@ -190,6 +214,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::SetTargetPEC(double radius) {
+    isMieCalculated_ = false;
     if (target_width_.size() != 0 || target_index_.size() != 0)
       throw std::invalid_argument("Error! Define PEC target radius before any other layers!");
     // Add layer of any index...
@@ -201,6 +226,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::SetCoatingIndex(std::vector<std::complex<double> > index) {
+    isMieCalculated_ = false;
     coating_index_.clear();
     for (auto value : index) coating_index_.push_back(value);
   }  // end of void MultiLayerMie::SetCoatingIndex(std::vector<complex> index);  
@@ -217,6 +243,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::SetCoatingWidth(std::vector<double> width) {
+    isMieCalculated_ = false;
     coating_width_.clear();
     for (auto w : width)
       if (w <= 0)
@@ -255,6 +282,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::SetPEC(int layer_position) {
+    isMieCalculated_ = false;
     if (layer_position < 0)
       throw std::invalid_argument("Error! Layers are numbered from 0!");
     PEC_layer_position_ = layer_position;
@@ -263,6 +291,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::SetMaxTermsNumber(int nmax) {    
+    isMieCalculated_ = false;
     nmax_preset_ = nmax;
     //debug
     printf("Setting max terms: %d\n", nmax_preset_);
