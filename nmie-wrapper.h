@@ -148,6 +148,7 @@ namespace nmie {
     double GetQpr();
     std::vector<double> GetQsca_channel();
     std::vector<double> GetQabs_channel();
+    std::vector<double> GetQsca_channel_normalized();
     std::vector<double> GetQabs_channel_normalized();
 
     double GetAsymmetryFactor();

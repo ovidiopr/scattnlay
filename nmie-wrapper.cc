@@ -143,7 +143,7 @@ namespace nmie {
     double x2 = pow2(size_parameter_.back());
     for (int i = 0; i < nmax_ - 1; ++i) {
       const int n = i+1;
-      NACS[i] = Qsca_ch_[i]*x2/(2.0*(2.0*static_cast<double>(n)+1));
+      NACS[i] = Qabs_ch_[i]*x2/(2.0*(2.0*static_cast<double>(n)+1));
       // if (NACS[i] > 0.250000001)
       // 	throw std::invalid_argument("Unexpected normalized absorption cross-section value!");
     }
@@ -164,6 +164,22 @@ namespace nmie {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result reques!");
     return Qsca_ch_;
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  std::vector<double> MultiLayerMie::GetQsca_channel_normalized() {
+    if (!isMieCalculated_)
+      throw std::invalid_argument("You should run calculations before result reques!");
+    std::vector<double> NACS(nmax_-1, 0.0);
+    double x2 = pow2(size_parameter_.back());
+    for (int i = 0; i < nmax_ - 1; ++i) {
+      const int n = i+1;
+      NACS[i] = Qsca_ch_[i]*x2/(2.0*(2.0*static_cast<double>(n)+1));
+      // if (NACS[i] > 0.250000001)
+      // 	throw std::invalid_argument("Unexpected normalized absorption cross-section value!");
+    }
+    return NACS;    
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -779,7 +795,7 @@ c    MM       + 1  and - 1, alternately
       // prn((D1[n] + double(n)*zinv).real());
     }
     //     printf("\n\n"); iformat=0;
-    if (std::abs(D1[0]) > 1000.0 )
+    if (std::abs(D1[0]) > 100000.0 )
       throw std::invalid_argument
 	("Unstable D1! Please, try to change input parameters!\n");
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
