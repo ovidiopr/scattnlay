@@ -254,9 +254,9 @@ void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double
              std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
 		     std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
-  int i, n;
-  double rn = 0.0;
-  std::complex<double> zn, xxip, encap;
+  int i, n, n1;
+  double rn;
+  std::complex<double> ci, zn, xxip, encap;
   std::vector<std::complex<double> > vm3o1n, vm3e1n, vn3o1n, vn3e1n;
   vm3o1n.resize(3);
   vm3e1n.resize(3);
@@ -283,24 +283,26 @@ void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double
   // Calculate spherical Bessel and Hankel functions
   sphericalBessel(Rho, nmax, bj, by, bd);
 
+  ci = std::complex<double>(0.0, 1.0);
   for (n = 0; n < nmax; n++) {
+    n1 = n + 1;
     rn = double(n + 1);
 
-    zn = bj[n] + std::complex<double>(0.0, 1.0)*by[n];
-    xxip = Rho*(bj[n] + std::complex<double>(0.0, 1.0)*by[n]) - rn*zn;
+    zn = bj[n1] + ci*by[n1];
+    xxip = Rho*(bj[n] + ci*by[n]) - rn*zn;
 
     vm3o1n[0] = std::complex<double>(0.0, 0.0);
-    vm3o1n[1] = std::cos(Phi)*Pi[n]*zn;
-    vm3o1n[2] = -(std::sin(Phi)*Tau[n]*zn);
+    vm3o1n[1] = std::cos(Phi)*Pi[n1]*zn;
+    vm3o1n[2] = -std::sin(Phi)*Tau[n1]*zn;
     vm3e1n[0] = std::complex<double>(0.0, 0.0);
-    vm3e1n[1] = -(std::sin(Phi)*Pi[n]*zn);
-    vm3e1n[2] = -(std::cos(Phi)*Tau[n]*zn);
-    vn3o1n[0] = std::sin(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n]*zn/Rho;
-    vn3o1n[1] = std::sin(Phi)*Tau[n]*xxip/Rho;
-    vn3o1n[2] = std::cos(Phi)*Pi[n]*xxip/Rho;
-    vn3e1n[0] = std::cos(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n]*zn/Rho;
-    vn3e1n[1] = std::cos(Phi)*Tau[n]*xxip/Rho;
-    vn3e1n[2] = -(std::sin(Phi)*Pi[n]*xxip/Rho);
+    vm3e1n[1] = -std::sin(Phi)*Pi[n1]*zn;
+    vm3e1n[2] = -std::cos(Phi)*Tau[n1]*zn;
+    vn3o1n[0] = std::sin(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n1]*zn/Rho;
+    vn3o1n[1] = std::sin(Phi)*Tau[n1]*xxip/Rho;
+    vn3o1n[2] = std::cos(Phi)*Pi[n1]*xxip/Rho;
+    vn3e1n[0] = std::cos(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n1]*zn/Rho;
+    vn3e1n[1] = std::cos(Phi)*Tau[n1]*xxip/Rho;
+    vn3e1n[2] = -std::sin(Phi)*Pi[n1]*xxip/Rho;
 
     // scattered field: BH p.94 (4.45)
     encap = std::pow(std::complex<double>(0.0, 1.0), rn)*(2.0*rn + 1.0)/(rn*(rn + 1.0));
@@ -316,7 +318,7 @@ void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double
 
   Ei[0] = eifac*std::sin(Theta)*std::cos(Phi);
   Ei[1] = eifac*std::cos(Theta)*std::cos(Phi);
-  Ei[2] = -(eifac*std::sin(Phi));
+  Ei[2] = -eifac*std::sin(Phi);
 
   // magnetic field
   double hffact = 1.0/(cc*mu);

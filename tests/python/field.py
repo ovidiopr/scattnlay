@@ -25,58 +25,73 @@ from scattnlay import fieldnlay
 import numpy as np
 
 x = np.ones((1, 1), dtype = np.float64)
-x[0, 0] = 1.
+x[0, 0] = 0.1
 
 m = np.ones((1, 1), dtype = np.complex128)
-m[0, 0] = (0.0252 + 2.0181j)/1.46
+m[0, 0] = (0.05 + 2.070j)/1.46
 
-nc = 1001
+npts = 1001
 
-coordX = np.zeros((nc, 3), dtype = np.float64)
-coordY = np.zeros((nc, 3), dtype = np.float64)
-coordZ = np.zeros((nc, 3), dtype = np.float64)
+scan = np.linspace(-3.0*x[0, 0], 3.0*x[0, 0], npts)
 
-scan = np.linspace(-10.0*x[0, 0], 10.0*x[0, 0], nc)
-one = np.ones(nc, dtype = np.float64)
+coordX, coordY = np.meshgrid(scan, scan)
+coordX.resize(npts*npts)
+coordY.resize(npts*npts)
+coordZ = np.zeros(npts*npts, dtype = np.float64)
 
-coordX[:, 0] = scan
-coordY[:, 1] = scan
-coordZ[:, 2] = scan
+coord = np.vstack((coordX, coordY, coordZ)).transpose()
 
-terms, Ex, Hx = fieldnlay(x, m, coordX)
-terms, Ey, Hy = fieldnlay(x, m, coordY)
-terms, Ez, Hz = fieldnlay(x, m, coordZ)
+terms, E, H = fieldnlay(x, m, coord)
 
-Exr = np.absolute(Ex)
-Eyr = np.absolute(Ey)
-Ezr = np.absolute(Ez)
+Er = np.absolute(E)
 
 # |E|/|Eo|
-Exh = np.sqrt(Exr[0, :, 0]**2 + Exr[0, :, 1]**2 + Exr[0, :, 2]**2)
-Eyh = np.sqrt(Eyr[0, :, 0]**2 + Eyr[0, :, 1]**2 + Eyr[0, :, 2]**2)
-Ezh = np.sqrt(Ezr[0, :, 0]**2 + Ezr[0, :, 1]**2 + Ezr[0, :, 2]**2)
+Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
 
-result = np.vstack((scan, Exh, Eyh, Ezh)).transpose()
+result = np.vstack((coordX, coordY, coordZ, Eh)).transpose()
 
 try:
     import matplotlib.pyplot as plt
+    from matplotlib import cm
+    from matplotlib.colors import LogNorm
+
+    min_tick = 0.1
+    max_tick = 1.0
+
+    edata = np.resize(Eh, (npts, npts))
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    # Rescale to better show the axes
+    scale_x = np.linspace(min(coordX), max(coordX), npts)
+    scale_y = np.linspace(min(coordY), max(coordY), npts)
 
-    ax.errorbar(result[:, 0], one, fmt = 'k')
-    ax.errorbar(result[:, 0], result[:, 1], fmt = 'r', label = 'X axis')
-    ax.errorbar(result[:, 0], result[:, 2], fmt = 'g', label = 'Y axis')
-    ax.errorbar(result[:, 0], result[:, 3], fmt = 'b', label = 'Z axis')
+    # Define scale ticks
+    min_tick = max(0.5, min(min_tick, np.amin(edata)))
+    max_tick = max(max_tick, np.amax(edata))
+    scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
 
-    ax.legend()
+    # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
+    cax = ax.imshow(edata, interpolation = 'bicubic', cmap = cm.afmhot,
+                    origin = 'lower', vmin = min_tick, vmax = max_tick,
+                    extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y)),
+                    norm = LogNorm())
 
-    plt.xlabel('X|Y|Z')
-    plt.ylabel('|E|/|Eo|')
+    # Add colorbar
+    cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
+    cbar.ax.set_yticklabels(['%3.1e' % (a) for a in scale_ticks]) # vertically oriented colorbar
+    pos = list(cbar.ax.get_position().bounds)
+    fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
+
+    plt.xlabel('X')
+    plt.ylabel('Y')
 
     plt.draw()
+
     plt.show()
 
+    plt.clf()
+    plt.close()
 finally:
     np.savetxt("field.txt", result, fmt = "%.5f")
     print result
