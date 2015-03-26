@@ -25,7 +25,7 @@ from scattnlay import fieldnlay
 import numpy as np
 
 x = np.ones((1, 1), dtype = np.float64)
-x[0, 0] = 0.1
+x[0, 0] = 1.
 
 m = np.ones((1, 1), dtype = np.complex128)
 m[0, 0] = (0.05 + 2.070j)/1.46
