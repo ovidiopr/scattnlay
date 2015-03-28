@@ -139,15 +139,16 @@ namespace nmie {
   std::vector<double> MultiLayerMie::GetQabs_channel_normalized() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result reques!");
-    std::vector<double> NACS(nmax_-1, 0.0);
-    double x2 = pow2(size_parameter_.back());
-    for (int i = 0; i < nmax_ - 1; ++i) {
-      const int n = i+1;
-      NACS[i] = Qabs_ch_[i]*x2/(2.0*(2.0*static_cast<double>(n)+1));
-      // if (NACS[i] > 0.250000001)
-      // 	throw std::invalid_argument("Unexpected normalized absorption cross-section value!");
-    }
-    return NACS;    
+    // std::vector<double> NACS(nmax_-1, 0.0);
+    // double x2 = pow2(size_parameter_.back());
+    // for (int i = 0; i < nmax_ - 1; ++i) {
+    //   const int n = i+1;
+    //   NACS[i] = Qabs_ch_[i]*x2/(2.0*(2.0*static_cast<double>(n)+1));
+    //   // if (NACS[i] > 0.250000001)
+    //   // 	throw std::invalid_argument("Unexpected normalized absorption cross-section value!");
+    // }
+    //return NACS;    
+    return Qabs_ch_norm_;
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -171,15 +172,14 @@ namespace nmie {
   std::vector<double> MultiLayerMie::GetQsca_channel_normalized() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result reques!");
-    std::vector<double> NACS(nmax_-1, 0.0);
-    double x2 = pow2(size_parameter_.back());
-    for (int i = 0; i < nmax_ - 1; ++i) {
-      const int n = i+1;
-      NACS[i] = Qsca_ch_[i]*x2/(2.0*(2.0*static_cast<double>(n)+1));
-      // if (NACS[i] > 0.250000001)
-      // 	throw std::invalid_argument("Unexpected normalized absorption cross-section value!");
-    }
-    return NACS;    
+    // std::vector<double> NACS(nmax_-1, 0.0);
+    // double x2 = pow2(size_parameter_.back());
+    // for (int i = 0; i < nmax_ - 1; ++i) {
+    //   const int n = i+1;
+    //   NACS[i] = Qsca_ch_[i]*x2/(2.0*(2.0*static_cast<double>(n)+1.0));
+    // }
+    // return NACS;    
+     return Qsca_ch_norm_;
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1046,6 +1046,11 @@ c    MM       + 1  and - 1, alternately
     Qabs_ch_.resize(nmax_-1);
     Qbk_ch_.resize(nmax_-1);
     Qpr_ch_.resize(nmax_-1);
+    Qsca_ch_norm_.resize(nmax_-1);
+    Qext_ch_norm_.resize(nmax_-1);
+    Qabs_ch_norm_.resize(nmax_-1);
+    Qbk_ch_norm_.resize(nmax_-1);
+    Qpr_ch_norm_.resize(nmax_-1);
     // Initialize the scattering amplitudes
     std::vector<std::complex<double> >	tmp1(theta_.size(),std::complex<double>(0.0, 0.0));
     S1_.swap(tmp1);
@@ -1123,12 +1128,18 @@ c    MM       + 1  and - 1, alternately
     for (int i = nmax_ - 2; i >= 0; i--) {
       const int n = i + 1;
       // Equation (27)
-      Qext_ch_[i] = (n + n + 1)*(an[i].real() + bn[i].real());
+      Qext_ch_norm_[i] = (an[i].real() + bn[i].real());
+      Qext_ch_[i] = (n + n + 1.0)*Qext_ch_norm_[i];
+      //Qext_ch_[i] = (n + n + 1)*(an[i].real() + bn[i].real());
       Qext_ += Qext_ch_[i];
       // Equation (28)
-      Qsca_ch_[i] += (n + n + 1)*(an[i].real()*an[i].real() + an[i].imag()*an[i].imag()
-			    + bn[i].real()*bn[i].real() + bn[i].imag()*bn[i].imag());
+      Qsca_ch_norm_[i] = (an[i].real()*an[i].real() + an[i].imag()*an[i].imag()
+			  + bn[i].real()*bn[i].real() + bn[i].imag()*bn[i].imag());
+      Qsca_ch_[i] = (n + n + 1.0)*Qsca_ch_norm_[i];
       Qsca_ += Qsca_ch_[i];
+      // Qsca_ch_[i] += (n + n + 1)*(an[i].real()*an[i].real() + an[i].imag()*an[i].imag()
+      // 			    + bn[i].real()*bn[i].real() + bn[i].imag()*bn[i].imag());
+
       // Equation (29) TODO We must check carefully this equation. If we
       // remove the typecast to double then the result changes. Which is
       // the correct one??? Ovidio (2014/12/10) With cast ratio will
@@ -1152,11 +1163,15 @@ c    MM       + 1  and - 1, alternately
     for (double& Q : Qext_ch_) Q = 2.0*Q/x2;
     Qsca_ = 2.0*(Qsca_)/x2;                                 // Equation (28)
     for (double& Q : Qsca_ch_) Q = 2.0*Q/x2;
+    //for (double& Q : Qsca_ch_norm_) Q = 2.0*Q/x2;
     Qpr_ = Qext_ - 4.0*(Qpr_)/x2;                           // Equation (29)
     for (int i = 0; i < nmax_ - 1; ++i) Qpr_ch_[i] = Qext_ch_[i] - 4.0*Qpr_ch_[i]/x2;
 
     Qabs_ = Qext_ - Qsca_;                                // Equation (30)
-    for (int i = 0; i < nmax_ - 1; ++i) Qabs_ch_[i] = Qext_ch_[i] - Qsca_ch_[i];
+    for (int i = 0; i < nmax_ - 1; ++i) {
+      Qabs_ch_[i] = Qext_ch_[i] - Qsca_ch_[i];
+      Qabs_ch_norm_[i] = Qext_ch_norm_[i] - Qsca_ch_norm_[i];
+    }
     
     albedo_ = Qsca_ / Qext_;                              // Equation (31)
     asymmetry_factor_ = (Qext_ - Qpr_) / Qsca_;                          // Equation (32)
