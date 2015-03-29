@@ -254,9 +254,9 @@ void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double
              std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
 		     std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
-  int i, n;
-  double rn = 0.0;
-  std::complex<double> zn, xxip, encap;
+  int i, n, n1;
+  double rn;
+  std::complex<double> ci, zn, xxip, encap;
   std::vector<std::complex<double> > vm3o1n, vm3e1n, vn3o1n, vn3e1n;
   vm3o1n.resize(3);
   vm3e1n.resize(3);
@@ -283,40 +283,42 @@ void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double
   // Calculate spherical Bessel and Hankel functions
   sphericalBessel(Rho, nmax, bj, by, bd);
 
+  ci = std::complex<double>(0.0, 1.0);
   for (n = 0; n < nmax; n++) {
+    n1 = n + 1;
     rn = double(n + 1);
 
-    zn = bj[n] + std::complex<double>(0.0, 1.0)*by[n];
-    xxip = Rho*(bj[n] + std::complex<double>(0.0, 1.0)*by[n]) - rn*zn;
+    zn = bj[n1] + ci*by[n1];
+    xxip = Rho*(bj[n] + ci*by[n]) - rn*zn;
 
     vm3o1n[0] = std::complex<double>(0.0, 0.0);
     vm3o1n[1] = std::cos(Phi)*Pi[n]*zn;
-    vm3o1n[2] = -(std::sin(Phi)*Tau[n]*zn);
+    vm3o1n[2] = -std::sin(Phi)*Tau[n]*zn;
     vm3e1n[0] = std::complex<double>(0.0, 0.0);
-    vm3e1n[1] = -(std::sin(Phi)*Pi[n]*zn);
-    vm3e1n[2] = -(std::cos(Phi)*Tau[n]*zn);
+    vm3e1n[1] = -std::sin(Phi)*Pi[n]*zn;
+    vm3e1n[2] = -std::cos(Phi)*Tau[n]*zn;
     vn3o1n[0] = std::sin(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n]*zn/Rho;
     vn3o1n[1] = std::sin(Phi)*Tau[n]*xxip/Rho;
     vn3o1n[2] = std::cos(Phi)*Pi[n]*xxip/Rho;
     vn3e1n[0] = std::cos(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n]*zn/Rho;
     vn3e1n[1] = std::cos(Phi)*Tau[n]*xxip/Rho;
-    vn3e1n[2] = -(std::sin(Phi)*Pi[n]*xxip/Rho);
+    vn3e1n[2] = -std::sin(Phi)*Pi[n]*xxip/Rho;
 
     // scattered field: BH p.94 (4.45)
-    encap = std::pow(std::complex<double>(0.0, 1.0), rn)*(2.0*rn + 1.0)/(rn*(rn + 1.0));
+    encap = std::pow(ci, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
     for (i = 0; i < 3; i++) {
-      Es[i] = Es[i] + encap*(std::complex<double>(0.0, 1.0)*an[n]*vn3e1n[i] - bn[n]*vm3o1n[i]);
-      Hs[i] = Hs[i] + encap*(std::complex<double>(0.0, 1.0)*bn[n]*vn3o1n[i] + an[n]*vm3e1n[i]);
+      Es[i] = Es[i] + encap*(ci*an[n]*vn3e1n[i] - bn[n]*vm3o1n[i]);
+      Hs[i] = Hs[i] + encap*(ci*bn[n]*vn3o1n[i] + an[n]*vm3e1n[i]);
     }
   }
 
   // incident E field: BH p.89 (4.21); cf. p.92 (4.37), p.93 (4.38)
   // basis unit vectors = er, etheta, ephi
-  std::complex<double> eifac = std::exp(std::complex<double>(0.0, 1.0)*Rho*std::cos(Theta));
+  std::complex<double> eifac = std::exp(std::complex<double>(0.0, Rho*std::cos(Theta)));
 
   Ei[0] = eifac*std::sin(Theta)*std::cos(Phi);
   Ei[1] = eifac*std::cos(Theta)*std::cos(Phi);
-  Ei[2] = -(eifac*std::sin(Phi));
+  Ei[2] = -eifac*std::sin(Phi);
 
   // magnetic field
   double hffact = 1.0/(cc*mu);
@@ -952,17 +954,25 @@ int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double
   for (c = 0; c < ncoord; c++) {
     // Convert to spherical coordinates
     Rho = sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c] + Zp[c]*Zp[c]);
-    // Avoid convergence problems
-    if (Rho < 1e-3) {
-      Rho = 1e-3;
+
+    //If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
+    if (Rho == 0.0) {
+      Theta = 0.0;
+    } else {
+      Theta = acos(Zp[c]/Rho);
     }
-    //If Xp=Yp=0 Phi is undefined. Just set it to zero
+
+    // Avoid convergence problems due to Rho too small
+    if (Rho < 1e-5) {
+      Rho = 1e-5;
+    }
+
+    //If Xp=Yp=0 then Phi is undefined. Just set it to zero to zero to avoid problems
     if ((Xp[c] == 0.0) and (Yp[c] == 0.0)) {
       Phi = 0.0;
     } else {
       Phi = acos(Xp[c]/sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c]));
     }
-    Theta = acos(Xp[c]/Rho);
 
     calcPiTau(nmax, Theta, Pi, Tau);
 
