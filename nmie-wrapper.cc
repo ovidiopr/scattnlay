@@ -836,31 +836,40 @@ c    MM       + 1  and - 1, alternately
   // Output parameters:                                                               //
   //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
   //**********************************************************************************//
-  void MultiLayerMie::calcPiTau(std::vector< std::vector<double> >& Pi,
-				std::vector< std::vector<double> >& Tau) {
+  void MultiLayerMie::calcSinglePiTau(const double& costheta, std::vector<double>& Pi,
+				      std::vector<double>& Tau) {
     //****************************************************//
     // Equations (26a) - (26c)                            //
     //****************************************************//
-    std::vector<double> costheta(theta_.size(), 0.0);
-    for (int t = 0; t < theta_.size(); t++) {	
-      costheta[t] = cos(theta_[t]);
-    }
     for (int n = 0; n < nmax_; n++) {
-      for (int t = 0; t < theta_.size(); t++) {	
-  	if (n == 0) {
-  	  // Initialize Pi and Tau
-  	  Pi[n][t] = 1.0;
-  	  Tau[n][t] = (n + 1)*costheta[t]; 
-  	} else {
-  	  // Calculate the actual values
-  	  Pi[n][t] = ((n == 1) ? ((n + n + 1)*costheta[t]*Pi[n - 1][t]/n)
-  		   : (((n + n + 1)*costheta[t]*Pi[n - 1][t]
-  		       - (n + 1)*Pi[n - 2][t])/n));
-  	  Tau[n][t] = (n + 1)*costheta[t]*Pi[n][t] - (n + 2)*Pi[n - 1][t];
-  	}
+      if (n == 0) {
+	// Initialize Pi and Tau
+	Pi[n] = 1.0;
+	Tau[n] = (n + 1)*costheta; 
+      } else {
+	// Calculate the actual values
+	Pi[n] = ((n == 1) ? ((n + n + 1)*costheta*Pi[n - 1]/n)
+		 : (((n + n + 1)*costheta*Pi[n - 1]
+		     - (n + 1)*Pi[n - 2])/n));
+	Tau[n] = (n + 1)*costheta*Pi[n] - (n + 2)*Pi[n - 1];
       }
     }
   }  // end of void MultiLayerMie::calcPiTau(...)
+  void MultiLayerMie::calcAllPiTau(std::vector< std::vector<double> >& Pi,
+				std::vector< std::vector<double> >& Tau) {
+    std::vector<double> costheta(theta_.size(), 0.0);
+    for (int t = 0; t < theta_.size(); t++) {	
+      costheta[t] = std::cos(theta_[t]);
+    }
+    // Do not join upper and lower for to a single one!  It will slow
+    // down the code!!! (For about 0.5-2.0% of runtime, it is probably
+    // due to increased cache missing rate originated from the
+    // recurrence in calcPiTau...)
+    for (int t = 0; t < theta_.size(); t++) {	
+      calcSinglePiTau(costheta[t], Pi[t], Tau[t]);
+      //calcSinglePiTau(std::cos(theta_[t]), Pi[t], Tau[t]); // It is slow!!
+    }
+  }  // end of void MultiLayerMie::calcAllPiTau(...)
   //**********************************************************************************//
   // This function calculates the scattering coefficients required to calculate       //
   // both the near- and far-field parameters.                                         //
@@ -1130,13 +1139,13 @@ c    MM       + 1  and - 1, alternately
 
     // std::vector< std::vector<double> > Pi(nmax_), Tau(nmax_);
     std::vector< std::vector<double> > Pi, Tau;
-    Pi.resize(nmax_);
-    Tau.resize(nmax_);
-    for (int i =0; i< nmax_; ++i) {
-      Pi[i].resize(theta_.size());
-      Tau[i].resize(theta_.size());
+    Pi.resize(theta_.size());
+    Tau.resize(theta_.size());
+    for (int i =0; i< theta_.size(); ++i) {
+      Pi[i].resize(nmax_);
+      Tau[i].resize(nmax_);
     }
-    calcPiTau(Pi, Tau);    
+    calcAllPiTau(Pi, Tau);    
     InitMieCalculations(); //
     std::complex<double> Qbktmp(0.0, 0.0);
     std::vector< std::complex<double> > Qbktmp_ch(nmax_ - 1, Qbktmp);
@@ -1172,8 +1181,8 @@ c    MM       + 1  and - 1, alternately
       // Calculate the scattering amplitudes (S1 and S2)    //
       // Equations (25a) - (25b)                            //
       for (int t = 0; t < theta_.size(); t++) {
-	S1_[t] += calc_S1(n, an[i], bn[i], Pi[i][t], Tau[i][t]);
-	S2_[t] += calc_S2(n, an[i], bn[i], Pi[i][t], Tau[i][t]);
+	S1_[t] += calc_S1(n, an[i], bn[i], Pi[t][i], Tau[t][i]);
+	S2_[t] += calc_S2(n, an[i], bn[i], Pi[t][i], Tau[t][i]);
       }
     }
     double x2 = pow2(x.back());
@@ -1352,7 +1361,7 @@ c    MM       + 1  and - 1, alternately
   //     Phi = acos(Xp[c]/sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c]));
   //     Theta = acos(Xp[c]/Rho);
 
-  //     calcPiTau(Theta, Pi, Tau);
+  //     calcAllPiTau(Theta, Pi, Tau);
 
   //     //*******************************************************//
   //     // external scattering field = incident + scattered      //

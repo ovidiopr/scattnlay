@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
       long double ratio = static_cast<long double>(ctime_nsec)
 	/static_cast<long double>(cpptime_nsec);
       printf("-- C++ time consumed %lg sec\n", (cpptime_nsec/1e9));
-      if ( ratio > 0.01 ) 
+      if ( ratio > 0.01 ) {
 	if ( ctime_sec == 0 && cpptime_sec == 0) {
 	  printf("-- C time consumed %lg sec\n", (ctime_nsec/1e9));
 	  printf("-- total repeats: %ld\n", repeats);
@@ -246,6 +246,7 @@ int main(int argc, char *argv[]) {
 	} else {
 	  printf("==Test is too long!\n");
 	}
+      }
       repeats *= 10;
     } while (cpptime_nsec < 1e8 && ctime_nsec < 1e8);
 

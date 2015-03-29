@@ -203,7 +203,9 @@ namespace nmie {
     void calcD1D3(std::complex<double> z,
 		  std::vector<std::complex<double> >& D1,
 		  std::vector<std::complex<double> >& D3);
-    void calcPiTau( std::vector< std::vector<double> >& Pi,
+    void calcSinglePiTau(const double& costheta, std::vector<double>& Pi,
+			 std::vector<double>& Tau);
+    void calcAllPiTau( std::vector< std::vector<double> >& Pi,
 		    std::vector< std::vector<double> >& Tau);
     void ScattCoeffs(std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
     void fieldExt( double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
