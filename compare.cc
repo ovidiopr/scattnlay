@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
     long ctime_nsec, best_c;
 
     //HeapProfilerStart("heapprof");    
-    //    for (int i = 0; i<150000; ++i) {
+    for (int i = 0; i<150000; ++i) {
       //for (int i = 0; i<100; ++i) {
       // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
       // nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
       // if (ctime_nsec < best_c) best_c = ctime_nsec;
       
       // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
-      //      nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
+      nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
     // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
       // //cpptime_nsec = std::min(cpptime_nsec, diff(time1,time2).tv_nsec);
       // cpptime_nsec = diff(time1,time2).tv_nsec;
@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
       
       //printf("-- C/C++ time ratio: %Lg\n", static_cast<long double>(ctime_nsec)/static_cast<long double>(cpptime_nsec));
       //printf("--best C/C++ time ratio: %Lg\n", static_cast<long double>(best_c)/static_cast<long double>(best_cpp));
-      //}  
+    }  
     //HeapProfilerStop();
 
     //printf("--best C/C++ time ratio: %Lg\n", static_cast<long double>(best_c)/static_cast<long double>(best_cpp));

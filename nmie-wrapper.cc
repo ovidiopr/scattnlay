@@ -74,7 +74,7 @@ namespace nmie {
       *Albedo = multi_layer_mie.GetAlbedo();
       S1 = multi_layer_mie.GetS1();
       S2 = multi_layer_mie.GetS2();
-      multi_layer_mie.GetFailed();
+      //multi_layer_mie.GetFailed();
     } catch( const std::invalid_argument& ia ) {
       // Will catch if  multi_layer_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
@@ -114,7 +114,7 @@ namespace nmie {
   // ********************************************************************** //
   double MultiLayerMie::GetQext() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result reques!");
+      throw std::invalid_argument("You should run calculations before result request!");
     return Qext_;
   }
   // ********************************************************************** //
@@ -122,7 +122,7 @@ namespace nmie {
   // ********************************************************************** //
   double MultiLayerMie::GetQabs() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result reques!");
+      throw std::invalid_argument("You should run calculations before result request!");
     return Qabs_;
   }
   // ********************************************************************** //
@@ -130,7 +130,7 @@ namespace nmie {
   // ********************************************************************** //
   std::vector<double> MultiLayerMie::GetQabs_channel() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result reques!");
+      throw std::invalid_argument("You should run calculations before result request!");
     return Qabs_ch_;
   }
   // ********************************************************************** //
@@ -138,7 +138,7 @@ namespace nmie {
   // ********************************************************************** //
   std::vector<double> MultiLayerMie::GetQabs_channel_normalized() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result reques!");
+      throw std::invalid_argument("You should run calculations before result request!");
     // std::vector<double> NACS(nmax_-1, 0.0);
     // double x2 = pow2(size_parameter_.back());
     // for (int i = 0; i < nmax_ - 1; ++i) {
@@ -155,7 +155,7 @@ namespace nmie {
   // ********************************************************************** //
   double MultiLayerMie::GetQsca() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result reques!");
+      throw std::invalid_argument("You should run calculations before result request!");
     return Qsca_;
   }
   // ********************************************************************** //
@@ -163,7 +163,7 @@ namespace nmie {
   // ********************************************************************** //
   std::vector<double> MultiLayerMie::GetQsca_channel() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result reques!");
+      throw std::invalid_argument("You should run calculations before result request!");
     return Qsca_ch_;
   }
   // ********************************************************************** //
@@ -171,7 +171,7 @@ namespace nmie {
   // ********************************************************************** //
   std::vector<double> MultiLayerMie::GetQsca_channel_normalized() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result reques!");
+      throw std::invalid_argument("You should run calculations before result request!");
     // std::vector<double> NACS(nmax_-1, 0.0);
     // double x2 = pow2(size_parameter_.back());
     // for (int i = 0; i < nmax_ - 1; ++i) {
@@ -186,7 +186,7 @@ namespace nmie {
   // ********************************************************************** //
   double MultiLayerMie::GetQbk() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result reques!");
+      throw std::invalid_argument("You should run calculations before result request!");
     return Qbk_;
   }
   // ********************************************************************** //
@@ -194,7 +194,7 @@ namespace nmie {
   // ********************************************************************** //
   double MultiLayerMie::GetQpr() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result reques!");
+      throw std::invalid_argument("You should run calculations before result request!");
     return Qpr_;
   }
   // ********************************************************************** //
@@ -202,7 +202,7 @@ namespace nmie {
   // ********************************************************************** //
   double MultiLayerMie::GetAsymmetryFactor() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result reques!");
+      throw std::invalid_argument("You should run calculations before result request!");
     return asymmetry_factor_;
   }
   // ********************************************************************** //
@@ -210,25 +210,30 @@ namespace nmie {
   // ********************************************************************** //
   double MultiLayerMie::GetAlbedo() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result reques!");
+      throw std::invalid_argument("You should run calculations before result request!");
     return albedo_;
   }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
   std::vector<std::complex<double> > MultiLayerMie::GetS1() {
+    if (!isMieCalculated_)
+      throw std::invalid_argument("You should run calculations before result request!");
     return S1_;
   }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
   std::vector<std::complex<double> > MultiLayerMie::GetS2() {
+    if (!isMieCalculated_)
+      throw std::invalid_argument("You should run calculations before result request!");
     return S2_;
   }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::AddTargetLayer(double width, std::complex<double> layer_index) {
+    isMieCalculated_ = false;
     if (width <= 0)
       throw std::invalid_argument("Layer width should be positive!");
     target_width_.push_back(width);
@@ -324,6 +329,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::GenerateSizeParameter() {
+    isMieCalculated_ = false;
     size_parameter_.clear();
     double radius = 0.0;
     for (auto width : target_width_) {
@@ -340,6 +346,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::GenerateIndex() {
+    isMieCalculated_ = false;
     index_.clear();
     for (auto index : target_index_) index_.push_back(index);
     for (auto index : coating_index_) index_.push_back(index);
@@ -348,6 +355,8 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   double MultiLayerMie::GetTotalRadius() {
+    if (!isMieCalculated_)
+      throw std::invalid_argument("You should run calculations before result request!");
     if (total_radius_ == 0) GenerateSizeParameter();
     return total_radius_;      
   }  // end of double MultiLayerMie::GetTotalRadius();
@@ -356,6 +365,8 @@ namespace nmie {
   // ********************************************************************** //
   std::vector< std::vector<double> >
   MultiLayerMie::GetSpectra(double from_WL, double to_WL, int samples) {
+    if (!isMieCalculated_)
+      throw std::invalid_argument("You should run calculations before result request!");
     std::vector< std::vector<double> > spectra;
     double step_WL = (to_WL - from_WL)/ static_cast<double>(samples);
     double wavelength_backup = wavelength_;
@@ -379,6 +390,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::ClearTarget() {
+    isMieCalculated_ = false;
     target_width_.clear();
     target_index_.clear();
   }
@@ -386,6 +398,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::ClearCoating() {
+    isMieCalculated_ = false;
     coating_width_.clear();
     coating_index_.clear();
   }
@@ -393,6 +406,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::ClearLayers() {
+    isMieCalculated_ = false;
     ClearTarget();
     ClearCoating();
   }
@@ -400,6 +414,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::ClearAllDesign() {
+    isMieCalculated_ = false;
     ClearLayers();
     size_parameter_.clear();
     index_.clear();
@@ -823,29 +838,47 @@ c    MM       + 1  and - 1, alternately
   //**********************************************************************************//
   void MultiLayerMie::calcPiTau(std::vector< std::vector<double> >& Pi,
 				std::vector< std::vector<double> >& Tau) {
-    //****************************************************//
-    // Equations (26a) - (26c)                            //
-    //****************************************************//
-    std::vector<double> costheta(theta_.size(), 0.0);
-    for (int t = 0; t < theta_.size(); t++) {	
-      costheta[t] = cos(theta_[t]);
-    }
-    for (int n = 0; n < nmax_; n++) {
-      for (int t = 0; t < theta_.size(); t++) {	
-	if (n == 0) {
-	  // Initialize Pi and Tau
-	  Pi[n][t] = 1.0;
-	  Tau[n][t] = (n + 1)*costheta[t]; 
-	} else {
-	  // Calculate the actual values
-	  Pi[n][t] = ((n == 1) ? ((n + n + 1)*costheta[t]*Pi[n - 1][t]/n)
-		   : (((n + n + 1)*costheta[t]*Pi[n - 1][t]
-		       - (n + 1)*Pi[n - 2][t])/n));
-	  Tau[n][t] = (n + 1)*costheta[t]*Pi[n][t] - (n + 2)*Pi[n - 1][t];
-	}
-      }
+    
+  int n;
+  //****************************************************//
+  // Equations (26a) - (26c)                            //
+  //****************************************************//
+  // Initialize Pi and Tau
+  Pi[0] = 1.0;
+  Tau[0] = cos(Theta);
+  // Calculate the actual values
+  if (nmax > 1) {
+    Pi[1] = 3*Tau[0]*Pi[0];
+    Tau[1] = 2*Tau[0]*Pi[1] - 3*Pi[0];
+    for (n = 2; n < nmax; n++) {
+      Pi[n] = ((n + n + 1)*Tau[0]*Pi[n - 1] - (n + 1)*Pi[n - 2])/n;
+      Tau[n] = (n + 1)*Tau[0]*Pi[n] - (n + 2)*Pi[n - 1];
     }
   }
+
+  // //****************************************************//
+  //   // Equations (26a) - (26c)                            //
+  //   //****************************************************//
+  //   std::vector<double> costheta(theta_.size(), 0.0);
+  //   for (int t = 0; t < theta_.size(); t++) {	
+  //     costheta[t] = cos(theta_[t]);
+  //   }
+  //   for (int n = 0; n < nmax_; n++) {
+  //     for (int t = 0; t < theta_.size(); t++) {	
+  // 	if (n == 0) {
+  // 	  // Initialize Pi and Tau
+  // 	  Pi[n][t] = 1.0;
+  // 	  Tau[n][t] = (n + 1)*costheta[t]; 
+  // 	} else {
+  // 	  // Calculate the actual values
+  // 	  Pi[n][t] = ((n == 1) ? ((n + n + 1)*costheta[t]*Pi[n - 1][t]/n)
+  // 		   : (((n + n + 1)*costheta[t]*Pi[n - 1][t]
+  // 		       - (n + 1)*Pi[n - 2][t])/n));
+  // 	  Tau[n][t] = (n + 1)*costheta[t]*Pi[n][t] - (n + 2)*Pi[n - 1][t];
+  // 	}
+  //     }
+  //   }
+  }  // end of void MultiLayerMie::calcPiTau(...)
   //**********************************************************************************//
   // This function calculates the scattering coefficients required to calculate       //
   // both the near- and far-field parameters.                                         //
@@ -1028,6 +1061,7 @@ c    MM       + 1  and - 1, alternately
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::InitMieCalculations() {
+    isMieCalculated_ = false;
     // Initialize the scattering parameters
     Qext_ = 0;
     Qsca_ = 0;
@@ -1060,6 +1094,7 @@ c    MM       + 1  and - 1, alternately
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::ConvertToSP() {
+    isMieCalculated_ = false;
     if (target_width_.size() + coating_width_.size() == 0)
       return;  // Nothing to convert, we suppose that SP was set directly
     GenerateSizeParameter();
@@ -1099,6 +1134,7 @@ c    MM       + 1  and - 1, alternately
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   void MultiLayerMie::RunMieCalculations() {
+    isMieCalculated_ = false;
     ConvertToSP();
     nmax_ = nmax_preset_;
     if (size_parameter_.size() != index_.size())
