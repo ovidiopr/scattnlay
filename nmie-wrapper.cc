@@ -838,46 +838,28 @@ c    MM       + 1  and - 1, alternately
   //**********************************************************************************//
   void MultiLayerMie::calcPiTau(std::vector< std::vector<double> >& Pi,
 				std::vector< std::vector<double> >& Tau) {
-    
-  int n;
-  //****************************************************//
-  // Equations (26a) - (26c)                            //
-  //****************************************************//
-  // Initialize Pi and Tau
-  Pi[0] = 1.0;
-  Tau[0] = cos(Theta);
-  // Calculate the actual values
-  if (nmax > 1) {
-    Pi[1] = 3*Tau[0]*Pi[0];
-    Tau[1] = 2*Tau[0]*Pi[1] - 3*Pi[0];
-    for (n = 2; n < nmax; n++) {
-      Pi[n] = ((n + n + 1)*Tau[0]*Pi[n - 1] - (n + 1)*Pi[n - 2])/n;
-      Tau[n] = (n + 1)*Tau[0]*Pi[n] - (n + 2)*Pi[n - 1];
+    //****************************************************//
+    // Equations (26a) - (26c)                            //
+    //****************************************************//
+    std::vector<double> costheta(theta_.size(), 0.0);
+    for (int t = 0; t < theta_.size(); t++) {	
+      costheta[t] = cos(theta_[t]);
     }
-  }
-
-  // //****************************************************//
-  //   // Equations (26a) - (26c)                            //
-  //   //****************************************************//
-  //   std::vector<double> costheta(theta_.size(), 0.0);
-  //   for (int t = 0; t < theta_.size(); t++) {	
-  //     costheta[t] = cos(theta_[t]);
-  //   }
-  //   for (int n = 0; n < nmax_; n++) {
-  //     for (int t = 0; t < theta_.size(); t++) {	
-  // 	if (n == 0) {
-  // 	  // Initialize Pi and Tau
-  // 	  Pi[n][t] = 1.0;
-  // 	  Tau[n][t] = (n + 1)*costheta[t]; 
-  // 	} else {
-  // 	  // Calculate the actual values
-  // 	  Pi[n][t] = ((n == 1) ? ((n + n + 1)*costheta[t]*Pi[n - 1][t]/n)
-  // 		   : (((n + n + 1)*costheta[t]*Pi[n - 1][t]
-  // 		       - (n + 1)*Pi[n - 2][t])/n));
-  // 	  Tau[n][t] = (n + 1)*costheta[t]*Pi[n][t] - (n + 2)*Pi[n - 1][t];
-  // 	}
-  //     }
-  //   }
+    for (int n = 0; n < nmax_; n++) {
+      for (int t = 0; t < theta_.size(); t++) {	
+  	if (n == 0) {
+  	  // Initialize Pi and Tau
+  	  Pi[n][t] = 1.0;
+  	  Tau[n][t] = (n + 1)*costheta[t]; 
+  	} else {
+  	  // Calculate the actual values
+  	  Pi[n][t] = ((n == 1) ? ((n + n + 1)*costheta[t]*Pi[n - 1][t]/n)
+  		   : (((n + n + 1)*costheta[t]*Pi[n - 1][t]
+  		       - (n + 1)*Pi[n - 2][t])/n));
+  	  Tau[n][t] = (n + 1)*costheta[t]*Pi[n][t] - (n + 2)*Pi[n - 1][t];
+  	}
+      }
+    }
   }  // end of void MultiLayerMie::calcPiTau(...)
   //**********************************************************************************//
   // This function calculates the scattering coefficients required to calculate       //
