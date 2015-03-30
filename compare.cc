@@ -250,20 +250,9 @@ int main(int argc, char *argv[]) {
       repeats *= 10;
     } while (cpptime_nsec < 1e8 && ctime_nsec < 1e8);
 
-    // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
     nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
-    // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
-    //  ctime_nsec = diff(time1,time2).tv_nsec;
-    // printf("-- C time consumed %ld sec : %ld nsec\n",diff(time1,time2).tv_sec, ctime_nsec);
-
-    // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
     nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
         printf("\n");
-    // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
-    // cpptime_nsec = diff(time1,time2).tv_nsec;
-    // printf("-- C++ time consumed %ld sec : %ld nsec\n",diff(time1,time2).tv_sec,cpptime_nsec);
-
-    // printf("-- C/C++ time ratio: %Lg\n", static_cast<long double>(ctime_nsec)/static_cast<long double>(cpptime_nsec));
     
     if (has_comment) {
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  old\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
@@ -281,7 +270,42 @@ int main(int argc, char *argv[]) {
         printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
       }
     }
-
+    // Field testing
+    double from_coord = -3.0, to_coord = 3.0;
+    int samples = 11;
+    std::vector<double> range, zero(samples, 0.0);
+    for (int i = 0; i < samples; ++i)
+      range.push_back( from_coord + (to_coord-from_coord)/static_cast<double>(samples) );
+    std::vector<double> Xp, Yp, Zp;
+    // X line
+    Xp.insert(Xp.end(), range.begin(), range.end());
+    Yp.insert(Yp.end(), zero.begin(), zero.end());
+    Zp.insert(Zp.end(), zero.begin(), zero.end());
+    // Y line
+    Xp.insert(Xp.end(), zero.begin(), zero.end());
+    Yp.insert(Yp.end(), range.begin(), range.end());
+    Zp.insert(Zp.end(), zero.begin(), zero.end());
+    // Z line
+    Xp.insert(Xp.end(), zero.begin(), zero.end());
+    Yp.insert(Yp.end(), zero.begin(), zero.end());
+    Zp.insert(Zp.end(), range.begin(), range.end());
+    int ncoord = Xp.size();
+    x = {1.0};
+    m = {std::complex<double>(0.05/1.46,2.070)};
+    L = x.size();
+    int pl = 0;
+    int nmax = 0;
+    std::vector<std::vector<std::complex<double> > > E(ncoord), H(ncoord);
+    for (auto& f:E) f.resize(3);
+    for (auto& f:H) f.resize(3);
+    nmax =  nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
+    double sum_e = 0.0, sum_h = 0.0;
+    for (auto f:E) 
+      for (auto c:f) sum_e+=std::abs(c);
+    for (auto f:H) 
+      for (auto c:f) sum_h+=std::abs(c);
+    printf ("Field total sum (old) \n\tE    =%23.16f\n\tH*377=%23.16f\n", sum_e, sum_h*377.0);
+    nmie::nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
 
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.

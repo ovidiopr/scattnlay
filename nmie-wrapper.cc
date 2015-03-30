@@ -48,10 +48,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   //emulate C call.
-  int nMie_wrapper(int L, const std::vector<double>& x, const std::vector<std::complex<double> >& m,
-         int nTheta, const std::vector<double>& Theta,
-         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-		   std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int nMie_wrapper(int L, const std::vector<double>& x, const std::vector<std::complex<double> >& m, int nTheta, const std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -74,6 +71,38 @@ namespace nmie {
       *Albedo = multi_layer_mie.GetAlbedo();
       S1 = multi_layer_mie.GetS1();
       S2 = multi_layer_mie.GetS2();
+      //multi_layer_mie.GetFailed();
+    } catch( const std::invalid_argument& ia ) {
+      // Will catch if  multi_layer_mie fails or other errors.
+      std::cerr << "Invalid argument: " << ia.what() << std::endl;
+      throw std::invalid_argument(ia);
+      return -1;
+    }  
+
+    return 0;
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  int nField(const int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp,  std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
+    if (x.size() != L || m.size() != L)
+        throw std::invalid_argument("Declared number of layers do not fit x and m!");
+    if (Xp.size() != ncoord || Yp.size() != ncoord || Zp.size() != ncoord
+	|| E.size() != ncoord || H.size() != ncoord )
+      throw std::invalid_argument("Declared number of coords do not fit Xp, Yp, Zp, E, or H!");
+    for (auto f:E)
+      if ( f.size() != 3)
+	throw std::invalid_argument("Field E is not 3D!");
+    for (auto f:H)
+      if ( f.size() != 3)
+	throw std::invalid_argument("Field H is not 3D!");
+    try {
+      MultiLayerMie multi_layer_mie;  
+      multi_layer_mie.SetPEC(pl);
+      multi_layer_mie.SetWidthSP(x);
+      multi_layer_mie.SetIndexSP(m);      
+      multi_layer_mie.SetFieldPointsSP({Xp, Yp, Zp})
+      multi_layer_mie.RunFieldCalculations();
       //multi_layer_mie.GetFailed();
     } catch( const std::invalid_argument& ia ) {
       // Will catch if  multi_layer_mie fails or other errors.
@@ -307,6 +336,12 @@ namespace nmie {
     index_ = index;
     // for (auto value : index) index_.push_back(value);
   }  // end of void MultiLayerMie::SetIndexSP(...);  
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void MultiLayerMie::SetFieldPointsSP(const std::vector< std::vector<double> >& coords_sp) {
+
+  }  // end of void MultiLayerMie::SetFieldPointsSP(...)
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1132,10 +1167,9 @@ c    MM       + 1  and - 1, alternately
       throw std::invalid_argument("Each size parameter should have only one index!");
     if (size_parameter_.size() == 0)
       throw std::invalid_argument("Initialize model first!");
-    std::vector<std::complex<double> > an, bn;
     const std::vector<double>& x = size_parameter_;
     // Calculate scattering coefficients
-    ScattCoeffs(an, bn);
+    ScattCoeffs(an_, bn_);
 
     // std::vector< std::vector<double> > Pi(nmax_), Tau(nmax_);
     std::vector< std::vector<double> > Pi, Tau;
@@ -1155,34 +1189,34 @@ c    MM       + 1  and - 1, alternately
     for (int i = nmax_ - 2; i >= 0; i--) {
       const int n = i + 1;
       // Equation (27)
-      Qext_ch_norm_[i] = (an[i].real() + bn[i].real());
+      Qext_ch_norm_[i] = (an_[i].real() + bn_[i].real());
       Qext_ch_[i] = (n + n + 1.0)*Qext_ch_norm_[i];
-      //Qext_ch_[i] = (n + n + 1)*(an[i].real() + bn[i].real());
+      //Qext_ch_[i] = (n + n + 1)*(an_[i].real() + bn_[i].real());
       Qext_ += Qext_ch_[i];
       // Equation (28)
-      Qsca_ch_norm_[i] = (an[i].real()*an[i].real() + an[i].imag()*an[i].imag()
-			  + bn[i].real()*bn[i].real() + bn[i].imag()*bn[i].imag());
+      Qsca_ch_norm_[i] = (an_[i].real()*an_[i].real() + an_[i].imag()*an_[i].imag()
+			  + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
       Qsca_ch_[i] = (n + n + 1.0)*Qsca_ch_norm_[i];
       Qsca_ += Qsca_ch_[i];
-      // Qsca_ch_[i] += (n + n + 1)*(an[i].real()*an[i].real() + an[i].imag()*an[i].imag()
-      // 			    + bn[i].real()*bn[i].real() + bn[i].imag()*bn[i].imag());
+      // Qsca_ch_[i] += (n + n + 1)*(an_[i].real()*an_[i].real() + an_[i].imag()*an_[i].imag()
+      // 			    + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
 
       // Equation (29) TODO We must check carefully this equation. If we
       // remove the typecast to double then the result changes. Which is
       // the correct one??? Ovidio (2014/12/10) With cast ratio will
       // give double, without cast (n + n + 1)/(n*(n + 1)) will be
       // rounded to integer. Tig (2015/02/24)
-      Qpr_ch_[i]=((n*(n + 2)/(n + 1))*((an[i]*std::conj(an[n]) + bn[i]*std::conj(bn[n])).real())
-	       + ((double)(n + n + 1)/(n*(n + 1)))*(an[i]*std::conj(bn[i])).real());
+      Qpr_ch_[i]=((n*(n + 2)/(n + 1))*((an_[i]*std::conj(an_[n]) + bn_[i]*std::conj(bn_[n])).real())
+	       + ((double)(n + n + 1)/(n*(n + 1)))*(an_[i]*std::conj(bn_[i])).real());
       Qpr_ += Qpr_ch_[i];
       // Equation (33)      
-      Qbktmp_ch[i] = (double)(n + n + 1)*(1 - 2*(n % 2))*(an[i]- bn[i]);
+      Qbktmp_ch[i] = (double)(n + n + 1)*(1 - 2*(n % 2))*(an_[i]- bn_[i]);
       Qbktmp += Qbktmp_ch[i];
       // Calculate the scattering amplitudes (S1 and S2)    //
       // Equations (25a) - (25b)                            //
       for (int t = 0; t < theta_.size(); t++) {
-	S1_[t] += calc_S1(n, an[i], bn[i], Pi[t][i], Tau[t][i]);
-	S2_[t] += calc_S2(n, an[i], bn[i], Pi[t][i], Tau[t][i]);
+	S1_[t] += calc_S1(n, an_[i], bn_[i], Pi[t][i], Tau[t][i]);
+	S2_[t] += calc_S2(n, an_[i], bn_[i], Pi[t][i], Tau[t][i]);
       }
     }
     double x2 = pow2(x.back());
@@ -1215,95 +1249,94 @@ c    MM       + 1  and - 1, alternately
   // external scattering field = incident + scattered
   // BH p.92 (4.37), 94 (4.45), 95 (4.50)
   // assume: medium is non-absorbing; refim = 0; Uabs = 0
-  void MultiLayerMie::fieldExt(double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
-			       std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
-			       std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
+  void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
     
+    // int i, n, n1;
+    // double rn;
+    // std::complex<double> ci, zn, xxip, encap;
+    // std::vector<std::complex<double> > vm3o1n, vm3e1n, vn3o1n, vn3e1n;
+    // vm3o1n.resize(3);
+    // vm3e1n.resize(3);
+    // vn3o1n.resize(3);
+    // vn3e1n.resize(3);
+    
+    // std::vector<std::complex<double> > Ei, Hi, Es, Hs;
+    // Ei.resize(3);
+    // Hi.resize(3);
+    // Es.resize(3);
+    // Hs.resize(3);
+    // for (i = 0; i < 3; i++) {
+    //   Ei[i] = std::complex<double>(0.0, 0.0);
+    //   Hi[i] = std::complex<double>(0.0, 0.0);
+    //   Es[i] = std::complex<double>(0.0, 0.0);
+    //   Hs[i] = std::complex<double>(0.0, 0.0);
+    // }
+    
+    // std::vector<std::complex<double> > bj, by, bd;
+    // bj.resize(nmax);
+    // by.resize(nmax);
+    // bd.resize(nmax);
+    
+    // // Calculate spherical Bessel and Hankel functions
+    // sphericalBessel(Rho, nmax, bj, by, bd);
+    
+    // ci = std::complex<double>(0.0, 1.0);
+    // for (n = 0; n < nmax; n++) {
+    //   n1 = n + 1;
+    //   rn = double(n + 1);
+      
+    //   zn = bj[n1] + ci*by[n1];
+    //   xxip = Rho*(bj[n] + ci*by[n]) - rn*zn;
+      
+    //   vm3o1n[0] = std::complex<double>(0.0, 0.0);
+    //   vm3o1n[1] = std::cos(Phi)*Pi[n]*zn;
+    //   vm3o1n[2] = -std::sin(Phi)*Tau[n]*zn;
+    //   vm3e1n[0] = std::complex<double>(0.0, 0.0);
+    //   vm3e1n[1] = -std::sin(Phi)*Pi[n]*zn;
+    //   vm3e1n[2] = -std::cos(Phi)*Tau[n]*zn;
+    //   vn3o1n[0] = std::sin(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n]*zn/Rho;
+    //   vn3o1n[1] = std::sin(Phi)*Tau[n]*xxip/Rho;
+    //   vn3o1n[2] = std::cos(Phi)*Pi[n]*xxip/Rho;
+    //   vn3e1n[0] = std::cos(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n]*zn/Rho;
+    //   vn3e1n[1] = std::cos(Phi)*Tau[n]*xxip/Rho;
+    //   vn3e1n[2] = -std::sin(Phi)*Pi[n]*xxip/Rho;
+      
+    //   // scattered field: BH p.94 (4.45)
+    //   encap = std::pow(ci, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
+    //   for (i = 0; i < 3; i++) {
+    //   Es[i] = Es[i] + encap*(ci*an_[n]*vn3e1n[i] - bn_[n]*vm3o1n[i]);
+    //   Hs[i] = Hs[i] + encap*(ci*bn_[n]*vn3o1n[i] + an_[n]*vm3e1n[i]);
+    //   }
+    // }
+    
+    // // incident E field: BH p.89 (4.21); cf. p.92 (4.37), p.93 (4.38)
+    // // basis unit vectors = er, etheta, ephi
+    // std::complex<double> eifac = std::exp(std::complex<double>(0.0, Rho*std::cos(Theta)));
+    
+    // Ei[0] = eifac*std::sin(Theta)*std::cos(Phi);
+    // Ei[1] = eifac*std::cos(Theta)*std::cos(Phi);
+    // Ei[2] = -eifac*std::sin(Phi);
 
-    double rn = 0.0;
-    std::complex<double> zn, xxip, encap;
-    std::vector<std::complex<double> > vm3o1n, vm3e1n, vn3o1n, vn3e1n;
-    vm3o1n.resize(3);
-    vm3e1n.resize(3);
-    vn3o1n.resize(3);
-    vn3e1n.resize(3);
+    // // magnetic field
+    // double hffact = 1.0/(cc*mu);
+    // for (i = 0; i < 3; i++) {
+    //   Hs[i] = hffact*Hs[i];
+    // }
+    
+    // // incident H field: BH p.26 (2.43), p.89 (4.21)
+    // std::complex<double> hffacta = hffact;
+    // std::complex<double> hifac = eifac*hffacta;
 
-    std::vector<std::complex<double> > Ei, Hi, Es, Hs;
-    Ei.resize(3);
-    Hi.resize(3);
-    Es.resize(3);
-    Hs.resize(3);
-    for (int i = 0; i < 3; i++) {
-      Ei[i] = std::complex<double>(0.0, 0.0);
-      Hi[i] = std::complex<double>(0.0, 0.0);
-      Es[i] = std::complex<double>(0.0, 0.0);
-      Hs[i] = std::complex<double>(0.0, 0.0);
-    }
-
-    std::vector<std::complex<double> > bj, by, bd;
-    bj.resize(nmax_);
-    by.resize(nmax_);
-    bd.resize(nmax_);
-
-    // Calculate spherical Bessel and Hankel functions
-    sphericalBessel(Rho, bj, by, bd);
-
-    for (int n = 0; n < nmax_; n++) {
-      rn = double(n + 1);
-
-      zn = bj[n] + std::complex<double>(0.0, 1.0)*by[n];
-      xxip = Rho*(bj[n] + std::complex<double>(0.0, 1.0)*by[n]) - rn*zn;
-
-      vm3o1n[0] = std::complex<double>(0.0, 0.0);
-      vm3o1n[1] = std::cos(Phi)*Pi[n]*zn;
-      vm3o1n[2] = -(std::sin(Phi)*Tau[n]*zn);
-      vm3e1n[0] = std::complex<double>(0.0, 0.0);
-      vm3e1n[1] = -(std::sin(Phi)*Pi[n]*zn);
-      vm3e1n[2] = -(std::cos(Phi)*Tau[n]*zn);
-      vn3o1n[0] = std::sin(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n]*zn/Rho;
-      vn3o1n[1] = std::sin(Phi)*Tau[n]*xxip/Rho;
-      vn3o1n[2] = std::cos(Phi)*Pi[n]*xxip/Rho;
-      vn3e1n[0] = std::cos(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n]*zn/Rho;
-      vn3e1n[1] = std::cos(Phi)*Tau[n]*xxip/Rho;
-      vn3e1n[2] = -(std::sin(Phi)*Pi[n]*xxip/Rho);
-
-      // scattered field: BH p.94 (4.45)
-      encap = std::pow(std::complex<double>(0.0, 1.0), rn)*(2.0*rn + 1.0)/(rn*(rn + 1.0));
-      for (int i = 0; i < 3; i++) {
-	Es[i] = Es[i] + encap*(std::complex<double>(0.0, 1.0)*an[n]*vn3e1n[i] - bn[n]*vm3o1n[i]);
-	Hs[i] = Hs[i] + encap*(std::complex<double>(0.0, 1.0)*bn[n]*vn3o1n[i] + an[n]*vm3e1n[i]);
-      }
-    }
-
-    // incident E field: BH p.89 (4.21); cf. p.92 (4.37), p.93 (4.38)
-    // basis unit vectors = er, etheta, ephi
-    std::complex<double> eifac = std::exp(std::complex<double>(0.0, 1.0)*Rho*std::cos(Theta));
-
-    Ei[0] = eifac*std::sin(Theta)*std::cos(Phi);
-    Ei[1] = eifac*std::cos(Theta)*std::cos(Phi);
-    Ei[2] = -(eifac*std::sin(Phi));
-
-    // magnetic field
-    double hffact = 1.0/(cc*mu);
-    for (int i = 0; i < 3; i++) {
-      Hs[i] = hffact*Hs[i];
-    }
-
-    // incident H field: BH p.26 (2.43), p.89 (4.21)
-    std::complex<double> hffacta = hffact;
-    std::complex<double> hifac = eifac*hffacta;
-
-    Hi[0] = hifac*std::sin(Theta)*std::sin(Phi);
-    Hi[1] = hifac*std::cos(Theta)*std::sin(Phi);
-    Hi[2] = hifac*std::cos(Phi);
-
-    for (int i = 0; i < 3; i++) {
-      // electric field E [V m-1] = EF*E0
-      E[i] = Ei[i] + Es[i];
-      H[i] = Hi[i] + Hs[i];
-    }
-  }
-
+    // Hi[0] = hifac*std::sin(Theta)*std::sin(Phi);
+    // Hi[1] = hifac*std::cos(Theta)*std::sin(Phi);
+    // Hi[2] = hifac*std::cos(Phi);
+    
+    // for (i = 0; i < 3; i++) {
+    //   // electric field E [V m-1] = EF*E0
+    //   E[i] = Ei[i] + Es[i];
+    //   H[i] = Hi[i] + Hs[i];
+    // }
+  }  // end of void fieldExt(...)
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1330,67 +1363,79 @@ c    MM       + 1  and - 1, alternately
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
+  void RunFieldCalculations() {
+    
+    // // int i, c;
+    // // double Rho, Phi, Theta;
+    // // std::vector<std::complex<double> > an, bn;
+    
+    // // // This array contains the fields in spherical coordinates
+    // // std::vector<std::complex<double> > Es, Hs;
+    // // Es.resize(3);
+    // // Hs.resize(3);
+    
 
-  //   int MultiLayerMie::nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
-  //            int ncoord, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
-  // 		   std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
+    // // // Calculate scattering coefficients
+    // // nmax = ScattCoeffs(L, pl, x, m, nmax, an, bn);
+    
+    // // std::vector<double> Pi, Tau;
+    // // Pi.resize(nmax);
+    // // Tau.resize(nmax);
+    
+    // // for (c = 0; c < ncoord; c++) {
+    // //   // Convert to spherical coordinates
+    // //   Rho = std::sqrt(pow2(Xp[c]) + pow2(Yp[c]) + pow2(Zp[c]));
 
-  //   double Rho, Phi, Theta;
-  //   std::vector<std::complex<double> > an, bn;
-
-  //   // This array contains the fields in spherical coordinates
-  //   std::vector<std::complex<double> > Es, Hs;
-  //   Es.resize(3);
-  //   Hs.resize(3);
-
-
-  //   // Calculate scattering coefficients
-  //   ScattCoeffs(L, pl, an, bn);
-
-  //   std::vector<double> Pi, Tau;
-  //   Pi.resize(nmax_);
-  //   Tau.resize(nmax_);
-
-  //   for (int c = 0; c < ncoord; c++) {
-  //     // Convert to spherical coordinates
-  //     Rho = sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c] + Zp[c]*Zp[c]);
-  //     if (Rho < 1e-3) {
-  //       // Avoid convergence problems
-  //       Rho = 1e-3;
-  //     }
-  //     Phi = acos(Xp[c]/sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c]));
-  //     Theta = acos(Xp[c]/Rho);
-
-  //     calcAllPiTau(Theta, Pi, Tau);
-
-  //     //*******************************************************//
-  //     // external scattering field = incident + scattered      //
-  //     // BH p.92 (4.37), 94 (4.45), 95 (4.50)                  //
-  //     // assume: medium is non-absorbing; refim = 0; Uabs = 0  //
-  //     //*******************************************************//
-
-  //     // Firstly the easiest case: the field outside the particle
-  //     if (Rho >= x[L - 1]) {
-  //       fieldExt(Rho, Phi, Theta, Pi, Tau, an, bn, Es, Hs);
-  //     } else {
-  //       // TODO, for now just set all the fields to zero
-  //       for (int i = 0; i < 3; i++) {
-  //         Es[i] = std::complex<double>(0.0, 0.0);
-  //         Hs[i] = std::complex<double>(0.0, 0.0);
-  //       }
-  //     }
-
-  //     //Now, convert the fields back to cartesian coordinates
-  //     E[c][0] = std::sin(Theta)*std::cos(Phi)*Es[0] + std::cos(Theta)*std::cos(Phi)*Es[1] - std::sin(Phi)*Es[2];
-  //     E[c][1] = std::sin(Theta)*std::sin(Phi)*Es[0] + std::cos(Theta)*std::sin(Phi)*Es[1] + std::cos(Phi)*Es[2];
-  //     E[c][2] = std::cos(Theta)*Es[0] - std::sin(Theta)*Es[1];
-
-  //     H[c][0] = std::sin(Theta)*std::cos(Phi)*Hs[0] + std::cos(Theta)*std::cos(Phi)*Hs[1] - std::sin(Phi)*Hs[2];
-  //     H[c][1] = std::sin(Theta)*std::sin(Phi)*Hs[0] + std::cos(Theta)*std::sin(Phi)*Hs[1] + std::cos(Phi)*Hs[2];
-  //     H[c][2] = std::cos(Theta)*Hs[0] - std::sin(Theta)*Hs[1];
-  //   }
-
-  //   return nmax;
-  // }  // end of int nField()
+    // //   // Avoid convergence problems due to Rho too small
+    // //   if (Rho < 1e-5) {
+    // // 	Rho = 1e-5;
+    // //   }
+      
+    // //   //If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
+    // //   if (Rho == 0.0) {
+    // // 	Theta = 0.0;
+    // //   } else {
+    // // 	Theta = std::acos(Zp[c]/Rho);
+    // //   }
+      
+    // //   //If Xp=Yp=0 then Phi is undefined. Just set it to zero to zero to avoid problems
+    // //   if ((Xp[c] == 0.0) and (Yp[c] == 0.0)) {
+    // // 	Phi = 0.0;
+    // // } else {
+    // // 	Phi = std::acos(Xp[c]/std::sqrt(pow2(Xp[c]) + pow2(Yp[c])));
+    // //   }
+      
+    // //   calcPiTau(nmax, Theta, Pi, Tau);
+      
+    // //   //*******************************************************//
+    // //   // external scattering field = incident + scattered      //
+    // //   // BH p.92 (4.37), 94 (4.45), 95 (4.50)                  //
+    // //   // assume: medium is non-absorbing; refim = 0; Uabs = 0  //
+    // //   //*******************************************************//
+      
+    // //   // Firstly the easiest case: the field outside the particle
+    // //   if (Rho >= x[L - 1]) {
+    // //   fieldExt(nmax, Rho, Phi, Theta, Pi, Tau, an, bn, Es, Hs);
+    // //   } else {
+    // // 	// TODO, for now just set all the fields to zero
+    // // 	for (i = 0; i < 3; i++) {
+    // // 	  Es[i] = std::complex<double>(0.0, 0.0);
+    // // 	  Hs[i] = std::complex<double>(0.0, 0.0);
+    // // 	}
+    // //   }
+      
+    // //   //Now, convert the fields back to cartesian coordinates
+    // //   E[c][0] = std::sin(Theta)*std::cos(Phi)*Es[0] + std::cos(Theta)*std::cos(Phi)*Es[1] - std::sin(Phi)*Es[2];
+    // //   E[c][1] = std::sin(Theta)*std::sin(Phi)*Es[0] + std::cos(Theta)*std::sin(Phi)*Es[1] + std::cos(Phi)*Es[2];
+    // //   E[c][2] = std::cos(Theta)*Es[0] - std::sin(Theta)*Es[1];
+      
+    // //   H[c][0] = std::sin(Theta)*std::cos(Phi)*Hs[0] + std::cos(Theta)*std::cos(Phi)*Hs[1] - std::sin(Phi)*Hs[2];
+    // //   H[c][1] = std::sin(Theta)*std::sin(Phi)*Hs[0] + std::cos(Theta)*std::sin(Phi)*Hs[1] + std::cos(Phi)*Hs[2];
+    // //   H[c][2] = std::cos(Theta)*Hs[0] - std::sin(Theta)*Hs[1];
+    // // }
+    
+    // // return nmax;
+    return 0;
+  }
 
 }  // end of namespace nmie

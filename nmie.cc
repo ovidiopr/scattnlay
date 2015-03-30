@@ -276,9 +276,9 @@ void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double
   }
 
   std::vector<std::complex<double> > bj, by, bd;
-  bj.resize(nmax);
-  by.resize(nmax);
-  bd.resize(nmax);
+  bj.resize(nmax+1);
+  by.resize(nmax+1);
+  bd.resize(nmax+1);
 
   // Calculate spherical Bessel and Hankel functions
   sphericalBessel(Rho, nmax, bj, by, bd);
@@ -930,9 +930,7 @@ int nMie(int L, std::vector<double> x, std::vector<std::complex<double> > m,
 //   Number of multipolar expansion terms used for the calculations                 //
 //**********************************************************************************//
 
-int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
-           int ncoord, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
-		   std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
+int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax, int ncoord, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
 
   int i, c;
   double Rho, Phi, Theta;
@@ -955,16 +953,16 @@ int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double
     // Convert to spherical coordinates
     Rho = sqrt(Xp[c]*Xp[c] + Yp[c]*Yp[c] + Zp[c]*Zp[c]);
 
+    // Avoid convergence problems due to Rho too small
+    if (Rho < 1e-5) {
+      Rho = 1e-5;
+    }
+
     //If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
     if (Rho == 0.0) {
       Theta = 0.0;
     } else {
       Theta = acos(Zp[c]/Rho);
-    }
-
-    // Avoid convergence problems due to Rho too small
-    if (Rho < 1e-5) {
-      Rho = 1e-5;
     }
 
     //If Xp=Yp=0 then Phi is undefined. Just set it to zero to zero to avoid problems

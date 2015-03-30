@@ -54,10 +54,9 @@
 
 namespace nmie {
 
-  int nMie_wrapper(int L, const std::vector<double>& x, const std::vector<std::complex<double> >& m,
-         int nTheta, const std::vector<double>& Theta,
-         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-	   std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+  int nMie_wrapper(int L, const std::vector<double>& x, const std::vector<std::complex<double> >& m, int nTheta, const std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+  int nField(const int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp,  std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H)
+
 
   class MultiLayerMie {
     // Will throw for any error!
@@ -92,7 +91,7 @@ namespace nmie {
     //Set parameters in size parameter units
     void SetWidthSP(const std::vector<double>& width);
     void SetIndexSP(const std::vector< std::complex<double> >& index);
-    void SetFieldPointsSP(std::vector< std::array<double,3> > coords);
+    void SetFieldPointsSP(const std::vector< std::vector<double> >& coords_sp);
 
     // Set common parameters
     void SetAnglesForPattern(double from_angle, double to_angle, int samples);
@@ -117,8 +116,8 @@ namespace nmie {
     std::vector<double>                  GetCoatingLayersWidth();
     std::vector< std::complex<double> >  GetCoatingLayersIndex();
     std::vector< std::array<double,3> >   GetFieldPoints();
-    std::vector<std::array< std::complex<double>,3 > >  GetFieldE();
-    std::vector<std::array< std::complex<double>,3 > >  GetFieldH();
+    std::vector<std::vector< std::complex<double> > >  GetFieldE();
+    std::vector<std::vector< std::complex<double> > >  GetFieldH();
     std::vector< std::vector<double> >   GetSpectra(double from_WL, double to_WL,
                                                    int samples);  // ext, sca, abs, bk
     double GetRCSext();
@@ -231,6 +230,9 @@ namespace nmie {
     int nmax_ = -1;
     int nmax_used_ = -1;
     int nmax_preset_ = -1;
+    // Scattering coefficients
+    std::vector<std::complex<double> > an_, bn_;
+    std::vector< std::vector<double> > coords_sp_;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     // Mie efficinecy from each multipole channel.
