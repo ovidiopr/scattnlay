@@ -84,10 +84,10 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  int nField(const int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp,  std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
+  int nField(const int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec,  std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
-    if (Xp.size() != ncoord || Yp.size() != ncoord || Zp.size() != ncoord
+    if (Xp_vec.size() != ncoord || Yp_vec.size() != ncoord || Zp_vec.size() != ncoord
 	|| E.size() != ncoord || H.size() != ncoord )
       throw std::invalid_argument("Declared number of coords do not fit Xp, Yp, Zp, E, or H!");
     for (auto f:E)
@@ -101,7 +101,7 @@ namespace nmie {
       multi_layer_mie.SetPEC(pl);
       multi_layer_mie.SetWidthSP(x);
       multi_layer_mie.SetIndexSP(m);      
-      multi_layer_mie.SetFieldPointsSP({Xp, Yp, Zp})
+      multi_layer_mie.SetFieldPointsSP({Xp_vec, Yp_vec, Zp_vec});
       multi_layer_mie.RunFieldCalculations();
       //multi_layer_mie.GetFailed();
     } catch( const std::invalid_argument& ia ) {
@@ -340,7 +340,15 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::SetFieldPointsSP(const std::vector< std::vector<double> >& coords_sp) {
-
+    if (coords_sp.size() != 3)
+      throw std::invalid_argument("Error! Wrong dimension of field monitor points!");
+    if (coords_sp[0].size() != coords_sp[1].size()
+	|| coords_sp[0].size() != coords_sp[2].size())
+      throw std::invalid_argument("Error! Missing coordinates for field monitor points!");
+    coords_sp_ = coords_sp;
+    // for (int i = 0; i < coords_sp_[0].size(); ++i) {
+    //   printf("%g, %g, %g\n", coords_sp_[0][i], coords_sp_[1][i], coords_sp_[2][i]);
+    // }
   }  // end of void MultiLayerMie::SetFieldPointsSP(...)
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1249,7 +1257,8 @@ c    MM       + 1  and - 1, alternately
   // external scattering field = incident + scattered
   // BH p.92 (4.37), 94 (4.45), 95 (4.50)
   // assume: medium is non-absorbing; refim = 0; Uabs = 0
-  void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
+
+  // void MultiLayerMie::fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
     
     // int i, n, n1;
     // double rn;
@@ -1336,7 +1345,7 @@ c    MM       + 1  and - 1, alternately
     //   E[i] = Ei[i] + Es[i];
     //   H[i] = Hi[i] + Hs[i];
     // }
-  }  // end of void fieldExt(...)
+  //  }  // end of void fieldExt(...)
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1363,79 +1372,71 @@ c    MM       + 1  and - 1, alternately
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  void RunFieldCalculations() {
-    
-    // // int i, c;
-    // // double Rho, Phi, Theta;
-    // // std::vector<std::complex<double> > an, bn;
-    
-    // // // This array contains the fields in spherical coordinates
-    // // std::vector<std::complex<double> > Es, Hs;
-    // // Es.resize(3);
-    // // Hs.resize(3);
-    
+  void MultiLayerMie::RunFieldCalculations() {
+    // Calculate scattering coefficients an_ and bn_
+    RunMieCalculations();
 
-    // // // Calculate scattering coefficients
-    // // nmax = ScattCoeffs(L, pl, x, m, nmax, an, bn);
-    
-    // // std::vector<double> Pi, Tau;
-    // // Pi.resize(nmax);
-    // // Tau.resize(nmax);
-    
-    // // for (c = 0; c < ncoord; c++) {
-    // //   // Convert to spherical coordinates
-    // //   Rho = std::sqrt(pow2(Xp[c]) + pow2(Yp[c]) + pow2(Zp[c]));
+    std::vector<double> Pi(nmax_), Tau(nmax_);
+    long total_points = coords_sp_[0].size();
+    E_field_.resize(total_points);
+    H_field_.resize(total_points);
+    for (auto& f:E_field_) f.resize(3);
+    for (auto& f:H_field_) f.resize(3);
 
-    // //   // Avoid convergence problems due to Rho too small
-    // //   if (Rho < 1e-5) {
-    // // 	Rho = 1e-5;
-    // //   }
+    for (int point = 0;	 point < total_points; ++point) {
+      const double& Xp = coords_sp_[0][point];
+      const double& Yp = coords_sp_[1][point];
+      const double& Zp = coords_sp_[2][point];
+      // Convert to spherical coordinates
+      double Rho, Phi, Theta;
+      Rho = std::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
+      // Avoid convergence problems due to Rho too small
+      if (Rho < 1e-5) Rho = 1e-5;
+      // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
+      if (Rho == 0.0) Theta = 0.0;
+      else Theta = std::acos(Zp/Rho);
+      // If Xp=Yp=0 then Phi is undefined. Just set it to zero to zero to avoid problems
+      if (Xp == 0.0 && Yp == 0.0) Phi = 0.0;
+      else Phi = std::acos(Xp/std::sqrt(pow2(Xp) + pow2(Yp)));
+      calcSinglePiTau(std::cos(Theta), Pi, Tau);     
+      //*******************************************************//
+      // external scattering field = incident + scattered      //
+      // BH p.92 (4.37), 94 (4.45), 95 (4.50)                  //
+      // assume: medium is non-absorbing; refim = 0; Uabs = 0  //
+      //*******************************************************//
+      // This array contains the fields in spherical coordinates
+      std::vector<std::complex<double> > Es(3), Hs(3);
+      const double outer_size = size_parameter_.back();
+      // Firstly the easiest case: the field outside the particle
+      if (Rho >= outer_size) {
+	//fieldExt(nmax, Rho, Phi, Theta, Pi, Tau, an, bn, Es, Hs);
+      } else {
+    	// TODO, for now just set all the fields to zero
+    	for (int i = 0; i < 3; i++) {
+    	  Es[i] = std::complex<double>(0.0, 0.0);
+    	  Hs[i] = std::complex<double>(0.0, 0.0);
+    	}
+      }
+      std::complex<double>& Ex = E_field_[point][0];
+      std::complex<double>& Ey = E_field_[point][1];
+      std::complex<double>& Ez = E_field_[point][2];
+      std::complex<double>& Hx = H_field_[point][0];
+      std::complex<double>& Hy = H_field_[point][1];
+      std::complex<double>& Hz = H_field_[point][2];
+      //Now, convert the fields back to cartesian coordinates
+      {
+	using std::sin;
+	using std::cos;
+	Ex = sin(Theta)*cos(Phi)*Es[0] + cos(Theta)*cos(Phi)*Es[1] - sin(Phi)*Es[2];
+	Ey = sin(Theta)*sin(Phi)*Es[0] + cos(Theta)*sin(Phi)*Es[1] + cos(Phi)*Es[2];
+	Ez = cos(Theta)*Es[0] - sin(Theta)*Es[1];
       
-    // //   //If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
-    // //   if (Rho == 0.0) {
-    // // 	Theta = 0.0;
-    // //   } else {
-    // // 	Theta = std::acos(Zp[c]/Rho);
-    // //   }
-      
-    // //   //If Xp=Yp=0 then Phi is undefined. Just set it to zero to zero to avoid problems
-    // //   if ((Xp[c] == 0.0) and (Yp[c] == 0.0)) {
-    // // 	Phi = 0.0;
-    // // } else {
-    // // 	Phi = std::acos(Xp[c]/std::sqrt(pow2(Xp[c]) + pow2(Yp[c])));
-    // //   }
-      
-    // //   calcPiTau(nmax, Theta, Pi, Tau);
-      
-    // //   //*******************************************************//
-    // //   // external scattering field = incident + scattered      //
-    // //   // BH p.92 (4.37), 94 (4.45), 95 (4.50)                  //
-    // //   // assume: medium is non-absorbing; refim = 0; Uabs = 0  //
-    // //   //*******************************************************//
-      
-    // //   // Firstly the easiest case: the field outside the particle
-    // //   if (Rho >= x[L - 1]) {
-    // //   fieldExt(nmax, Rho, Phi, Theta, Pi, Tau, an, bn, Es, Hs);
-    // //   } else {
-    // // 	// TODO, for now just set all the fields to zero
-    // // 	for (i = 0; i < 3; i++) {
-    // // 	  Es[i] = std::complex<double>(0.0, 0.0);
-    // // 	  Hs[i] = std::complex<double>(0.0, 0.0);
-    // // 	}
-    // //   }
-      
-    // //   //Now, convert the fields back to cartesian coordinates
-    // //   E[c][0] = std::sin(Theta)*std::cos(Phi)*Es[0] + std::cos(Theta)*std::cos(Phi)*Es[1] - std::sin(Phi)*Es[2];
-    // //   E[c][1] = std::sin(Theta)*std::sin(Phi)*Es[0] + std::cos(Theta)*std::sin(Phi)*Es[1] + std::cos(Phi)*Es[2];
-    // //   E[c][2] = std::cos(Theta)*Es[0] - std::sin(Theta)*Es[1];
-      
-    // //   H[c][0] = std::sin(Theta)*std::cos(Phi)*Hs[0] + std::cos(Theta)*std::cos(Phi)*Hs[1] - std::sin(Phi)*Hs[2];
-    // //   H[c][1] = std::sin(Theta)*std::sin(Phi)*Hs[0] + std::cos(Theta)*std::sin(Phi)*Hs[1] + std::cos(Phi)*Hs[2];
-    // //   H[c][2] = std::cos(Theta)*Hs[0] - std::sin(Theta)*Hs[1];
-    // // }
+	Hx = sin(Theta)*cos(Phi)*Hs[0] + cos(Theta)*cos(Phi)*Hs[1] - sin(Phi)*Hs[2];
+	Hy = sin(Theta)*sin(Phi)*Hs[0] + cos(Theta)*sin(Phi)*Hs[1] + cos(Phi)*Hs[2];
+	Hz = cos(Theta)*Hs[0] - sin(Theta)*Hs[1];
+      }
+    }  // end of for all field coordinates
     
-    // // return nmax;
-    return 0;
-  }
+  }  //  end of   void MultiLayerMie::RunFieldCalculations()
 
 }  // end of namespace nmie

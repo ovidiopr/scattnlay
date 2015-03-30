@@ -55,7 +55,7 @@
 namespace nmie {
 
   int nMie_wrapper(int L, const std::vector<double>& x, const std::vector<std::complex<double> >& m, int nTheta, const std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nField(const int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp,  std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H)
+  int nField(const int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp,  std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
 
 
   class MultiLayerMie {
@@ -115,8 +115,8 @@ namespace nmie {
     std::vector< std::complex<double> >  GetTargetLayersIndex();
     std::vector<double>                  GetCoatingLayersWidth();
     std::vector< std::complex<double> >  GetCoatingLayersIndex();
-    std::vector< std::array<double,3> >   GetFieldPoints();
-    std::vector<std::vector< std::complex<double> > >  GetFieldE();
+    std::vector< std::vector<double> >   GetFieldPoints();
+    std::vector<std::vector< std::complex<double> > >  GetFieldE();   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<double> > >  GetFieldH();
     std::vector< std::vector<double> >   GetSpectra(double from_WL, double to_WL,
                                                    int samples);  // ext, sca, abs, bk
@@ -235,6 +235,7 @@ namespace nmie {
     std::vector< std::vector<double> > coords_sp_;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
+    std::vector<std::vector< std::complex<double> > > E_field_, H_field_;  // {X[], Y[], Z[]}
     // Mie efficinecy from each multipole channel.
     std::vector<double> Qsca_ch_, Qext_ch_, Qabs_ch_, Qbk_ch_, Qpr_ch_;
     std::vector<double> Qsca_ch_norm_, Qext_ch_norm_, Qabs_ch_norm_, Qbk_ch_norm_, Qpr_ch_norm_;
