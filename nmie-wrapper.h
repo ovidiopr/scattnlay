@@ -207,9 +207,7 @@ namespace nmie {
     void calcAllPiTau( std::vector< std::vector<double> >& Pi,
 		    std::vector< std::vector<double> >& Tau);
     void ScattCoeffs(std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
-    void fieldExt( double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
-		  std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
-		  std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
+    void fieldExt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
     
     bool isMieCalculated_ = false;
     double wavelength_ = 1.0;
@@ -242,11 +240,11 @@ namespace nmie {
     std::vector<std::complex<double> > S1_, S2_;
 
     //Used constants
-    const double PI=3.14159265358979323846;  
+    const double PI_=3.14159265358979323846;  
     // light speed [m s-1]
-    double const cc = 2.99792458e8;
+    double const cc_ = 2.99792458e8;
     // assume non-magnetic (MU=MU0=const) [N A-2]
-    double const mu = 4.0*PI*1.0e-7;
+    double const mu_ = 4.0*PI_*1.0e-7;
 
     //Temporary variables
     std::vector<std::complex<double> > PsiZeta_;

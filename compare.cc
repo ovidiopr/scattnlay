@@ -306,6 +306,12 @@ int main(int argc, char *argv[]) {
       for (auto c:f) sum_h+=std::abs(c);
     printf ("Field total sum (old) \n\tE    =%23.16f\n\tH*377=%23.16f\n", sum_e, sum_h*377.0);
     nmie::nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
+    sum_e = 0.0, sum_h = 0.0;
+    for (auto f:E) 
+      for (auto c:f) sum_e+=std::abs(c);
+    for (auto f:H) 
+      for (auto c:f) sum_h+=std::abs(c);
+    printf ("Field total sum (wrapper) \n\tE    =%23.16f\n\tH*377=%23.16f\n", sum_e, sum_h*377.0);
 
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.

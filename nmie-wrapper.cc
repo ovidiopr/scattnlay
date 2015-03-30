@@ -2,7 +2,7 @@
 /// @file   nmie.cc
 /// @author Ladutenko Konstantin <kostyfisik at gmail (.) com>
 /// @date   Tue Sep  3 00:38:27 2013
-/// @copyright 2013 Ladutenko Konstantin
+/// @copyright 2013,2014,2015 Ladutenko Konstantin
 ///
 /// nmie is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU General Public License as published by
@@ -377,11 +377,11 @@ namespace nmie {
     double radius = 0.0;
     for (auto width : target_width_) {
       radius += width;
-      size_parameter_.push_back(2*PI*radius / wavelength_);
+      size_parameter_.push_back(2*PI_*radius / wavelength_);
     }
     for (auto width : coating_width_) {
       radius += width;
-      size_parameter_.push_back(2*PI*radius / wavelength_);
+      size_parameter_.push_back(2*PI_*radius / wavelength_);
     }
     total_radius_ = radius;
   }  // end of void MultiLayerMie::GenerateSizeParameter();
@@ -712,8 +712,8 @@ namespace nmie {
 				  std::vector<std::complex<double> >& Psi,
 				  std::vector<std::complex<double> >& Zeta) {
     //Upward recurrence for Psi and Zeta - equations (20a) - (21b)
-    Psi[0] = std::complex<double>(sin(x), 0);
-    Zeta[0] = std::complex<double>(sin(x), -cos(x));
+    Psi[0] = std::complex<double>(std::sin(x), 0);
+    Zeta[0] = std::complex<double>(std::sin(x), -std::cos(x));
     for (int n = 1; n <= nmax_; n++) {
       Psi[n] = Psi[n - 1]*(n/x - D1[n - 1]);
       Zeta[n] = Zeta[n - 1]*(n/x - D3[n - 1]);
@@ -857,8 +857,8 @@ c    MM       + 1  and - 1, alternately
       throw std::invalid_argument
 	("Unstable D1! Please, try to change input parameters!\n");
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
-    PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))
-		       *exp(-2.0*z.imag()));
+    PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(std::cos(2.0*z.real()), std::sin(2.0*z.real()))
+		       *std::exp(-2.0*z.imag()));
     D3[0] = std::complex<double>(0.0, 1.0);
     for (int n = 1; n <= nmax_; n++) {
       PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)*zinv - D1[n - 1])
@@ -1025,9 +1025,9 @@ c    MM       + 1  and - 1, alternately
       //Calculate Q, Ha and Hb in the layers fl+1..L //
       //*********************************************//
       // Upward recurrence for Q - equations (19a) and (19b)
-      Num = exp(-2.0*(z1.imag() - z2.imag()))
-	* std::complex<double>(cos(-2.0*z2.real()) - exp(-2.0*z2.imag()), sin(-2.0*z2.real()));
-      Denom = std::complex<double>(cos(-2.0*z1.real()) - exp(-2.0*z1.imag()), sin(-2.0*z1.real()));
+      Num = std::exp(-2.0*(z1.imag() - z2.imag()))
+	* std::complex<double>(std::cos(-2.0*z2.real()) - std::exp(-2.0*z2.imag()), std::sin(-2.0*z2.real()));
+      Denom = std::complex<double>(std::cos(-2.0*z1.real()) - std::exp(-2.0*z1.imag()), std::sin(-2.0*z1.real()));
       Q[l][0] = Num/Denom;
       for (int n = 1; n <= nmax_; n++) {
 	Num = (z1*D1_mlxl[n] + double(n))*(double(n) - z1*D3_mlxl[n - 1]);
@@ -1258,94 +1258,77 @@ c    MM       + 1  and - 1, alternately
   // BH p.92 (4.37), 94 (4.45), 95 (4.50)
   // assume: medium is non-absorbing; refim = 0; Uabs = 0
 
-  // void MultiLayerMie::fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
+  void MultiLayerMie::fieldExt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
     
-    // int i, n, n1;
-    // double rn;
-    // std::complex<double> ci, zn, xxip, encap;
-    // std::vector<std::complex<double> > vm3o1n, vm3e1n, vn3o1n, vn3e1n;
-    // vm3o1n.resize(3);
-    // vm3e1n.resize(3);
-    // vn3o1n.resize(3);
-    // vn3e1n.resize(3);
-    
-    // std::vector<std::complex<double> > Ei, Hi, Es, Hs;
-    // Ei.resize(3);
-    // Hi.resize(3);
-    // Es.resize(3);
-    // Hs.resize(3);
-    // for (i = 0; i < 3; i++) {
-    //   Ei[i] = std::complex<double>(0.0, 0.0);
-    //   Hi[i] = std::complex<double>(0.0, 0.0);
-    //   Es[i] = std::complex<double>(0.0, 0.0);
-    //   Hs[i] = std::complex<double>(0.0, 0.0);
-    // }
-    
-    // std::vector<std::complex<double> > bj, by, bd;
-    // bj.resize(nmax);
-    // by.resize(nmax);
-    // bd.resize(nmax);
-    
-    // // Calculate spherical Bessel and Hankel functions
-    // sphericalBessel(Rho, nmax, bj, by, bd);
-    
-    // ci = std::complex<double>(0.0, 1.0);
-    // for (n = 0; n < nmax; n++) {
-    //   n1 = n + 1;
-    //   rn = double(n + 1);
+    std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0);
+    std::vector<std::complex<double> > vm3o1n(3), vm3e1n(3), vn3o1n(3), vn3e1n(3);
+    std::vector<std::complex<double> > Ei(3,c_zero), Hi(3,c_zero),
+      Es(3,c_zero), Hs(3,c_zero);
+    std::vector<std::complex<double> > bj(nmax_+1), by(nmax_+1), bd(nmax_+1);
+    // Calculate spherical Bessel and Hankel functions
+    sphericalBessel(Rho,bj, by, bd);    
+    for (int n = 0; n < nmax_; n++) {
+      double rn = static_cast<double>(n + 1);
+      std::complex<double> zn = bj[n+1] + c_i*by[n+1];
+      std::complex<double> xxip = Rho*(bj[n] + c_i*by[n]) - rn*zn;
       
-    //   zn = bj[n1] + ci*by[n1];
-    //   xxip = Rho*(bj[n] + ci*by[n]) - rn*zn;
+      using std::sin;
+      using std::cos;
+      vm3o1n[0] = c_zero;
+      vm3o1n[1] = cos(Phi)*Pi[n]*zn;
+      vm3o1n[2] = -sin(Phi)*Tau[n]*zn;
+      vm3e1n[0] = c_zero;
+      vm3e1n[1] = -sin(Phi)*Pi[n]*zn;
+      vm3e1n[2] = -cos(Phi)*Tau[n]*zn;
+      vn3o1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      vn3o1n[1] = sin(Phi)*Tau[n]*xxip/Rho;
+      vn3o1n[2] = cos(Phi)*Pi[n]*xxip/Rho;
+      vn3e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      vn3e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
+      vn3e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
       
-    //   vm3o1n[0] = std::complex<double>(0.0, 0.0);
-    //   vm3o1n[1] = std::cos(Phi)*Pi[n]*zn;
-    //   vm3o1n[2] = -std::sin(Phi)*Tau[n]*zn;
-    //   vm3e1n[0] = std::complex<double>(0.0, 0.0);
-    //   vm3e1n[1] = -std::sin(Phi)*Pi[n]*zn;
-    //   vm3e1n[2] = -std::cos(Phi)*Tau[n]*zn;
-    //   vn3o1n[0] = std::sin(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n]*zn/Rho;
-    //   vn3o1n[1] = std::sin(Phi)*Tau[n]*xxip/Rho;
-    //   vn3o1n[2] = std::cos(Phi)*Pi[n]*xxip/Rho;
-    //   vn3e1n[0] = std::cos(Phi)*rn*(rn + 1.0)*std::sin(Theta)*Pi[n]*zn/Rho;
-    //   vn3e1n[1] = std::cos(Phi)*Tau[n]*xxip/Rho;
-    //   vn3e1n[2] = -std::sin(Phi)*Pi[n]*xxip/Rho;
-      
-    //   // scattered field: BH p.94 (4.45)
-    //   encap = std::pow(ci, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
-    //   for (i = 0; i < 3; i++) {
-    //   Es[i] = Es[i] + encap*(ci*an_[n]*vn3e1n[i] - bn_[n]*vm3o1n[i]);
-    //   Hs[i] = Hs[i] + encap*(ci*bn_[n]*vn3o1n[i] + an_[n]*vm3e1n[i]);
-    //   }
-    // }
+      // scattered field: BH p.94 (4.45)
+      std::complex<double> encap = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
+      for (int i = 0; i < 3; i++) {
+	Es[i] = Es[i] + encap*(c_i*an_[n]*vn3e1n[i] - bn_[n]*vm3o1n[i]);
+	Hs[i] = Hs[i] + encap*(c_i*bn_[n]*vn3o1n[i] + an_[n]*vm3e1n[i]);
+      }
+    }
     
-    // // incident E field: BH p.89 (4.21); cf. p.92 (4.37), p.93 (4.38)
-    // // basis unit vectors = er, etheta, ephi
-    // std::complex<double> eifac = std::exp(std::complex<double>(0.0, Rho*std::cos(Theta)));
-    
-    // Ei[0] = eifac*std::sin(Theta)*std::cos(Phi);
-    // Ei[1] = eifac*std::cos(Theta)*std::cos(Phi);
-    // Ei[2] = -eifac*std::sin(Phi);
+    // incident E field: BH p.89 (4.21); cf. p.92 (4.37), p.93 (4.38)
+    // basis unit vectors = er, etheta, ephi
+    std::complex<double> eifac = std::exp(std::complex<double>(0.0, Rho*std::cos(Theta)));
+    {
+      using std::sin;
+      using std::cos;
+      Ei[0] = eifac*sin(Theta)*cos(Phi);
+      Ei[1] = eifac*cos(Theta)*cos(Phi);
+      Ei[2] = -eifac*sin(Phi);
+    }
 
-    // // magnetic field
-    // double hffact = 1.0/(cc*mu);
-    // for (i = 0; i < 3; i++) {
-    //   Hs[i] = hffact*Hs[i];
-    // }
+    // magnetic field
+    double hffact = 1.0/(cc_*mu_);
+    for (int i = 0; i < 3; i++) {
+      Hs[i] = hffact*Hs[i];
+    }
     
-    // // incident H field: BH p.26 (2.43), p.89 (4.21)
-    // std::complex<double> hffacta = hffact;
-    // std::complex<double> hifac = eifac*hffacta;
-
-    // Hi[0] = hifac*std::sin(Theta)*std::sin(Phi);
-    // Hi[1] = hifac*std::cos(Theta)*std::sin(Phi);
-    // Hi[2] = hifac*std::cos(Phi);
+    // incident H field: BH p.26 (2.43), p.89 (4.21)
+    std::complex<double> hffacta = hffact;
+    std::complex<double> hifac = eifac*hffacta;
+    {
+      using std::sin;
+      using std::cos;
+      Hi[0] = hifac*sin(Theta)*sin(Phi);
+      Hi[1] = hifac*cos(Theta)*sin(Phi);
+      Hi[2] = hifac*cos(Phi);
+    }
     
-    // for (i = 0; i < 3; i++) {
-    //   // electric field E [V m-1] = EF*E0
-    //   E[i] = Ei[i] + Es[i];
-    //   H[i] = Hi[i] + Hs[i];
-    // }
-  //  }  // end of void fieldExt(...)
+    for (int i = 0; i < 3; i++) {
+      // electric field E [V m-1] = EF*E0
+      E[i] = Ei[i] + Es[i];
+      H[i] = Hi[i] + Hs[i];
+    }
+   }  // end of void fieldExt(...)
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1409,7 +1392,7 @@ c    MM       + 1  and - 1, alternately
       const double outer_size = size_parameter_.back();
       // Firstly the easiest case: the field outside the particle
       if (Rho >= outer_size) {
-	//fieldExt(nmax, Rho, Phi, Theta, Pi, Tau, an, bn, Es, Hs);
+	fieldExt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
       } else {
     	// TODO, for now just set all the fields to zero
     	for (int i = 0; i < 3; i++) {
