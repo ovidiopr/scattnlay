@@ -149,6 +149,8 @@ namespace nmie {
     std::vector<double> GetQabs_channel();
     std::vector<double> GetQsca_channel_normalized();
     std::vector<double> GetQabs_channel_normalized();
+    std::vector<std::complex<double> > GetAn(){return an_;};
+    std::vector<std::complex<double> > GetBn(){return bn_;}; 
 
     double GetAsymmetryFactor();
     double GetAlbedo();
