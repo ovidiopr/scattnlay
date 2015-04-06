@@ -706,17 +706,20 @@ namespace nmie {
   // Output parameters:                                                               //
   //   Psi, Zeta: Riccati-Bessel functions                                            //
   //**********************************************************************************//
-  void MultiLayerMie::calcPsiZeta(double x,
+  void MultiLayerMie::calcPsiZeta(std::complex<double> z,
 				  std::vector<std::complex<double> > D1,
 				  std::vector<std::complex<double> > D3,
 				  std::vector<std::complex<double> >& Psi,
 				  std::vector<std::complex<double> >& Zeta) {
     //Upward recurrence for Psi and Zeta - equations (20a) - (21b)
-    Psi[0] = std::complex<double>(std::sin(x), 0);
-    Zeta[0] = std::complex<double>(std::sin(x), -std::cos(x));
+    //Psi[0] = std::complex<double>(std::sin(x), 0);
+    std::complex<double> c_i(0.0, 1.0);
+    Psi[0] = std::sin(z);
+    //Zeta[0] = std::complex<double>(std::sin(x), -std::cos(x));
+    Zeta[0] = std::sin(z) - c_i*std::cos(z);
     for (int n = 1; n <= nmax_; n++) {
-      Psi[n] = Psi[n - 1]*(n/x - D1[n - 1]);
-      Zeta[n] = Zeta[n - 1]*(n/x - D3[n - 1]);
+      Psi[n] = Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
+      Zeta[n] = Zeta[n - 1]*(static_cast<double>(n)/z - D3[n - 1]);
     }
 
   }
@@ -1298,25 +1301,72 @@ c    MM       + 1  and - 1, alternately
     }
     z[L-1]  =size_parameter_[L-1]*index_[L-1];
     z1[L-1]  =size_parameter_[L-1];
-    std::vector< std::vector<std::complex<double> > > D1zn(L), D1z1n(L), D3zn(L), D3z1n(L);
+    std::vector< std::vector<std::complex<double> > > D1z(L), D1z1(L), D3z(L), D3z1(L);
+    std::vector< std::vector<std::complex<double> > > Psiz(L), Psiz1(L), Zetaz(L), Zetaz1(L);
     for (int l = 0; l < L; ++l) {
-      D1zn[l].resize(nmax_ +1);
-      D1z1n[l].resize(nmax_ +1);
-      D3zn[l].resize(nmax_ +1);
-      D3z1n[l].resize(nmax_ +1);
-      calcD1D3(z[l],D1zn[l],D3zn[l]);
-      calcD1D3(z1[l],D1z1n[l],D3z1n[l]);
+      D1z[l].resize(nmax_ +1);
+      D1z1[l].resize(nmax_ +1);
+      D3z[l].resize(nmax_ +1);
+      D3z1[l].resize(nmax_ +1);
+      Psiz[l].resize(nmax_ +1);
+      Psiz1[l].resize(nmax_ +1);
+      Zetaz[l].resize(nmax_ +1);
+      Zetaz1[l].resize(nmax_ +1);
     }
     for (int l = 0; l < L; ++l) {
-      printf("l=%d --> ", l);
-      for (int n = 0; n < nmax_ + 1; ++n) {
-	printf("n=%d --> D1zn=%g, D3zn=%g, D1zn=%g, D3zn=%g || ",
-	       n,
-	       D1zn[l][n].real(), D3zn[l][n].real(),
-	       D1z1n[l][n].real(), D3z1n[l][n].real());
-      }
-      printf("\n\n");
+      calcD1D3(z[l],D1z[l],D3z[l]);
+      calcD1D3(z1[l],D1z1[l],D3z1[l]);
+      calcPsiZeta(z[l],D1z[l],D3z[l], Psiz[l],Zetaz[l]);
+      calcPsiZeta(z1[l],D1z1[l],D3z1[l], Psiz1[l],Zetaz1[l]);
     }
+    auto& m = index_;
+    std::vector< std::complex<double> > m1(L);
+    for (int l = 0; l < L-1; ++l) m1[l] = m[l+1];
+    m1[L-1] = std::complex<double> (1.0, 0.0);
+    
+    for (int l = L-1; l > 0; --l) {
+      for (int n = 0; n < nmax_; ++n) {
+	// al_n
+	auto denom = m1[l]*Zetaz[l][n] * ( D1z[l][n] - D3z[l][n] );
+	al_n_[l][n] = D1z[l][n]* m1[l]
+	  *(al_n_[l+1][n]*Zetaz1[l][n] - dl_n_[l+1][n]*Psiz1[l][n])
+	  - m[l]*(-D1z1[l][n]*dl_n_[l+1][n]*Psiz1[l][n]
+		  +D3z1[l][n]*al_n_[l+1][n]*Zetaz1[l][n]);
+	al_n_[l][n] /= denom;
+	// dl_n
+	denom = m1[l]*Psiz[l][n] * ( D1z[l][n] - D3z[l][n] );
+	dl_n_[l][n] = D3z[l][n]*m1[l]
+	  *(al_n_[l+1][n]*Zetaz1[l][n] - dl_n_[l+1][n]*Psiz1[l][n])
+	  - m[l]*(-D1z1[l][n]*dl_n_[l+1][n]*Psiz1[l][n]
+		  +D3z1[l][n]*al_n_[l+1][n]*Zetaz1[l][n]);
+	dl_n_[l][n] /= denom;
+	// bl_n
+	denom = m1[l]*Zetaz[l][n] * ( D1z[l][n] - D3z[l][n] );
+	bl_n_[l][n] = D1z[l][n]* m[l]
+	  *(bl_n_[l+1][n]*Zetaz1[l][n] - cl_n_[l+1][n]*Psiz1[l][n])
+	  - m1[l]*(-D1z1[l][n]*cl_n_[l+1][n]*Psiz1[l][n]
+		  +D3z1[l][n]*bl_n_[l+1][n]*Zetaz1[l][n]);
+	bl_n_[l][n] /= denom;
+	// cl_n
+	denom = m1[l]*Psiz[l][n] * ( D1z[l][n] - D3z[l][n] );
+	cl_n_[l][n] = D3z[l][n]*m[l]
+	  *(bl_n_[l+1][n]*Zetaz1[l][n] - cl_n_[l+1][n]*Psiz1[l][n])
+	  - m1[l]*(-D1z1[l][n]*cl_n_[l+1][n]*Psiz1[l][n]
+		  +D3z1[l][n]*bl_n_[l+1][n]*Zetaz1[l][n]);
+	cl_n_[l][n] /= denom;   
+      }  // end of all n
+    }  // end of for all l
+    
+    // for (int l = 0; l < L; ++l) {
+    //   printf("l=%d --> ", l);
+    //   for (int n = 0; n < nmax_ + 1; ++n) {
+    // 	printf("n=%d --> D1zn=%g, D3zn=%g, D1zn=%g, D3zn=%g || ",
+    // 	       n,
+    // 	       D1z[l][n].real(), D3z[l][n].real(),
+    // 	       D1z1[l][n].real(), D3z1[l][n].real());
+    //   }
+    //   printf("\n\n");
+    // }
     // for (int j = 0; j < nmax_; ++j) {
     //   int i = L;
     //   printf("n=%d --> a=%g, b=%g, c=%g, d=%g\n",

@@ -195,7 +195,7 @@ namespace nmie {
 				 double Pi, double Tau);
     std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
 				 double Pi, double Tau);
-    void calcPsiZeta(double x, 
+    void calcPsiZeta(std::complex<double> x, 
 		     std::vector<std::complex<double> > D1,
 		     std::vector<std::complex<double> > D3,
 		     std::vector<std::complex<double> >& Psi,
