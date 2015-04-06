@@ -1298,13 +1298,32 @@ c    MM       + 1  and - 1, alternately
     }
     z[L-1]  =size_parameter_[L-1]*index_[L-1];
     z1[L-1]  =size_parameter_[L-1];
-    for (int j = 0; j < nmax_; ++j) {
-      int i = L;
-      printf("n=%d --> a=%g, b=%g, c=%g, d=%g\n",
-	     i,
-	     al_n_[i][j].real(), bl_n_[i][j].real(),
-	     cl_n_[i][j].real(), dl_n_[i][j].real());
+    std::vector< std::vector<std::complex<double> > > D1zn(L), D1z1n(L), D3zn(L), D3z1n(L);
+    for (int l = 0; l < L; ++l) {
+      D1zn[l].resize(nmax_ +1);
+      D1z1n[l].resize(nmax_ +1);
+      D3zn[l].resize(nmax_ +1);
+      D3z1n[l].resize(nmax_ +1);
+      calcD1D3(z[l],D1zn[l],D3zn[l]);
+      calcD1D3(z1[l],D1z1n[l],D3z1n[l]);
     }
+    for (int l = 0; l < L; ++l) {
+      printf("l=%d --> ", l);
+      for (int n = 0; n < nmax_ + 1; ++n) {
+	printf("n=%d --> D1zn=%g, D3zn=%g, D1zn=%g, D3zn=%g || ",
+	       n,
+	       D1zn[l][n].real(), D3zn[l][n].real(),
+	       D1z1n[l][n].real(), D3z1n[l][n].real());
+      }
+      printf("\n\n");
+    }
+    // for (int j = 0; j < nmax_; ++j) {
+    //   int i = L;
+    //   printf("n=%d --> a=%g, b=%g, c=%g, d=%g\n",
+    // 	     i,
+    // 	     al_n_[i][j].real(), bl_n_[i][j].real(),
+    // 	     cl_n_[i][j].real(), dl_n_[i][j].real());
+    // }
   }
   // ********************************************************************** //
   // ********************************************************************** //
