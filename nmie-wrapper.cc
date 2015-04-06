@@ -904,7 +904,7 @@ c    MM       + 1  and - 1, alternately
     for (int t = 0; t < theta_.size(); t++) {	
       costheta[t] = std::cos(theta_[t]);
     }
-    // Do not join upper and lower for to a single one!  It will slow
+    // Do not join upper and lower 'for' to a single one!  It will slow
     // down the code!!! (For about 0.5-2.0% of runtime, it is probably
     // due to increased cache missing rate originated from the
     // recurrence in calcPiTau...)
@@ -1251,6 +1251,44 @@ c    MM       + 1  and - 1, alternately
     nmax_used_ = nmax_;
     //return nmax;
   }
+  
+
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void MultiLayerMie::ScattCoeffsLayerdInit() {
+    const int L = index_.size();
+    // we need to fill
+    // std::vector< std::vector<std::complex<double> > > al_n_, bl_n_, cl_n_, dl_n_;
+    //     for n = [0..nmax_) and for l=[L..0)
+    // to decrease cache miss outer loop is with n and inner with reversed l
+    al_n_.resize(nmax_);
+    bl_n_.resize(nmax_);
+    cl_n_.resize(nmax_);
+    dl_n_.resize(nmax_);
+    for (auto& element:al_n_) element.resize(L+1);
+    for (auto& element:bl_n_) element.resize(L+1);
+    for (auto& element:cl_n_) element.resize(L+1);
+    for (auto& element:dl_n_) element.resize(L+1);
+    std::complex<double> c_one(1.0, 0.0);
+    // Yang, paragraph under eq. A3
+    // a^(L+1)_n = a_n, d^(L+1) = 1 ...
+    for (int i = 0; i < nmax_; ++i) {
+      al_n_[i][0] = an_[i];
+      bl_n_[i][0] = bn_[i];
+      cl_n_[i][0] = c_one;
+      dl_n_[i][0] = c_one;
+    }
+
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void MultiLayerMie::ScattCoeffsLayerd() {
+    if (!isMieCalculated_)
+      throw std::invalid_argument("(ScattCoeffsLayerd) You should run calculations first!");
+    ScattCoeffsLayerdInit();
+  }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1358,6 +1396,7 @@ c    MM       + 1  and - 1, alternately
   void MultiLayerMie::RunFieldCalculations() {
     // Calculate scattering coefficients an_ and bn_
     RunMieCalculations();
+    ScattCoeffsLayerd();
 
     std::vector<double> Pi(nmax_), Tau(nmax_);
     long total_points = coords_sp_[0].size();

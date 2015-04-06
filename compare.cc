@@ -214,41 +214,41 @@ int main(int argc, char *argv[]) {
 
     timespec time1, time2;
 
-    long cpptime_nsec, best_cpp;
-    long ctime_nsec, best_c;
-    long cpptime_sec, ctime_sec;
-    long repeats = 150;
-    //HeapProfilerStart("heapprof");    
-    do {
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
-      for (int i = 0; i<repeats; ++i) {
-	nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw,
-			   &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
-      }
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
-      cpptime_nsec = diff(time1,time2).tv_nsec;
-      cpptime_sec = diff(time1,time2).tv_sec;
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
-      // for (int i = 0; i<repeats; ++i) {      
-      // 	nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
-      // }  
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
-      ctime_nsec = diff(time1,time2).tv_nsec;
-      ctime_sec = diff(time1,time2).tv_sec;
-      long double ratio = static_cast<long double>(ctime_nsec)
-	/static_cast<long double>(cpptime_nsec);
-      printf("-- C++ time consumed %lg sec\n", (cpptime_nsec/1e9));
-      if ( ratio > 0.01 ) {
-	if ( ctime_sec == 0 && cpptime_sec == 0) {
-	  printf("-- C time consumed %lg sec\n", (ctime_nsec/1e9));
-	  printf("-- total repeats: %ld\n", repeats);
-	  printf("-- C/C++ time ratio: %Lg\n", ratio);
-	} else {
-	  printf("==Test is too long!\n");
-	}
-      }
-      repeats *= 10;
-    } while (cpptime_nsec < 1e8 && ctime_nsec < 1e8);
+    // long cpptime_nsec, best_cpp;
+    // long ctime_nsec, best_c;
+    // long cpptime_sec, ctime_sec;
+    // long repeats = 150;
+    // //HeapProfilerStart("heapprof");    
+    // do {
+    //   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
+    //   for (int i = 0; i<repeats; ++i) {
+    // 	nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw,
+    // 			   &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
+    //   }
+    //   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
+    //   cpptime_nsec = diff(time1,time2).tv_nsec;
+    //   cpptime_sec = diff(time1,time2).tv_sec;
+    //   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
+    //   // for (int i = 0; i<repeats; ++i) {      
+    //   // 	nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+    //   // }  
+    //   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
+    //   ctime_nsec = diff(time1,time2).tv_nsec;
+    //   ctime_sec = diff(time1,time2).tv_sec;
+    //   long double ratio = static_cast<long double>(ctime_nsec)
+    // 	/static_cast<long double>(cpptime_nsec);
+    //   printf("-- C++ time consumed %lg sec\n", (cpptime_nsec/1e9));
+    //   if ( ratio > 0.01 ) {
+    // 	if ( ctime_sec == 0 && cpptime_sec == 0) {
+    // 	  printf("-- C time consumed %lg sec\n", (ctime_nsec/1e9));
+    // 	  printf("-- total repeats: %ld\n", repeats);
+    // 	  printf("-- C/C++ time ratio: %Lg\n", ratio);
+    // 	} else {
+    // 	  printf("==Test is too long!\n");
+    // 	}
+    //   }
+    //   repeats *= 10;
+    // } while (cpptime_nsec < 1e8 && ctime_nsec < 1e8);
 
     nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
     nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
@@ -298,6 +298,7 @@ int main(int argc, char *argv[]) {
     std::vector<std::vector<std::complex<double> > > E(ncoord), H(ncoord);
     for (auto& f:E) f.resize(3);
     for (auto& f:H) f.resize(3);
+
     nmax =  nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
     double sum_e = 0.0, sum_h = 0.0;
     for (auto f:E) 
@@ -305,6 +306,7 @@ int main(int argc, char *argv[]) {
     for (auto f:H) 
       for (auto c:f) sum_h+=std::abs(c);
     printf ("Field total sum (old) \n\tE    =%23.16f\n\tH*377=%23.16f\n", sum_e, sum_h*377.0);
+
     nmie::nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
     sum_e = 0.0, sum_h = 0.0;
     for (auto f:E) 

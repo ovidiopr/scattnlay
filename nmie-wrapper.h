@@ -209,6 +209,9 @@ namespace nmie {
     void calcAllPiTau( std::vector< std::vector<double> >& Pi,
 		    std::vector< std::vector<double> >& Tau);
     void ScattCoeffs(std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
+    void ScattCoeffsLayerd();
+    void ScattCoeffsLayerdInit();
+
     void fieldExt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
     
     bool isMieCalculated_ = false;
@@ -233,6 +236,9 @@ namespace nmie {
     // Scattering coefficients
     std::vector<std::complex<double> > an_, bn_;
     std::vector< std::vector<double> > coords_sp_;
+    // l index is reversed!! $a^(L+1)_n$ stored in al_n_[n][0],
+    // $a^(L)_n$ in al_n_[n][1] and so on...
+    std::vector< std::vector<std::complex<double> > > al_n_, bl_n_, cl_n_, dl_n_;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::vector< std::complex<double> > > E_field_, H_field_;  // {X[], Y[], Z[]}
