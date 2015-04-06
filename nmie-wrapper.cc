@@ -1261,23 +1261,25 @@ c    MM       + 1  and - 1, alternately
     // we need to fill
     // std::vector< std::vector<std::complex<double> > > al_n_, bl_n_, cl_n_, dl_n_;
     //     for n = [0..nmax_) and for l=[L..0)
-    // to decrease cache miss outer loop is with n and inner with reversed l
-    al_n_.resize(nmax_);
-    bl_n_.resize(nmax_);
-    cl_n_.resize(nmax_);
-    dl_n_.resize(nmax_);
-    for (auto& element:al_n_) element.resize(L+1);
-    for (auto& element:bl_n_) element.resize(L+1);
-    for (auto& element:cl_n_) element.resize(L+1);
-    for (auto& element:dl_n_) element.resize(L+1);
+    // TODO: to decrease cache miss outer loop is with n and inner with reversed l
+    // at the moment outer is forward l and inner in n
+    al_n_.resize(L+1);
+    bl_n_.resize(L+1);
+    cl_n_.resize(L+1);
+    dl_n_.resize(L+1);
+    for (auto& element:al_n_) element.resize(nmax_);
+    for (auto& element:bl_n_) element.resize(nmax_);
+    for (auto& element:cl_n_) element.resize(nmax_);
+    for (auto& element:dl_n_) element.resize(nmax_);
     std::complex<double> c_one(1.0, 0.0);
+    std::complex<double> c_zero(0.0, 0.0);
     // Yang, paragraph under eq. A3
     // a^(L+1)_n = a_n, d^(L+1) = 1 ...
     for (int i = 0; i < nmax_; ++i) {
-      al_n_[i][0] = an_[i];
-      bl_n_[i][0] = bn_[i];
-      cl_n_[i][0] = c_one;
-      dl_n_[i][0] = c_one;
+      al_n_[L][i] = an_[i];
+      bl_n_[L][i] = bn_[i];
+      cl_n_[L][i] = c_one;
+      dl_n_[L][i] = c_one;
     }
 
   }
@@ -1288,6 +1290,21 @@ c    MM       + 1  and - 1, alternately
     if (!isMieCalculated_)
       throw std::invalid_argument("(ScattCoeffsLayerd) You should run calculations first!");
     ScattCoeffsLayerdInit();
+    const int L = index_.size();
+    std::vector<std::complex<double> > z(L), z1(L);
+    for (int i = 0; i<L-1; ++i) {
+      z[i]  =size_parameter_[i]*index_[i];
+      z1[i]=size_parameter_[i]*index_[i+1];
+    }
+    z[L-1]  =size_parameter_[L-1]*index_[L-1];
+    z1[L-1]  =size_parameter_[L-1];
+    for (int j = 0; j < nmax_; ++j) {
+      int i = L;
+      printf("n=%d --> a=%g, b=%g, c=%g, d=%g\n",
+	     i,
+	     al_n_[i][j].real(), bl_n_[i][j].real(),
+	     cl_n_[i][j].real(), dl_n_[i][j].real());
+    }
   }
   // ********************************************************************** //
   // ********************************************************************** //

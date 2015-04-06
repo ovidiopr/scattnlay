@@ -290,8 +290,8 @@ int main(int argc, char *argv[]) {
     Yp.insert(Yp.end(), zero.begin(), zero.end());
     Zp.insert(Zp.end(), range.begin(), range.end());
     int ncoord = Xp.size();
-    x = {1.0};
-    m = {std::complex<double>(0.05/1.46,2.070)};
+    x = {1.1, 2.1};
+    m = {std::complex<double>(0.05/1.6,1.070), std::complex<double>(0.05/1.46,2.070)};
     L = x.size();
     int pl = 0;
     int nmax = 0;
