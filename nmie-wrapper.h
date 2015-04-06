@@ -213,6 +213,8 @@ namespace nmie {
     void ScattCoeffsLayerdInit();
 
     void fieldExt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
+
+    void fieldInt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
     
     bool isMieCalculated_ = false;
     double wavelength_ = 1.0;

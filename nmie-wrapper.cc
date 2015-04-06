@@ -1394,6 +1394,7 @@ c    MM       + 1  and - 1, alternately
     for (int n = 0; n < nmax_; n++) {
       double rn = static_cast<double>(n + 1);
       std::complex<double> zn = bj[n+1] + c_i*by[n+1];
+      // using BH 4.12 and 4.50
       std::complex<double> xxip = Rho*(bj[n] + c_i*by[n]) - rn*zn;
       
       using std::sin;
@@ -1451,6 +1452,80 @@ c    MM       + 1  and - 1, alternately
       // electric field E [V m-1] = EF*E0
       E[i] = Ei[i] + Es[i];
       H[i] = Hi[i] + Hs[i];
+    }
+   }  // end of void fieldExt(...)
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void MultiLayerMie::fieldInt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
+    
+    std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0);
+    std::vector<std::complex<double> > vm3o1n(3), vm3e1n(3), vn3o1n(3), vn3e1n(3);
+    std::vector<std::complex<double> > vm1o1n(3), vm1e1n(3), vn1o1n(3), vn1e1n(3);
+    std::vector<std::complex<double> > El(3,c_zero), Hl(3,c_zero);
+    std::vector<std::complex<double> > bj(nmax_+1), by(nmax_+1), bd(nmax_+1);
+
+    //%TODO  find layer from Rho
+    int l=0;
+
+    // Calculate spherical Bessel and Hankel functions
+    sphericalBessel(Rho,bj, by, bd);    
+    for (int n = 0; n < nmax_; n++) {
+      double rn = static_cast<double>(n + 1);
+      std::complex<double> zn = bj[n+1] + c_i*by[n+1];
+      // using BH 4.12 and 4.50
+      std::complex<double> xxip = Rho*(bj[n] + c_i*by[n]) - rn*zn;
+      
+      using std::sin;
+      using std::cos;
+      vm3o1n[0] = c_zero;
+      vm3o1n[1] = cos(Phi)*Pi[n]*zn;
+      vm3o1n[2] = -sin(Phi)*Tau[n]*zn;
+      vm3e1n[0] = c_zero;
+      vm3e1n[1] = -sin(Phi)*Pi[n]*zn;
+      vm3e1n[2] = -cos(Phi)*Tau[n]*zn;
+      vn3o1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      vn3o1n[1] = sin(Phi)*Tau[n]*xxip/Rho;
+      vn3o1n[2] = cos(Phi)*Pi[n]*xxip/Rho;
+      vn3e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      vn3e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
+      vn3e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
+
+      zn = bj[n+1];
+      xxip = Rho*(bj[n]) - rn*zn;
+      vm1o1n[0] = c_zero;
+      vm1o1n[1] = cos(Phi)*Pi[n]*zn;
+      vm1o1n[2] = -sin(Phi)*Tau[n]*zn;
+      vm1e1n[0] = c_zero;
+      vm1e1n[1] = -sin(Phi)*Pi[n]*zn;
+      vm1e1n[2] = -cos(Phi)*Tau[n]*zn;
+      vn1o1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      vn1o1n[1] = sin(Phi)*Tau[n]*xxip/Rho;
+      vn1o1n[2] = cos(Phi)*Pi[n]*xxip/Rho;
+      vn1e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      vn1e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
+      vn1e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
+      
+      // scattered field: BH p.94 (4.45)
+      std::complex<double> encap = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
+      for (int i = 0; i < 3; i++) {
+	El[i] = El[i] + encap*(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vm1e1n[i]
+			       + c_i*al_n_[l][n]*vn3e1n[i] - bl_n_[l][n]*vm3o1n[i]);
+	Hl[i] = Hl[i] + encap*(-dl_n_[l][n]*vm1e1n[i] - c_i*cl_n_[l][n]*vn1o1n[i]
+			       + c_i*bl_n_[l][n]*vn3o1n[i] + al_n_[l][n]*vm3e1n[i]);
+      }
+    }
+    
+    // magnetic field
+    double hffact = 1.0/(cc_*mu_);
+    for (int i = 0; i < 3; i++) {
+      Hl[i] = hffact*Hl[i];
+    }
+    
+    for (int i = 0; i < 3; i++) {
+      // electric field E [V m-1] = EF*E0
+      E[i] = El[i];
+      H[i] = Hl[i];
     }
    }  // end of void fieldExt(...)
   // ********************************************************************** //
@@ -1519,11 +1594,8 @@ c    MM       + 1  and - 1, alternately
       if (Rho >= outer_size) {
 	fieldExt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
       } else {
-    	// TODO, for now just set all the fields to zero
-    	for (int i = 0; i < 3; i++) {
-    	  Es[i] = std::complex<double>(0.0, 0.0);
-    	  Hs[i] = std::complex<double>(0.0, 0.0);
-    	}
+	printf("in.. \n");
+	fieldInt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
       }
       std::complex<double>& Ex = E_field_[point][0];
       std::complex<double>& Ey = E_field_[point][1];
