@@ -98,7 +98,7 @@ namespace nmie {
 	throw std::invalid_argument("Field H is not 3D!");
     try {
       MultiLayerMie multi_layer_mie;  
-      multi_layer_mie.SetPEC(pl);
+      //multi_layer_mie.SetPEC(pl);
       multi_layer_mie.SetWidthSP(x);
       multi_layer_mie.SetIndexSP(m);      
       multi_layer_mie.SetFieldPointsSP({Xp_vec, Yp_vec, Zp_vec});
@@ -1252,6 +1252,8 @@ c    MM       + 1  and - 1, alternately
 
     isMieCalculated_ = true;
     nmax_used_ = nmax_;
+    // printf("Run Mie result: Qext = %g, Qsca = %g, Qabs = %g, Qbk = %g \n",
+    // 	   GetQext(), GetQsca(), GetQabs(), GetQbk() );
     //return nmax;
   }
   
@@ -1323,40 +1325,60 @@ c    MM       + 1  and - 1, alternately
     std::vector< std::complex<double> > m1(L);
     for (int l = 0; l < L-1; ++l) m1[l] = m[l+1];
     m1[L-1] = std::complex<double> (1.0, 0.0);
-    
-    for (int l = L-1; l > 0; --l) {
+    // for (auto zz : m) printf ("m[i]=%g \n\n ", zz.real());
+    for (int l = L-1; l >= 0; --l) {
       for (int n = 0; n < nmax_; ++n) {
 	// al_n
-	auto denom = m1[l]*Zetaz[l][n] * ( D1z[l][n] - D3z[l][n] );
-	al_n_[l][n] = D1z[l][n]* m1[l]
-	  *(al_n_[l+1][n]*Zetaz1[l][n] - dl_n_[l+1][n]*Psiz1[l][n])
-	  - m[l]*(-D1z1[l][n]*dl_n_[l+1][n]*Psiz1[l][n]
-		  +D3z1[l][n]*al_n_[l+1][n]*Zetaz1[l][n]);
+	auto denom = m1[l]*Zetaz[l][n+1] * ( D1z[l][n+1] - D3z[l][n+1] );
+	al_n_[l][n] = D1z[l][n+1]* m1[l]
+	  *(al_n_[l+1][n]*Zetaz1[l][n+1] - dl_n_[l+1][n]*Psiz1[l][n+1])
+	  - m[l]*(-D1z1[l][n+1]*dl_n_[l+1][n]*Psiz1[l][n+1]
+		  +D3z1[l][n+1]*al_n_[l+1][n]*Zetaz1[l][n+1]);
 	al_n_[l][n] /= denom;
+	// if (n<2) printf( "denom[%d][%d]:%g \n", l, n,
+	// 		  std::abs(Psiz[l][n+1]));
 	// dl_n
-	denom = m1[l]*Psiz[l][n] * ( D1z[l][n] - D3z[l][n] );
-	dl_n_[l][n] = D3z[l][n]*m1[l]
-	  *(al_n_[l+1][n]*Zetaz1[l][n] - dl_n_[l+1][n]*Psiz1[l][n])
-	  - m[l]*(-D1z1[l][n]*dl_n_[l+1][n]*Psiz1[l][n]
-		  +D3z1[l][n]*al_n_[l+1][n]*Zetaz1[l][n]);
+	denom = m1[l]*Psiz[l][n+1] * ( D1z[l][n+1] - D3z[l][n+1] );
+	dl_n_[l][n] = D3z[l][n+1]*m1[l]
+	  *(al_n_[l+1][n]*Zetaz1[l][n+1] - dl_n_[l+1][n]*Psiz1[l][n+1])
+	  - m[l]*(-D1z1[l][n+1]*dl_n_[l+1][n]*Psiz1[l][n+1]
+		  +D3z1[l][n+1]*al_n_[l+1][n]*Zetaz1[l][n+1]);
 	dl_n_[l][n] /= denom;
 	// bl_n
-	denom = m1[l]*Zetaz[l][n] * ( D1z[l][n] - D3z[l][n] );
-	bl_n_[l][n] = D1z[l][n]* m[l]
-	  *(bl_n_[l+1][n]*Zetaz1[l][n] - cl_n_[l+1][n]*Psiz1[l][n])
-	  - m1[l]*(-D1z1[l][n]*cl_n_[l+1][n]*Psiz1[l][n]
-		  +D3z1[l][n]*bl_n_[l+1][n]*Zetaz1[l][n]);
+	denom = m1[l]*Zetaz[l][n+1] * ( D1z[l][n+1] - D3z[l][n+1] );
+	bl_n_[l][n] = D1z[l][n+1]* m[l]
+	  *(bl_n_[l+1][n]*Zetaz1[l][n+1] - cl_n_[l+1][n]*Psiz1[l][n+1])
+	  - m1[l]*(-D1z1[l][n+1]*cl_n_[l+1][n]*Psiz1[l][n+1]
+		  +D3z1[l][n+1]*bl_n_[l+1][n]*Zetaz1[l][n+1]);
 	bl_n_[l][n] /= denom;
 	// cl_n
-	denom = m1[l]*Psiz[l][n] * ( D1z[l][n] - D3z[l][n] );
-	cl_n_[l][n] = D3z[l][n]*m[l]
-	  *(bl_n_[l+1][n]*Zetaz1[l][n] - cl_n_[l+1][n]*Psiz1[l][n])
-	  - m1[l]*(-D1z1[l][n]*cl_n_[l+1][n]*Psiz1[l][n]
-		  +D3z1[l][n]*bl_n_[l+1][n]*Zetaz1[l][n]);
+	denom = m1[l]*Psiz[l][n+1] * ( D1z[l][n+1] - D3z[l][n+1] );
+	cl_n_[l][n] = D3z[l][n+1]*m[l]
+	  *(bl_n_[l+1][n]*Zetaz1[l][n+1] - cl_n_[l+1][n]*Psiz1[l][n+1])
+	  - m1[l]*(-D1z1[l][n+1]*cl_n_[l+1][n]*Psiz1[l][n+1]
+		  +D3z1[l][n+1]*bl_n_[l+1][n]*Zetaz1[l][n+1]);
 	cl_n_[l][n] /= denom;   
       }  // end of all n
     }  // end of for all l
-    
+    // Check the result and change  an__0 and bn__0 for exact zero
+    for (int n = 0; n < nmax_; ++n) {
+      if (std::abs(al_n_[0][n]) < 1e-10) al_n_[0][n] = 0.0;
+      else throw std::invalid_argument("Unstable calculation of a__0_n!");
+      if (std::abs(bl_n_[0][n]) < 1e-10) bl_n_[0][n] = 0.0;
+      else throw std::invalid_argument("Unstable calculation of b__0_n!");
+    }
+
+    // for (int l = 0; l < L; ++l) {
+    //   printf("l=%d --> ", l);
+    //   for (int n = 0; n < nmax_ + 1; ++n) {
+    // 	if (n < 20) continue;
+    // 	printf("n=%d --> D1zn=%g, D3zn=%g, D1zn=%g, D3zn=%g || ",
+    // 	       n,
+    // 	       D1z[l][n].real(), D3z[l][n].real(),
+    // 	       D1z1[l][n].real(), D3z1[l][n].real());
+    //   }
+    //   printf("\n\n");
+    // }
     // for (int l = 0; l < L; ++l) {
     //   printf("l=%d --> ", l);
     //   for (int n = 0; n < nmax_ + 1; ++n) {
@@ -1367,12 +1389,16 @@ c    MM       + 1  and - 1, alternately
     //   }
     //   printf("\n\n");
     // }
-    // for (int j = 0; j < nmax_; ++j) {
-    //   int i = L;
-    //   printf("n=%d --> a=%g, b=%g, c=%g, d=%g\n",
-    // 	     i,
-    // 	     al_n_[i][j].real(), bl_n_[i][j].real(),
-    // 	     cl_n_[i][j].real(), dl_n_[i][j].real());
+    // for (int i = 0; i < L+1; ++i) {
+    //   printf("Layer =%d ---> ", i);
+    //   for (int n = 0; n < nmax_; ++n) {
+    // 	//	if (n < 20) continue;
+    // 	printf(" || n=%d --> a=%g, b=%g, c=%g, d=%g",
+    // 	       n,
+    // 	       al_n_[i][n].real(), bl_n_[i][n].real(),
+    // 	       cl_n_[i][n].real(), dl_n_[i][n].real());
+    //   }
+    //   printf("\n\n");
     // }
   }
   // ********************************************************************** //
@@ -1452,22 +1478,27 @@ c    MM       + 1  and - 1, alternately
       // electric field E [V m-1] = EF*E0
       E[i] = Ei[i] + Es[i];
       H[i] = Hi[i] + Hs[i];
+      // printf("ext E[%d]=%g",i,std::abs(E[i]));
     }
    }  // end of void fieldExt(...)
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::fieldInt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
+    // printf("field int Qext = %g, Qsca = %g, Qabs = %g, Qbk = %g, \n",
+    // 	   GetQext(), GetQsca(), GetQabs(), GetQbk() );
     
     std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0);
     std::vector<std::complex<double> > vm3o1n(3), vm3e1n(3), vn3o1n(3), vn3e1n(3);
     std::vector<std::complex<double> > vm1o1n(3), vm1e1n(3), vn1o1n(3), vn1e1n(3);
     std::vector<std::complex<double> > El(3,c_zero), Hl(3,c_zero);
     std::vector<std::complex<double> > bj(nmax_+1), by(nmax_+1), bd(nmax_+1);
-
-    //%TODO  find layer from Rho
-    int l=0;
-
+    int layer=0;  // layer number
+    for (int i = 0; i < size_parameter_.size()-1; ++i) {
+      if (size_parameter_[i] < Rho && Rho <= size_parameter_[i+1])
+	layer=i;
+    }
+    const int& l = layer;
     // Calculate spherical Bessel and Hankel functions
     sphericalBessel(Rho,bj, by, bd);    
     for (int n = 0; n < nmax_; n++) {
@@ -1488,6 +1519,7 @@ c    MM       + 1  and - 1, alternately
       vn3o1n[1] = sin(Phi)*Tau[n]*xxip/Rho;
       vn3o1n[2] = cos(Phi)*Pi[n]*xxip/Rho;
       vn3e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      // if (n<3) printf("\n ====\n vn3e1n[0]=%g cos(Phi)=%g; rn=%g; sin(Theta)=%g; Pi[n]=%g; zn=%g; Rho=%g al=%g, bl=%g", std::abs(vn3e1n[0]), std::abs(cos(Phi)), std::abs(rn), std::abs(sin(Theta)), std::abs(Pi[n]), std::abs(zn), std::abs(Rho), std::abs(al_n_[l][n]), std::abs(bl_n_[l][n]));
       vn3e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
       vn3e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
 
@@ -1508,13 +1540,16 @@ c    MM       + 1  and - 1, alternately
       
       // scattered field: BH p.94 (4.45)
       std::complex<double> encap = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
+      // if (n<3) printf("\n===== n=%d ======\n",n);
       for (int i = 0; i < 3; i++) {
-	El[i] = El[i] + encap*(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vm1e1n[i]
+	El[i] = El[i] + encap*(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]
 			       + c_i*al_n_[l][n]*vn3e1n[i] - bl_n_[l][n]*vm3o1n[i]);
 	Hl[i] = Hl[i] + encap*(-dl_n_[l][n]*vm1e1n[i] - c_i*cl_n_[l][n]*vn1o1n[i]
 			       + c_i*bl_n_[l][n]*vn3o1n[i] + al_n_[l][n]*vm3e1n[i]);
+	// if (n<3) printf(" E[%d]=%g ", i,std::abs(El[i]));
       }
-    }
+      // if (n<3) printf(" encap=%g \n", encap.real());
+    }  // end of for all n
     
     // magnetic field
     double hffact = 1.0/(cc_*mu_);
@@ -1526,6 +1561,7 @@ c    MM       + 1  and - 1, alternately
       // electric field E [V m-1] = EF*E0
       E[i] = El[i];
       H[i] = Hl[i];
+      // printf(" E[%d]=%g",i,std::abs(El[i]));
     }
    }  // end of void fieldExt(...)
   // ********************************************************************** //
@@ -1591,11 +1627,14 @@ c    MM       + 1  and - 1, alternately
       std::vector<std::complex<double> > Es(3), Hs(3);
       const double outer_size = size_parameter_.back();
       // Firstly the easiest case: the field outside the particle
+      //printf("rho=%g, outer=%g  ", Rho, outer_size);
       if (Rho >= outer_size) {
 	fieldExt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
+	//printf("Ext E: %g,%g,%g\n", Es[0].real(), Es[1].real(),Es[2].real() );
       } else {
-	printf("in.. \n");
 	fieldInt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
+	printf("Int E: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]),
+	       Rho);
       }
       std::complex<double>& Ex = E_field_[point][0];
       std::complex<double>& Ey = E_field_[point][1];

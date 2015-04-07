@@ -272,48 +272,66 @@ int main(int argc, char *argv[]) {
     }
     // Field testing
     double from_coord = -3.0, to_coord = 3.0;
-    int samples = 11;
+    int samples = 2;
     std::vector<double> range, zero(samples, 0.0);
-    for (int i = 0; i < samples; ++i)
-      range.push_back( from_coord + (to_coord-from_coord)/static_cast<double>(samples) );
+    // for (int i = 0; i < samples; ++i) {
+      //range.push_back( from_coord + (to_coord-from_coord)/(static_cast<double>(samples)-1)*i );
+      range.push_back(0.1);
+      range.push_back(to_coord);
+      //printf("r=%g  ", range.back());
+      //}
     std::vector<double> Xp, Yp, Zp;
     // X line
     Xp.insert(Xp.end(), range.begin(), range.end());
     Yp.insert(Yp.end(), zero.begin(), zero.end());
     Zp.insert(Zp.end(), zero.begin(), zero.end());
-    // Y line
-    Xp.insert(Xp.end(), zero.begin(), zero.end());
-    Yp.insert(Yp.end(), range.begin(), range.end());
-    Zp.insert(Zp.end(), zero.begin(), zero.end());
-    // Z line
-    Xp.insert(Xp.end(), zero.begin(), zero.end());
-    Yp.insert(Yp.end(), zero.begin(), zero.end());
-    Zp.insert(Zp.end(), range.begin(), range.end());
+    // // Y line
+    // Xp.insert(Xp.end(), zero.begin(), zero.end());
+    // Yp.insert(Yp.end(), range.begin(), range.end());
+    // Zp.insert(Zp.end(), zero.begin(), zero.end());
+    // // Z line
+    // Xp.insert(Xp.end(), zero.begin(), zero.end());
+    // Yp.insert(Yp.end(), zero.begin(), zero.end());
+    // Zp.insert(Zp.end(), range.begin(), range.end());
     int ncoord = Xp.size();
-    x = {1.0, 2.0};
-    m = {std::complex<double>(0.5,1.0), std::complex<double>(1.0,2.0)};
+    x = {1.0000};
+    m = {std::complex<double>(1.000,0.0)};
+    // x = {1.017, 2.016};
+    // m = {std::complex<double>(1.5016,1.023), std::complex<double>(2.014,2.012)};
     L = x.size();
     int pl = 0;
     int nmax = 0;
     std::vector<std::vector<std::complex<double> > > E(ncoord), H(ncoord);
     for (auto& f:E) f.resize(3);
     for (auto& f:H) f.resize(3);
-
+    double free_impedance = 376.73031;
     nmax =  nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
     double sum_e = 0.0, sum_h = 0.0;
-    for (auto f:E) 
+    printf ("Field total sum (old)\n");
+    for (auto f:E) {
+      sum_e = 0.0;
       for (auto c:f) sum_e+=std::abs(c);
-    for (auto f:H) 
+      printf("Field E=%g\n", std::abs(sum_e));
+    }
+    for (auto f:H) {
+      sum_h = 0.0;
       for (auto c:f) sum_h+=std::abs(c);
-    printf ("Field total sum (old) \n\tE    =%23.16f\n\tH*377=%23.16f\n", sum_e, sum_h*377.0);
+      printf("Field H=%g\n", std::abs(sum_h)*free_impedance);
+    }
 
     nmie::nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
     sum_e = 0.0, sum_h = 0.0;
-    for (auto f:E) 
+    printf ("Field total sum (wrapper)\n");
+    for (auto f:E) {
+      sum_e = 0.0;
       for (auto c:f) sum_e+=std::abs(c);
-    for (auto f:H) 
+      printf("Field E=%g\n", std::abs(sum_e));
+    }
+    for (auto f:H) {
+      sum_h = 0.0;
       for (auto c:f) sum_h+=std::abs(c);
-    printf ("Field total sum (wrapper) \n\tE    =%23.16f\n\tH*377=%23.16f\n", sum_e, sum_h*377.0);
+      printf("Field H=%g\n", std::abs(sum_h)*free_impedance);
+    }
 
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
