@@ -67,7 +67,7 @@ int Nstop(double xL) {
 //**********************************************************************************//
 int Nmax(int L, int fl, int pl,
          std::vector<double> x,
-		 std::vector<std::complex<double> > m) {
+         std::vector<std::complex<double> > m) {
   int i, result, ri, riM1;
   result = Nstop(x[L - 1]);
   for (i = fl; i < L; i++) {
@@ -251,8 +251,8 @@ void sphericalBessel(std::complex<double> z, int nmax, std::vector<std::complex<
 // BH p.92 (4.37), 94 (4.45), 95 (4.50)
 // assume: medium is non-absorbing; refim = 0; Uabs = 0
 void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double> Pi, std::vector<double> Tau,
-             std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
-		     std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
+              std::vector<std::complex<double> > an, std::vector<std::complex<double> > bn,
+              std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
   int i, n, n1;
   double rn;
@@ -343,8 +343,8 @@ void fieldExt(int nmax, double Rho, double Phi, double Theta, std::vector<double
 
 // Calculate an - equation (5)
 std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
-	                         std::complex<double> PsiXL, std::complex<double> ZetaXL,
-	                         std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1) {
+                             std::complex<double> PsiXL, std::complex<double> ZetaXL,
+                             std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1) {
 
   std::complex<double> Num = (Ha/mL + n/XL)*PsiXL - PsiXLM1;
   std::complex<double> Denom = (Ha/mL + n/XL)*ZetaXL - ZetaXLM1;
@@ -354,8 +354,8 @@ std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::com
 
 // Calculate bn - equation (6)
 std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
-	                         std::complex<double> PsiXL, std::complex<double> ZetaXL,
-	                         std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1) {
+                             std::complex<double> PsiXL, std::complex<double> ZetaXL,
+                             std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1) {
 
   std::complex<double> Num = (mL*Hb + n/XL)*PsiXL - PsiXLM1;
   std::complex<double> Denom = (mL*Hb + n/XL)*ZetaXL - ZetaXLM1;
@@ -365,14 +365,14 @@ std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::com
 
 // Calculates S1 - equation (25a)
 std::complex<double> calc_S1(int n, std::complex<double> an, std::complex<double> bn,
-		                     double Pi, double Tau) {
+                             double Pi, double Tau) {
 
   return double(n + n + 1)*(Pi*an + Tau*bn)/double(n*n + n);
 }
 
 // Calculates S2 - equation (25b) (it's the same as (25a), just switches Pi and Tau)
 std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
-				             double Pi, double Tau) {
+                             double Pi, double Tau) {
 
   return calc_S1(n, an, bn, Tau, Pi);
 }
@@ -391,10 +391,10 @@ std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double
 //   Psi, Zeta: Riccati-Bessel functions                                            //
 //**********************************************************************************//
 void calcPsiZeta(double x, int nmax,
-		         std::vector<std::complex<double> > D1,
-		         std::vector<std::complex<double> > D3,
-		         std::vector<std::complex<double> >& Psi,
-		         std::vector<std::complex<double> >& Zeta) {
+                 std::vector<std::complex<double> > D1,
+                 std::vector<std::complex<double> > D3,
+                 std::vector<std::complex<double> >& Psi,
+                 std::vector<std::complex<double> >& Zeta) {
 
   int n;
 
@@ -420,8 +420,8 @@ void calcPsiZeta(double x, int nmax,
 //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions                //
 //**********************************************************************************//
 void calcD1D3(std::complex<double> z, int nmax,
-		      std::vector<std::complex<double> >& D1,
-		      std::vector<std::complex<double> >& D3) {
+              std::vector<std::complex<double> >& D1,
+              std::vector<std::complex<double> >& D3) {
 
   int n;
   std::complex<double> nz, PsiZeta;
@@ -496,7 +496,7 @@ void calcPiTau(int nmax, double Theta, std::vector<double>& Pi, std::vector<doub
 //   Number of multipolar expansion terms used for the calculations                 //
 //**********************************************************************************//
 int ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
-		        std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
+                std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
   //************************************************************************//
   // Calculate the index of the first layer. It can be either 0 (default)   //
   // or the index of the outermost PEC layer. In the latter case all layers //
@@ -721,7 +721,7 @@ int ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<d
 int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m,
          int nTheta, std::vector<double> Theta, int nmax,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-		 std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2)  {
+         std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2)  {
 
   int i, n, t;
   std::vector<std::complex<double> > an, bn;
