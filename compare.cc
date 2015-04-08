@@ -273,15 +273,16 @@ int main(int argc, char *argv[]) {
     }
     // Field testing
     double from_coord = -3.0, to_coord = 3000.0;
-    double size=2.0*PI*1.0/6.0;
+    //double size=2.0*PI*1.0/6.0;
+    double size=0.001;
     std::vector<double> range;
     // for (int i = 0; i < samples; ++i) {
       //range.push_back( from_coord + (to_coord-from_coord)/(static_cast<double>(samples)-1)*i );
     //range.push_back(size*0.01);
-    // range.push_back(size*0.99999);
-    range.push_back(-size*2.0);
-    // range.push_back(size*1.00001);
-      //    range.push_back(3);
+    //range.push_back(size*0.99999);
+    range.push_back(size/2.0);
+    //  range.push_back(size*1.00001);
+    // range.push_back(3);
     //printf("r=%g  ", range.back());
     //}
     int samples = range.size();
@@ -291,18 +292,18 @@ int main(int argc, char *argv[]) {
     Xp.insert(Xp.end(), range.begin(), range.end());
     Yp.insert(Yp.end(), zero.begin(), zero.end());
     Zp.insert(Zp.end(), zero.begin(), zero.end());
-    // // Y line
-    // Xp.insert(Xp.end(), zero.begin(), zero.end());
-    // Yp.insert(Yp.end(), range.begin(), range.end());
-    // Zp.insert(Zp.end(), zero.begin(), zero.end());
-    // // // Z line
-    // Xp.insert(Xp.end(), zero.begin(), zero.end());
-    // Yp.insert(Yp.end(), zero.begin(), zero.end());
-    // Zp.insert(Zp.end(), range.begin(), range.end());
+    // Y line
+    Xp.insert(Xp.end(), zero.begin(), zero.end());
+    Yp.insert(Yp.end(), range.begin(), range.end());
+    Zp.insert(Zp.end(), zero.begin(), zero.end());
+    // // Z line
+    Xp.insert(Xp.end(), zero.begin(), zero.end());
+    Yp.insert(Yp.end(), zero.begin(), zero.end());
+    Zp.insert(Zp.end(), range.begin(), range.end());
     int ncoord = Xp.size();
-    // x = {size};
-    // m = {std::complex<double>(2.0000002,0.00)};
     x = {size};
+    //m = {std::complex<double>(1.0000002,0.00)};
+    // x = {size};
     m = {std::complex<double>(1.33,0.0)};
     // x = {1.017, 2.016};
     // m = {std::complex<double>(1.5016,1.023), std::complex<double>(2.014,2.012)};
