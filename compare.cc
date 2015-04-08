@@ -42,6 +42,7 @@
 
 timespec diff(timespec start, timespec end);
 const double PI=3.14159265358979323846;
+  template<class T> inline T pow2(const T value) {return value*value;}
 
 //***********************************************************************************//
 // This is the main function of 'scattnlay', here we read the parameters as          //
@@ -271,15 +272,20 @@ int main(int argc, char *argv[]) {
       }
     }
     // Field testing
-    double from_coord = -3.0, to_coord = 3.0;
-    int samples = 2;
-    std::vector<double> range, zero(samples, 0.0);
+    double from_coord = -3.0, to_coord = 3000.0;
+    double size=2.0*PI*1.0/6.0;
+    std::vector<double> range;
     // for (int i = 0; i < samples; ++i) {
       //range.push_back( from_coord + (to_coord-from_coord)/(static_cast<double>(samples)-1)*i );
-      range.push_back(0.1);
-      range.push_back(to_coord);
-      //printf("r=%g  ", range.back());
-      //}
+    //range.push_back(size*0.01);
+    // range.push_back(size*0.99999);
+    range.push_back(-size*2.0);
+    // range.push_back(size*1.00001);
+      //    range.push_back(3);
+    //printf("r=%g  ", range.back());
+    //}
+    int samples = range.size();
+    std::vector<double> zero(samples, 0.0);
     std::vector<double> Xp, Yp, Zp;
     // X line
     Xp.insert(Xp.end(), range.begin(), range.end());
@@ -289,13 +295,15 @@ int main(int argc, char *argv[]) {
     // Xp.insert(Xp.end(), zero.begin(), zero.end());
     // Yp.insert(Yp.end(), range.begin(), range.end());
     // Zp.insert(Zp.end(), zero.begin(), zero.end());
-    // // Z line
+    // // // Z line
     // Xp.insert(Xp.end(), zero.begin(), zero.end());
     // Yp.insert(Yp.end(), zero.begin(), zero.end());
     // Zp.insert(Zp.end(), range.begin(), range.end());
     int ncoord = Xp.size();
-    x = {1.0000};
-    m = {std::complex<double>(1.000,0.0)};
+    // x = {size};
+    // m = {std::complex<double>(2.0000002,0.00)};
+    x = {size};
+    m = {std::complex<double>(1.33,0.0)};
     // x = {1.017, 2.016};
     // m = {std::complex<double>(1.5016,1.023), std::complex<double>(2.014,2.012)};
     L = x.size();
@@ -305,18 +313,19 @@ int main(int argc, char *argv[]) {
     for (auto& f:E) f.resize(3);
     for (auto& f:H) f.resize(3);
     double free_impedance = 376.73031;
+    //double free_impedance = 1.0;
     nmax =  nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
     double sum_e = 0.0, sum_h = 0.0;
     printf ("Field total sum (old)\n");
     for (auto f:E) {
       sum_e = 0.0;
-      for (auto c:f) sum_e+=std::abs(c);
-      printf("Field E=%g\n", std::abs(sum_e));
+      for (auto c:f) sum_e+=std::abs(pow2(c));
+      printf("Field E=%g\n", std::sqrt(std::abs(sum_e)));
     }
     for (auto f:H) {
       sum_h = 0.0;
-      for (auto c:f) sum_h+=std::abs(c);
-      printf("Field H=%g\n", std::abs(sum_h)*free_impedance);
+      for (auto c:f) sum_h+=std::abs(pow2(c));
+      printf("Field H=%g\n", std::sqrt(std::abs(sum_h))*free_impedance);
     }
 
     nmie::nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
@@ -324,13 +333,13 @@ int main(int argc, char *argv[]) {
     printf ("Field total sum (wrapper)\n");
     for (auto f:E) {
       sum_e = 0.0;
-      for (auto c:f) sum_e+=std::abs(c);
-      printf("Field E=%g\n", std::abs(sum_e));
+      for (auto c:f) sum_e+=std::abs(pow2(c));
+      printf("Field E=%g\n", std::sqrt(std::abs(sum_e)));
     }
     for (auto f:H) {
       sum_h = 0.0;
-      for (auto c:f) sum_h+=std::abs(c);
-      printf("Field H=%g\n", std::abs(sum_h)*free_impedance);
+      for (auto c:f) sum_h+=std::abs(pow2(c));
+      printf("Field H=%g\n", std::sqrt(std::abs(sum_h))*free_impedance);
     }
 
   } catch( const std::invalid_argument& ia ) {

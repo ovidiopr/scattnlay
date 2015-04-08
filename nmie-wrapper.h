@@ -116,8 +116,10 @@ namespace nmie {
     std::vector<double>                  GetCoatingLayersWidth();
     std::vector< std::complex<double> >  GetCoatingLayersIndex();
     std::vector< std::vector<double> >   GetFieldPoints();
-    std::vector<std::vector< std::complex<double> > >  GetFieldE();   // {X[], Y[], Z[]}
-    std::vector<std::vector< std::complex<double> > >  GetFieldH();
+    std::vector<std::vector< std::complex<double> > >
+      GetFieldE(){return E_field_;};   // {X[], Y[], Z[]}
+    std::vector<std::vector< std::complex<double> > >
+      GetFieldH(){return H_field_;};
     std::vector< std::vector<double> >   GetSpectra(double from_WL, double to_WL,
                                                    int samples);  // ext, sca, abs, bk
     double GetRCSext();

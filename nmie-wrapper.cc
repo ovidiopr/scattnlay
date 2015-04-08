@@ -103,6 +103,8 @@ namespace nmie {
       multi_layer_mie.SetIndexSP(m);      
       multi_layer_mie.SetFieldPointsSP({Xp_vec, Yp_vec, Zp_vec});
       multi_layer_mie.RunFieldCalculations();
+      E = multi_layer_mie.GetFieldE();
+      H = multi_layer_mie.GetFieldH();
       //multi_layer_mie.GetFailed();
     } catch( const std::invalid_argument& ia ) {
       // Will catch if  multi_layer_mie fails or other errors.
@@ -1252,8 +1254,8 @@ c    MM       + 1  and - 1, alternately
 
     isMieCalculated_ = true;
     nmax_used_ = nmax_;
-    // printf("Run Mie result: Qext = %g, Qsca = %g, Qabs = %g, Qbk = %g \n",
-    // 	   GetQext(), GetQsca(), GetQabs(), GetQbk() );
+    printf("Run Mie result: Qext = %g, Qsca = %g, Qabs = %g, Qbk = %g \n",
+    	   GetQext(), GetQsca(), GetQabs(), GetQbk() );
     //return nmax;
   }
   
@@ -1285,6 +1287,7 @@ c    MM       + 1  and - 1, alternately
       bl_n_[L][i] = bn_[i];
       cl_n_[L][i] = c_one;
       dl_n_[L][i] = c_one;
+      if (i<3) printf(" (%g) ", std::abs(an_[i]));
     }
 
   }
@@ -1389,17 +1392,19 @@ c    MM       + 1  and - 1, alternately
     //   }
     //   printf("\n\n");
     // }
-    // for (int i = 0; i < L+1; ++i) {
-    //   printf("Layer =%d ---> ", i);
-    //   for (int n = 0; n < nmax_; ++n) {
-    // 	//	if (n < 20) continue;
-    // 	printf(" || n=%d --> a=%g, b=%g, c=%g, d=%g",
-    // 	       n,
-    // 	       al_n_[i][n].real(), bl_n_[i][n].real(),
-    // 	       cl_n_[i][n].real(), dl_n_[i][n].real());
-    //   }
-    //   printf("\n\n");
-    // }
+    for (int i = 0; i < L+1; ++i) {
+      printf("Layer =%d ---> ", i);
+      for (int n = 0; n < nmax_; ++n) {
+    	//	if (n < 20) continue;
+    	printf(" || n=%d --> a=%g,%g b=%g,%g c=%g,%g d=%g,%g",
+    	       n,
+    	       al_n_[i][n].real(), al_n_[i][n].imag(),
+	       bl_n_[i][n].real(), bl_n_[i][n].imag(),
+    	       cl_n_[i][n].real(), cl_n_[i][n].imag(),
+	       dl_n_[i][n].real(), dl_n_[i][n].imag());
+      }
+      printf("\n\n");
+    }
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1443,6 +1448,8 @@ c    MM       + 1  and - 1, alternately
       for (int i = 0; i < 3; i++) {
 	Es[i] = Es[i] + encap*(c_i*an_[n]*vn3e1n[i] - bn_[n]*vm3o1n[i]);
 	Hs[i] = Hs[i] + encap*(c_i*bn_[n]*vn3o1n[i] + an_[n]*vm3e1n[i]);
+	//if (n<3) printf(" E[%d]=%g ", i,std::abs(Es[i]));
+	if (n<3) printf(" !!=%d=== %g ", i,std::abs(Es[i]));
       }
     }
     
@@ -1491,27 +1498,34 @@ c    MM       + 1  and - 1, alternately
     std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0);
     std::vector<std::complex<double> > vm3o1n(3), vm3e1n(3), vn3o1n(3), vn3e1n(3);
     std::vector<std::complex<double> > vm1o1n(3), vm1e1n(3), vn1o1n(3), vn1e1n(3);
-    std::vector<std::complex<double> > El(3,c_zero), Hl(3,c_zero);
+    std::vector<std::complex<double> > El(3,c_zero),Ei(3,c_zero), Hl(3,c_zero);
     std::vector<std::complex<double> > bj(nmax_+1), by(nmax_+1), bd(nmax_+1);
     int layer=0;  // layer number
     for (int i = 0; i < size_parameter_.size()-1; ++i) {
       if (size_parameter_[i] < Rho && Rho <= size_parameter_[i+1])
 	layer=i;
     }
+    if (Rho > size_parameter_.back()) layer = size_parameter_.size();
     const int& l = layer;
+    printf("##########  layer %d ############\n",l);
     // Calculate spherical Bessel and Hankel functions
     sphericalBessel(Rho,bj, by, bd);    
     for (int n = 0; n < nmax_; n++) {
       double rn = static_cast<double>(n + 1);
+      std::complex<double> znm1 = bj[n] + c_i*by[n];
       std::complex<double> zn = bj[n+1] + c_i*by[n+1];
+      if (n<3) printf("\nbesselh = %g,%g", zn.real(), zn.imag()); //!
       // using BH 4.12 and 4.50
       std::complex<double> xxip = Rho*(bj[n] + c_i*by[n]) - rn*zn;
+      if (n<3) printf("\nxxip = %g,%g", xxip.real(), xxip.imag()); //!
       
       using std::sin;
       using std::cos;
       vm3o1n[0] = c_zero;
       vm3o1n[1] = cos(Phi)*Pi[n]*zn;
       vm3o1n[2] = -sin(Phi)*Tau[n]*zn;
+      if (n<3) printf("\nvm3o1n[1](%g,%g) = cos(Phi)(%g)*Pi[n](%g)*zn(%g,%g)",
+       		      vm3o1n[1].real(),vm3o1n[1].imag(), cos(Phi),Pi[n],zn.real(),zn.imag());
       vm3e1n[0] = c_zero;
       vm3e1n[1] = -sin(Phi)*Pi[n]*zn;
       vm3e1n[2] = -cos(Phi)*Tau[n]*zn;
@@ -1519,10 +1533,13 @@ c    MM       + 1  and - 1, alternately
       vn3o1n[1] = sin(Phi)*Tau[n]*xxip/Rho;
       vn3o1n[2] = cos(Phi)*Pi[n]*xxip/Rho;
       vn3e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
-      // if (n<3) printf("\n ====\n vn3e1n[0]=%g cos(Phi)=%g; rn=%g; sin(Theta)=%g; Pi[n]=%g; zn=%g; Rho=%g al=%g, bl=%g", std::abs(vn3e1n[0]), std::abs(cos(Phi)), std::abs(rn), std::abs(sin(Theta)), std::abs(Pi[n]), std::abs(zn), std::abs(Rho), std::abs(al_n_[l][n]), std::abs(bl_n_[l][n]));
       vn3e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
       vn3e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
-
+      if (n<3)  printf("\nRE  vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g   \nIM vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g",
+	     vm3o1n[0].real(),   vm3o1n[1].real(),    vm3o1n[2].real(),
+	     vm3o1n[0].imag(),   vm3o1n[1].imag(),    vm3o1n[2].imag());
+      
+      znm1 = bj[n];
       zn = bj[n+1];
       xxip = Rho*(bj[n]) - rn*zn;
       vm1o1n[0] = c_zero;
@@ -1534,6 +1551,8 @@ c    MM       + 1  and - 1, alternately
       vn1o1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
       vn1o1n[1] = sin(Phi)*Tau[n]*xxip/Rho;
       vn1o1n[2] = cos(Phi)*Pi[n]*xxip/Rho;
+      // if (n<3) printf("\nvn1o1n[2](%g) = cos(Phi)(%g)*Pi[n](%g)*xxip(%g)/Rho(%g)",
+      // 		      std::abs(vn1o1n[2]), cos(Phi),Pi[n],std::abs(xxip),Rho);
       vn1e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
       vn1e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
       vn1e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
@@ -1542,13 +1561,24 @@ c    MM       + 1  and - 1, alternately
       std::complex<double> encap = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
       // if (n<3) printf("\n===== n=%d ======\n",n);
       for (int i = 0; i < 3; i++) {
+	if (n<3 && i==0) printf("\nn=%d",n);
 	El[i] = El[i] + encap*(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]
 			       + c_i*al_n_[l][n]*vn3e1n[i] - bl_n_[l][n]*vm3o1n[i]);
 	Hl[i] = Hl[i] + encap*(-dl_n_[l][n]*vm1e1n[i] - c_i*cl_n_[l][n]*vn1o1n[i]
 			       + c_i*bl_n_[l][n]*vn3o1n[i] + al_n_[l][n]*vm3e1n[i]);
-	// if (n<3) printf(" E[%d]=%g ", i,std::abs(El[i]));
+	if (n<3) printf("\n !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
+	//printf(" ===%d=== %g ", i,std::abs(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]));
+	if (n<3) printf(" ===%d=== %g ", i,std::abs(//-dl_n_[l][n]*vm1e1n[i] 
+						    //- c_i*cl_n_[l][n]*
+						    vn1o1n[i]
+						    // + c_i*bl_n_[l][n]*vn3o1n[i]
+						    // + al_n_[l][n]*vm3e1n[i]
+						    ));
+	Ei[i] = Ei[i] + encap*(vm1o1n[i] - c_i*vn1e1n[i]);
+	if (n<3) printf(" --- Ei[%d]=%g! ", i,std::abs(encap*(vm1o1n[i] - c_i*vn1e1n[i])));
+
       }
-      // if (n<3) printf(" encap=%g \n", encap.real());
+      //if (n<3) printf(" bj=%g \n", std::abs(bj[n]));
     }  // end of for all n
     
     // magnetic field
@@ -1606,17 +1636,22 @@ c    MM       + 1  and - 1, alternately
       const double& Xp = coords_sp_[0][point];
       const double& Yp = coords_sp_[1][point];
       const double& Zp = coords_sp_[2][point];
+      printf("X=%g, Y=%g, Z=%g\n", Xp, Yp, Zp);
       // Convert to spherical coordinates
       double Rho, Phi, Theta;
       Rho = std::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
+      // printf("Rho=%g\n", Rho);
       // Avoid convergence problems due to Rho too small
-      if (Rho < 1e-5) Rho = 1e-5;
+      if (Rho < 1e-5) Rho = 1e-10;
       // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
       if (Rho == 0.0) Theta = 0.0;
       else Theta = std::acos(Zp/Rho);
+      // printf("Theta=%g\n", Theta);
       // If Xp=Yp=0 then Phi is undefined. Just set it to zero to zero to avoid problems
       if (Xp == 0.0 && Yp == 0.0) Phi = 0.0;
       else Phi = std::acos(Xp/std::sqrt(pow2(Xp) + pow2(Yp)));
+      // printf("Phi=%g\n", Phi);
+
       calcSinglePiTau(std::cos(Theta), Pi, Tau);     
       //*******************************************************//
       // external scattering field = incident + scattered      //
@@ -1627,15 +1662,14 @@ c    MM       + 1  and - 1, alternately
       std::vector<std::complex<double> > Es(3), Hs(3);
       const double outer_size = size_parameter_.back();
       // Firstly the easiest case: the field outside the particle
-      //printf("rho=%g, outer=%g  ", Rho, outer_size);
-      if (Rho >= outer_size) {
-	fieldExt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
-	//printf("Ext E: %g,%g,%g\n", Es[0].real(), Es[1].real(),Es[2].real() );
-      } else {
-	fieldInt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
-	printf("Int E: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]),
-	       Rho);
-      }
+      printf("rho=%g, outer=%g  ", Rho, outer_size);
+      // if (Rho >= outer_size) {
+      // fieldExt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
+      // printf("\nFin E ext: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]),	       Rho);
+      // } else {
+      fieldInt(Rho, Phi, Theta, Pi, Tau, Es, Hs);      
+      printf("\nFin E int: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]),	       Rho);
+      //}
       std::complex<double>& Ex = E_field_[point][0];
       std::complex<double>& Ey = E_field_[point][1];
       std::complex<double>& Ez = E_field_[point][2];
@@ -1654,6 +1688,8 @@ c    MM       + 1  and - 1, alternately
 	Hy = sin(Theta)*sin(Phi)*Hs[0] + cos(Theta)*sin(Phi)*Hs[1] + cos(Phi)*Hs[2];
 	Hz = cos(Theta)*Hs[0] - sin(Theta)*Hs[1];
       }
+      printf("Cart E: %g,%g,%g   Rho=%g\n", std::abs(Ex), std::abs(Ey),std::abs(Ez),
+	     Rho);
     }  // end of for all field coordinates
     
   }  //  end of   void MultiLayerMie::RunFieldCalculations()
