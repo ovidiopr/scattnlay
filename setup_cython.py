@@ -34,7 +34,7 @@ __url__ = 'http://scattering.sourceforge.net/'
 
 from distutils.core import setup
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
+from Cython.Build import cythonize
 import numpy as np
 
 setup(name = __mod__,
@@ -53,7 +53,10 @@ O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
       url = __url__,
       license = 'GPL',
       platforms = 'any',
-      cmdclass = {'build_ext': build_ext},
-      ext_modules = [Extension("scattnlay", ["nmie.cc", "py_nmie.cc", "scattnlay.pyx"], language = "c++", include_dirs = [np.get_include()])]
+      ext_modules = cythonize("scattnlay.pyx",                       # our Cython source
+                              sources = ["nmie-wrapper.cc"],         # additional source file(s)
+                              language = "c++",                      # generate C++ code
+                              extra_compile_args = ['-std=c++11'],
+      )
 )
 
