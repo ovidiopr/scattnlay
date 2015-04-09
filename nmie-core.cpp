@@ -1,35 +1,42 @@
-///
-/// @file   nmie.cc
-/// @author Ladutenko Konstantin <kostyfisik at gmail (.) com>
-/// @date   Tue Sep  3 00:38:27 2013
-/// @copyright 2013,2014,2015 Ladutenko Konstantin
-///
-/// nmie is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
-///
-/// nmie-wrapper is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-/// GNU General Public License for more details.
-///
-/// You should have received a copy of the GNU General Public License
-/// along with nmie-wrapper.  If not, see <http://www.gnu.org/licenses/>.
-///
-/// nmie uses nmie.c from scattnlay by Ovidio Pena
-/// <ovidio@bytesfall.com> . He has an additional condition to 
-/// his library:
-//    The only additional condition is that we expect that all publications         //
-//    describing  work using this software , or all commercial products             //
+//**********************************************************************************//
+//    Copyright (C) 2009-2015  Ovidio Pena <ovidio@bytesfall.com>                   //
+//                                                                                  //
+//    This file is part of scattnlay                                                //
+//                                                                                  //
+//    This program is free software: you can redistribute it and/or modify          //
+//    it under the terms of the GNU General Public License as published by          //
+//    the Free Software Foundation, either version 3 of the License, or             //
+//    (at your option) any later version.                                           //
+//                                                                                  //
+//    This program is distributed in the hope that it will be useful,               //
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of                //
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                 //
+//    GNU General Public License for more details.                                  //
+//                                                                                  //
+//    The only additional remark is that we expect that all publications            //
+//    describing work using this software, or all commercial products               //
 //    using it, cite the following reference:                                       //
 //    [1] O. Pena and U. Pal, "Scattering of electromagnetic radiation by           //
 //        a multilayered sphere," Computer Physics Communications,                  //
 //        vol. 180, Nov. 2009, pp. 2348-2354.                                       //
-///
-/// @brief  Wrapper class around nMie function for ease of use
-///
-#include "nmie-wrapper.h"
+//                                                                                  //
+//    You should have received a copy of the GNU General Public License             //
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
+//**********************************************************************************//
+
+//**********************************************************************************//
+// This class implements the algorithm for a multilayered sphere described by:      //
+//    [1] W. Yang, "Improved recursive algorithm for light scattering by a          //
+//        multilayered sphere,” Applied Optics, vol. 42, Mar. 2003, pp. 1710-1720.  //
+//                                                                                  //
+// You can find the description of all the used equations in:                       //
+//    [2] O. Pena and U. Pal, "Scattering of electromagnetic radiation by           //
+//        a multilayered sphere," Computer Physics Communications,                  //
+//        vol. 180, Nov. 2009, pp. 2348-2354.                                       //
+//                                                                                  //
+// Hereinafter all equations numbers refer to [2]                                   //
+//**********************************************************************************//
+#include "nmie-core.h"
 #include <array>
 #include <algorithm>
 #include <cstdio>
@@ -40,15 +47,42 @@
 namespace nmie {  
   //helpers
   template<class T> inline T pow2(const T value) {return value*value;}
-  //#define round(x) ((x) >= 0 ? (int)((x) + 0.5):(int)((x) - 0.5))
+
   int round(double x) {
     return x >= 0 ? (int)(x + 0.5):(int)(x - 0.5);
   }  
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  //emulate C call.
-  int nMie_wrapper(int L,  std::vector<double>& x,  std::vector<std::complex<double> >& m, int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+
+
+//**********************************************************************************//
+// This function emulates a C call to calculate the actual scattering parameters    //
+// and amplitudes.                                                                  //
+//                                                                                  //
+// Input parameters:                                                                //
+//   L: Number of layers                                                            //
+//   pl: Index of PEC layer. If there is none just send -1                          //
+//   x: Array containing the size parameters of the layers [0..L-1]                 //
+//   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+//   nTheta: Number of scattering angles                                            //
+//   Theta: Array containing all the scattering angles where the scattering         //
+//          amplitudes will be calculated                                           //
+//   nmax: Maximum number of multipolar expansion terms to be used for the          //
+//         calculations. Only use it if you know what you are doing, otherwise      //
+//         set this parameter to -1 and the function will calculate it              //
+//                                                                                  //
+// Output parameters:                                                               //
+//   Qext: Efficiency factor for extinction                                         //
+//   Qsca: Efficiency factor for scattering                                         //
+//   Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)                    //
+//   Qbk: Efficiency factor for backscattering                                      //
+//   Qpr: Efficiency factor for the radiation pressure                              //
+//   g: Asymmetry factor (g = (Qext-Qpr)/Qsca)                                      //
+//   Albedo: Single scattering albedo (Albedo = Qsca/Qext)                          //
+//   S1, S2: Complex scattering amplitudes                                          //
+//                                                                                  //
+// Return value:                                                                    //
+//   Number of multipolar expansion terms used for the calculations                 //
+//**********************************************************************************//
+  int nMie(int L, std::vector<double>& x, std::vector<std::complex<double> >& m, int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -56,8 +90,8 @@ namespace nmie {
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
       MultiLayerMie multi_layer_mie;  
-      multi_layer_mie.SetWidthSP(x);
-      multi_layer_mie.SetIndexSP(m);
+      multi_layer_mie.SetLayersWidth(x);
+      multi_layer_mie.SetLayersIndex(m);
       multi_layer_mie.SetAngles(Theta);
     
       multi_layer_mie.RunMieCalculations();
@@ -71,7 +105,6 @@ namespace nmie {
       *Albedo = multi_layer_mie.GetAlbedo();
       S1 = multi_layer_mie.GetS1();
       S2 = multi_layer_mie.GetS2();
-      //multi_layer_mie.GetFailed();
     } catch(const std::invalid_argument& ia) {
       // Will catch if  multi_layer_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
@@ -81,10 +114,32 @@ namespace nmie {
 
     return 0;
   }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  int nField(const int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec,  std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
+
+
+//**********************************************************************************//
+// This function emulates a C call to calculate complex electric and magnetic field //
+// in the surroundings and inside (TODO) the particle.                              //
+//                                                                                  //
+// Input parameters:                                                                //
+//   L: Number of layers                                                            //
+//   pl: Index of PEC layer. If there is none just send 0 (zero)                    //
+//   x: Array containing the size parameters of the layers [0..L-1]                 //
+//   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+//   nmax: Maximum number of multipolar expansion terms to be used for the          //
+//         calculations. Only use it if you know what you are doing, otherwise      //
+//         set this parameter to 0 (zero) and the function will calculate it.       //
+//   ncoord: Number of coordinate points                                            //
+//   Coords: Array containing all coordinates where the complex electric and        //
+//           magnetic fields will be calculated                                     //
+//                                                                                  //
+// Output parameters:                                                               //
+//   E, H: Complex electric and magnetic field at the provided coordinates          //
+//                                                                                  //
+// Return value:                                                                    //
+//   Number of multipolar expansion terms used for the calculations                 //
+//**********************************************************************************//
+
+  int nField(const int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
     if (x.size() != L || m.size() != L)
       throw std::invalid_argument("Declared number of layers do not fit x and m!");
     if (Xp_vec.size() != ncoord || Yp_vec.size() != ncoord || Zp_vec.size() != ncoord
@@ -99,9 +154,9 @@ namespace nmie {
     try {
       MultiLayerMie multi_layer_mie;  
       //multi_layer_mie.SetPEC(pl);
-      multi_layer_mie.SetWidthSP(x);
-      multi_layer_mie.SetIndexSP(m);      
-      multi_layer_mie.SetFieldPointsSP({Xp_vec, Yp_vec, Zp_vec});
+      multi_layer_mie.SetLayersWidth(x);
+      multi_layer_mie.SetLayersIndex(m);      
+      multi_layer_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
       multi_layer_mie.RunFieldCalculations();
       E = multi_layer_mie.GetFieldE();
       H = multi_layer_mie.GetFieldH();
@@ -115,151 +170,107 @@ namespace nmie {
 
     return 0;
   }
+
+
   // ********************************************************************** //
+  // Returns previously calculated Qext                                     //
   // ********************************************************************** //
-  // ********************************************************************** //
-  void MultiLayerMie::GetFailed() {
-    double faild_x = 9.42477796076938;
-    //double faild_x = 9.42477796076937;
-    std::complex<double> z(faild_x, 0.0);
-    std::vector<int> nmax_local_array = {20, 100, 500, 2500};
-    for (auto nmax_local : nmax_local_array) {
-      std::vector<std::complex<double> > D1_failed(nmax_local + 1);
-      // Downward recurrence for D1 - equations (16a) and (16b)
-      D1_failed[nmax_local] = std::complex<double>(0.0, 0.0);
-      const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
-      for (int n = nmax_local; n > 0; n--) {
-        D1_failed[n - 1] = double(n)*zinv - 1.0/(D1_failed[n] + double(n)*zinv);
-      }
-      printf("Faild D1[0] from reccurence (z = %16.14f, nmax = %d): %g\n",
-             faild_x, nmax_local, D1_failed[0].real());
-    }
-    printf("Faild D1[0] from continued fraction (z = %16.14f): %g\n", faild_x,
-           calcD1confra(0,z).real());
-    //D1[nmax_] = calcD1confra(nmax_, z);
-  
-    
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
+
   double MultiLayerMie::GetQext() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
     return Qext_;
   }
+
+
   // ********************************************************************** //
+  // Returns previously calculated Qabs                                     //
   // ********************************************************************** //
-  // ********************************************************************** //
+
   double MultiLayerMie::GetQabs() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
     return Qabs_;
   }
+
+
   // ********************************************************************** //
+  // Returns previously calculated Qsca                                     //
   // ********************************************************************** //
-  // ********************************************************************** //
-  std::vector<double> MultiLayerMie::GetQabs_channel() {
-    if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
-    return Qabs_ch_;
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  std::vector<double> MultiLayerMie::GetQabs_channel_normalized() {
-    if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
-    // std::vector<double> NACS(nmax_ - 1, 0.0);
-    // double x2 = pow2(size_parameter_.back());
-    // for (int i = 0; i < nmax_ - 1; ++i) {
-    //   const int n = i + 1;
-    //   NACS[i] = Qabs_ch_[i]*x2/(2.0*(2.0*static_cast<double>(n) + 1));
-    //   // if (NACS[i] > 0.250000001)
-    //   //         throw std::invalid_argument("Unexpected normalized absorption cross-section value!");
-    // }
-    //return NACS;    
-    return Qabs_ch_norm_;
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
+
   double MultiLayerMie::GetQsca() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
     return Qsca_;
   }
+
+
   // ********************************************************************** //
+  // Returns previously calculated Qbk                                      //
   // ********************************************************************** //
-  // ********************************************************************** //
-  std::vector<double> MultiLayerMie::GetQsca_channel() {
-    if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
-    return Qsca_ch_;
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  std::vector<double> MultiLayerMie::GetQsca_channel_normalized() {
-    if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
-    // std::vector<double> NACS(nmax_ - 1, 0.0);
-    // double x2 = pow2(size_parameter_.back());
-    // for (int i = 0; i < nmax_ - 1; ++i) {
-    //   const int n = i + 1;
-    //   NACS[i] = Qsca_ch_[i]*x2/(2.0*(2.0*static_cast<double>(n) + 1.0));
-    // }
-    // return NACS;    
-     return Qsca_ch_norm_;
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
+
   double MultiLayerMie::GetQbk() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
     return Qbk_;
   }
+
+
   // ********************************************************************** //
+  // Returns previously calculated Qpr                                      //
   // ********************************************************************** //
-  // ********************************************************************** //
+
   double MultiLayerMie::GetQpr() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
     return Qpr_;
   }
+
+
   // ********************************************************************** //
+  // Returns previously calculated assymetry factor                         //
   // ********************************************************************** //
-  // ********************************************************************** //
+
   double MultiLayerMie::GetAsymmetryFactor() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
     return asymmetry_factor_;
   }
+
+
   // ********************************************************************** //
+  // Returns previously calculated Albedo                                   //
   // ********************************************************************** //
-  // ********************************************************************** //
+
   double MultiLayerMie::GetAlbedo() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
     return albedo_;
   }
+
+
   // ********************************************************************** //
+  // Returns previously calculated S1                                       //
   // ********************************************************************** //
-  // ********************************************************************** //
+
   std::vector<std::complex<double> > MultiLayerMie::GetS1() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
     return S1_;
   }
+
+
   // ********************************************************************** //
+  // Returns previously calculated S2                                       //
   // ********************************************************************** //
-  // ********************************************************************** //
+
   std::vector<std::complex<double> > MultiLayerMie::GetS2() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
     return S2_;
   }
+
+
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -287,8 +298,8 @@ namespace nmie {
   // ********************************************************************** //
   void MultiLayerMie::SetCoatingIndex(std::vector<std::complex<double> > index) {
     isMieCalculated_ = false;
-    coating_index_.clear();
-    for (auto value : index) coating_index_.push_back(value);
+    index_.clear();
+    for (auto value : index) index_.push_back(value);
   }  // end of void MultiLayerMie::SetCoatingIndex(std::vector<complex> index);  
   // ********************************************************************** //
   // ********************************************************************** //
@@ -304,17 +315,17 @@ namespace nmie {
   // ********************************************************************** //
   void MultiLayerMie::SetCoatingWidth(std::vector<double> width) {
     isMieCalculated_ = false;
-    coating_width_.clear();
+    width_.clear();
     for (auto w : width)
       if (w <= 0)
         throw std::invalid_argument("Coating width should be positive!");
-      else coating_width_.push_back(w);
+      else width_.push_back(w);
   }
   // end of void MultiLayerMie::SetCoatingWidth(...);
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::SetWidthSP(const std::vector<double>& size_parameter) {
+  void MultiLayerMie::SetLayersWidth(const std::vector<double>& size_parameter) {
     isMieCalculated_ = false;
     size_parameter_.clear();
     double prev_size_parameter = 0.0;
@@ -328,20 +339,20 @@ namespace nmie {
       size_parameter_.push_back(layer_size_parameter);
     }
   }
-  // end of void MultiLayerMie::SetWidthSP(...);
+  // end of void MultiLayerMie::SetLayersWidth(...);
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::SetIndexSP(const std::vector< std::complex<double> >& index) {
+  void MultiLayerMie::SetLayersIndex(const std::vector< std::complex<double> >& index) {
     isMieCalculated_ = false;
     //index_.clear();
     index_ = index;
     // for (auto value : index) index_.push_back(value);
-  }  // end of void MultiLayerMie::SetIndexSP(...);  
+  }  // end of void MultiLayerMie::SetLayersIndex(...);  
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::SetFieldPointsSP(const std::vector< std::vector<double> >& coords_sp) {
+  void MultiLayerMie::SetFieldCoords(const std::vector< std::vector<double> >& coords_sp) {
     if (coords_sp.size() != 3)
       throw std::invalid_argument("Error! Wrong dimension of field monitor points!");
     if (coords_sp[0].size() != coords_sp[1].size() || coords_sp[0].size() != coords_sp[2].size())
@@ -350,7 +361,7 @@ namespace nmie {
     // for (int i = 0; i < coords_sp_[0].size(); ++i) {
     //   printf("%g, %g, %g\n", coords_sp_[0][i], coords_sp_[1][i], coords_sp_[2][i]);
     // }
-  }  // end of void MultiLayerMie::SetFieldPointsSP(...)
+  }  // end of void MultiLayerMie::SetFieldCoords(...)
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -360,32 +371,19 @@ namespace nmie {
       throw std::invalid_argument("Error! Layers are numbered from 0!");
     PEC_layer_position_ = layer_position;
   }
+
+
   // ********************************************************************** //
+  // Set maximun number of terms to be used                                 //
   // ********************************************************************** //
-  // ********************************************************************** //
-  void MultiLayerMie::SetMaxTermsNumber(int nmax) {    
+
+  void MultiLayerMie::SetMaxTerms(int nmax) {    
     isMieCalculated_ = false;
     nmax_preset_ = nmax;
     //debug
     printf("Setting max terms: %d\n", nmax_preset_);
   }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  void MultiLayerMie::GenerateSizeParameter() {
-    isMieCalculated_ = false;
-    size_parameter_.clear();
-    double radius = 0.0;
-    for (auto width : target_width_) {
-      radius += width;
-      size_parameter_.push_back(2*PI_*radius/wavelength_);
-    }
-    for (auto width : coating_width_) {
-      radius += width;
-      size_parameter_.push_back(2*PI_*radius/wavelength_);
-    }
-    total_radius_ = radius;
-  }  // end of void MultiLayerMie::GenerateSizeParameter();
+
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -393,7 +391,7 @@ namespace nmie {
     isMieCalculated_ = false;
     index_.clear();
     for (auto index : target_index_) index_.push_back(index);
-    for (auto index : coating_index_) index_.push_back(index);
+    for (auto index : index_) index_.push_back(index);
   }  // end of void MultiLayerMie::GenerateIndex();
   // ********************************************************************** //
   // ********************************************************************** //
@@ -404,65 +402,19 @@ namespace nmie {
     if (total_radius_ == 0) GenerateSizeParameter();
     return total_radius_;      
   }  // end of double MultiLayerMie::GetTotalRadius();
+
+
   // ********************************************************************** //
+  // Clear layer information                                                //
   // ********************************************************************** //
-  // ********************************************************************** //
-  std::vector< std::vector<double> >
-  MultiLayerMie::GetSpectra(double from_WL, double to_WL, int samples) {
-    if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
-    std::vector< std::vector<double> > spectra;
-    double step_WL = (to_WL - from_WL)/static_cast<double>(samples);
-    double wavelength_backup = wavelength_;
-    long fails = 0;
-    for (double WL = from_WL; WL < to_WL; WL += step_WL) {
-      wavelength_ = WL;
-      try {
-        RunMieCalculations();
-      } catch(const std::invalid_argument& ia) {
-        fails++;
-        continue;
-      }
-      //printf("%3.1f ",WL);
-      spectra.push_back(std::vector<double>({wavelength_, Qext_, Qsca_, Qabs_, Qbk_}));
-    }  // end of for each WL in spectra
-    printf("Spectrum has %li fails\n",fails);
-    wavelength_ = wavelength_backup;
-    return spectra;
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  void MultiLayerMie::ClearTarget() {
-    isMieCalculated_ = false;
-    target_width_.clear();
-    target_index_.clear();
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  void MultiLayerMie::ClearCoating() {
-    isMieCalculated_ = false;
-    coating_width_.clear();
-    coating_index_.clear();
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
+
   void MultiLayerMie::ClearLayers() {
     isMieCalculated_ = false;
-    ClearTarget();
-    ClearCoating();
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  void MultiLayerMie::ClearAllDesign() {
-    isMieCalculated_ = false;
-    ClearLayers();
-    size_parameter_.clear();
+    width_.clear();
     index_.clear();
   }
+
+
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -470,8 +422,12 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  // Calculate Nstop - equation (17)
-  //
+
+
+  // ********************************************************************** //
+  // Calculate Nstop - equation (17)                                        //
+  // ********************************************************************** //
+
   void MultiLayerMie::Nstop() {
     const double& xL = size_parameter_.back();
     if (xL <= 8) {
@@ -482,9 +438,12 @@ namespace nmie {
       nmax_ = round(xL + 4.0*pow(xL, 1.0/3.0) + 2);
     }    
   }
+
+
   // ********************************************************************** //
+  // Maximum number of terms required for the calculation                   //
   // ********************************************************************** //
-  // ********************************************************************** //
+
   void MultiLayerMie::Nmax(int first_layer) {
     int ri, riM1;
     const std::vector<double>& x = size_parameter_;
@@ -506,13 +465,14 @@ namespace nmie {
     nmax_ += 15;  // Final nmax_ value
   }
 
+
   //**********************************************************************************//
   // This function calculates the spherical Bessel (jn) and Hankel (h1n) functions    //
   // and their derivatives for a given complex value z. See pag. 87 B&H.              //
   //                                                                                  //
   // Input parameters:                                                                //
   //   z: Real argument to evaluate jn and h1n                                        //
-  //   nmax_: Maximum number of terms to calculate jn and h1n                          //
+  //   nmax_: Maximum number of terms to calculate jn and h1n                         //
   //                                                                                  //
   // Output parameters:                                                               //
   //   jn, h1n: Spherical Bessel and Hankel functions                                 //
@@ -521,7 +481,7 @@ namespace nmie {
   // The implementation follows the algorithm by I.J. Thompson and A.R. Barnett,      //
   // Comp. Phys. Comm. 47 (1987) 245-257.                                             //
   //                                                                                  //
-  // Complex spherical Bessel functions from n=0..nmax_ - 1 for z in the upper half      //
+  // Complex spherical Bessel functions from n=0..nmax_-1 for z in the upper half     //
   // plane (Im(z) > -3).                                                              //
   //                                                                                  //
   //     j[n]   = j/n(z)                Regular solution: j[0]=sin(z)/z               //
@@ -532,6 +492,7 @@ namespace nmie {
   //                                                   = -i*exp(i*z)/z                //
   // Using complex CF1, and trigonometric forms for n=0 solutions.                    //
   //**********************************************************************************//
+
   void MultiLayerMie::sbesjh(std::complex<double> z,
                              std::vector<std::complex<double> >& jn,
                              std::vector<std::complex<double> >& jnp,
@@ -629,6 +590,7 @@ namespace nmie {
     }
   }
 
+
   //**********************************************************************************//
   // This function calculates the spherical Bessel functions (bj and by) and the      //
   // logarithmic derivative (bd) for a given complex value z. See pag. 87 B&H.        //
@@ -641,6 +603,7 @@ namespace nmie {
   //   bj, by: Spherical Bessel functions                                             //
   //   bd: Logarithmic derivative                                                     //
   //**********************************************************************************//
+
   void MultiLayerMie::sphericalBessel(std::complex<double> z,
                                       std::vector<std::complex<double> >& bj,
                                       std::vector<std::complex<double> >& by,
@@ -653,25 +616,13 @@ namespace nmie {
       by[n] = (h1n[n] - jn[n])/std::complex<double>(0.0, 1.0);
       bd[n] = jnp[n]/jn[n] + 1.0/z;
     }
-    // std::complex<double> besselj_0 = std::sin(z)/z;
-    // std::complex<double> bessely_0 = -std::cos(z)/z;
-    // if (nmax_>0) {
-    //   bj[0] = std::sin(z)/pow2(z)-std::cos(z)/z;  //bj1
-    //   by[0] = std::cos(z)/pow2(z)-std::sin(z)/z;  //by1
-    // }
-    // if (nmax_>1) {
-    //   bj[1] = bj[0]*3.0/z-besselj_0;//bj2
-    //   by[1] = by[0]*3.0/z-bessely_0;//bj2
-    // }
-    // for (int n = 2; n < nmax_; n++) {
-    //   bj[n] = (2.0*n - 1.0)/z*bj[n - 1] - bj[n];
-    //   by[n] = (2.0*n - 1.0)/z*by[n - 1] - by[n];
-    // }
   }
+
+
   // ********************************************************************** //
+  // Calculate an - equation (5)                                            //
   // ********************************************************************** //
-  // ********************************************************************** //
-  // Calculate an - equation (5)
+
   std::complex<double> MultiLayerMie::calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
                                               std::complex<double> PsiXL, std::complex<double> ZetaXL,
                                               std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1) {
@@ -681,10 +632,12 @@ namespace nmie {
 
     return Num/Denom;
   }
+
+
   // ********************************************************************** //
+  // Calculate bn - equation (6)                                            //
   // ********************************************************************** //
-  // ********************************************************************** //
-  // Calculate bn - equation (6)
+
   std::complex<double> MultiLayerMie::calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
                                               std::complex<double> PsiXL, std::complex<double> ZetaXL,
                                               std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1) {
@@ -694,22 +647,29 @@ namespace nmie {
 
     return Num/Denom;
   }
+
+
   // ********************************************************************** //
+  // Calculates S1 - equation (25a)                                         //
   // ********************************************************************** //
-  // ********************************************************************** //
-  // Calculates S1 - equation (25a)
+
   std::complex<double> MultiLayerMie::calc_S1(int n, std::complex<double> an, std::complex<double> bn,
                                               double Pi, double Tau) {
     return double(n + n + 1)*(Pi*an + Tau*bn)/double(n*n + n);
   }
+
+
   // ********************************************************************** //
+  // Calculates S2 - equation (25b) (it's the same as (25a), just switches  //
+  // Pi and Tau)                                                            //
   // ********************************************************************** //
-  // ********************************************************************** //
-  // Calculates S2 - equation (25b) (it's the same as (25a), just switches Pi and Tau)
+
   std::complex<double> MultiLayerMie::calc_S2(int n, std::complex<double> an, std::complex<double> bn,
                                               double Pi, double Tau) {
     return calc_S1(n, an, bn, Tau, Pi);
   }
+
+
   //**********************************************************************************//
   // This function calculates the Riccati-Bessel functions (Psi and Zeta) for a       //
   // real argument (x).                                                               //
@@ -722,16 +682,16 @@ namespace nmie {
   // Output parameters:                                                               //
   //   Psi, Zeta: Riccati-Bessel functions                                            //
   //**********************************************************************************//
+
   void MultiLayerMie::calcPsiZeta(std::complex<double> z,
                                   std::vector<std::complex<double> > D1,
                                   std::vector<std::complex<double> > D3,
                                   std::vector<std::complex<double> >& Psi,
                                   std::vector<std::complex<double> >& Zeta) {
+
     //Upward recurrence for Psi and Zeta - equations (20a) - (21b)
-    //Psi[0] = std::complex<double>(std::sin(x), 0);
     std::complex<double> c_i(0.0, 1.0);
     Psi[0] = std::sin(z);
-    //Zeta[0] = std::complex<double>(std::sin(x), -std::cos(x));
     Zeta[0] = std::sin(z) - c_i*std::cos(z);
     for (int n = 1; n <= nmax_; n++) {
       Psi[n] = Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
@@ -739,110 +699,8 @@ namespace nmie {
     }
 
   }
-  //**********************************************************************************//
-  // Function CONFRA ported from MIEV0.f (Wiscombe,1979)
-  // Ref. to NCAR Technical Notes, Wiscombe, 1979
-  /*
-c         Compute Bessel function ratio A-sub-N from its
-c         continued fraction using Lentz method
-
-c         ZINV = Reciprocal of argument of A
 
 
-c    I N T E R N A L    V A R I A B L E S
-c    ------------------------------------
-
-c    CAK      Term in continued fraction expansion of A (Eq. R25)
-c     a_k
-
-c    CAPT     Factor used in Lentz iteration for A (Eq. R27)
-c     T_k
-
-c    CNUMER   Numerator   in capT  (Eq. R28A)
-c     N_k
-c    CDENOM   Denominator in capT  (Eq. R28B)
-c     D_k
-
-c    CDTD     Product of two successive denominators of capT factors
-c                 (Eq. R34C)
-c     xi_1
-
-c    CNTN     Product of two successive numerators of capT factors
-c                 (Eq. R34B)
-c     xi_2
-
-c    EPS1     Ill-conditioning criterion
-c    EPS2     Convergence criterion
-
-c    KK       Subscript k of cAk  (Eq. R25B)
-c     k
-
-c    KOUNT    Iteration counter (used to prevent infinite looping)
-
-c    MAXIT    Max. allowed no. of iterations
-
-c    MM + 1  and - 1, alternately
-*/
-  std::complex<double> MultiLayerMie::calcD1confra(const int N, const std::complex<double> z) {
-  // NTMR -> nmax_ - 1  \\TODO nmax_ ?
-    //int N = nmax_ - 1;
-    int KK, KOUNT, MAXIT = 10000, MM;
-    //    double EPS1=1.0e-2;
-    double EPS2=1.0e-8;
-    std::complex<double> CAK, CAPT, CDENOM, CDTD, CNTN, CNUMER;
-    std::complex<double> one = std::complex<double>(1.0,0.0);
-    std::complex<double> ZINV = one/z;
-// c                                 ** Eq. R25a
-    std::complex<double> CONFRA = static_cast<std::complex<double> >(N + 1)*ZINV;   //debug ZINV
-    MM = - 1; 
-    KK = 2*N +3; //debug 3
-// c                                 ** Eq. R25b, k=2
-    CAK    = static_cast<std::complex<double> >(MM*KK)*ZINV; //debug -3 ZINV
-    CDENOM = CAK;
-    CNUMER = CDENOM + one/CONFRA; //-3zinv+z
-    KOUNT  = 1;
-    //10 CONTINUE
-    do {      ++KOUNT;
-      if (KOUNT > MAXIT) {
-        printf("re(%g):im(%g)\t\n", CONFRA.real(), CONFRA.imag());
-        throw std::invalid_argument("ConFra--Iteration failed to converge!\n");
-      }
-      MM *= - 1;      KK += 2;  //debug  mm=1 kk=5
-      CAK = static_cast<std::complex<double> >(MM*KK)*ZINV; //    ** Eq. R25b //debug 5zinv
-     //  //c ** Eq. R32    Ill-conditioned case -- stride two terms instead of one
-     //  if (std::abs(CNUMER/CAK) >= EPS1 ||  std::abs(CDENOM/CAK) >= EPS1) {
-     //         //c                       ** Eq. R34
-     //         CNTN   = CAK*CNUMER + 1.0;
-     //         CDTD   = CAK*CDENOM + 1.0;
-     //         CONFRA = (CNTN/CDTD)*CONFRA; // ** Eq. R33
-     //         MM  *= - 1;        KK  += 2;
-     //         CAK = static_cast<std::complex<double> >(MM*KK)*ZINV; // ** Eq. R25b
-     //         //c                        ** Eq. R35
-     //         CNUMER = CAK + CNUMER/CNTN;
-     //         CDENOM = CAK + CDENOM/CDTD;
-     //         ++KOUNT;
-     //         //GO TO  10
-     //         continue;
-     // } else { //c                           *** Well-conditioned case
-      {
-        CAPT   = CNUMER/CDENOM; // ** Eq. R27 //debug (-3zinv + z)/(-3zinv)
-        // printf("re(%g):im(%g)**\t", CAPT.real(), CAPT.imag());
-       CONFRA = CAPT*CONFRA; // ** Eq. R26
-       //if (N == 0) {output=true;printf(" re:");prn(CONFRA.real());printf(" im:"); prn(CONFRA.imag());output=false;};
-       //c                                  ** Check for convergence; Eq. R31
-       if (std::abs(CAPT.real() - 1.0) >= EPS2 ||  std::abs(CAPT.imag()) >= EPS2) {
-//c                                        ** Eq. R30
-         CNUMER = CAK + one/CNUMER;
-         CDENOM = CAK + one/CDENOM;
-         continue;
-         //GO TO  10
-       }  // end of if < eps2
-      }
-      break;
-    } while(1);    
-    //if (N == 0)  printf(" return confra for z=(%g,%g)\n", ZINV.real(), ZINV.imag());
-    return CONFRA;
-  }
   //**********************************************************************************//
   // This function calculates the logarithmic derivatives of the Riccati-Bessel       //
   // functions (D1 and D3) for a complex argument (z).                                //
@@ -855,26 +713,22 @@ c    MM + 1  and - 1, alternately
   // Output parameters:                                                               //
   //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions                //
   //**********************************************************************************//
+
   void MultiLayerMie::calcD1D3(const std::complex<double> z,
                                std::vector<std::complex<double> >& D1,
                                std::vector<std::complex<double> >& D3) {
+
     // Downward recurrence for D1 - equations (16a) and (16b)
     D1[nmax_] = std::complex<double>(0.0, 0.0);
-    //D1[nmax_] = calcD1confra(nmax_, z);
     const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
-    
-    // printf(" D:");prn((D1[nmax_]).real()); printf("\t diff:");
-    // prn((D1[nmax_] + double(nmax_)*zinv).real());
+
     for (int n = nmax_; n > 0; n--) {
       D1[n - 1] = double(n)*zinv - 1.0/(D1[n] + double(n)*zinv);
-      //D1[n - 1] = calcD1confra(n - 1, z);
-      // printf(" D:");prn((D1[n - 1]).real()); printf("\t diff:");
-      // prn((D1[n] + double(n)*zinv).real());
     }
-    //     printf("\n\n"); iformat=0;
+
     if (std::abs(D1[0]) > 100000.0)
-      throw std::invalid_argument
-        ("Unstable D1! Please, try to change input parameters!\n");
+      throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
+
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(std::cos(2.0*z.real()), std::sin(2.0*z.real()))
                        *std::exp(-2.0*z.imag()));
@@ -885,6 +739,8 @@ c    MM + 1  and - 1, alternately
       D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
     }
   }
+
+
   //**********************************************************************************//
   // This function calculates Pi and Tau for all values of Theta.                     //
   // Equations (26a) - (26c)                                                          //
@@ -898,8 +754,10 @@ c    MM + 1  and - 1, alternately
   // Output parameters:                                                               //
   //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
   //**********************************************************************************//
+
   void MultiLayerMie::calcSinglePiTau(const double& costheta, std::vector<double>& Pi,
                                       std::vector<double>& Tau) {
+
     //****************************************************//
     // Equations (26a) - (26c)                            //
     //****************************************************//
@@ -917,6 +775,8 @@ c    MM + 1  and - 1, alternately
       }
     }
   }  // end of void MultiLayerMie::calcPiTau(...)
+
+
   void MultiLayerMie::calcAllPiTau(std::vector< std::vector<double> >& Pi,
                                    std::vector< std::vector<double> >& Tau) {
     std::vector<double> costheta(theta_.size(), 0.0);
@@ -1090,7 +950,7 @@ c    MM + 1  and - 1, alternately
     //Calculate D1, D3, Psi and Zeta for XL //
     //**************************************//
     // Calculate D1XL and D3XL
-    calcD1D3(x[L - 1],  D1XL, D3XL);
+    calcD1D3(x[L - 1], D1XL, D3XL);
     //printf("%5.20f\n",Ha[L - 1][0].real());
     // Calculate PsiXL and ZetaXL
     calcPsiZeta(x[L - 1], D1XL, D3XL, PsiXL, ZetaXL);
@@ -1152,7 +1012,7 @@ c    MM + 1  and - 1, alternately
   // ********************************************************************** //
   void MultiLayerMie::ConvertToSP() {
     isMieCalculated_ = false;
-    if (target_width_.size() + coating_width_.size() == 0)
+    if (target_width_.size() + width_.size() == 0)
       return;  // Nothing to convert, we suppose that SP was set directly
     GenerateSizeParameter();
     GenerateIndex();
@@ -1551,8 +1411,8 @@ c    MM + 1  and - 1, alternately
       vm3o1n[1] = cos(Phi)*Pi[n]*zn;
       vm3o1n[2] = -sin(Phi)*Tau[n]*zn;
       // if (n<3)  printf("\nRE  vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g   \nIM vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g",
-      //              vm3o1n[0].real(),   vm3o1n[1].real(),    vm3o1n[2].real(),
-      //              vm3o1n[0].imag(),   vm3o1n[1].imag(),    vm3o1n[2].imag());
+      //              vm3o1n[0].real(), vm3o1n[1].real(), vm3o1n[2].real(),
+      //              vm3o1n[0].imag(), vm3o1n[1].imag(), vm3o1n[2].imag());
       vm3e1n[0] = c_zero;
       vm3e1n[1] = -sin(Phi)*Pi[n]*zn;
       vm3e1n[2] = -cos(Phi)*Tau[n]*zn;
@@ -1563,8 +1423,8 @@ c    MM + 1  and - 1, alternately
       vn3e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
       vn3e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
       // if (n<3)  printf("\nRE  vn3e1n[0]%g   vn3e1n[1]%g    vn3e1n[2]%g   \nIM vn3e1n[0]%g   vn3e1n[1]%g    vn3e1n[2]%g",
-      //              vn3e1n[0].real(),   vn3e1n[1].real(),    vn3e1n[2].real(),
-      //              vn3e1n[0].imag(),   vn3e1n[1].imag(),    vn3e1n[2].imag());
+      //              vn3e1n[0].real(), vn3e1n[1].real(), vn3e1n[2].real(),
+      //              vn3e1n[0].imag(), vn3e1n[1].imag(), vn3e1n[2].imag());
       
       znm1 = bj[n];
       zn = bj[n + 1];
@@ -1587,8 +1447,8 @@ c    MM + 1  and - 1, alternately
       vn1e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
       vn1e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
       // if (n<3)  printf("\nRE  vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g   \nIM vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g",
-      //              vm3o1n[0].real(),   vm3o1n[1].real(),    vm3o1n[2].real(),
-      //              vm3o1n[0].imag(),   vm3o1n[1].imag(),    vm3o1n[2].imag());
+      //              vm3o1n[0].real(), vm3o1n[1].real(), vm3o1n[2].real(),
+      //              vm3o1n[0].imag(), vm3o1n[1].imag(), vm3o1n[2].imag());
       
       // scattered field: BH p.94 (4.45)
       std::complex<double> encap = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
