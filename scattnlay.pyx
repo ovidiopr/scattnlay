@@ -25,20 +25,22 @@
 from __future__ import division
 import numpy as np
 cimport numpy as np
+from libcpp.vector cimport vector
+from libcpp.vector cimport complex
 
-cdef extern from "<vector>" namespace "std":
-    cdef cppclass vector[T]:
-        cppclass iterator:
-            T operator*()
-            iterator operator++()
-            bint operator==(iterator)
-            bint operator!=(iterator)
-        vector()
-        void push_back(T&)
-        T& operator[](int)
-        T& at(int)
-        iterator begin()
-        iterator end()
+# cdef extern from "<vector>" namespace "std":
+#     cdef cppclass vector[T]:
+#         cppclass iterator:
+#             T operator*()
+#             iterator operator++()
+#             bint operator==(iterator)
+#             bint operator!=(iterator)
+#         vector()
+#         void push_back(T&)
+#         T& operator[](int)
+#         T& at(int)
+#         iterator begin()
+#         iterator end()
 
 cdef inline double *npy2c(np.ndarray a):
     assert a.dtype == np.float64

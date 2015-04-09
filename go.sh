@@ -15,11 +15,11 @@ echo Uncomment next line to compile compare.cc
 #  g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay-g.bin -ltcmalloc -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -g
 
 #DEBUG!
-clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay.bin
+#clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay.bin
 
 cp scattnlay.bin ../scattnlay
 # cp scattnlay-g.bin ../scattnlay-g
-cd tests/shell
+#cd tests/shell
 # for file in `ls *.sh`;  do 
 #     if [ "$file" != "test03.sh" ]; then
 # 	./$file > /dev/null
@@ -28,7 +28,7 @@ cd tests/shell
 # done
 
 PROGRAM='../../../scattnlay'
-time  ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-3.4  $PROGRAM -l 5 0.4642 1.8000 1.7000 0.7114 0.8000 0.7000 0.7393 1.2000 0.0900 0.9168 2.8000 0.2000 1.0000 1.5000 0.4000  -t 0.0 90.0 5 -c test01
+#time  ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-3.4  $PROGRAM -l 5 0.4642 1.8000 1.7000 0.7114 0.8000 0.7000 0.7393 1.2000 0.0900 0.9168 2.8000 0.2000 1.0000 1.5000 0.4000  -t 0.0 90.0 5 -c test01
 # #result
 # # test01, +1.41154e+00, +4.17695e-01, +9.93844e-01, +1.59427e-01, +1.25809e+00, +3.67376e-01, +2.95915e-01
 
@@ -92,3 +92,9 @@ time  ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-3.4  $PROGRAM -l 5 0.4642 1.
 # clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 $file nmie.cc -lm -lrt -o $file.bin
 
 # ./$file.bin
+
+rm scattnlay.so
+python setup.py build_ext --inplace
+cp scattnlay.so tests/python/
+cd tests/python/
+./field.py

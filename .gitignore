@@ -39,3 +39,4 @@ out.dot
 cov-int*
 cov-int
 build*
+.ipynb_checkpoints
