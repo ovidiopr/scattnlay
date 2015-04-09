@@ -1,25 +1,38 @@
 #!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+#
+#    Copyright (C) 2009-2015 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
+#
+#    This file is part of python-scattnlay
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    The only additional remark is that we expect that all publications
+#    describing work using this software, or all commercial products
+#    using it, cite the following reference:
+#    [1] O. Pena and U. Pal, "Scattering of electromagnetic radiation by
+#        a multilayered sphere," Computer Physics Communications,
+#        vol. 180, Nov. 2009, pp. 2348-2354.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# This test case calculates the differential scattering
-# cross section from a Luneburg lens, as described in:
-# B. R. Johnson, Applied Optics 35 (1996) 3286-3296.
+# This test case calculates the electric field in the 
+# XY plane, for an spherical silver nanoparticle
+# embedded in glass.
 
-# The Luneburg lens is a sphere of radius a, with a
-# radially-varying index of refraction, given by:
-# m(r) = [2 - (r/a)**1]**(1/2)
-
-# For the calculations, the Luneburg lens was approximated
-# as a multilayered sphere with 500 equally spaced layers.
-# The refractive index of each layer is defined to be equal to
-# m(r) at the midpoint of the layer: ml = [2 - (xm/xL)**1]**(1/2),
-# with xm = (xl-1 + xl)/2, for l = 1,2,...,L. The size
-# parameter in the lth layer is xl = l*xL/500. According to
-# geometrical optics theory, the differential cross section
-# can be expressed as:
-# d(Csca)/d(a**2*Omega) = cos(Theta)
-
-# The differential cross section from wave optics is:
-# d(Csca)/d(a**2*Omega) = S11(Theta)/x**2
+# Refractive index values correspond to a wavelength of
+# 400 nm. Maximum of the surface plasmon resonance (and,
+# hence, of electric field) is expected under those
+# conditions.
 
 from scattnlay import fieldnlay
 import numpy as np

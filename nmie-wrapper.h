@@ -183,33 +183,33 @@ namespace nmie {
     void Nstop();
     void Nmax(int first_layer);
     void sbesjh(std::complex<double> z, std::vector<std::complex<double> >& jn,
-	       std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n,
-	       std::vector<std::complex<double> >& h1np);
+	            std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n,
+	            std::vector<std::complex<double> >& h1np);
     void sphericalBessel(std::complex<double> z, std::vector<std::complex<double> >& bj,
-			 std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd);
+			             std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd);
     std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
-	                         std::complex<double> PsiXL, std::complex<double> ZetaXL,
-				 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
+	                             std::complex<double> PsiXL, std::complex<double> ZetaXL,
+				                 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
     std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
-	                         std::complex<double> PsiXL, std::complex<double> ZetaXL,
-				 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
+	                             std::complex<double> PsiXL, std::complex<double> ZetaXL,
+				                 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
     std::complex<double> calc_S1(int n, std::complex<double> an, std::complex<double> bn,
-				 double Pi, double Tau);
+				                 double Pi, double Tau);
     std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
-				 double Pi, double Tau);
+				                 double Pi, double Tau);
     void calcPsiZeta(std::complex<double> x, 
-		     std::vector<std::complex<double> > D1,
-		     std::vector<std::complex<double> > D3,
-		     std::vector<std::complex<double> >& Psi,
-		     std::vector<std::complex<double> >& Zeta);
+		             std::vector<std::complex<double> > D1,
+		             std::vector<std::complex<double> > D3,
+		             std::vector<std::complex<double> >& Psi,
+		             std::vector<std::complex<double> >& Zeta);
     std::complex<double> calcD1confra(int N, const std::complex<double> z);
     void calcD1D3(std::complex<double> z,
-		  std::vector<std::complex<double> >& D1,
-		  std::vector<std::complex<double> >& D3);
+		          std::vector<std::complex<double> >& D1,
+		          std::vector<std::complex<double> >& D3);
     void calcSinglePiTau(const double& costheta, std::vector<double>& Pi,
-			 std::vector<double>& Tau);
-    void calcAllPiTau( std::vector< std::vector<double> >& Pi,
-		    std::vector< std::vector<double> >& Tau);
+			             std::vector<double>& Tau);
+    void calcAllPiTau(std::vector< std::vector<double> >& Pi,
+		              std::vector< std::vector<double> >& Tau);
     void ScattCoeffs(std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
     void ScattCoeffsLayerd();
     void ScattCoeffsLayerdInit();
