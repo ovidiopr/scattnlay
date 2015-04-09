@@ -47,9 +47,17 @@
 # v2/Vt=0.26
 # v3/Vt=0.044
 # v4/Vt=0.3666
+import scattnlay
+
+import os
+path = os.path.dirname(scattnlay.__file__)
+print(scattnlay.__file__)
 
 from scattnlay import scattnlay
 import numpy as np
+# import os
+# import inspect
+# inspect.getfile(scattnlay)
 
 x = np.ones((400, 5), dtype = np.float64)
 x[:, 4] = np.arange(0.25, 100.25, 0.25)
@@ -86,8 +94,8 @@ try:
     plt.ylabel('Albedo')
 
     plt.xlabel('X')
-
-    plt.show()
+    
+    #plt.show()
 finally:
     np.savetxt("test01.txt", result, fmt = "%.5f")
     print result

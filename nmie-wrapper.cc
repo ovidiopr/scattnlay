@@ -48,7 +48,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   //emulate C call.
-  int nMie_wrapper(int L, const std::vector<double>& x, const std::vector<std::complex<double> >& m, int nTheta, const std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int nMie_wrapper(int L,  std::vector<double>& x,  std::vector<std::complex<double> >& m, int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -1267,8 +1267,8 @@ c    MM + 1  and - 1, alternately
 
     isMieCalculated_ = true;
     nmax_used_ = nmax_;
-    printf("Run Mie result: Qext = %g, Qsca = %g, Qabs = %g, Qbk = %g \n",
-               GetQext(), GetQsca(), GetQabs(), GetQbk());
+    // printf("Run Mie result: Qext = %g, Qsca = %g, Qabs = %g, Qbk = %g \n",
+    //            GetQext(), GetQsca(), GetQabs(), GetQbk());
     //return nmax;
   }
   

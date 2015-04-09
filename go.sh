@@ -94,7 +94,10 @@ PROGRAM='../../../scattnlay'
 # ./$file.bin
 
 rm scattnlay.so
+export CFLAGS='-std=c++11'
 python setup.py build_ext --inplace
 cp scattnlay.so tests/python/
 cd tests/python/
 ./field.py
+./test01.py
+./test01-wrapper.py

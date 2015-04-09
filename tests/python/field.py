@@ -33,6 +33,11 @@
 # 400 nm. Maximum of the surface plasmon resonance (and,
 # hence, of electric field) is expected under those
 # conditions.
+import scattnlay
+
+import os
+path = os.path.dirname(scattnlay.__file__)
+print(scattnlay.__file__)
 
 from scattnlay import fieldnlay
 import numpy as np
