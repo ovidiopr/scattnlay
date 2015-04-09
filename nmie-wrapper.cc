@@ -71,6 +71,10 @@ namespace nmie {
       *Albedo = multi_layer_mie.GetAlbedo();
       S1 = multi_layer_mie.GetS1();
       S2 = multi_layer_mie.GetS2();
+      
+      printf("S1 = %16.14f + i*%16.14f, S1_ass =  %16.14f + i*%16.14f\n",
+             multi_layer_mie.GetS1()[0].real(), multi_layer_mie.GetS1()[0].imag(), S1[0].real(), S1[0].real());
+      
       //multi_layer_mie.GetFailed();
     } catch(const std::invalid_argument& ia) {
       // Will catch if  multi_layer_mie fails or other errors.

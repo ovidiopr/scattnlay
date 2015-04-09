@@ -21,27 +21,12 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# distutils: language = c++
-# distutils: sources = nmie-wrapper.cc
+
 from __future__ import division
 import numpy as np
 cimport numpy as np
 from libcpp.vector cimport vector
 from libcpp.vector cimport complex
-
-# cdef extern from "<vector>" namespace "std":
-#     cdef cppclass vector[T]:
-#         cppclass iterator:
-#             T operator*()
-#             iterator operator++()
-#             bint operator==(iterator)
-#             bint operator!=(iterator)
-#         vector()
-#         void push_back(T&)
-#         T& operator[](int)
-#         T& at(int)
-#         iterator begin()
-#         iterator end()
 
 cdef inline double *npy2c(np.ndarray a):
     assert a.dtype == np.float64
@@ -51,112 +36,12 @@ cdef inline double *npy2c(np.ndarray a):
 
     # Return data pointer
     return <double *>(a.data)
-##############################################################################
-##############################################################################
-##############################################################################
-##############################################################################
 
-# cdef extern from "py_nmie.h":
-#     cdef int nMie(int L, int pl, vector[double] x, vector[double complex] m, int nTheta, vector[double] Theta, int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, double S1r[], double S1i[], double S2r[], double S2i[])
-#     cdef int nField(int L, int pl, vector[double] x, vector[double complex] m, int nmax, int nCoords, vector[double] Xp, vector[double] Yp, vector[double] Zp, double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[], double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[])
-##############################################################################
-##############################################################################
-##############################################################################
-##############################################################################
+cdef extern from "py_nmie.h":
+    cdef int nMie(int L, int pl, vector[double] x, vector[complex] m, int nTheta, vector[double] Theta, int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, double S1r[], double S1i[], double S2r[], double S2i[])
+    cdef int nField(int L, int pl, vector[double] x, vector[complex] m, int nmax, int nCoords, vector[double] Xp, vector[double] Yp, vector[double] Zp, double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[], double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[])
 
-cdef extern from "nmie-wrapper.h"  namespace "nmie":
-    cdef int nMie_wrapper(int L, const vector[double] x, const vector[double complex] m , int nTheta, const vector[double] Theta, double *qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, vector[double complex] S1, vector[double complex] S2);
-
-
-##############################################################################
-##############################################################################
-##############################################################################
-##############################################################################
-# def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t pl = -1, np.int_t nmax = -1):
-#     cdef Py_ssize_t i
-
-#     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
-
-#     cdef np.ndarray[np.float64_t, ndim = 1] Qext = np.zeros(x.shape[0], dtype = np.float64)
-#     cdef np.ndarray[np.float64_t, ndim = 1] Qabs = np.zeros(x.shape[0], dtype = np.float64)
-#     cdef np.ndarray[np.float64_t, ndim = 1] Qsca = np.zeros(x.shape[0], dtype = np.float64)
-#     cdef np.ndarray[np.float64_t, ndim = 1] Qbk = np.zeros(x.shape[0], dtype = np.float64)
-#     cdef np.ndarray[np.float64_t, ndim = 1] Qpr = np.zeros(x.shape[0], dtype = np.float64)
-#     cdef np.ndarray[np.float64_t, ndim = 1] g = np.zeros(x.shape[0], dtype = np.float64)
-#     cdef np.ndarray[np.float64_t, ndim = 1] Albedo = np.zeros(x.shape[0], dtype = np.float64)
-
-#     cdef np.ndarray[np.complex128_t, ndim = 2] S1 = np.zeros((x.shape[0], theta.shape[0]), dtype = np.complex128)
-#     cdef np.ndarray[np.complex128_t, ndim = 2] S2 = np.zeros((x.shape[0], theta.shape[0]), dtype = np.complex128)
-
-#     cdef np.ndarray[np.float64_t, ndim = 1] S1r
-#     cdef np.ndarray[np.float64_t, ndim = 1] S1i
-#     cdef np.ndarray[np.float64_t, ndim = 1] S2r
-#     cdef np.ndarray[np.float64_t, ndim = 1] S2i
-
-#     for i in range(x.shape[0]):
-#         S1r = np.zeros(theta.shape[0], dtype = np.float64)
-#         S1i = np.zeros(theta.shape[0], dtype = np.float64)
-#         S2r = np.zeros(theta.shape[0], dtype = np.float64)
-#         S2i = np.zeros(theta.shape[0], dtype = np.float64)
-
-#         terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i))
-
-#         S1[i] = S1r.copy('C') + 1.0j*S1i.copy('C')
-#         S2[i] = S2r.copy('C') + 1.0j*S2i.copy('C')
-
-#     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
-# ##############################################################################
-# ##############################################################################
-# ##############################################################################
-# ##############################################################################
-
-# #def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords = np.zeros((0, 3), dtype = np.float64), np.int_t pl = 0, np.int_t nmax = 0):
-# def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords, np.int_t pl = 0, np.int_t nmax = 0):
-#     cdef Py_ssize_t i
-
-#     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
-
-#     cdef np.ndarray[np.complex128_t, ndim = 3] E = np.zeros((x.shape[0], coords.shape[0], 3), dtype = np.complex128)
-#     cdef np.ndarray[np.complex128_t, ndim = 3] H = np.zeros((x.shape[0], coords.shape[0], 3), dtype = np.complex128)
-
-#     cdef np.ndarray[np.float64_t, ndim = 1] Erx
-#     cdef np.ndarray[np.float64_t, ndim = 1] Ery
-#     cdef np.ndarray[np.float64_t, ndim = 1] Erz
-#     cdef np.ndarray[np.float64_t, ndim = 1] Eix
-#     cdef np.ndarray[np.float64_t, ndim = 1] Eiy
-#     cdef np.ndarray[np.float64_t, ndim = 1] Eiz
-#     cdef np.ndarray[np.float64_t, ndim = 1] Hrx
-#     cdef np.ndarray[np.float64_t, ndim = 1] Hry
-#     cdef np.ndarray[np.float64_t, ndim = 1] Hrz
-#     cdef np.ndarray[np.float64_t, ndim = 1] Hix
-#     cdef np.ndarray[np.float64_t, ndim = 1] Hiy
-#     cdef np.ndarray[np.float64_t, ndim = 1] Hiz
-
-#     for i in range(x.shape[0]):
-#         Erx = np.zeros(coords.shape[0], dtype = np.float64)
-#         Ery = np.zeros(coords.shape[0], dtype = np.float64)
-#         Erz = np.zeros(coords.shape[0], dtype = np.float64)
-#         Eix = np.zeros(coords.shape[0], dtype = np.float64)
-#         Eiy = np.zeros(coords.shape[0], dtype = np.float64)
-#         Eiz = np.zeros(coords.shape[0], dtype = np.float64)
-#         Hrx = np.zeros(coords.shape[0], dtype = np.float64)
-#         Hry = np.zeros(coords.shape[0], dtype = np.float64)
-#         Hrz = np.zeros(coords.shape[0], dtype = np.float64)
-#         Hix = np.zeros(coords.shape[0], dtype = np.float64)
-#         Hiy = np.zeros(coords.shape[0], dtype = np.float64)
-#         Hiz = np.zeros(coords.shape[0], dtype = np.float64)
-
-#         terms[i] = nField(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, coords.shape[0], coords[:, 0].copy('C'), coords[:, 1].copy('C'), coords[:, 2].copy('C'), npy2c(Erx), npy2c(Ery), npy2c(Erz), npy2c(Eix), npy2c(Eiy), npy2c(Eiz), npy2c(Hrx), npy2c(Hry), npy2c(Hrz), npy2c(Hix), npy2c(Hiy), npy2c(Hiz))
-
-#         E[i] = np.vstack((Erx.copy('C') + 1.0j*Eix.copy('C'), Ery.copy('C') + 1.0j*Eiy.copy('C'), Erz.copy('C') + 1.0j*Eiz.copy('C'))).transpose()
-#         H[i] = np.vstack((Hrx.copy('C') + 1.0j*Hix.copy('C'), Hry.copy('C') + 1.0j*Hiy.copy('C'), Hrz.copy('C') + 1.0j*Hiz.copy('C'))).transpose()
-
-#     return terms, E, H
-##############################################################################
-##############################################################################
-##############################################################################
-##############################################################################
-def scattnlay_wrapper(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t pl = -1, np.int_t nmax = -1):
+def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t pl = -1, np.int_t nmax = -1):
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
@@ -183,15 +68,53 @@ def scattnlay_wrapper(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.comple
         S2r = np.zeros(theta.shape[0], dtype = np.float64)
         S2i = np.zeros(theta.shape[0], dtype = np.float64)
 
-        terms[i] = nMie_wrapper(x.shape[1], x[i].copy('C'),
-                                m[i].copy('C'), theta.shape[0],
-                                theta.copy('C'), &Qext[i], &Qsca[i],
-                                &Qabs[i], &Qbk[i], &Qpr[i], &g[i],
-                                &Albedo[i],
-                                S1r, S2r)
+        terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i))
 
-        S1[i] = S1r.copy('C')
-        S2[i] = S2r.copy('C')
+        S1[i] = S1r.copy('C') + 1.0j*S1i.copy('C')
+        S2[i] = S2r.copy('C') + 1.0j*S2i.copy('C')
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
+
+#def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords = np.zeros((0, 3), dtype = np.float64), np.int_t pl = 0, np.int_t nmax = 0):
+def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords, np.int_t pl = 0, np.int_t nmax = 0):
+    cdef Py_ssize_t i
+
+    cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
+
+    cdef np.ndarray[np.complex128_t, ndim = 3] E = np.zeros((x.shape[0], coords.shape[0], 3), dtype = np.complex128)
+    cdef np.ndarray[np.complex128_t, ndim = 3] H = np.zeros((x.shape[0], coords.shape[0], 3), dtype = np.complex128)
+
+    cdef np.ndarray[np.float64_t, ndim = 1] Erx
+    cdef np.ndarray[np.float64_t, ndim = 1] Ery
+    cdef np.ndarray[np.float64_t, ndim = 1] Erz
+    cdef np.ndarray[np.float64_t, ndim = 1] Eix
+    cdef np.ndarray[np.float64_t, ndim = 1] Eiy
+    cdef np.ndarray[np.float64_t, ndim = 1] Eiz
+    cdef np.ndarray[np.float64_t, ndim = 1] Hrx
+    cdef np.ndarray[np.float64_t, ndim = 1] Hry
+    cdef np.ndarray[np.float64_t, ndim = 1] Hrz
+    cdef np.ndarray[np.float64_t, ndim = 1] Hix
+    cdef np.ndarray[np.float64_t, ndim = 1] Hiy
+    cdef np.ndarray[np.float64_t, ndim = 1] Hiz
+
+    for i in range(x.shape[0]):
+        Erx = np.zeros(coords.shape[0], dtype = np.float64)
+        Ery = np.zeros(coords.shape[0], dtype = np.float64)
+        Erz = np.zeros(coords.shape[0], dtype = np.float64)
+        Eix = np.zeros(coords.shape[0], dtype = np.float64)
+        Eiy = np.zeros(coords.shape[0], dtype = np.float64)
+        Eiz = np.zeros(coords.shape[0], dtype = np.float64)
+        Hrx = np.zeros(coords.shape[0], dtype = np.float64)
+        Hry = np.zeros(coords.shape[0], dtype = np.float64)
+        Hrz = np.zeros(coords.shape[0], dtype = np.float64)
+        Hix = np.zeros(coords.shape[0], dtype = np.float64)
+        Hiy = np.zeros(coords.shape[0], dtype = np.float64)
+        Hiz = np.zeros(coords.shape[0], dtype = np.float64)
+
+        terms[i] = nField(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, coords.shape[0], coords[:, 0].copy('C'), coords[:, 1].copy('C'), coords[:, 2].copy('C'), npy2c(Erx), npy2c(Ery), npy2c(Erz), npy2c(Eix), npy2c(Eiy), npy2c(Eiz), npy2c(Hrx), npy2c(Hry), npy2c(Hrz), npy2c(Hix), npy2c(Hiy), npy2c(Hiz))
+
+        E[i] = np.vstack((Erx.copy('C') + 1.0j*Eix.copy('C'), Ery.copy('C') + 1.0j*Eiy.copy('C'), Erz.copy('C') + 1.0j*Eiz.copy('C'))).transpose()
+        H[i] = np.vstack((Hrx.copy('C') + 1.0j*Hix.copy('C'), Hry.copy('C') + 1.0j*Hiy.copy('C'), Hrz.copy('C') + 1.0j*Hiz.copy('C'))).transpose()
+
+    return terms, E, H
 
