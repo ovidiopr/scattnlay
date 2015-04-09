@@ -19,7 +19,6 @@ source:
 
 cython: scattnlay.pyx
 	cython --cplus scattnlay.pyx
-	mv scattnlay.cpp scattnlay.cc
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)

@@ -22,6 +22,9 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# distutils: language = c++
+# distutils: sources = nmie-wrapper.cc
+
 from __future__ import division
 import numpy as np
 cimport numpy as np
