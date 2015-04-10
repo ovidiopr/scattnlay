@@ -106,7 +106,7 @@ try:
 
     plt.draw()
 
-    # plt.show()
+    plt.show()
 
     plt.clf()
     plt.close()

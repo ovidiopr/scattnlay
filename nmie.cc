@@ -54,35 +54,35 @@ namespace nmie {
   }  
 
 
-//**********************************************************************************//
-// This function emulates a C call to calculate the actual scattering parameters    //
-// and amplitudes.                                                                  //
-//                                                                                  //
-// Input parameters:                                                                //
-//   L: Number of layers                                                            //
-//   pl: Index of PEC layer. If there is none just send -1                          //
-//   x: Array containing the size parameters of the layers [0..L-1]                 //
-//   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
-//   nTheta: Number of scattering angles                                            //
-//   Theta: Array containing all the scattering angles where the scattering         //
-//          amplitudes will be calculated                                           //
-//   nmax: Maximum number of multipolar expansion terms to be used for the          //
-//         calculations. Only use it if you know what you are doing, otherwise      //
-//         set this parameter to -1 and the function will calculate it              //
-//                                                                                  //
-// Output parameters:                                                               //
-//   Qext: Efficiency factor for extinction                                         //
-//   Qsca: Efficiency factor for scattering                                         //
-//   Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)                    //
-//   Qbk: Efficiency factor for backscattering                                      //
-//   Qpr: Efficiency factor for the radiation pressure                              //
-//   g: Asymmetry factor (g = (Qext-Qpr)/Qsca)                                      //
-//   Albedo: Single scattering albedo (Albedo = Qsca/Qext)                          //
-//   S1, S2: Complex scattering amplitudes                                          //
-//                                                                                  //
-// Return value:                                                                    //
-//   Number of multipolar expansion terms used for the calculations                 //
-//**********************************************************************************//
+  //**********************************************************************************//
+  // This function emulates a C call to calculate the actual scattering parameters    //
+  // and amplitudes.                                                                  //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   L: Number of layers                                                            //
+  //   pl: Index of PEC layer. If there is none just send -1                          //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   nTheta: Number of scattering angles                                            //
+  //   Theta: Array containing all the scattering angles where the scattering         //
+  //          amplitudes will be calculated                                           //
+  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
+  //         calculations. Only use it if you know what you are doing, otherwise      //
+  //         set this parameter to -1 and the function will calculate it              //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   Qext: Efficiency factor for extinction                                         //
+  //   Qsca: Efficiency factor for scattering                                         //
+  //   Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)                    //
+  //   Qbk: Efficiency factor for backscattering                                      //
+  //   Qpr: Efficiency factor for the radiation pressure                              //
+  //   g: Asymmetry factor (g = (Qext-Qpr)/Qsca)                                      //
+  //   Albedo: Single scattering albedo (Albedo = Qsca/Qext)                          //
+  //   S1, S2: Complex scattering amplitudes                                          //
+  //                                                                                  //
+  // Return value:                                                                    //
+  //   Number of multipolar expansion terms used for the calculations                 //
+  //**********************************************************************************//
   int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     
     if (x.size() != L || m.size() != L)
@@ -91,11 +91,11 @@ namespace nmie {
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
       MultiLayerMie multi_layer_mie;  
-      multi_layer_mie.SetLayersWidth(x);
+      multi_layer_mie.SetLayersSize(x);
       multi_layer_mie.SetLayersIndex(m);
       multi_layer_mie.SetAngles(Theta);
     
-      multi_layer_mie.RunMieCalculations();
+      multi_layer_mie.RunMieCalculation();
       
       *Qext = multi_layer_mie.GetQext();
       *Qsca = multi_layer_mie.GetQsca();
@@ -116,125 +116,125 @@ namespace nmie {
     return 0;
   }
 
-//**********************************************************************************//
-// This function is just a wrapper to call the full 'nMie' function with fewer      //
-// parameters, it is here mainly for compatibility with older versions of the       //
-// program. Also, you can use it if you neither have a PEC layer nor want to define //
-// any limit for the maximum number of terms.                                       //
-//                                                                                  //
-// Input parameters:                                                                //
-//   L: Number of layers                                                            //
-//   x: Array containing the size parameters of the layers [0..L-1]                 //
-//   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
-//   nTheta: Number of scattering angles                                            //
-//   Theta: Array containing all the scattering angles where the scattering         //
-//          amplitudes will be calculated                                           //
-//                                                                                  //
-// Output parameters:                                                               //
-//   Qext: Efficiency factor for extinction                                         //
-//   Qsca: Efficiency factor for scattering                                         //
-//   Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)                    //
-//   Qbk: Efficiency factor for backscattering                                      //
-//   Qpr: Efficiency factor for the radiation pressure                              //
-//   g: Asymmetry factor (g = (Qext-Qpr)/Qsca)                                      //
-//   Albedo: Single scattering albedo (Albedo = Qsca/Qext)                          //
-//   S1, S2: Complex scattering amplitudes                                          //
-//                                                                                  //
-// Return value:                                                                    //
-//   Number of multipolar expansion terms used for the calculations                 //
-//**********************************************************************************//
+  //**********************************************************************************//
+  // This function is just a wrapper to call the full 'nMie' function with fewer      //
+  // parameters, it is here mainly for compatibility with older versions of the       //
+  // program. Also, you can use it if you neither have a PEC layer nor want to define //
+  // any limit for the maximum number of terms.                                       //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   L: Number of layers                                                            //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   nTheta: Number of scattering angles                                            //
+  //   Theta: Array containing all the scattering angles where the scattering         //
+  //          amplitudes will be calculated                                           //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   Qext: Efficiency factor for extinction                                         //
+  //   Qsca: Efficiency factor for scattering                                         //
+  //   Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)                    //
+  //   Qbk: Efficiency factor for backscattering                                      //
+  //   Qpr: Efficiency factor for the radiation pressure                              //
+  //   g: Asymmetry factor (g = (Qext-Qpr)/Qsca)                                      //
+  //   Albedo: Single scattering albedo (Albedo = Qsca/Qext)                          //
+  //   S1, S2: Complex scattering amplitudes                                          //
+  //                                                                                  //
+  // Return value:                                                                    //
+  //   Number of multipolar expansion terms used for the calculations                 //
+  //**********************************************************************************//
   int nMie(const int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nMie(L, -1, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
 
-//**********************************************************************************//
-// This function is just a wrapper to call the full 'nMie' function with fewer      //
-// parameters, it is useful if you want to include a PEC layer but not a limit      //
-// for the maximum number of terms.                                                 //
-//                                                                                  //
-// Input parameters:                                                                //
-//   L: Number of layers                                                            //
-//   pl: Index of PEC layer. If there is none just send -1                          //
-//   x: Array containing the size parameters of the layers [0..L-1]                 //
-//   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
-//   nTheta: Number of scattering angles                                            //
-//   Theta: Array containing all the scattering angles where the scattering         //
-//          amplitudes will be calculated                                           //
-//                                                                                  //
-// Output parameters:                                                               //
-//   Qext: Efficiency factor for extinction                                         //
-//   Qsca: Efficiency factor for scattering                                         //
-//   Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)                    //
-//   Qbk: Efficiency factor for backscattering                                      //
-//   Qpr: Efficiency factor for the radiation pressure                              //
-//   g: Asymmetry factor (g = (Qext-Qpr)/Qsca)                                      //
-//   Albedo: Single scattering albedo (Albedo = Qsca/Qext)                          //
-//   S1, S2: Complex scattering amplitudes                                          //
-//                                                                                  //
-// Return value:                                                                    //
-//   Number of multipolar expansion terms used for the calculations                 //
-//**********************************************************************************//
+  //**********************************************************************************//
+  // This function is just a wrapper to call the full 'nMie' function with fewer      //
+  // parameters, it is useful if you want to include a PEC layer but not a limit      //
+  // for the maximum number of terms.                                                 //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   L: Number of layers                                                            //
+  //   pl: Index of PEC layer. If there is none just send -1                          //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   nTheta: Number of scattering angles                                            //
+  //   Theta: Array containing all the scattering angles where the scattering         //
+  //          amplitudes will be calculated                                           //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   Qext: Efficiency factor for extinction                                         //
+  //   Qsca: Efficiency factor for scattering                                         //
+  //   Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)                    //
+  //   Qbk: Efficiency factor for backscattering                                      //
+  //   Qpr: Efficiency factor for the radiation pressure                              //
+  //   g: Asymmetry factor (g = (Qext-Qpr)/Qsca)                                      //
+  //   Albedo: Single scattering albedo (Albedo = Qsca/Qext)                          //
+  //   S1, S2: Complex scattering amplitudes                                          //
+  //                                                                                  //
+  // Return value:                                                                    //
+  //   Number of multipolar expansion terms used for the calculations                 //
+  //**********************************************************************************//
   int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nMie(L, pl, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
-//**********************************************************************************//
-// This function is just a wrapper to call the full 'nMie' function with fewer      //
-// parameters, it is useful if you want to include a limit for the maximum number   //
-// of terms but not a PEC layer.                                                    //
-//                                                                                  //
-// Input parameters:                                                                //
-//   L: Number of layers                                                            //
-//   x: Array containing the size parameters of the layers [0..L-1]                 //
-//   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
-//   nTheta: Number of scattering angles                                            //
-//   Theta: Array containing all the scattering angles where the scattering         //
-//          amplitudes will be calculated                                           //
-//   nmax: Maximum number of multipolar expansion terms to be used for the          //
-//         calculations. Only use it if you know what you are doing, otherwise      //
-//         set this parameter to -1 and the function will calculate it              //
-//                                                                                  //
-// Output parameters:                                                               //
-//   Qext: Efficiency factor for extinction                                         //
-//   Qsca: Efficiency factor for scattering                                         //
-//   Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)                    //
-//   Qbk: Efficiency factor for backscattering                                      //
-//   Qpr: Efficiency factor for the radiation pressure                              //
-//   g: Asymmetry factor (g = (Qext-Qpr)/Qsca)                                      //
-//   Albedo: Single scattering albedo (Albedo = Qsca/Qext)                          //
-//   S1, S2: Complex scattering amplitudes                                          //
-//                                                                                  //
-// Return value:                                                                    //
-//   Number of multipolar expansion terms used for the calculations                 //
-//**********************************************************************************//
+  //**********************************************************************************//
+  // This function is just a wrapper to call the full 'nMie' function with fewer      //
+  // parameters, it is useful if you want to include a limit for the maximum number   //
+  // of terms but not a PEC layer.                                                    //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   L: Number of layers                                                            //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   nTheta: Number of scattering angles                                            //
+  //   Theta: Array containing all the scattering angles where the scattering         //
+  //          amplitudes will be calculated                                           //
+  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
+  //         calculations. Only use it if you know what you are doing, otherwise      //
+  //         set this parameter to -1 and the function will calculate it              //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   Qext: Efficiency factor for extinction                                         //
+  //   Qsca: Efficiency factor for scattering                                         //
+  //   Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)                    //
+  //   Qbk: Efficiency factor for backscattering                                      //
+  //   Qpr: Efficiency factor for the radiation pressure                              //
+  //   g: Asymmetry factor (g = (Qext-Qpr)/Qsca)                                      //
+  //   Albedo: Single scattering albedo (Albedo = Qsca/Qext)                          //
+  //   S1, S2: Complex scattering amplitudes                                          //
+  //                                                                                  //
+  // Return value:                                                                    //
+  //   Number of multipolar expansion terms used for the calculations                 //
+  //**********************************************************************************//
   int nMie(const int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nMie(L, -1, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
 
-//**********************************************************************************//
-// This function emulates a C call to calculate complex electric and magnetic field //
-// in the surroundings and inside (TODO) the particle.                              //
-//                                                                                  //
-// Input parameters:                                                                //
-//   L: Number of layers                                                            //
-//   pl: Index of PEC layer. If there is none just send 0 (zero)                    //
-//   x: Array containing the size parameters of the layers [0..L-1]                 //
-//   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
-//   nmax: Maximum number of multipolar expansion terms to be used for the          //
-//         calculations. Only use it if you know what you are doing, otherwise      //
-//         set this parameter to 0 (zero) and the function will calculate it.       //
-//   ncoord: Number of coordinate points                                            //
-//   Coords: Array containing all coordinates where the complex electric and        //
-//           magnetic fields will be calculated                                     //
-//                                                                                  //
-// Output parameters:                                                               //
-//   E, H: Complex electric and magnetic field at the provided coordinates          //
-//                                                                                  //
-// Return value:                                                                    //
-//   Number of multipolar expansion terms used for the calculations                 //
-//**********************************************************************************//
+  //**********************************************************************************//
+  // This function emulates a C call to calculate complex electric and magnetic field //
+  // in the surroundings and inside (TODO) the particle.                              //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   L: Number of layers                                                            //
+  //   pl: Index of PEC layer. If there is none just send 0 (zero)                    //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
+  //         calculations. Only use it if you know what you are doing, otherwise      //
+  //         set this parameter to 0 (zero) and the function will calculate it.       //
+  //   ncoord: Number of coordinate points                                            //
+  //   Coords: Array containing all coordinates where the complex electric and        //
+  //           magnetic fields will be calculated                                     //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   E, H: Complex electric and magnetic field at the provided coordinates          //
+  //                                                                                  //
+  // Return value:                                                                    //
+  //   Number of multipolar expansion terms used for the calculations                 //
+  //**********************************************************************************//
   int nField(const int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
     if (x.size() != L || m.size() != L)
       throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -250,10 +250,10 @@ namespace nmie {
     try {
       MultiLayerMie multi_layer_mie;  
       //multi_layer_mie.SetPECLayer(pl);
-      multi_layer_mie.SetLayersWidth(x);
+      multi_layer_mie.SetLayersSize(x);
       multi_layer_mie.SetLayersIndex(m);      
       multi_layer_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
-      multi_layer_mie.RunFieldCalculations();
+      multi_layer_mie.RunFieldCalculation();
       E = multi_layer_mie.GetFieldE();
       H = multi_layer_mie.GetFieldH();
       //multi_layer_mie.GetFailed();
@@ -362,26 +362,30 @@ namespace nmie {
   // Modify scattering (theta) angles                                       //
   // ********************************************************************** //
   void MultiLayerMie::SetAngles(const std::vector<double>& angles) {
+    areIntCoeffsCalc_ = false;
+    areExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     theta_ = angles;
   }
 
 
   // ********************************************************************** //
-  // Modify width of all layers                                             //
+  // Modify size of all layers                                             //
   // ********************************************************************** //
-  void MultiLayerMie::SetLayersWidth(const std::vector<double>& layer_width) {
+  void MultiLayerMie::SetLayersSize(const std::vector<double>& layer_size) {
+    areIntCoeffsCalc_ = false;
+    areExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
-    layer_width_.clear();
-    double prev_layer_width = 0.0;
-    for (auto curr_layer_width : layer_width) {
-      if (curr_layer_width <= 0.0)
+    layer_size_.clear();
+    double prev_layer_size = 0.0;
+    for (auto curr_layer_size : layer_size) {
+      if (curr_layer_size <= 0.0)
         throw std::invalid_argument("Size parameter should be positive!");
-      if (prev_layer_width > curr_layer_width) 
+      if (prev_layer_size > curr_layer_size) 
         throw std::invalid_argument
           ("Size parameter for next layer should be larger than the previous one!");
-      prev_layer_width = curr_layer_width;
-      layer_width_.push_back(curr_layer_width);
+      prev_layer_size = curr_layer_size;
+      layer_size_.push_back(curr_layer_size);
     }
   }
 
@@ -390,6 +394,8 @@ namespace nmie {
   // Modify refractive index of all layers                                  //
   // ********************************************************************** //
   void MultiLayerMie::SetLayersIndex(const std::vector< std::complex<double> >& index) {
+    areIntCoeffsCalc_ = false;
+    areExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     layer_index_ = index;
   }
@@ -411,6 +417,8 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::SetPECLayer(int layer_position) {
+    areIntCoeffsCalc_ = false;
+    areExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     if (layer_position < 0)
       throw std::invalid_argument("Error! Layers are numbered from 0!");
@@ -422,6 +430,8 @@ namespace nmie {
   // Set maximun number of terms to be used                                 //
   // ********************************************************************** //
   void MultiLayerMie::SetMaxTerms(int nmax) {    
+    areIntCoeffsCalc_ = false;
+    areExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     nmax_preset_ = nmax;
     //debug
@@ -432,11 +442,11 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  double MultiLayerMie::GetTotalRadius() {
-    if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
-    if (total_radius_ == 0) CalcRadius();
-    return total_radius_;      
+  double MultiLayerMie::GetSizeParameter() {
+//    if (!isMieCalculated_)
+//      throw std::invalid_argument("You should run calculations before result request!");
+    if (size_parameter_ == 0) CalcSizeParameter();
+    return size_parameter_;      
   }
 
 
@@ -444,8 +454,10 @@ namespace nmie {
   // Clear layer information                                                //
   // ********************************************************************** //
   void MultiLayerMie::ClearLayers() {
+    areIntCoeffsCalc_ = false;
+    areExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
-    layer_width_.clear();
+    layer_size_.clear();
     layer_index_.clear();
   }
 
@@ -463,7 +475,7 @@ namespace nmie {
   // Calculate Nstop - equation (17)                                        //
   // ********************************************************************** //
   void MultiLayerMie::Nstop() {
-    const double& xL = layer_width_.back();
+    const double& xL = layer_size_.back();
     if (xL <= 8) {
       nmax_ = round(xL + 4.0*pow(xL, 1.0/3.0) + 1);
     } else if (xL <= 4200) {
@@ -479,7 +491,7 @@ namespace nmie {
   // ********************************************************************** //
   void MultiLayerMie::Nmax(int first_layer) {
     int ri, riM1;
-    const std::vector<double>& x = layer_width_;
+    const std::vector<double>& x = layer_size_;
     const std::vector<std::complex<double> >& m = layer_index_;
     Nstop();  // Set initial nmax_ value
     for (int i = first_layer; i < x.size(); i++) {
@@ -817,6 +829,7 @@ namespace nmie {
     }
   }  // end of void MultiLayerMie::calcAllPiTau(...)
 
+
   //**********************************************************************************//
   // This function calculates the scattering coefficients required to calculate       //
   // both the near- and far-field parameters.                                         //
@@ -836,9 +849,9 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  void MultiLayerMie::ExtScattCoeffs(std::vector<std::complex<double> >& an,
-                                  std::vector<std::complex<double> >& bn) {
-    const std::vector<double>& x = layer_width_;
+  void MultiLayerMie::ExtScattCoeffs() {
+    areExtCoeffsCalc_ = false;
+    const std::vector<double>& x = layer_size_;
     const std::vector<std::complex<double> >& m = layer_index_;
     const int& pl = PEC_layer_position_;
     const int L = layer_index_.size();
@@ -877,8 +890,8 @@ namespace nmie {
       Hb[l].resize(nmax_);
     }
 
-    an.resize(nmax_);
-    bn.resize(nmax_);
+    an_.resize(nmax_);
+    bn_.resize(nmax_);
     PsiZeta_.resize(nmax_ + 1);
 
     std::vector<std::complex<double> > D1XL(nmax_ + 1), D3XL(nmax_ + 1), 
@@ -897,10 +910,7 @@ namespace nmie {
       // Calculate D1 and D3
       calcD1D3(z1, D1_mlxl, D3_mlxl);
     }
-    // do { \
-    //   ++iformat;\
-    //   if (iformat%5 == 0) printf("%24.16e",z1.real());
-    // } while (false);
+
     //******************************************************************//
     // Calculate Ha and Hb in the first layer - equations (7a) and (8a) //
     //******************************************************************//
@@ -923,17 +933,13 @@ namespace nmie {
       calcD1D3(z1, D1_mlxl, D3_mlxl);
       //Calculate D1 and D3 for z2
       calcD1D3(z2, D1_mlxlM1, D3_mlxlM1);
-      // prn(z1.real());
-      // for (auto i : D1_mlxl) { prn(i.real());
-      //   // prn(i.imag());
-      //         } printf("\n");
 
       //*********************************************//
       //Calculate Q, Ha and Hb in the layers fl + 1..L //
       //*********************************************//
       // Upward recurrence for Q - equations (19a) and (19b)
       Num = std::exp(-2.0*(z1.imag() - z2.imag()))
-       *std::complex<double>(std::cos(-2.0*z2.real()) - std::exp(-2.0*z2.imag()), std::sin(-2.0*z2.real()));
+           *std::complex<double>(std::cos(-2.0*z2.real()) - std::exp(-2.0*z2.imag()), std::sin(-2.0*z2.real()));
       Denom = std::complex<double>(std::cos(-2.0*z1.real()) - std::exp(-2.0*z1.imag()), std::sin(-2.0*z1.real()));
       Q[l][0] = Num/Denom;
       for (int n = 1; n <= nmax_; n++) {
@@ -970,12 +976,13 @@ namespace nmie {
         Hb[l][n - 1] = (Num/ Denom);
       }  // end of for Ha and Hb terms
     }  // end of for layers iteration
+
     //**************************************//
     //Calculate D1, D3, Psi and Zeta for XL //
     //**************************************//
     // Calculate D1XL and D3XL
     calcD1D3(x[L - 1], D1XL, D3XL);
-    //printf("%5.20f\n",Ha[L - 1][0].real());
+
     // Calculate PsiXL and ZetaXL
     calcPsiZeta(x[L - 1], D1XL, D3XL, PsiXL, ZetaXL);
     //*********************************************************************//
@@ -990,26 +997,26 @@ namespace nmie {
       //there is only one PEC layer (ie, for a simple PEC sphere).          //
       //********************************************************************//
       if (pl < (L - 1)) {
-        an[n] = calc_an(n + 1, x[L - 1], Ha[L - 1][n], m[L - 1], PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
-        bn[n] = calc_bn(n + 1, x[L - 1], Hb[L - 1][n], m[L - 1], PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
+        an_[n] = calc_an(n + 1, x[L - 1], Ha[L - 1][n], m[L - 1], PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
+        bn_[n] = calc_bn(n + 1, x[L - 1], Hb[L - 1][n], m[L - 1], PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
       } else {
-        an[n] = calc_an(n + 1, x[L - 1], std::complex<double>(0.0, 0.0), std::complex<double>(1.0, 0.0), PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
-        bn[n] = PsiXL[n + 1]/ZetaXL[n + 1];
+        an_[n] = calc_an(n + 1, x[L - 1], std::complex<double>(0.0, 0.0), std::complex<double>(1.0, 0.0), PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
+        bn_[n] = PsiXL[n + 1]/ZetaXL[n + 1];
       }
     }  // end of for an and bn terms
+    areExtCoeffsCalc_ = true;
   }  // end of void MultiLayerMie::ExtScattCoeffs(...)
 
 
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::CalcRadius() {
-    isMieCalculated_ = false;
+  void MultiLayerMie::CalcSizeParameter() {
     double radius = 0.0;
-    for (auto width : layer_width_) {
+    for (auto width : layer_size_) {
       radius += width;
     }
-    total_radius_ = radius;
+    size_parameter_ = radius;
   }
 
 
@@ -1017,6 +1024,8 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::InitMieCalculations() {
+    areIntCoeffsCalc_ = false;
+    areExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     // Initialize the scattering parameters
     Qext_ = 0;
@@ -1076,16 +1085,16 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  void MultiLayerMie::RunMieCalculations() {
+  void MultiLayerMie::RunMieCalculation() {
     isMieCalculated_ = false;
     nmax_ = nmax_preset_;
-    if (layer_width_.size() != layer_index_.size())
+    if (layer_size_.size() != layer_index_.size())
       throw std::invalid_argument("Each size parameter should have only one index!");
-    if (layer_width_.size() == 0)
+    if (layer_size_.size() == 0)
       throw std::invalid_argument("Initialize model first!");
-    const std::vector<double>& x = layer_width_;
+    const std::vector<double>& x = layer_size_;
     // Calculate scattering coefficients
-    ExtScattCoeffs(an_, bn_);
+    ExtScattCoeffs();
 
     // std::vector< std::vector<double> > Pi(nmax_), Tau(nmax_);
     std::vector< std::vector<double> > Pi, Tau;
@@ -1096,7 +1105,7 @@ namespace nmie {
       Tau[i].resize(nmax_);
     }
     calcAllPiTau(Pi, Tau);    
-    InitMieCalculations(); //
+    InitMieCalculations();
     std::complex<double> Qbktmp(0.0, 0.0);
     std::vector< std::complex<double> > Qbktmp_ch(nmax_ - 1, Qbktmp);
     // By using downward recurrence we avoid loss of precision due to float rounding errors
@@ -1163,31 +1172,32 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::IntScattCoeffsInit() {
+  void MultiLayerMie::InitIntScattCoeffs() {
+    areIntCoeffsCalc_ = false;
     const int L = layer_index_.size();
     // we need to fill
-    // std::vector< std::vector<std::complex<double> > > al_n_, bl_n_, cl_n_, dl_n_;
+    // std::vector< std::vector<std::complex<double> > > anl_, bnl_, cnl_, dnl_;
     //     for n = [0..nmax_) and for l=[L..0)
     // TODO: to decrease cache miss outer loop is with n and inner with reversed l
     // at the moment outer is forward l and inner in n
-    al_n_.resize(L + 1);
-    bl_n_.resize(L + 1);
-    cl_n_.resize(L + 1);
-    dl_n_.resize(L + 1);
-    for (auto& element:al_n_) element.resize(nmax_);
-    for (auto& element:bl_n_) element.resize(nmax_);
-    for (auto& element:cl_n_) element.resize(nmax_);
-    for (auto& element:dl_n_) element.resize(nmax_);
+    anl_.resize(L + 1);
+    bnl_.resize(L + 1);
+    cnl_.resize(L + 1);
+    dnl_.resize(L + 1);
+    for (auto& element:anl_) element.resize(nmax_);
+    for (auto& element:bnl_) element.resize(nmax_);
+    for (auto& element:cnl_) element.resize(nmax_);
+    for (auto& element:dnl_) element.resize(nmax_);
     std::complex<double> c_one(1.0, 0.0);
     std::complex<double> c_zero(0.0, 0.0);
     // Yang, paragraph under eq. A3
     // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
     for (int i = 0; i < nmax_; ++i) {
-      al_n_[L][i] = an_[i];
-      bl_n_[L][i] = bn_[i];
-      cl_n_[L][i] = c_one;
-      dl_n_[L][i] = c_one;
-      if (i < 3) printf(" (%g) ", std::abs(an_[i]));
+      anl_[L][i] = an_[i];
+      bnl_[L][i] = bn_[i];
+      cnl_[L][i] = c_one;
+      dnl_[L][i] = c_one;
+      //if (i < 3) printf(" (%g) ", std::abs(an_[i]));
     }
 
   }
@@ -1195,17 +1205,17 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::IntScattCoeffs() {
-    if (!isMieCalculated_)
-      throw std::invalid_argument("(IntScattCoeffs) You should run calculations first!");
-    IntScattCoeffsInit();
+    if (!areExtCoeffsCalc_)
+      throw std::invalid_argument("(IntScattCoeffs) You should calculate external coefficients first!");
+    InitIntScattCoeffs();
     const int L = layer_index_.size();
     std::vector<std::complex<double> > z(L), z1(L);
     for (int i = 0; i < L - 1; ++i) {
-      z[i]  =layer_width_[i]*layer_index_[i];
-      z1[i]=layer_width_[i]*layer_index_[i + 1];
+      z[i]  =layer_size_[i]*layer_index_[i];
+      z1[i]=layer_size_[i]*layer_index_[i + 1];
     }
-    z[L - 1] = layer_width_[L - 1]*layer_index_[L - 1];
-    z1[L - 1] = layer_width_[L - 1];
+    z[L - 1] = layer_size_[L - 1]*layer_index_[L - 1];
+    z1[L - 1] = layer_size_[L - 1];
     std::vector< std::vector<std::complex<double> > > D1z(L), D1z1(L), D3z(L), D3z1(L);
     std::vector< std::vector<std::complex<double> > > Psiz(L), Psiz1(L), Zetaz(L), Zetaz1(L);
     for (int l = 0; l < L; ++l) {
@@ -1233,35 +1243,35 @@ namespace nmie {
       for (int n = 0; n < nmax_; ++n) {
         // al_n
         auto denom = m1[l]*Zetaz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
-        al_n_[l][n] = D1z[l][n + 1]*m1[l]*(al_n_[l + 1][n]*Zetaz1[l][n + 1] - dl_n_[l + 1][n]*Psiz1[l][n + 1])
-                      - m[l]*(-D1z1[l][n + 1]*dl_n_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*al_n_[l + 1][n]*Zetaz1[l][n + 1]);
-        al_n_[l][n] /= denom;
+        anl_[l][n] = D1z[l][n + 1]*m1[l]*(anl_[l + 1][n]*Zetaz1[l][n + 1] - dnl_[l + 1][n]*Psiz1[l][n + 1])
+                      - m[l]*(-D1z1[l][n + 1]*dnl_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*anl_[l + 1][n]*Zetaz1[l][n + 1]);
+        anl_[l][n] /= denom;
 
         // dl_n
         denom = m1[l]*Psiz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
-        dl_n_[l][n] = D3z[l][n + 1]*m1[l]*(al_n_[l + 1][n]*Zetaz1[l][n + 1] - dl_n_[l + 1][n]*Psiz1[l][n + 1])
-                      - m[l]*(-D1z1[l][n + 1]*dl_n_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*al_n_[l + 1][n]*Zetaz1[l][n + 1]);
-        dl_n_[l][n] /= denom;
+        dnl_[l][n] = D3z[l][n + 1]*m1[l]*(anl_[l + 1][n]*Zetaz1[l][n + 1] - dnl_[l + 1][n]*Psiz1[l][n + 1])
+                      - m[l]*(-D1z1[l][n + 1]*dnl_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*anl_[l + 1][n]*Zetaz1[l][n + 1]);
+        dnl_[l][n] /= denom;
 
         // bl_n
         denom = m1[l]*Zetaz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
-        bl_n_[l][n] = D1z[l][n + 1]*m[l]*(bl_n_[l + 1][n]*Zetaz1[l][n + 1] - cl_n_[l + 1][n]*Psiz1[l][n + 1])
-                      - m1[l]*(-D1z1[l][n + 1]*cl_n_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bl_n_[l + 1][n]*Zetaz1[l][n + 1]);
-        bl_n_[l][n] /= denom;
+        bnl_[l][n] = D1z[l][n + 1]*m[l]*(bnl_[l + 1][n]*Zetaz1[l][n + 1] - cnl_[l + 1][n]*Psiz1[l][n + 1])
+                      - m1[l]*(-D1z1[l][n + 1]*cnl_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bnl_[l + 1][n]*Zetaz1[l][n + 1]);
+        bnl_[l][n] /= denom;
 
         // cl_n
         denom = m1[l]*Psiz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
-        cl_n_[l][n] = D3z[l][n + 1]*m[l]*(bl_n_[l + 1][n]*Zetaz1[l][n + 1] - cl_n_[l + 1][n]*Psiz1[l][n + 1])
-                      - m1[l]*(-D1z1[l][n + 1]*cl_n_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bl_n_[l + 1][n]*Zetaz1[l][n + 1]);
-        cl_n_[l][n] /= denom;   
+        cnl_[l][n] = D3z[l][n + 1]*m[l]*(bnl_[l + 1][n]*Zetaz1[l][n + 1] - cnl_[l + 1][n]*Psiz1[l][n + 1])
+                      - m1[l]*(-D1z1[l][n + 1]*cnl_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bnl_[l + 1][n]*Zetaz1[l][n + 1]);
+        cnl_[l][n] /= denom;   
       }  // end of all n
     }  // end of for all l
 
     // Check the result and change  an__0 and bn__0 for exact zero
     for (int n = 0; n < nmax_; ++n) {
-      if (std::abs(al_n_[0][n]) < 1e-10) al_n_[0][n] = 0.0;
+      if (std::abs(anl_[0][n]) < 1e-10) anl_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of a__0_n!");
-      if (std::abs(bl_n_[0][n]) < 1e-10) bl_n_[0][n] = 0.0;
+      if (std::abs(bnl_[0][n]) < 1e-10) bnl_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of b__0_n!");
     }
 
@@ -1287,18 +1297,19 @@ namespace nmie {
     //   printf("\n\n");
     // }
     for (int i = 0; i < L + 1; ++i) {
-      printf("Layer =%d ---> ", i);
+      //printf("Layer =%d ---> ", i);
       for (int n = 0; n < nmax_; ++n) {
             //        if (n < 20) continue;
-            printf(" || n=%d --> a=%g,%g b=%g,%g c=%g,%g d=%g,%g",
-                   n,
-                   al_n_[i][n].real(), al_n_[i][n].imag(),
-                   bl_n_[i][n].real(), bl_n_[i][n].imag(),
-                   cl_n_[i][n].real(), cl_n_[i][n].imag(),
-                   dl_n_[i][n].real(), dl_n_[i][n].imag());
+            //printf(" || n=%d --> a=%g,%g b=%g,%g c=%g,%g d=%g,%g",
+            //       n,
+            //       anl_[i][n].real(), anl_[i][n].imag(),
+            //       bnl_[i][n].real(), bnl_[i][n].imag(),
+            //       cnl_[i][n].real(), cnl_[i][n].imag(),
+            //       dnl_[i][n].real(), dnl_[i][n].imag());
       }
-      printf("\n\n");
+      //printf("\n\n");
     }
+    areIntCoeffsCalc_ = true;
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1311,13 +1322,16 @@ namespace nmie {
     
     std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0);
     std::vector<std::complex<double> > vm3o1n(3), vm3e1n(3), vn3o1n(3), vn3e1n(3);
-    std::vector<std::complex<double> > Ei(3,c_zero), Hi(3,c_zero), Es(3,c_zero), Hs(3,c_zero);
+    std::vector<std::complex<double> > Ei(3, c_zero), Hi(3, c_zero), Es(3, c_zero), Hs(3, c_zero);
     std::vector<std::complex<double> > bj(nmax_ + 1), by(nmax_ + 1), bd(nmax_ + 1);
+
     // Calculate spherical Bessel and Hankel functions
-    printf("##########  layer OUT ############\n");
     sphericalBessel(Rho,bj, by, bd);    
+
+    //printf("##########  layer OUT ############\n");
     for (int n = 0; n < nmax_; n++) {
       double rn = static_cast<double>(n + 1);
+
       std::complex<double> zn = bj[n + 1] + c_i*by[n + 1];
       // using BH 4.12 and 4.50
       std::complex<double> xxip = Rho*(bj[n] + c_i*by[n]) - rn*zn;
@@ -1343,7 +1357,7 @@ namespace nmie {
         Es[i] = Es[i] + encap*(c_i*an_[n]*vn3e1n[i] - bn_[n]*vm3o1n[i]);
         Hs[i] = Hs[i] + encap*(c_i*bn_[n]*vn3o1n[i] + an_[n]*vm3e1n[i]);
         //if (n < 3) printf(" E[%d]=%g ", i,std::abs(Es[i]));
-        if (n < 3) printf(" !!=%d=== %g ", i,std::abs(Es[i]));
+        //if (n < 3) printf(" !!=%d=== %g ", i,std::abs(Es[i]));
       }
     }
     
@@ -1381,7 +1395,9 @@ namespace nmie {
       H[i] = Hi[i] + Hs[i];
       // printf("ext E[%d]=%g",i,std::abs(E[i]));
     }
-   }  // end of void fieldExt(...)
+   }  // end of fieldExt(...)
+
+
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1396,13 +1412,13 @@ namespace nmie {
     std::vector<std::complex<double> > bj(nmax_ + 1), by(nmax_ + 1), bd(nmax_ + 1);
     int layer=0;  // layer number
     std::complex<double> layer_index_l;
-    for (int i = 0; i < layer_width_.size() - 1; ++i) {
-      if (layer_width_[i] < Rho && Rho <= layer_width_[i + 1]) {
+    for (int i = 0; i < layer_size_.size() - 1; ++i) {
+      if (layer_size_[i] < Rho && Rho <= layer_size_[i + 1]) {
         layer=i;
       }
     }
-    if (Rho > layer_width_.back()) {
-      layer = layer_width_.size();
+    if (Rho > layer_size_.back()) {
+      layer = layer_size_.size();
       layer_index_l = c_one; 
     } else {
       layer_index_l = layer_index_[layer]; 
@@ -1411,13 +1427,13 @@ namespace nmie {
     std::complex<double> bessel_arg = Rho*layer_index_l;
     std::complex<double>& rh = bessel_arg;
     std::complex<double> besselj_1 = std::sin(rh)/pow2(rh)-std::cos(rh)/rh;
-    printf("bessel arg = %g,%g   index=%g,%g   besselj[1]=%g,%g\n", bessel_arg.real(), bessel_arg.imag(), layer_index_l.real(), layer_index_l.imag(), besselj_1.real(), besselj_1.imag());
+    //printf("bessel arg = %g,%g   index=%g,%g   besselj[1]=%g,%g\n", bessel_arg.real(), bessel_arg.imag(), layer_index_l.real(), layer_index_l.imag(), besselj_1.real(), besselj_1.imag());
     const int& l = layer;
-    printf("##########  layer %d ############\n",l);
+    //printf("##########  layer %d ############\n",l);
     // Calculate spherical Bessel and Hankel functions
     sphericalBessel(bessel_arg,bj, by, bd);    
-    printf("besselj[1]=%g,%g\n", bj[1].real(), bj[1].imag());
-    printf("bessely[1]=%g,%g\n", by[1].real(), by[1].imag());
+    //printf("besselj[1]=%g,%g\n", bj[1].real(), bj[1].imag());
+    //printf("bessely[1]=%g,%g\n", by[1].real(), by[1].imag());
     for (int n = 0; n < nmax_; n++) {
       double rn = static_cast<double>(n + 1);
       std::complex<double> znm1 = bj[n] + c_i*by[n];
@@ -1453,7 +1469,7 @@ namespace nmie {
       // znm1 = (bj[n] + c_i*by[n]).real();
       // zn = (bj[n + 1] + c_i*by[n + 1]).real();
       xxip = Rho*(bj[n]) - rn*zn;
-      if (n < 3)printf("\nbesselj = %g,%g", zn.real(), zn.imag()); //!
+      //if (n < 3)printf("\nbesselj = %g,%g", zn.real(), zn.imag()); //!
       vm1o1n[0] = c_zero;
       vm1o1n[1] = cos(Phi)*Pi[n]*zn;
       vm1o1n[2] = -sin(Phi)*Tau[n]*zn;
@@ -1478,20 +1494,20 @@ namespace nmie {
       for (int i = 0; i < 3; i++) {
         // if (n < 3 && i==0) printf("\nn=%d",n);
         // if (n < 3) printf("\nbefore !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
-        Ei[i] = encap*(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]
-                       + c_i*al_n_[l][n]*vn3e1n[i] - bl_n_[l][n]*vm3o1n[i]);
-        El[i] = El[i] + encap*(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]
-                               + c_i*al_n_[l][n]*vn3e1n[i] - bl_n_[l][n]*vm3o1n[i]);
-        Hl[i] = Hl[i] + encap*(-dl_n_[l][n]*vm1e1n[i] - c_i*cl_n_[l][n]*vn1o1n[i]
-                               + c_i*bl_n_[l][n]*vn3o1n[i] + al_n_[l][n]*vm3e1n[i]);
+        Ei[i] = encap*(cnl_[l][n]*vm1o1n[i] - c_i*dnl_[l][n]*vn1e1n[i]
+                       + c_i*anl_[l][n]*vn3e1n[i] - bnl_[l][n]*vm3o1n[i]);
+        El[i] = El[i] + encap*(cnl_[l][n]*vm1o1n[i] - c_i*dnl_[l][n]*vn1e1n[i]
+                               + c_i*anl_[l][n]*vn3e1n[i] - bnl_[l][n]*vm3o1n[i]);
+        Hl[i] = Hl[i] + encap*(-dnl_[l][n]*vm1e1n[i] - c_i*cnl_[l][n]*vn1o1n[i]
+                               + c_i*bnl_[l][n]*vn3o1n[i] + anl_[l][n]*vm3e1n[i]);
         // printf("\n !Ei[%d]=%g,%g! ", i, Ei[i].real(), Ei[i].imag());
         // if (n < 3) printf("\n !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
-        // //printf(" ===%d=== %g ", i,std::abs(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]));
-        // if (n < 3) printf(" ===%d=== %g ", i,std::abs(//-dl_n_[l][n]*vm1e1n[i] 
-        //                                             //- c_i*cl_n_[l][n]*
+        // //printf(" ===%d=== %g ", i,std::abs(cnl_[l][n]*vm1o1n[i] - c_i*dnl_[l][n]*vn1e1n[i]));
+        // if (n < 3) printf(" ===%d=== %g ", i,std::abs(//-dnl_[l][n]*vm1e1n[i] 
+        //                                             //- c_i*cnl_[l][n]*
         //                                             vn1o1n[i]
-        //                                             // + c_i*bl_n_[l][n]*vn3o1n[i]
-        //                                             // + al_n_[l][n]*vm3e1n[i]
+        //                                             // + c_i*bnl_[l][n]*vn3o1n[i]
+        //                                             // + anl_[l][n]*vm3e1n[i]
         //                      ));
         // if (n < 3) printf(" --- Ei[%d]=%g! ", i,std::abs(encap*(vm1o1n[i] - c_i*vn1e1n[i])));
 
@@ -1509,7 +1525,7 @@ namespace nmie {
       // electric field E [V m - 1] = EF*E0
       E[i] = El[i];
       H[i] = Hl[i];
-      printf("\n !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
+      //printf("\n !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
       //printf(" E[%d]=%g",i,std::abs(El[i]));
     }
    }  // end of void fieldExt(...)
@@ -1539,11 +1555,15 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  void MultiLayerMie::RunFieldCalculations() {
-    // Calculate scattering coefficients an_ and bn_
-    RunMieCalculations();
-    //nmax_=10;
+  void MultiLayerMie::RunFieldCalculation() {
+    // Calculate external scattering coefficients an_ and bn_
+    ExtScattCoeffs();
+    // Calculate internal scattering coefficients anl_ and bnl_
     IntScattCoeffs();
+
+    for (int i = 0; i < an_.size(); i++) {
+      printf("a[%i] = %g, %g; b[%i] = %g, %g\n", i, an_[i].real(), an_[i].imag(), i, bn_[i].real(), bn_[i].imag());
+    }
 
     std::vector<double> Pi(nmax_), Tau(nmax_);
     long total_points = coords_[0].size();
@@ -1552,43 +1572,46 @@ namespace nmie {
     for (auto& f:E_field_) f.resize(3);
     for (auto& f:H_field_) f.resize(3);
 
-    for (int point = 0; point < total_points; ++point) {
+    for (int point = 0; point < total_points; point++) {
       const double& Xp = coords_[0][point];
       const double& Yp = coords_[1][point];
       const double& Zp = coords_[2][point];
-      printf("X=%g, Y=%g, Z=%g\n", Xp, Yp, Zp);
+      //printf("X=%g, Y=%g, Z=%g\n", Xp, Yp, Zp);
+
       // Convert to spherical coordinates
       double Rho, Phi, Theta;
       Rho = std::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
-      // printf("Rho=%g\n", Rho);
+
       // Avoid convergence problems due to Rho too small
       if (Rho < 1e-10) Rho = 1e-10;
+
       // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
       if (Rho == 0.0) Theta = 0.0;
       else Theta = std::acos(Zp/Rho);
-      // printf("Theta=%g\n", Theta);
-      // If Xp=Yp=0 then Phi is undefined. Just set it to zero to zero to avoid problems
+
+      // If Xp=Yp=0 then Phi is undefined. Just set it to zero to avoid problems
       if (Xp == 0.0 && Yp == 0.0) Phi = 0.0;
       else Phi = std::acos(Xp/std::sqrt(pow2(Xp) + pow2(Yp)));
-      // printf("Phi=%g\n", Phi);
 
       calcSinglePiTau(std::cos(Theta), Pi, Tau);     
+
       //*******************************************************//
       // external scattering field = incident + scattered      //
       // BH p.92 (4.37), 94 (4.45), 95 (4.50)                  //
       // assume: medium is non-absorbing; refim = 0; Uabs = 0  //
       //*******************************************************//
+
       // This array contains the fields in spherical coordinates
       std::vector<std::complex<double> > Es(3), Hs(3);
-      const double outer_size = layer_width_.back();
+      const double outer_size = layer_size_.back();
+      //printf("rho=%g, outer=%g, Radius=%g\n", Rho, outer_size, GetSizeParameter());
       // Firstly the easiest case: the field outside the particle
-      printf("rho=%g, outer=%g  ", Rho, outer_size);
-      if (Rho >= outer_size) {
+      if (Rho >= GetSizeParameter()) {
         fieldExt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
-        printf("\nFin E ext: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]), Rho);
+        //printf("\nFin E ext: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]), Rho);
       } else {
         fieldInt(Rho, Phi, Theta, Pi, Tau, Es, Hs);      
-        printf("\nFin E int: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]), Rho);
+//        printf("\nFin E int: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]), Rho);
       }
       std::complex<double>& Ex = E_field_[point][0];
       std::complex<double>& Ey = E_field_[point][1];
@@ -1608,10 +1631,9 @@ namespace nmie {
         Hy = sin(Theta)*sin(Phi)*Hs[0] + cos(Theta)*sin(Phi)*Hs[1] + cos(Phi)*Hs[2];
         Hz = cos(Theta)*Hs[0] - sin(Theta)*Hs[1];
       }
-      printf("Cart E: %g,%g,%g   Rho=%g\n", std::abs(Ex), std::abs(Ey),std::abs(Ez),
-             Rho);
+      //printf("Cart E: %g,%g,%g   Rho=%g\n", std::abs(Ex), std::abs(Ey),std::abs(Ez), Rho);
     }  // end of for all field coordinates
     
-  }  //  end of   void MultiLayerMie::RunFieldCalculations()
+  }  //  end of MultiLayerMie::RunFieldCalculation()
 
 }  // end of namespace nmie

@@ -33,6 +33,7 @@
 #include <vector>
 
 namespace nmie {
+  int ScattCoeffs(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> > &an, std::vector<std::complex<double> > &bn);
   int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
@@ -42,8 +43,8 @@ namespace nmie {
   class MultiLayerMie {
    public:
     // Run calculation
-    void RunMieCalculations();
-    void RunFieldCalculations();
+    void RunMieCalculation();
+    void RunFieldCalculation();
 
     // Return calculation results
     double GetQext();
@@ -61,13 +62,13 @@ namespace nmie {
 
     // Problem definition
     // Add new layer
-    void AddNewLayer(double layer_width, std::complex<double> layer_index);
+    void AddNewLayer(double layer_size, std::complex<double> layer_index);
     // Modify width of the layer
-    void SetLayerWidth(std::vector<double> layer_width, int layer_position = 0);
+    void SetLayerSize(std::vector<double> layer_size, int layer_position = 0);
     // Modify refractive index of the layer
     void SetLayerIndex(std::vector< std::complex<double> > layer_index, int layer_position = 0);
-    // Modify width of all layers
-    void SetLayersWidth(const std::vector<double>& layer_width);
+    // Modify size of all layers
+    void SetLayersSize(const std::vector<double>& layer_size);
     // Modify refractive index of all layers
     void SetLayersIndex(const std::vector< std::complex<double> >& index);
     // Modify scattering (theta) angles
@@ -86,17 +87,16 @@ namespace nmie {
     void ClearLayers();
 
     // Applied units requests
-    double GetTotalRadius();
-    double GetCoreRadius();
+    double GetSizeParameter();
     double GetLayerWidth(int layer_position = 0);
-    std::vector<double> GetLayersWidth();
+    std::vector<double> GetLayersSize();
     std::vector<std::complex<double> > GetLayersIndex();  
     std::vector<std::array<double, 3> > GetFieldCoords();
 
     std::vector<std::vector< std::complex<double> > > GetFieldE(){return E_field_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<double> > > GetFieldH(){return H_field_;};
   private:
-    void CalcRadius();
+    void CalcSizeParameter();
     void InitMieCalculations();
 
     void Nstop();
@@ -129,9 +129,9 @@ namespace nmie {
 			             std::vector<double>& Tau);
     void calcAllPiTau(std::vector< std::vector<double> >& Pi,
 		              std::vector< std::vector<double> >& Tau);
-    void ExtScattCoeffs(std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
+    void ExtScattCoeffs(); 
     void IntScattCoeffs();
-    void IntScattCoeffsInit();
+    void InitIntScattCoeffs();
 
     void fieldExt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
 
@@ -140,11 +140,10 @@ namespace nmie {
     bool areIntCoeffsCalc_ = false;
     bool areExtCoeffsCalc_ = false;
     bool isMieCalculated_ = false;
-    double wavelength_ = 1.0;
-    double total_radius_ = 0.0;
+    double size_parameter_ = 0.0;
 
     // Size parameter for all layers
-    std::vector<double> layer_width_;
+    std::vector<double> layer_size_;
     // Refractive index for all layers
     std::vector< std::complex<double> > layer_index_;
     // Scattering angles for scattering pattern in radians
@@ -160,10 +159,10 @@ namespace nmie {
     std::vector<std::complex<double> > an_, bn_;
     std::vector< std::vector<double> > coords_;
     // TODO: check if l index is reversed will lead to performance
-    // boost, if $a^(L+1)_n$ stored in al_n_[n][0], $a^(L)_n$ in
-    // al_n_[n][1] and so on...
+    // boost, if $a^(L+1)_n$ stored in anl_[n][0], $a^(L)_n$ in
+    // anl_[n][1] and so on...
     // at the moment order is forward!
-    std::vector< std::vector<std::complex<double> > > al_n_, bl_n_, cl_n_, dl_n_;
+    std::vector< std::vector<std::complex<double> > > anl_, bnl_, cnl_, dnl_;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::vector< std::complex<double> > > E_field_, H_field_;  // {X[], Y[], Z[]}
