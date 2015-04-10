@@ -36,7 +36,7 @@ builddeb:
 	dpkg-buildpackage -i -I -rfakeroot
 
 standalone: standalone.cc nmie.cc
-	c++ -DNDEBUG -O2 -std=c++11 standalone.cc nmie.cc nmie-core.cc -lm -o scattnlay
+	c++ -DNDEBUG -O2 -std=c++11 standalone.cc nmie.cc -lm -o scattnlay
 	mv scattnlay ../
 
 clean:
