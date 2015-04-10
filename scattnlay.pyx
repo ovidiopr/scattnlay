@@ -23,7 +23,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # distutils: language = c++
-# distutils: sources = nmie-wrapper.cc
+# distutils: sources = nmie.cc
 
 from __future__ import division
 import numpy as np

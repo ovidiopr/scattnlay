@@ -1342,8 +1342,8 @@ namespace nmie {
       for (int i = 0; i < 3; i++) {
         Es[i] = Es[i] + encap*(c_i*an_[n]*vn3e1n[i] - bn_[n]*vm3o1n[i]);
         Hs[i] = Hs[i] + encap*(c_i*bn_[n]*vn3o1n[i] + an_[n]*vm3e1n[i]);
-        //if (n<3) printf(" E[%d]=%g ", i,std::abs(Es[i]));
-        if (n<3) printf(" !!=%d=== %g ", i,std::abs(Es[i]));
+        //if (n < 3) printf(" E[%d]=%g ", i,std::abs(Es[i]));
+        if (n < 3) printf(" !!=%d=== %g ", i,std::abs(Es[i]));
       }
     }
     
@@ -1422,17 +1422,17 @@ namespace nmie {
       double rn = static_cast<double>(n + 1);
       std::complex<double> znm1 = bj[n] + c_i*by[n];
       std::complex<double> zn = bj[n + 1] + c_i*by[n + 1];
-      //if (n<3) printf("\nbesselh = %g,%g", zn.real(), zn.imag()); //!
+      //if (n < 3) printf("\nbesselh = %g,%g", zn.real(), zn.imag()); //!
       // using BH 4.12 and 4.50
       std::complex<double> xxip = Rho*(bj[n] + c_i*by[n]) - rn*zn;
-      //if (n<3) printf("\nxxip = %g,%g", xxip.real(), xxip.imag()); //!
+      //if (n < 3) printf("\nxxip = %g,%g", xxip.real(), xxip.imag()); //!
       
       using std::sin;
       using std::cos;
       vm3o1n[0] = c_zero;
       vm3o1n[1] = cos(Phi)*Pi[n]*zn;
       vm3o1n[2] = -sin(Phi)*Tau[n]*zn;
-      // if (n<3)  printf("\nRE  vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g   \nIM vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g",
+      // if (n < 3)  printf("\nRE  vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g   \nIM vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g",
       //              vm3o1n[0].real(), vm3o1n[1].real(), vm3o1n[2].real(),
       //              vm3o1n[0].imag(), vm3o1n[1].imag(), vm3o1n[2].imag());
       vm3e1n[0] = c_zero;
@@ -1444,7 +1444,7 @@ namespace nmie {
       vn3e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
       vn3e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
       vn3e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
-      // if (n<3)  printf("\nRE  vn3e1n[0]%g   vn3e1n[1]%g    vn3e1n[2]%g   \nIM vn3e1n[0]%g   vn3e1n[1]%g    vn3e1n[2]%g",
+      // if (n < 3)  printf("\nRE  vn3e1n[0]%g   vn3e1n[1]%g    vn3e1n[2]%g   \nIM vn3e1n[0]%g   vn3e1n[1]%g    vn3e1n[2]%g",
       //              vn3e1n[0].real(), vn3e1n[1].real(), vn3e1n[2].real(),
       //              vn3e1n[0].imag(), vn3e1n[1].imag(), vn3e1n[2].imag());
       
@@ -1453,7 +1453,7 @@ namespace nmie {
       // znm1 = (bj[n] + c_i*by[n]).real();
       // zn = (bj[n + 1] + c_i*by[n + 1]).real();
       xxip = Rho*(bj[n]) - rn*zn;
-      if (n<3)printf("\nbesselj = %g,%g", zn.real(), zn.imag()); //!
+      if (n < 3)printf("\nbesselj = %g,%g", zn.real(), zn.imag()); //!
       vm1o1n[0] = c_zero;
       vm1o1n[1] = cos(Phi)*Pi[n]*zn;
       vm1o1n[2] = -sin(Phi)*Tau[n]*zn;
@@ -1463,21 +1463,21 @@ namespace nmie {
       vn1o1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
       vn1o1n[1] = sin(Phi)*Tau[n]*xxip/Rho;
       vn1o1n[2] = cos(Phi)*Pi[n]*xxip/Rho;
-      // if (n<3) printf("\nvn1o1n[2](%g) = cos(Phi)(%g)*Pi[n](%g)*xxip(%g)/Rho(%g)",
+      // if (n < 3) printf("\nvn1o1n[2](%g) = cos(Phi)(%g)*Pi[n](%g)*xxip(%g)/Rho(%g)",
       //                       std::abs(vn1o1n[2]), cos(Phi),Pi[n],std::abs(xxip),Rho);
       vn1e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
       vn1e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
       vn1e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
-      // if (n<3)  printf("\nRE  vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g   \nIM vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g",
+      // if (n < 3)  printf("\nRE  vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g   \nIM vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g",
       //              vm3o1n[0].real(), vm3o1n[1].real(), vm3o1n[2].real(),
       //              vm3o1n[0].imag(), vm3o1n[1].imag(), vm3o1n[2].imag());
       
       // scattered field: BH p.94 (4.45)
       std::complex<double> encap = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
-      // if (n<3) printf("\n===== n=%d ======\n",n);
+      // if (n < 3) printf("\n===== n=%d ======\n",n);
       for (int i = 0; i < 3; i++) {
-        // if (n<3 && i==0) printf("\nn=%d",n);
-        // if (n<3) printf("\nbefore !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
+        // if (n < 3 && i==0) printf("\nn=%d",n);
+        // if (n < 3) printf("\nbefore !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
         Ei[i] = encap*(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]
                        + c_i*al_n_[l][n]*vn3e1n[i] - bl_n_[l][n]*vm3o1n[i]);
         El[i] = El[i] + encap*(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]
@@ -1485,18 +1485,18 @@ namespace nmie {
         Hl[i] = Hl[i] + encap*(-dl_n_[l][n]*vm1e1n[i] - c_i*cl_n_[l][n]*vn1o1n[i]
                                + c_i*bl_n_[l][n]*vn3o1n[i] + al_n_[l][n]*vm3e1n[i]);
         // printf("\n !Ei[%d]=%g,%g! ", i, Ei[i].real(), Ei[i].imag());
-        // if (n<3) printf("\n !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
+        // if (n < 3) printf("\n !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
         // //printf(" ===%d=== %g ", i,std::abs(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]));
-        // if (n<3) printf(" ===%d=== %g ", i,std::abs(//-dl_n_[l][n]*vm1e1n[i] 
+        // if (n < 3) printf(" ===%d=== %g ", i,std::abs(//-dl_n_[l][n]*vm1e1n[i] 
         //                                             //- c_i*cl_n_[l][n]*
         //                                             vn1o1n[i]
         //                                             // + c_i*bl_n_[l][n]*vn3o1n[i]
         //                                             // + al_n_[l][n]*vm3e1n[i]
         //                      ));
-        // if (n<3) printf(" --- Ei[%d]=%g! ", i,std::abs(encap*(vm1o1n[i] - c_i*vn1e1n[i])));
+        // if (n < 3) printf(" --- Ei[%d]=%g! ", i,std::abs(encap*(vm1o1n[i] - c_i*vn1e1n[i])));
 
       }
-      //if (n<3) printf(" bj=%g \n", std::abs(bj[n]));
+      //if (n < 3) printf(" bj=%g \n", std::abs(bj[n]));
     }  // end of for all n
     
     // magnetic field

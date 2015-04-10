@@ -7,6 +7,8 @@ VERSION=0.3.1
 all:
 	@echo "make source - Create source package"
 	@echo "make cython - Convert Cython code to c++"
+	@echo "make python_ext - Create Python extension using C++ code"
+	@echo "make cython_ext - Create Python extension using Cython code"
 	@echo "make install - Install on local system"
 	@echo "make buildrpm - Generate a rpm package"
 	@echo "make builddeb - Generate a deb package"
@@ -19,6 +21,14 @@ source:
 
 cython: scattnlay.pyx
 	cython --cplus scattnlay.pyx
+
+python_ext: nmie.cc py_nmie.cc scattnlay.cpp
+	export CFLAGS='-std=c++11'
+	python setup.py build_ext --inplace
+
+cython_ext: nmie.cc py_nmie.cc scattnlay.pyx
+	export CFLAGS='-std=c++11'
+	python setup_cython.py build_ext --inplace
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)

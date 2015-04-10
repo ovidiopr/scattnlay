@@ -33,8 +33,8 @@
 // Same as nMie in 'nmie.h' but uses double arrays to return the results (useful for python).
 // This is a workaround because I have not been able to return the results using 
 // std::vector<std::complex<double> >
-int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m,
-         int nTheta, std::vector<double> Theta, int nmax,
+int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+         const int nTheta, std::vector<double>& Theta, const int nmax,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
 		 double S1r[], double S1i[], double S2r[], double S2i[]) {
 
@@ -43,7 +43,7 @@ int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> 
   S1.resize(nTheta);
   S2.resize(nTheta);
 
-  result = nMie(L, pl, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+  result = nmie::nMie(L, pl, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
 
   for (i = 0; i < nTheta; i++) {
     S1r[i] = S1[i].real();
@@ -58,8 +58,8 @@ int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> 
 // Same as nField in 'nmie.h' but uses double arrays to return the results (useful for python).
 // This is a workaround because I have not been able to return the results using 
 // std::vector<std::complex<double> >
-int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
-           int nCoords, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
+int nField(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
+           const int nCoords, std::vector<double>& Xp, std::vector<double>& Yp, std::vector<double>& Zp,
            double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[],
            double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[]) {
 
@@ -72,7 +72,7 @@ int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double
     H[i].resize(3);
   }
 
-  result = nField(L, pl, x, m, nmax, nCoords, Xp, Yp, Zp, E, H);
+  result = nmie::nField(L, pl, x, m, nmax, nCoords, Xp, Yp, Zp, E, H);
 
   for (i = 0; i < nCoords; i++) {
     Erx[i] = E[i][0].real();
