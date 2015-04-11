@@ -121,8 +121,13 @@ namespace nmie {
     void calcD1D3(std::complex<double> z,
                   std::vector<std::complex<double> >& D1,
                   std::vector<std::complex<double> >& D3);
-    void calcPiTau(const double& costheta, std::vector<double>& Pi,
-                         std::vector<double>& Tau);
+    void calcPiTau(const double& costheta,
+                   std::vector<double>& Pi, std::vector<double>& Tau);
+    void calcSpherHarm(const double Rho, const double Phi, const double Theta,
+                       const std::complex<double>& zn, const std::complex<double>& deriv,
+                       const double& Pi, const double& Tau, const double& rn,
+                       std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
+                       std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
     void ExtScattCoeffs();
     void IntScattCoeffs();
 
