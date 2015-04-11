@@ -944,9 +944,6 @@ int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double
 
   // Calculate scattering coefficients
   nmax = ScattCoeffs(L, pl, x, m, nmax, an, bn);
-  for (int i = 0; i < an.size(); i++) {
-    printf("a[%i] = %g, %g; b[%i] = %g, %g\n", i, an[i].real(), an[i].imag(), i, bn[i].real(), bn[i].imag());
-  }
 
   std::vector<double> Pi, Tau;
   Pi.resize(nmax);

@@ -45,13 +45,13 @@
 #include <stdexcept>
 #include <vector>
 
-namespace nmie {  
+namespace nmie {
   //helpers
   template<class T> inline T pow2(const T value) {return value*value;}
 
   int round(double x) {
     return x >= 0 ? (int)(x + 0.5):(int)(x - 0.5);
-  }  
+  }
 
 
   //**********************************************************************************//
@@ -84,19 +84,19 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
-    
+
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
     if (Theta.size() != nTheta)
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
-      MultiLayerMie multi_layer_mie;  
+      MultiLayerMie multi_layer_mie;
       multi_layer_mie.SetLayersSize(x);
       multi_layer_mie.SetLayersIndex(m);
       multi_layer_mie.SetAngles(Theta);
-    
+
       multi_layer_mie.RunMieCalculation();
-      
+
       *Qext = multi_layer_mie.GetQext();
       *Qsca = multi_layer_mie.GetQsca();
       *Qabs = multi_layer_mie.GetQabs();
@@ -111,7 +111,7 @@ namespace nmie {
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
       return -1;
-    }  
+    }
 
     return 0;
   }
@@ -144,7 +144,7 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   int nMie(const int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
-    return nMie(L, -1, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+    return nmie::nMie(L, -1, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
 
@@ -176,7 +176,7 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
-    return nMie(L, pl, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+    return nmie::nMie(L, pl, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
   //**********************************************************************************//
@@ -209,7 +209,7 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   int nMie(const int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
-    return nMie(L, -1, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+    return nmie::nMie(L, -1, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
 
@@ -248,10 +248,10 @@ namespace nmie {
       if (f.size() != 3)
         throw std::invalid_argument("Field H is not 3D!");
     try {
-      MultiLayerMie multi_layer_mie;  
+      MultiLayerMie multi_layer_mie;
       //multi_layer_mie.SetPECLayer(pl);
       multi_layer_mie.SetLayersSize(x);
-      multi_layer_mie.SetLayersIndex(m);      
+      multi_layer_mie.SetLayersIndex(m);
       multi_layer_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
       multi_layer_mie.RunFieldCalculation();
       E = multi_layer_mie.GetFieldE();
@@ -262,7 +262,7 @@ namespace nmie {
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
       return - 1;
-    }  
+    }
 
     return 0;
   }
@@ -376,16 +376,16 @@ namespace nmie {
     areIntCoeffsCalc_ = false;
     areExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
-    layer_size_.clear();
+    size_param_.clear();
     double prev_layer_size = 0.0;
     for (auto curr_layer_size : layer_size) {
       if (curr_layer_size <= 0.0)
         throw std::invalid_argument("Size parameter should be positive!");
-      if (prev_layer_size > curr_layer_size) 
+      if (prev_layer_size > curr_layer_size)
         throw std::invalid_argument
           ("Size parameter for next layer should be larger than the previous one!");
       prev_layer_size = curr_layer_size;
-      layer_size_.push_back(curr_layer_size);
+      size_param_.push_back(curr_layer_size);
     }
   }
 
@@ -397,7 +397,7 @@ namespace nmie {
     areIntCoeffsCalc_ = false;
     areExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
-    layer_index_ = index;
+    refr_index_ = index;
   }
 
 
@@ -429,13 +429,11 @@ namespace nmie {
   // ********************************************************************** //
   // Set maximun number of terms to be used                                 //
   // ********************************************************************** //
-  void MultiLayerMie::SetMaxTerms(int nmax) {    
+  void MultiLayerMie::SetMaxTerms(int nmax) {
     areIntCoeffsCalc_ = false;
     areExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     nmax_preset_ = nmax;
-    //debug
-    printf("Setting max terms: %d\n", nmax_preset_);
   }
 
 
@@ -443,10 +441,10 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   double MultiLayerMie::GetSizeParameter() {
-//    if (!isMieCalculated_)
-//      throw std::invalid_argument("You should run calculations before result request!");
-    if (size_parameter_ == 0) CalcSizeParameter();
-    return size_parameter_;      
+    if (size_param_.size() > 0)
+      return size_param_.back();
+    else
+      return 0;
   }
 
 
@@ -457,8 +455,8 @@ namespace nmie {
     areIntCoeffsCalc_ = false;
     areExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
-    layer_size_.clear();
-    layer_index_.clear();
+    size_param_.clear();
+    refr_index_.clear();
   }
 
 
@@ -472,39 +470,39 @@ namespace nmie {
 
 
   // ********************************************************************** //
-  // Calculate Nstop - equation (17)                                        //
+  // Calculate calcNstop - equation (17)                                        //
   // ********************************************************************** //
-  void MultiLayerMie::Nstop() {
-    const double& xL = layer_size_.back();
+  void MultiLayerMie::calcNstop() {
+    const double& xL = size_param_.back();
     if (xL <= 8) {
       nmax_ = round(xL + 4.0*pow(xL, 1.0/3.0) + 1);
     } else if (xL <= 4200) {
       nmax_ = round(xL + 4.05*pow(xL, 1.0/3.0) + 2);
     } else {
       nmax_ = round(xL + 4.0*pow(xL, 1.0/3.0) + 2);
-    }    
+    }
   }
 
 
   // ********************************************************************** //
   // Maximum number of terms required for the calculation                   //
   // ********************************************************************** //
-  void MultiLayerMie::Nmax(int first_layer) {
+  void MultiLayerMie::calcNmax(int first_layer) {
     int ri, riM1;
-    const std::vector<double>& x = layer_size_;
-    const std::vector<std::complex<double> >& m = layer_index_;
-    Nstop();  // Set initial nmax_ value
+    const std::vector<double>& x = size_param_;
+    const std::vector<std::complex<double> >& m = refr_index_;
+    calcNstop();  // Set initial nmax_ value
     for (int i = first_layer; i < x.size(); i++) {
-      if (i > PEC_layer_position_) 
+      if (i > PEC_layer_position_)
         ri = round(std::abs(x[i]*m[i]));
-      else 
-        ri = 0;      
+      else
+        ri = 0;
       nmax_ = std::max(nmax_, ri);
       // first layer is pec, if pec is present
-      if ((i > first_layer) && ((i - 1) > PEC_layer_position_)) 
+      if ((i > first_layer) && ((i - 1) > PEC_layer_position_))
         riM1 = round(std::abs(x[i - 1]* m[i]));
-      else 
-        riM1 = 0;      
+      else
+        riM1 = 0;
       nmax_ = std::max(nmax_, riM1);
     }
     nmax_ += 15;  // Final nmax_ value
@@ -779,7 +777,7 @@ namespace nmie {
 
 
   //**********************************************************************************//
-  // This function calculates Pi and Tau for all values of Theta.                     //
+  // This function calculates Pi and Tau for a given value of cos(Theta).             //
   // Equations (26a) - (26c)                                                          //
   //                                                                                  //
   // Input parameters:                                                                //
@@ -791,43 +789,26 @@ namespace nmie {
   // Output parameters:                                                               //
   //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
   //**********************************************************************************//
-  void MultiLayerMie::calcSinglePiTau(const double& costheta, std::vector<double>& Pi,
-                                      std::vector<double>& Tau) {
+  void MultiLayerMie::calcPiTau(const double& costheta,
+                                std::vector<double>& Pi, std::vector<double>& Tau) {
 
+    int n;
     //****************************************************//
     // Equations (26a) - (26c)                            //
     //****************************************************//
-    for (int n = 0; n < nmax_; n++) {
-      if (n == 0) {
-        // Initialize Pi and Tau
-        Pi[n] = 1.0;
-        Tau[n] = (n + 1)*costheta; 
-      } else {
-        // Calculate the actual values
-        Pi[n] = ((n == 1) ? ((n + n + 1)*costheta*Pi[n - 1]/n)
-                 : (((n + n + 1)*costheta*Pi[n - 1]
-                     - (n + 1)*Pi[n - 2])/n));
+    // Initialize Pi and Tau
+    Pi[0] = 1.0;
+    Tau[0] = costheta;
+    // Calculate the actual values
+    if (nmax_ > 1) {
+      Pi[1] = 3*costheta*Pi[0];
+      Tau[1] = 2*costheta*Pi[1] - 3*Pi[0];
+      for (n = 2; n < nmax_; n++) {
+        Pi[n] = ((n + n + 1)*costheta*Pi[n - 1] - (n + 1)*Pi[n - 2])/n;
         Tau[n] = (n + 1)*costheta*Pi[n] - (n + 2)*Pi[n - 1];
       }
     }
-  }  // end of void MultiLayerMie::calcPiTau(...)
-
-
-  void MultiLayerMie::calcAllPiTau(std::vector< std::vector<double> >& Pi,
-                                   std::vector< std::vector<double> >& Tau) {
-    std::vector<double> costheta(theta_.size(), 0.0);
-    for (int t = 0; t < theta_.size(); t++) {
-      costheta[t] = std::cos(theta_[t]);
-    }
-    // Do not join upper and lower 'for' to a single one!  It will slow
-    // down the code!!! (For about 0.5-2.0% of runtime, it is probably
-    // due to increased cache missing rate originated from the
-    // recurrence in calcPiTau...)
-    for (int t = 0; t < theta_.size(); t++) {
-      calcSinglePiTau(costheta[t], Pi[t], Tau[t]);
-      //calcSinglePiTau(std::cos(theta_[t]), Pi[t], Tau[t]); // It is slow!!
-    }
-  }  // end of void MultiLayerMie::calcAllPiTau(...)
+  }  // end of MultiLayerMie::calcPiTau(...)
 
 
   //**********************************************************************************//
@@ -850,11 +831,14 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   void MultiLayerMie::ExtScattCoeffs() {
+
     areExtCoeffsCalc_ = false;
-    const std::vector<double>& x = layer_size_;
-    const std::vector<std::complex<double> >& m = layer_index_;
+
+    const std::vector<double>& x = size_param_;
+    const std::vector<std::complex<double> >& m = refr_index_;
     const int& pl = PEC_layer_position_;
-    const int L = layer_index_.size();
+    const int L = refr_index_.size();
+
     //************************************************************************//
     // Calculate the index of the first layer. It can be either 0 (default)   //
     // or the index of the outermost PEC layer. In the latter case all layers //
@@ -865,10 +849,11 @@ namespace nmie {
     // int fl = (pl > - 1) ? pl : 0;
     // This will give the same result, however, it corresponds the
     // logic - if there is PEC, than first layer is PEC.
-    // Well, I followed the logic: First layer is always zero unless it has 
+    // Well, I followed the logic: First layer is always zero unless it has
     // an upper PEC layer.
     int fl = (pl > 0) ? pl : 0;
-    if (nmax_ <= 0) Nmax(fl);
+    if (nmax_preset_ <= 0) calcNmax(fl);
+    else nmax_ = nmax_preset_;
 
     std::complex<double> z1, z2;
     //**************************************************************************//
@@ -894,7 +879,7 @@ namespace nmie {
     bn_.resize(nmax_);
     PsiZeta_.resize(nmax_ + 1);
 
-    std::vector<std::complex<double> > D1XL(nmax_ + 1), D3XL(nmax_ + 1), 
+    std::vector<std::complex<double> > D1XL(nmax_ + 1), D3XL(nmax_ + 1),
                                        PsiXL(nmax_ + 1), ZetaXL(nmax_ + 1);
 
     //*************************************************//
@@ -1007,56 +992,6 @@ namespace nmie {
     areExtCoeffsCalc_ = true;
   }  // end of void MultiLayerMie::ExtScattCoeffs(...)
 
-
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  void MultiLayerMie::CalcSizeParameter() {
-    double radius = 0.0;
-    for (auto width : layer_size_) {
-      radius += width;
-    }
-    size_parameter_ = radius;
-  }
-
-
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  void MultiLayerMie::InitMieCalculations() {
-    areIntCoeffsCalc_ = false;
-    areExtCoeffsCalc_ = false;
-    isMieCalculated_ = false;
-    // Initialize the scattering parameters
-    Qext_ = 0;
-    Qsca_ = 0;
-    Qabs_ = 0;
-    Qbk_ = 0;
-    Qpr_ = 0;
-    asymmetry_factor_ = 0;
-    albedo_ = 0;
-    Qsca_ch_.clear();
-    Qext_ch_.clear();
-    Qabs_ch_.clear();
-    Qbk_ch_.clear();
-    Qpr_ch_.clear();
-    Qsca_ch_.resize(nmax_ - 1);
-    Qext_ch_.resize(nmax_ - 1);
-    Qabs_ch_.resize(nmax_ - 1);
-    Qbk_ch_.resize(nmax_ - 1);
-    Qpr_ch_.resize(nmax_ - 1);
-    Qsca_ch_norm_.resize(nmax_ - 1);
-    Qext_ch_norm_.resize(nmax_ - 1);
-    Qabs_ch_norm_.resize(nmax_ - 1);
-    Qbk_ch_norm_.resize(nmax_ - 1);
-    Qpr_ch_norm_.resize(nmax_ - 1);
-    // Initialize the scattering amplitudes
-    std::vector<std::complex<double> > tmp1(theta_.size(),std::complex<double>(0.0, 0.0));
-    S1_.swap(tmp1);
-    S2_ = S1_;
-  }
-
-
   //**********************************************************************************//
   // This function calculates the actual scattering parameters and amplitudes         //
   //                                                                                  //
@@ -1086,26 +1021,58 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   void MultiLayerMie::RunMieCalculation() {
-    isMieCalculated_ = false;
-    nmax_ = nmax_preset_;
-    if (layer_size_.size() != layer_index_.size())
+    if (size_param_.size() != refr_index_.size())
       throw std::invalid_argument("Each size parameter should have only one index!");
-    if (layer_size_.size() == 0)
+    if (size_param_.size() == 0)
       throw std::invalid_argument("Initialize model first!");
-    const std::vector<double>& x = layer_size_;
+
+    const std::vector<double>& x = size_param_;
+
+    areIntCoeffsCalc_ = false;
+    areExtCoeffsCalc_ = false;
+    isMieCalculated_ = false;
+
     // Calculate scattering coefficients
     ExtScattCoeffs();
 
-    // std::vector< std::vector<double> > Pi(nmax_), Tau(nmax_);
-    std::vector< std::vector<double> > Pi, Tau;
-    Pi.resize(theta_.size());
-    Tau.resize(theta_.size());
-    for (int i =0; i< theta_.size(); ++i) {
-      Pi[i].resize(nmax_);
-      Tau[i].resize(nmax_);
-    }
-    calcAllPiTau(Pi, Tau);    
-    InitMieCalculations();
+//    for (int i = 0; i < an_.size(); i++) {
+//      printf("a[%i] = %g, %g; b[%i] = %g, %g\n", i, an_[i].real(), an_[i].imag(), i, bn_[i].real(), bn_[i].imag());
+//    }
+
+    if (!areExtCoeffsCalc_)
+      throw std::invalid_argument("Calculation of scattering coefficients failed!");
+
+    // Initialize the scattering parameters
+    Qext_ = 0;
+    Qsca_ = 0;
+    Qabs_ = 0;
+    Qbk_ = 0;
+    Qpr_ = 0;
+    asymmetry_factor_ = 0;
+    albedo_ = 0;
+    Qsca_ch_.clear();
+    Qext_ch_.clear();
+    Qabs_ch_.clear();
+    Qbk_ch_.clear();
+    Qpr_ch_.clear();
+    Qsca_ch_.resize(nmax_ - 1);
+    Qext_ch_.resize(nmax_ - 1);
+    Qabs_ch_.resize(nmax_ - 1);
+    Qbk_ch_.resize(nmax_ - 1);
+    Qpr_ch_.resize(nmax_ - 1);
+    Qsca_ch_norm_.resize(nmax_ - 1);
+    Qext_ch_norm_.resize(nmax_ - 1);
+    Qabs_ch_norm_.resize(nmax_ - 1);
+    Qbk_ch_norm_.resize(nmax_ - 1);
+    Qpr_ch_norm_.resize(nmax_ - 1);
+
+    // Initialize the scattering amplitudes
+    std::vector<std::complex<double> > tmp1(theta_.size(),std::complex<double>(0.0, 0.0));
+    S1_.swap(tmp1);
+    S2_ = S1_;
+
+    std::vector<double> Pi(nmax_), Tau(nmax_);
+
     std::complex<double> Qbktmp(0.0, 0.0);
     std::vector< std::complex<double> > Qbktmp_ch(nmax_ - 1, Qbktmp);
     // By using downward recurrence we avoid loss of precision due to float rounding errors
@@ -1134,14 +1101,16 @@ namespace nmie {
       Qpr_ch_[i]=((n*(n + 2)/(n + 1))*((an_[i]*std::conj(an_[n]) + bn_[i]*std::conj(bn_[n])).real())
                + ((double)(n + n + 1)/(n*(n + 1)))*(an_[i]*std::conj(bn_[i])).real());
       Qpr_ += Qpr_ch_[i];
-      // Equation (33)      
+      // Equation (33)
       Qbktmp_ch[i] = (double)(n + n + 1)*(1 - 2*(n % 2))*(an_[i]- bn_[i]);
       Qbktmp += Qbktmp_ch[i];
       // Calculate the scattering amplitudes (S1 and S2)    //
       // Equations (25a) - (25b)                            //
       for (int t = 0; t < theta_.size(); t++) {
-        S1_[t] += calc_S1(n, an_[i], bn_[i], Pi[t][i], Tau[t][i]);
-        S2_[t] += calc_S2(n, an_[i], bn_[i], Pi[t][i], Tau[t][i]);
+        calcPiTau(std::cos(theta_[t]), Pi, Tau);
+
+        S1_[t] += calc_S1(n, an_[i], bn_[i], Pi[i], Tau[i]);
+        S2_[t] += calc_S2(n, an_[i], bn_[i], Pi[i], Tau[i]);
       }
     }
     double x2 = pow2(x.back());
@@ -1158,23 +1127,27 @@ namespace nmie {
       Qabs_ch_[i] = Qext_ch_[i] - Qsca_ch_[i];
       Qabs_ch_norm_[i] = Qext_ch_norm_[i] - Qsca_ch_norm_[i];
     }
-    
+
     albedo_ = Qsca_/Qext_;                              // Equation (31)
     asymmetry_factor_ = (Qext_ - Qpr_)/Qsca_;                          // Equation (32)
 
     Qbk_ = (Qbktmp.real()*Qbktmp.real() + Qbktmp.imag()*Qbktmp.imag())/x2;    // Equation (33)
 
     isMieCalculated_ = true;
-    nmax_used_ = nmax_;
   }
-  
+
 
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::InitIntScattCoeffs() {
+  void MultiLayerMie::IntScattCoeffs() {
+    if (!areExtCoeffsCalc_)
+      throw std::invalid_argument("(IntScattCoeffs) You should calculate external coefficients first!");
+
     areIntCoeffsCalc_ = false;
-    const int L = layer_index_.size();
+
+    const int L = refr_index_.size();
+
     // we need to fill
     // std::vector< std::vector<std::complex<double> > > anl_, bnl_, cnl_, dnl_;
     //     for n = [0..nmax_) and for l=[L..0)
@@ -1197,25 +1170,15 @@ namespace nmie {
       bnl_[L][i] = bn_[i];
       cnl_[L][i] = c_one;
       dnl_[L][i] = c_one;
-      //if (i < 3) printf(" (%g) ", std::abs(an_[i]));
     }
 
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  void MultiLayerMie::IntScattCoeffs() {
-    if (!areExtCoeffsCalc_)
-      throw std::invalid_argument("(IntScattCoeffs) You should calculate external coefficients first!");
-    InitIntScattCoeffs();
-    const int L = layer_index_.size();
     std::vector<std::complex<double> > z(L), z1(L);
     for (int i = 0; i < L - 1; ++i) {
-      z[i]  =layer_size_[i]*layer_index_[i];
-      z1[i]=layer_size_[i]*layer_index_[i + 1];
+      z[i]  =size_param_[i]*refr_index_[i];
+      z1[i]=size_param_[i]*refr_index_[i + 1];
     }
-    z[L - 1] = layer_size_[L - 1]*layer_index_[L - 1];
-    z1[L - 1] = layer_size_[L - 1];
+    z[L - 1] = size_param_[L - 1]*refr_index_[L - 1];
+    z1[L - 1] = size_param_[L - 1];
     std::vector< std::vector<std::complex<double> > > D1z(L), D1z1(L), D3z(L), D3z1(L);
     std::vector< std::vector<std::complex<double> > > Psiz(L), Psiz1(L), Zetaz(L), Zetaz1(L);
     for (int l = 0; l < L; ++l) {
@@ -1234,7 +1197,7 @@ namespace nmie {
       calcPsiZeta(z[l],D1z[l],D3z[l], Psiz[l],Zetaz[l]);
       calcPsiZeta(z1[l],D1z1[l],D3z1[l], Psiz1[l],Zetaz1[l]);
     }
-    auto& m = layer_index_;
+    auto& m = refr_index_;
     std::vector< std::complex<double> > m1(L);
     for (int l = 0; l < L - 1; ++l) m1[l] = m[l + 1];
     m1[L - 1] = std::complex<double> (1.0, 0.0);
@@ -1263,7 +1226,7 @@ namespace nmie {
         denom = m1[l]*Psiz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
         cnl_[l][n] = D3z[l][n + 1]*m[l]*(bnl_[l + 1][n]*Zetaz1[l][n + 1] - cnl_[l + 1][n]*Psiz1[l][n + 1])
                       - m1[l]*(-D1z1[l][n + 1]*cnl_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bnl_[l + 1][n]*Zetaz1[l][n + 1]);
-        cnl_[l][n] /= denom;   
+        cnl_[l][n] /= denom;
       }  // end of all n
     }  // end of for all l
 
@@ -1319,48 +1282,47 @@ namespace nmie {
   // assume: medium is non-absorbing; refim = 0; Uabs = 0
 
   void MultiLayerMie::fieldExt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
-    
+
     std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0);
-    std::vector<std::complex<double> > vm3o1n(3), vm3e1n(3), vn3o1n(3), vn3e1n(3);
+    std::vector<std::complex<double> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
     std::vector<std::complex<double> > Ei(3, c_zero), Hi(3, c_zero), Es(3, c_zero), Hs(3, c_zero);
     std::vector<std::complex<double> > bj(nmax_ + 1), by(nmax_ + 1), bd(nmax_ + 1);
 
     // Calculate spherical Bessel and Hankel functions
-    sphericalBessel(Rho,bj, by, bd);    
+    sphericalBessel(Rho, bj, by, bd);
 
     //printf("##########  layer OUT ############\n");
     for (int n = 0; n < nmax_; n++) {
-      double rn = static_cast<double>(n + 1);
+      int n1 = n + 1;
+      double rn = static_cast<double>(n1);
 
-      std::complex<double> zn = bj[n + 1] + c_i*by[n + 1];
+      std::complex<double> zn = bj[n1] + c_i*by[n1];
       // using BH 4.12 and 4.50
-      std::complex<double> xxip = Rho*(bj[n] + c_i*by[n]) - rn*zn;
-      
+      std::complex<double> deriv = Rho*(bj[n] + c_i*by[n]) - rn*zn;
+
       using std::sin;
       using std::cos;
-      vm3o1n[0] = c_zero;
-      vm3o1n[1] = cos(Phi)*Pi[n]*zn;
-      vm3o1n[2] = -sin(Phi)*Tau[n]*zn;
-      vm3e1n[0] = c_zero;
-      vm3e1n[1] = -sin(Phi)*Pi[n]*zn;
-      vm3e1n[2] = -cos(Phi)*Tau[n]*zn;
-      vn3o1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
-      vn3o1n[1] = sin(Phi)*Tau[n]*xxip/Rho;
-      vn3o1n[2] = cos(Phi)*Pi[n]*xxip/Rho;
-      vn3e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
-      vn3e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
-      vn3e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
-      
+      M3o1n[0] = c_zero;
+      M3o1n[1] = cos(Phi)*Pi[n]*zn;
+      M3o1n[2] = -sin(Phi)*Tau[n]*zn;
+      M3e1n[0] = c_zero;
+      M3e1n[1] = -sin(Phi)*Pi[n]*zn;
+      M3e1n[2] = -cos(Phi)*Tau[n]*zn;
+      N3o1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      N3o1n[1] = sin(Phi)*Tau[n]*deriv/Rho;
+      N3o1n[2] = cos(Phi)*Pi[n]*deriv/Rho;
+      N3e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      N3e1n[1] = cos(Phi)*Tau[n]*deriv/Rho;
+      N3e1n[2] = -sin(Phi)*Pi[n]*deriv/Rho;
+
       // scattered field: BH p.94 (4.45)
-      std::complex<double> encap = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
+      std::complex<double> En = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
       for (int i = 0; i < 3; i++) {
-        Es[i] = Es[i] + encap*(c_i*an_[n]*vn3e1n[i] - bn_[n]*vm3o1n[i]);
-        Hs[i] = Hs[i] + encap*(c_i*bn_[n]*vn3o1n[i] + an_[n]*vm3e1n[i]);
-        //if (n < 3) printf(" E[%d]=%g ", i,std::abs(Es[i]));
-        //if (n < 3) printf(" !!=%d=== %g ", i,std::abs(Es[i]));
+        Es[i] = Es[i] + En*(c_i*an_[n]*N3e1n[i] - bn_[n]*M3o1n[i]);
+        Hs[i] = Hs[i] + En*(c_i*bn_[n]*N3o1n[i] + an_[n]*M3e1n[i]);
       }
     }
-    
+
     // incident E field: BH p.89 (4.21); cf. p.92 (4.37), p.93 (4.38)
     // basis unit vectors = er, etheta, ephi
     std::complex<double> eifac = std::exp(std::complex<double>(0.0, Rho*std::cos(Theta)));
@@ -1377,7 +1339,7 @@ namespace nmie {
     for (int i = 0; i < 3; i++) {
       Hs[i] = hffact*Hs[i];
     }
-    
+
     // incident H field: BH p.26 (2.43), p.89 (4.21)
     std::complex<double> hffacta = hffact;
     std::complex<double> hifac = eifac*hffacta;
@@ -1388,7 +1350,7 @@ namespace nmie {
       Hi[1] = hifac*cos(Theta)*sin(Phi);
       Hi[2] = hifac*cos(Phi);
     }
-    
+
     for (int i = 0; i < 3; i++) {
       // electric field E [V m - 1] = EF*E0
       E[i] = Ei[i] + Es[i];
@@ -1404,123 +1366,128 @@ namespace nmie {
   void MultiLayerMie::fieldInt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
     // printf("field int Qext = %g, Qsca = %g, Qabs = %g, Qbk = %g, \n",
     //            GetQext(), GetQsca(), GetQabs(), GetQbk());
-    
+
     std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
-    std::vector<std::complex<double> > vm3o1n(3), vm3e1n(3), vn3o1n(3), vn3e1n(3);
-    std::vector<std::complex<double> > vm1o1n(3), vm1e1n(3), vn1o1n(3), vn1e1n(3);
-    std::vector<std::complex<double> > El(3,c_zero),Ei(3,c_zero), Hl(3,c_zero);
+    std::vector<std::complex<double> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
+    std::vector<std::complex<double> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
+    std::vector<std::complex<double> > El(3, c_zero),Ei(3, c_zero), Hl(3, c_zero);
     std::vector<std::complex<double> > bj(nmax_ + 1), by(nmax_ + 1), bd(nmax_ + 1);
-    int layer=0;  // layer number
-    std::complex<double> layer_index_l;
-    for (int i = 0; i < layer_size_.size() - 1; ++i) {
-      if (layer_size_[i] < Rho && Rho <= layer_size_[i + 1]) {
-        layer=i;
+
+    int layer = 0;  // layer number
+    std::complex<double> m_l;
+
+    for (int i = 0; i < size_param_.size() - 1; ++i) {
+      if (size_param_[i] < Rho && Rho <= size_param_[i + 1]) {
+        layer = i;
       }
     }
-    if (Rho > layer_size_.back()) {
-      layer = layer_size_.size();
-      layer_index_l = c_one; 
+
+    if (Rho > size_param_.back()) {
+      layer = size_param_.size();
+      m_l = c_one;
     } else {
-      layer_index_l = layer_index_[layer]; 
+      m_l = refr_index_[layer];
     }
-   
-    std::complex<double> bessel_arg = Rho*layer_index_l;
+
+    std::complex<double> bessel_arg = Rho*m_l;
     std::complex<double>& rh = bessel_arg;
     std::complex<double> besselj_1 = std::sin(rh)/pow2(rh)-std::cos(rh)/rh;
-    //printf("bessel arg = %g,%g   index=%g,%g   besselj[1]=%g,%g\n", bessel_arg.real(), bessel_arg.imag(), layer_index_l.real(), layer_index_l.imag(), besselj_1.real(), besselj_1.imag());
+    //printf("bessel arg = %g,%g   index=%g,%g   besselj[1]=%g,%g\n", bessel_arg.real(), bessel_arg.imag(), m_l.real(), m_l.imag(), besselj_1.real(), besselj_1.imag());
     const int& l = layer;
     //printf("##########  layer %d ############\n",l);
     // Calculate spherical Bessel and Hankel functions
-    sphericalBessel(bessel_arg,bj, by, bd);    
+    sphericalBessel(bessel_arg, bj, by, bd);
     //printf("besselj[1]=%g,%g\n", bj[1].real(), bj[1].imag());
     //printf("bessely[1]=%g,%g\n", by[1].real(), by[1].imag());
     for (int n = 0; n < nmax_; n++) {
-      double rn = static_cast<double>(n + 1);
+      int n1 = n + 1;
+      double rn = static_cast<double>(n1);
+
       std::complex<double> znm1 = bj[n] + c_i*by[n];
-      std::complex<double> zn = bj[n + 1] + c_i*by[n + 1];
-      //if (n < 3) printf("\nbesselh = %g,%g", zn.real(), zn.imag()); //!
+      std::complex<double> zn = bj[n1] + c_i*by[n1];
+
       // using BH 4.12 and 4.50
-      std::complex<double> xxip = Rho*(bj[n] + c_i*by[n]) - rn*zn;
-      //if (n < 3) printf("\nxxip = %g,%g", xxip.real(), xxip.imag()); //!
-      
+      std::complex<double> deriv = Rho*(bj[n] + c_i*by[n]) - rn*zn;
+      //if (n < 3) printf("\nxxip = %g,%g", deriv.real(), deriv.imag()); //!
+
       using std::sin;
       using std::cos;
-      vm3o1n[0] = c_zero;
-      vm3o1n[1] = cos(Phi)*Pi[n]*zn;
-      vm3o1n[2] = -sin(Phi)*Tau[n]*zn;
-      // if (n < 3)  printf("\nRE  vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g   \nIM vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g",
-      //              vm3o1n[0].real(), vm3o1n[1].real(), vm3o1n[2].real(),
-      //              vm3o1n[0].imag(), vm3o1n[1].imag(), vm3o1n[2].imag());
-      vm3e1n[0] = c_zero;
-      vm3e1n[1] = -sin(Phi)*Pi[n]*zn;
-      vm3e1n[2] = -cos(Phi)*Tau[n]*zn;
-      vn3o1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
-      vn3o1n[1] = sin(Phi)*Tau[n]*xxip/Rho;
-      vn3o1n[2] = cos(Phi)*Pi[n]*xxip/Rho;
-      vn3e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
-      vn3e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
-      vn3e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
-      // if (n < 3)  printf("\nRE  vn3e1n[0]%g   vn3e1n[1]%g    vn3e1n[2]%g   \nIM vn3e1n[0]%g   vn3e1n[1]%g    vn3e1n[2]%g",
-      //              vn3e1n[0].real(), vn3e1n[1].real(), vn3e1n[2].real(),
-      //              vn3e1n[0].imag(), vn3e1n[1].imag(), vn3e1n[2].imag());
-      
+      M3o1n[0] = c_zero;
+      M3o1n[1] = cos(Phi)*Pi[n]*zn;
+      M3o1n[2] = -sin(Phi)*Tau[n]*zn;
+      // if (n < 3)  printf("\nRE  M3o1n[0]%g   M3o1n[1]%g    M3o1n[2]%g   \nIM M3o1n[0]%g   M3o1n[1]%g    M3o1n[2]%g",
+      //              M3o1n[0].real(), M3o1n[1].real(), M3o1n[2].real(),
+      //              M3o1n[0].imag(), M3o1n[1].imag(), M3o1n[2].imag());
+      M3e1n[0] = c_zero;
+      M3e1n[1] = -sin(Phi)*Pi[n]*zn;
+      M3e1n[2] = -cos(Phi)*Tau[n]*zn;
+      N3o1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      N3o1n[1] = sin(Phi)*Tau[n]*deriv/Rho;
+      N3o1n[2] = cos(Phi)*Pi[n]*deriv/Rho;
+      N3e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      N3e1n[1] = cos(Phi)*Tau[n]*deriv/Rho;
+      N3e1n[2] = -sin(Phi)*Pi[n]*deriv/Rho;
+      // if (n < 3)  printf("\nRE  N3e1n[0]%g   N3e1n[1]%g    N3e1n[2]%g   \nIM N3e1n[0]%g   N3e1n[1]%g    N3e1n[2]%g",
+      //              N3e1n[0].real(), N3e1n[1].real(), N3e1n[2].real(),
+      //              N3e1n[0].imag(), N3e1n[1].imag(), N3e1n[2].imag());
+
       znm1 = bj[n];
-      zn = bj[n + 1];
+      zn = bj[n1];
       // znm1 = (bj[n] + c_i*by[n]).real();
       // zn = (bj[n + 1] + c_i*by[n + 1]).real();
-      xxip = Rho*(bj[n]) - rn*zn;
+      deriv = Rho*(bj[n]) - rn*zn;
       //if (n < 3)printf("\nbesselj = %g,%g", zn.real(), zn.imag()); //!
-      vm1o1n[0] = c_zero;
-      vm1o1n[1] = cos(Phi)*Pi[n]*zn;
-      vm1o1n[2] = -sin(Phi)*Tau[n]*zn;
-      vm1e1n[0] = c_zero;
-      vm1e1n[1] = -sin(Phi)*Pi[n]*zn;
-      vm1e1n[2] = -cos(Phi)*Tau[n]*zn;
-      vn1o1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
-      vn1o1n[1] = sin(Phi)*Tau[n]*xxip/Rho;
-      vn1o1n[2] = cos(Phi)*Pi[n]*xxip/Rho;
-      // if (n < 3) printf("\nvn1o1n[2](%g) = cos(Phi)(%g)*Pi[n](%g)*xxip(%g)/Rho(%g)",
-      //                       std::abs(vn1o1n[2]), cos(Phi),Pi[n],std::abs(xxip),Rho);
-      vn1e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
-      vn1e1n[1] = cos(Phi)*Tau[n]*xxip/Rho;
-      vn1e1n[2] = -sin(Phi)*Pi[n]*xxip/Rho;
-      // if (n < 3)  printf("\nRE  vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g   \nIM vm3o1n[0]%g   vm3o1n[1]%g    vm3o1n[2]%g",
-      //              vm3o1n[0].real(), vm3o1n[1].real(), vm3o1n[2].real(),
-      //              vm3o1n[0].imag(), vm3o1n[1].imag(), vm3o1n[2].imag());
-      
+      M1o1n[0] = c_zero;
+      M1o1n[1] = cos(Phi)*Pi[n]*zn;
+      M1o1n[2] = -sin(Phi)*Tau[n]*zn;
+      M1e1n[0] = c_zero;
+      M1e1n[1] = -sin(Phi)*Pi[n]*zn;
+      M1e1n[2] = -cos(Phi)*Tau[n]*zn;
+      N1o1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      N1o1n[1] = sin(Phi)*Tau[n]*deriv/Rho;
+      N1o1n[2] = cos(Phi)*Pi[n]*deriv/Rho;
+      // if (n < 3) printf("\nN1o1n[2](%g) = cos(Phi)(%g)*Pi[n](%g)*deriv(%g)/Rho(%g)",
+      //                       std::abs(N1o1n[2]), cos(Phi),Pi[n],std::abs(deriv),Rho);
+      N1e1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi[n]*zn/Rho;
+      N1e1n[1] = cos(Phi)*Tau[n]*deriv/Rho;
+      N1e1n[2] = -sin(Phi)*Pi[n]*deriv/Rho;
+      // if (n < 3)  printf("\nRE  M3o1n[0]%g   M3o1n[1]%g    M3o1n[2]%g   \nIM M3o1n[0]%g   M3o1n[1]%g    M3o1n[2]%g",
+      //              M3o1n[0].real(), M3o1n[1].real(), M3o1n[2].real(),
+      //              M3o1n[0].imag(), M3o1n[1].imag(), M3o1n[2].imag());
+
       // scattered field: BH p.94 (4.45)
-      std::complex<double> encap = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
+      std::complex<double> En = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
       // if (n < 3) printf("\n===== n=%d ======\n",n);
       for (int i = 0; i < 3; i++) {
         // if (n < 3 && i==0) printf("\nn=%d",n);
         // if (n < 3) printf("\nbefore !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
-        Ei[i] = encap*(cnl_[l][n]*vm1o1n[i] - c_i*dnl_[l][n]*vn1e1n[i]
-                       + c_i*anl_[l][n]*vn3e1n[i] - bnl_[l][n]*vm3o1n[i]);
-        El[i] = El[i] + encap*(cnl_[l][n]*vm1o1n[i] - c_i*dnl_[l][n]*vn1e1n[i]
-                               + c_i*anl_[l][n]*vn3e1n[i] - bnl_[l][n]*vm3o1n[i]);
-        Hl[i] = Hl[i] + encap*(-dnl_[l][n]*vm1e1n[i] - c_i*cnl_[l][n]*vn1o1n[i]
-                               + c_i*bnl_[l][n]*vn3o1n[i] + anl_[l][n]*vm3e1n[i]);
+        Ei[i] = En*(cnl_[l][n]*M1o1n[i] - c_i*dnl_[l][n]*N1e1n[i]
+                    + c_i*anl_[l][n]*N3e1n[i] - bnl_[l][n]*M3o1n[i]);
+        El[i] = El[i] + En*(cnl_[l][n]*M1o1n[i] - c_i*dnl_[l][n]*N1e1n[i]
+                            + c_i*anl_[l][n]*N3e1n[i] - bnl_[l][n]*M3o1n[i]);
+        Hl[i] = Hl[i] + En*(-dnl_[l][n]*M1e1n[i] - c_i*cnl_[l][n]*N1o1n[i]
+                            + c_i*bnl_[l][n]*N3o1n[i] + anl_[l][n]*M3e1n[i]);
         // printf("\n !Ei[%d]=%g,%g! ", i, Ei[i].real(), Ei[i].imag());
         // if (n < 3) printf("\n !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
-        // //printf(" ===%d=== %g ", i,std::abs(cnl_[l][n]*vm1o1n[i] - c_i*dnl_[l][n]*vn1e1n[i]));
-        // if (n < 3) printf(" ===%d=== %g ", i,std::abs(//-dnl_[l][n]*vm1e1n[i] 
+        // //printf(" ===%d=== %g ", i,std::abs(cnl_[l][n]*M1o1n[i] - c_i*dnl_[l][n]*N1e1n[i]));
+        // if (n < 3) printf(" ===%d=== %g ", i,std::abs(//-dnl_[l][n]*M1e1n[i]
         //                                             //- c_i*cnl_[l][n]*
-        //                                             vn1o1n[i]
-        //                                             // + c_i*bnl_[l][n]*vn3o1n[i]
-        //                                             // + anl_[l][n]*vm3e1n[i]
+        //                                             N1o1n[i]
+        //                                             // + c_i*bnl_[l][n]*N3o1n[i]
+        //                                             // + anl_[l][n]*M3e1n[i]
         //                      ));
-        // if (n < 3) printf(" --- Ei[%d]=%g! ", i,std::abs(encap*(vm1o1n[i] - c_i*vn1e1n[i])));
+        // if (n < 3) printf(" --- Ei[%d]=%g! ", i,std::abs(En*(M1o1n[i] - c_i*N1e1n[i])));
 
       }
       //if (n < 3) printf(" bj=%g \n", std::abs(bj[n]));
     }  // end of for all n
-    
+
     // magnetic field
     double hffact = 1.0/(cc_*mu_);
     for (int i = 0; i < 3; i++) {
       Hl[i] = hffact*Hl[i];
     }
-    
+
     for (int i = 0; i < 3; i++) {
       // electric field E [V m - 1] = EF*E0
       E[i] = El[i];
@@ -1528,7 +1495,7 @@ namespace nmie {
       //printf("\n !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
       //printf(" E[%d]=%g",i,std::abs(El[i]));
     }
-   }  // end of void fieldExt(...)
+   }  // end of fieldInt(...)
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1540,8 +1507,8 @@ namespace nmie {
   // Input parameters:                                                                //
   //   L: Number of layers                                                            //
   //   pl: Index of PEC layer. If there is none just send 0 (zero)                    //
-  //   x: Array containing the size parameters of the layers [0..L - 1]                 //
-  //   m: Array containing the relative refractive indexes of the layers [0..L - 1]     //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
   //   nmax: Maximum number of multipolar expansion terms to be used for the          //
   //         calculations. Only use it if you know what you are doing, otherwise      //
   //         set this parameter to 0 (zero) and the function will calculate it.       //
@@ -1561,39 +1528,35 @@ namespace nmie {
     // Calculate internal scattering coefficients anl_ and bnl_
     IntScattCoeffs();
 
-    for (int i = 0; i < an_.size(); i++) {
-      printf("a[%i] = %g, %g; b[%i] = %g, %g\n", i, an_[i].real(), an_[i].imag(), i, bn_[i].real(), bn_[i].imag());
-    }
+//    for (int i = 0; i < an_.size(); i++) {
+//      printf("a[%i] = %g, %g; b[%i] = %g, %g\n", i, an_[i].real(), an_[i].imag(), i, bn_[i].real(), bn_[i].imag());
+//    }
 
     std::vector<double> Pi(nmax_), Tau(nmax_);
     long total_points = coords_[0].size();
-    E_field_.resize(total_points);
-    H_field_.resize(total_points);
-    for (auto& f:E_field_) f.resize(3);
-    for (auto& f:H_field_) f.resize(3);
+    E_.resize(total_points);
+    H_.resize(total_points);
+    for (auto& f : E_) f.resize(3);
+    for (auto& f : H_) f.resize(3);
 
     for (int point = 0; point < total_points; point++) {
       const double& Xp = coords_[0][point];
       const double& Yp = coords_[1][point];
       const double& Zp = coords_[2][point];
-      //printf("X=%g, Y=%g, Z=%g\n", Xp, Yp, Zp);
 
       // Convert to spherical coordinates
-      double Rho, Phi, Theta;
-      Rho = std::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
+      double Rho = std::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
+
+      // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
+      double Theta = (Rho > 0.0) ? std::acos(Zp/Rho) : 0.0;
+
+      // If Xp=Yp=0 then Phi is undefined. Just set it to zero to avoid problems
+      double Phi = (Xp != 0.0 || Yp != 0.0) ? std::atan2(Yp, Xp) : 0.0;
 
       // Avoid convergence problems due to Rho too small
       if (Rho < 1e-10) Rho = 1e-10;
 
-      // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
-      if (Rho == 0.0) Theta = 0.0;
-      else Theta = std::acos(Zp/Rho);
-
-      // If Xp=Yp=0 then Phi is undefined. Just set it to zero to avoid problems
-      if (Xp == 0.0 && Yp == 0.0) Phi = 0.0;
-      else Phi = std::acos(Xp/std::sqrt(pow2(Xp) + pow2(Yp)));
-
-      calcSinglePiTau(std::cos(Theta), Pi, Tau);     
+      calcPiTau(std::cos(Theta), Pi, Tau);
 
       //*******************************************************//
       // external scattering field = incident + scattered      //
@@ -1603,37 +1566,31 @@ namespace nmie {
 
       // This array contains the fields in spherical coordinates
       std::vector<std::complex<double> > Es(3), Hs(3);
-      const double outer_size = layer_size_.back();
-      //printf("rho=%g, outer=%g, Radius=%g\n", Rho, outer_size, GetSizeParameter());
+
       // Firstly the easiest case: the field outside the particle
-      if (Rho >= GetSizeParameter()) {
+      if (Rho > GetSizeParameter()) {
         fieldExt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
         //printf("\nFin E ext: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]), Rho);
       } else {
-        fieldInt(Rho, Phi, Theta, Pi, Tau, Es, Hs);      
+        fieldInt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
 //        printf("\nFin E int: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]), Rho);
       }
-      std::complex<double>& Ex = E_field_[point][0];
-      std::complex<double>& Ey = E_field_[point][1];
-      std::complex<double>& Ez = E_field_[point][2];
-      std::complex<double>& Hx = H_field_[point][0];
-      std::complex<double>& Hy = H_field_[point][1];
-      std::complex<double>& Hz = H_field_[point][2];
+
       //Now, convert the fields back to cartesian coordinates
       {
         using std::sin;
         using std::cos;
-        Ex = sin(Theta)*cos(Phi)*Es[0] + cos(Theta)*cos(Phi)*Es[1] - sin(Phi)*Es[2];
-        Ey = sin(Theta)*sin(Phi)*Es[0] + cos(Theta)*sin(Phi)*Es[1] + cos(Phi)*Es[2];
-        Ez = cos(Theta)*Es[0] - sin(Theta)*Es[1];
-      
-        Hx = sin(Theta)*cos(Phi)*Hs[0] + cos(Theta)*cos(Phi)*Hs[1] - sin(Phi)*Hs[2];
-        Hy = sin(Theta)*sin(Phi)*Hs[0] + cos(Theta)*sin(Phi)*Hs[1] + cos(Phi)*Hs[2];
-        Hz = cos(Theta)*Hs[0] - sin(Theta)*Hs[1];
+        E_[point][0] = sin(Theta)*cos(Phi)*Es[0] + cos(Theta)*cos(Phi)*Es[1] - sin(Phi)*Es[2];
+        E_[point][1] = sin(Theta)*sin(Phi)*Es[0] + cos(Theta)*sin(Phi)*Es[1] + cos(Phi)*Es[2];
+        E_[point][2] = cos(Theta)*Es[0] - sin(Theta)*Es[1];
+
+        H_[point][0] = sin(Theta)*cos(Phi)*Hs[0] + cos(Theta)*cos(Phi)*Hs[1] - sin(Phi)*Hs[2];
+        H_[point][1] = sin(Theta)*sin(Phi)*Hs[0] + cos(Theta)*sin(Phi)*Hs[1] + cos(Phi)*Hs[2];
+        H_[point][2] = cos(Theta)*Hs[0] - sin(Theta)*Hs[1];
       }
       //printf("Cart E: %g,%g,%g   Rho=%g\n", std::abs(Ex), std::abs(Ey),std::abs(Ez), Rho);
     }  // end of for all field coordinates
-    
+
   }  //  end of MultiLayerMie::RunFieldCalculation()
 
 }  // end of namespace nmie

@@ -37,11 +37,13 @@
 from scattnlay import fieldnlay
 import numpy as np
 
-x = np.ones((1, 1), dtype = np.float64)
-x[0, 0] = 1.
+x = np.ones((1, 2), dtype = np.float64)
+x[0, 0] = 2.0*np.pi*0.05/1.064
+x[0, 1] = 2.0*np.pi*0.06/1.064
 
-m = np.ones((1, 1), dtype = np.complex128)
-m[0, 0] = (0.05 + 2.070j)/1.46
+m = np.ones((1, 2), dtype = np.complex128)
+m[0, 0] = 1.53413/1.3205
+m[0, 1] = (0.565838 + 7.23262j)/1.3205
 
 nc = 1001
 
@@ -49,13 +51,19 @@ coordX = np.zeros((nc, 3), dtype = np.float64)
 coordY = np.zeros((nc, 3), dtype = np.float64)
 coordZ = np.zeros((nc, 3), dtype = np.float64)
 
-scan = np.linspace(-3.0*x[0, 0], 3.0*x[0, 0], nc)
+scan = np.linspace(-4.0*x[0, 1], 4.0*x[0, 1], nc)
 one = np.ones(nc, dtype = np.float64)
 
 coordX[:, 0] = scan
 coordY[:, 1] = scan
 coordZ[:, 2] = scan
 
+from scattnlay import scattnlay
+print "\nscattnlay"
+terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
+print "Results: ", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
+
+print "\nfieldnlay"
 terms, Ex, Hx = fieldnlay(x, m, coordX)
 terms, Ey, Hy = fieldnlay(x, m, coordY)
 terms, Ez, Hz = fieldnlay(x, m, coordZ)

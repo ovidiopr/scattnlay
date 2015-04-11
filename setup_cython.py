@@ -53,9 +53,9 @@ O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
       url = __url__,
       license = 'GPL',
       platforms = 'any',
-      ext_modules = cythonize("scattnlay.pyx",                       # our Cython source
-                              sources = ["nmie.cc"],                 # additional source file(s)
-                              language = "c++",                      # generate C++ code
+      ext_modules = cythonize("scattnlay.pyx",                                        # our Cython source
+                              sources = ["nmie.cc", "py_nmie.cc", "scattnlay.cpp"],   # additional source file(s)
+                              language = "c++",                                       # generate C++ code
                               extra_compile_args = ['-std=c++11'],
       )
 )
