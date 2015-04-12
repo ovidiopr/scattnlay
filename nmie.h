@@ -98,11 +98,9 @@ namespace nmie {
   private:
     void calcNstop();
     void calcNmax(int first_layer);
-    void sbesjh(std::complex<double> z, std::vector<std::complex<double> >& jn,
-                std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n,
-                std::vector<std::complex<double> >& h1np);
-    void sphericalBessel(std::complex<double> z, std::vector<std::complex<double> >& bj,
-                         std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd);
+    void sbesjh(std::complex<double> z,
+                std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp, 
+                std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np);
     std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
                                  std::complex<double> PsiXL, std::complex<double> ZetaXL,
                                  std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
@@ -124,19 +122,17 @@ namespace nmie {
     void calcPiTau(const double& costheta,
                    std::vector<double>& Pi, std::vector<double>& Tau);
     void calcSpherHarm(const double Rho, const double Phi, const double Theta,
-                       const std::complex<double>& zn, const std::complex<double>& deriv,
-                       const double& Pi, const double& Tau, const double& rn,
+                       const std::complex<double>& zn, const std::complex<double>& dzn,
+                       const double& Pi, const double& Tau, const double& n,
                        std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
                        std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
     void ExtScattCoeffs();
     void IntScattCoeffs();
 
     void fieldExt(const double Rho, const double Phi, const double Theta,
-                  const std::vector<double>& Pi, const std::vector<double>& Tau,
                   std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
 
     void fieldInt(const double Rho, const double Phi, const double Theta,
-                  const std::vector<double>& Pi, const std::vector<double>& Tau,
                   std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
 
     bool areIntCoeffsCalc_ = false;

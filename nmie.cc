@@ -514,7 +514,7 @@ namespace nmie {
   // and their derivatives for a given complex value z. See pag. 87 B&H.              //
   //                                                                                  //
   // Input parameters:                                                                //
-  //   z: Real argument to evaluate jn and h1n                                        //
+  //   z: Complex argument to evaluate jn and h1n                                     //
   //   nmax_: Maximum number of terms to calculate jn and h1n                         //
   //                                                                                  //
   // Output parameters:                                                               //
@@ -536,17 +536,16 @@ namespace nmie {
   // Using complex CF1, and trigonometric forms for n=0 solutions.                    //
   //**********************************************************************************//
   void MultiLayerMie::sbesjh(std::complex<double> z,
-                             std::vector<std::complex<double> >& jn,
-                             std::vector<std::complex<double> >& jnp,
-                             std::vector<std::complex<double> >& h1n,
-                             std::vector<std::complex<double> >& h1np) {
+                             std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp,
+                             std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np) {
     const int limit = 20000;
     const double accur = 1.0e-12;
     const double tm30 = 1e-30;
+    const std::complex<double> c_i(0.0, 1.0);
 
     double absc;
     std::complex<double> zi, w;
-    std::complex<double> pl, f, b, d, c, del, jn0, jndb, h1nldb, h1nbdb;
+    std::complex<double> pl, f, b, d, c, del, jn0;
 
     absc = std::abs(std::real(z)) + std::abs(std::imag(z));
     if ((absc < accur) || (std::imag(z) < -3.0)) {
@@ -562,7 +561,7 @@ namespace nmie {
     b = f + f + zi;
     d = 0.0;
     c = f;
-    for (int n = 0; n < limit; n++) {
+    for (int l = 0; l < limit; l++) {
       d = b - d;
       c = b - 1.0/c;
 
@@ -583,14 +582,12 @@ namespace nmie {
 
       absc = std::abs(std::real(del - 1.0)) + std::abs(std::imag(del - 1.0));
 
-      if (absc < accur) {
-        // We have obtained the desired accuracy
-        break;
-      }
+      // We have obtained the desired accuracy
+      if (absc < accur) break;
     }
 
     if (absc > accur) {
-      throw std::invalid_argument("We were not able to obtain the desired accuracy");
+      throw std::invalid_argument("We were not able to obtain the desired accuracy (MultiLayerMie::sbesjh)");
     }
 
     jn[nmax_ - 1] = tm30;
@@ -605,60 +602,30 @@ namespace nmie {
 
     // Calculate the n=0 Bessel Functions
     jn0 = zi*std::sin(z);
-    h1n[0] = std::exp(std::complex<double>(0.0, 1.0)*z)*zi*(-std::complex<double>(0.0, 1.0));
-    h1np[0] = h1n[0]*(std::complex<double>(0.0, 1.0) - zi);
+    h1n[0] = -c_i*zi*std::exp(c_i*z);
+    h1np[0] = h1n[0]*(c_i - zi);
 
     // Rescale j[n], j'[n], converting to spherical Bessel functions.
     // Recur   h1[n], h1'[n] as spherical Bessel functions.
     w = 1.0/jn[0];
     pl = zi;
     for (int n = 0; n < nmax_; n++) {
-      jn[n] = jn0*(w*jn[n]);
-      jnp[n] = jn0*(w*jnp[n]) - zi*jn[n];
-      if (n != 0) {
+      jn[n] = jn0*w*jn[n];
+      jnp[n] = jn0*w*jnp[n] - zi*jn[n];
+      if (n > 0) {
         h1n[n] = (pl - zi)*h1n[n - 1] - h1np[n - 1];
 
         // check if hankel is increasing (upward stable)
         if (std::abs(h1n[n]) < std::abs(h1n[n - 1])) {
-          jndb = z;
-          h1nldb = h1n[n];
-          h1nbdb = h1n[n - 1];
+          throw std::invalid_argument("Error: Hankel not increasing! (MultiLayerMie::sbesjh)");
         }
 
         pl += zi;
 
-        h1np[n] = -(pl*h1n[n]) + h1n[n - 1];
+        h1np[n] = -pl*h1n[n] + h1n[n - 1];
       }
     }
   }
-
-
-  //**********************************************************************************//
-  // This function calculates the spherical Bessel functions (bj and by) and the      //
-  // logarithmic derivative (bd) for a given complex value z. See pag. 87 B&H.        //
-  //                                                                                  //
-  // Input parameters:                                                                //
-  //   z: Complex argument to evaluate bj, by and bd                                  //
-  //   nmax_: Maximum number of terms to calculate bj, by and bd                       //
-  //                                                                                  //
-  // Output parameters:                                                               //
-  //   bj, by: Spherical Bessel functions                                             //
-  //   bd: Logarithmic derivative                                                     //
-  //**********************************************************************************//
-  void MultiLayerMie::sphericalBessel(std::complex<double> z,
-                                      std::vector<std::complex<double> >& bj,
-                                      std::vector<std::complex<double> >& by,
-                                      std::vector<std::complex<double> >& bd) {
-    std::vector<std::complex<double> > jn(nmax_), jnp(nmax_), h1n(nmax_), h1np(nmax_);
-    sbesjh(z, jn, jnp, h1n, h1np);
-
-    for (int n = 0; n < nmax_; n++) {
-      bj[n] = jn[n];
-      by[n] = (h1n[n] - jn[n])/std::complex<double>(0.0, 1.0);
-      bd[n] = jnp[n]/jn[n] + 1.0/z;
-    }
-  }
-
 
   // ********************************************************************** //
   // Calculate an - equation (5)                                            //
@@ -811,13 +778,14 @@ namespace nmie {
   }  // end of MultiLayerMie::calcPiTau(...)
 
   void MultiLayerMie::calcSpherHarm(const double Rho, const double Phi, const double Theta,
-                                    const std::complex<double>& zn, const std::complex<double>& deriv,
-                                    const double& Pi, const double& Tau, const double& rn,
+                                    const std::complex<double>& zn, const std::complex<double>& dzn,
+                                    const double& Pi, const double& Tau, const double& n,
                                     std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
                                     std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n) {
 
-    // using BH 4.12 and 4.50
+    // using eq 4.50 in BH
     std::complex<double> c_zero(0.0, 0.0);
+    std::complex<double> deriv = Rho*dzn + zn;
 
     using std::sin;
     using std::cos;
@@ -827,10 +795,10 @@ namespace nmie {
     Me1n[0] = c_zero;
     Me1n[1] = -sin(Phi)*Pi*zn;
     Me1n[2] = -cos(Phi)*Tau*zn;
-    No1n[0] = sin(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi*zn/Rho;
+    No1n[0] = sin(Phi)*(n*n + n)*sin(Theta)*Pi*zn/Rho;
     No1n[1] = sin(Phi)*Tau*deriv/Rho;
     No1n[2] = cos(Phi)*Pi*deriv/Rho;
-    Ne1n[0] = cos(Phi)*rn*(rn + 1.0)*sin(Theta)*Pi*zn/Rho;
+    Ne1n[0] = cos(Phi)*(n*n + n)*sin(Theta)*Pi*zn/Rho;
     Ne1n[1] = cos(Phi)*Tau*deriv/Rho;
     Ne1n[2] = -sin(Phi)*Pi*deriv/Rho;
   }  // end of MultiLayerMie::calcSpherHarm(...)
@@ -1016,6 +984,7 @@ namespace nmie {
     }  // end of for an and bn terms
     areExtCoeffsCalc_ = true;
   }  // end of void MultiLayerMie::ExtScattCoeffs(...)
+
 
   //**********************************************************************************//
   // This function calculates the actual scattering parameters and amplitudes         //
@@ -1308,29 +1277,31 @@ namespace nmie {
   // assume: medium is non-absorbing; refim = 0; Uabs = 0                   //
   // ********************************************************************** //
 
-  void MultiLayerMie::fieldExt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
+  void MultiLayerMie::fieldExt(const double Rho, const double Phi, const double Theta,
+                               std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
-    std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0);
+    std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
+    std::vector<std::complex<double> > ipow = {c_one, c_i, -c_one, -c_i}; // Vector containing precomputed integer powers of i to avoid computation
     std::vector<std::complex<double> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
     std::vector<std::complex<double> > Ei(3, c_zero), Hi(3, c_zero), Es(3, c_zero), Hs(3, c_zero);
-    std::vector<std::complex<double> > bj(nmax_ + 1), by(nmax_ + 1), bd(nmax_ + 1);
+    std::vector<std::complex<double> > jn(nmax_ + 1), jnp(nmax_ + 1), h1n(nmax_ + 1), h1np(nmax_ + 1);
+    std::vector<double> Pi(nmax_), Tau(nmax_);
 
     // Calculate spherical Bessel and Hankel functions
-    sphericalBessel(Rho, bj, by, bd);
+    sbesjh(Rho, jn, jnp, h1n, h1np);
 
-    //printf("##########  layer OUT ############\n");
+    // Calculate angular functions Pi and Tau
+    calcPiTau(std::cos(Theta), Pi, Tau);
+
     for (int n = 0; n < nmax_; n++) {
       int n1 = n + 1;
       double rn = static_cast<double>(n1);
 
-      std::complex<double> zn = bj[n1] + c_i*by[n1];
       // using BH 4.12 and 4.50
-      std::complex<double> deriv = Rho*(bj[n] + c_i*by[n]) - rn*zn;
-
-      calcSpherHarm(Rho, Phi, Theta, zn, deriv, Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
+      calcSpherHarm(Rho, Phi, Theta, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
 
       // scattered field: BH p.94 (4.45)
-      std::complex<double> En = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
+      std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
       for (int i = 0; i < 3; i++) {
         Es[i] = Es[i] + En*(c_i*an_[n]*N3e1n[i] - bn_[n]*M3o1n[i]);
         Hs[i] = Hs[i] + En*(c_i*bn_[n]*N3o1n[i] + an_[n]*M3e1n[i]);
@@ -1377,13 +1348,16 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::fieldInt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
+  void MultiLayerMie::fieldInt(const double Rho, const double Phi, const double Theta,
+                               std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
     std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
+    std::vector<std::complex<double> > ipow = {c_one, c_i, -c_one, -c_i}; // Vector containing precomputed integer powers of i to avoid computation
     std::vector<std::complex<double> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
     std::vector<std::complex<double> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
-    std::vector<std::complex<double> > El(3, c_zero), Ei(3, c_zero), Hl(3, c_zero);
-    std::vector<std::complex<double> > bj(nmax_ + 1), by(nmax_ + 1), bd(nmax_ + 1);
+    std::vector<std::complex<double> > El(3, c_zero), Ei(3, c_zero), Eic(3, c_zero), Hl(3, c_zero);
+    std::vector<std::complex<double> > jn(nmax_ + 1), jnp(nmax_ + 1), h1n(nmax_ + 1), h1np(nmax_ + 1);
+    std::vector<double> Pi(nmax_), Tau(nmax_);
 
     int l = 0;  // Layer number
     std::complex<double> ml;
@@ -1400,35 +1374,59 @@ namespace nmie {
       ml = refr_index_[l];
     }
 
+//    for (int i = 0; i < size_param_.size(); i++) {
+//      printf("x[%i] = %g; m[%i] = %g, %g; ", i, size_param_[i], i, refr_index_[i].real(), refr_index_[i].imag());
+//    }
+//    printf("\nRho = %g; Phi = %g; Theta = %g; x[%i] = %g; m[%i] = %g, %g\n", Rho, Phi, Theta, l, size_param_[l], l, ml.real(), ml.imag());
+
     // Calculate spherical Bessel and Hankel functions
-    sphericalBessel(Rho*ml, bj, by, bd);
+    sbesjh(Rho*ml, jn, jnp, h1n, h1np);
+
+    // Calculate angular functions Pi and Tau
+    calcPiTau(std::cos(Theta), Pi, Tau);
 
     for (int n = nmax_ - 1; n >= 0; n--) {
       int n1 = n + 1;
       double rn = static_cast<double>(n1);
 
       // using BH 4.12 and 4.50
+      calcSpherHarm(Rho, Phi, Theta, jn[n1], jnp[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
 
-      std::complex<double> zn = bj[n1];
-      std::complex<double> deriv = Rho*bj[n] - rn*zn;
-
-      calcSpherHarm(Rho, Phi, Theta, zn, deriv, Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
-
-      zn = bj[n1] + c_i*by[n1];
-      deriv = Rho*(bj[n] + c_i*by[n]) - rn*zn;
-
-      calcSpherHarm(Rho, Phi, Theta, zn, deriv, Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
+      calcSpherHarm(Rho, Phi, Theta, h1n[n1], h1np[n], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
 
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
-      std::complex<double> En = std::pow(c_i, rn)*(2.0*rn + 1.0)/(rn*rn + rn);
+      std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
       for (int i = 0; i < 3; i++) {
+        Ei[i] = Ei[i] + En*(M1o1n[i] - c_i*N1e1n[i]);
+
         El[i] = El[i] + En*(cnl_[l][n]*M1o1n[i] - c_i*dnl_[l][n]*N1e1n[i]
-                      + c_i*anl_[l][n]*N3e1n[i] - bnl_[l][n]*M3o1n[i]);
+                      + c_i*anl_[l][n]*N3e1n[i] -     bnl_[l][n]*M3o1n[i]);
 
         Hl[i] = Hl[i] + En*(-dnl_[l][n]*M1e1n[i] - c_i*cnl_[l][n]*N1o1n[i]
-                      + c_i*bnl_[l][n]*N3o1n[i] + anl_[l][n]*M3e1n[i]);
+                      +  c_i*bnl_[l][n]*N3o1n[i] +     anl_[l][n]*M3e1n[i]);
       }
     }  // end of for all n
+
+
+    // Debug field calculation outside the particle
+    if (l == size_param_.size()) {
+      // incident E field: BH p.89 (4.21); cf. p.92 (4.37), p.93 (4.38)
+      // basis unit vectors = er, etheta, ephi
+      std::complex<double> eifac = std::exp(std::complex<double>(0.0, Rho*std::cos(Theta)));
+      {
+        using std::sin;
+        using std::cos;
+        Eic[0] = eifac*sin(Theta)*cos(Phi);
+        Eic[1] = eifac*cos(Theta)*cos(Phi);
+        Eic[2] = -eifac*sin(Phi);
+      }
+
+      printf("Rho = %g; Phi = %g; Theta = %g\n", Rho, Phi, Theta);
+      for (int i = 0; i < 3; i++) {
+        printf("Ei[%i] = %g, %g; Eic[%i] = %g, %g\n", i, Ei[i].real(), Ei[i].imag(), i, Eic[i].real(), Eic[i].imag());
+      }
+    }
+
 
     // magnetic field
     double hffact = 1.0/(cc_*mu_);
@@ -1476,7 +1474,6 @@ namespace nmie {
 //      printf("a[%i] = %g, %g; b[%i] = %g, %g\n", i, an_[i].real(), an_[i].imag(), i, bn_[i].real(), bn_[i].imag());
 //    }
 
-    std::vector<double> Pi(nmax_), Tau(nmax_);
     long total_points = coords_[0].size();
     E_.resize(total_points);
     H_.resize(total_points);
@@ -1495,12 +1492,10 @@ namespace nmie {
       double Theta = (Rho > 0.0) ? std::acos(Zp/Rho) : 0.0;
 
       // If Xp=Yp=0 then Phi is undefined. Just set it to zero to avoid problems
-      double Phi = (Xp != 0.0 || Yp != 0.0) ? std::atan2(Yp, Xp) : 0.0;
+      double Phi = (Xp != 0.0 || Yp != 0.0) ? std::acos(Xp/std::sqrt(pow2(Xp) + pow2(Yp))) : 0.0;
 
       // Avoid convergence problems due to Rho too small
-      if (Rho < 1e-10) Rho = 1e-10;
-
-      calcPiTau(std::cos(Theta), Pi, Tau);
+      if (Rho < 1e-5) Rho = 1e-5;
 
       //*******************************************************//
       // external scattering field = incident + scattered      //
@@ -1512,12 +1507,12 @@ namespace nmie {
       std::vector<std::complex<double> > Es(3), Hs(3);
 
       // Firstly the easiest case: the field outside the particle
-      if (Rho > GetSizeParameter()) {
-        fieldInt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
-//        fieldExt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
+      if (Rho >= GetSizeParameter()) {
+        fieldInt(Rho, Phi, Theta, Es, Hs);
+//        fieldExt(Rho, Phi, Theta, Es, Hs);
         //printf("\nFin E ext: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]), Rho);
       } else {
-        fieldInt(Rho, Phi, Theta, Pi, Tau, Es, Hs);
+        fieldInt(Rho, Phi, Theta, Es, Hs);
 //        printf("\nFin E int: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]), Rho);
       }
 

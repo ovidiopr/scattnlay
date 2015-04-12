@@ -25,9 +25,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# This test case calculates the electric field along the 
-# X, Y and Z axes, for an spherical silver nanoparticle
-# embedded in glass.
+# This test case calculates the electric field along three 
+# points, for an spherical silver nanoparticle embedded in glass.
 
 # Refractive index values correspond to a wavelength of
 # 400 nm. Maximum of the surface plasmon resonance (and,
@@ -45,62 +44,19 @@ m = np.ones((1, 2), dtype = np.complex128)
 m[0, 0] = 1.53413/1.3205
 m[0, 1] = (0.565838 + 7.23262j)/1.3205
 
-nc = 1001
+coord = np.zeros((3, 3), dtype = np.float64)
+coord[0, 0] = x[0, 0]/2.0
+coord[1, 0] = (x[0, 0] + x[0, 1])/2.0
+coord[2, 0] = 1.5*x[0, 1]
 
-coordX = np.zeros((nc, 3), dtype = np.float64)
-coordY = np.zeros((nc, 3), dtype = np.float64)
-coordZ = np.zeros((nc, 3), dtype = np.float64)
+terms, E, H = fieldnlay(x, m, coord)
 
-scan = np.linspace(-10.0*x[0, 1], 10.0*x[0, 1], nc)
-one = np.ones(nc, dtype = np.float64)
-
-coordX[:, 0] = scan
-coordY[:, 1] = scan
-coordZ[:, 2] = scan
-
-from scattnlay import scattnlay
-print "\nscattnlay"
-terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
-print "Results: ", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
-
-print "\nfieldnlay"
-terms, Ex, Hx = fieldnlay(x, m, coordX)
-terms, Ey, Hy = fieldnlay(x, m, coordY)
-terms, Ez, Hz = fieldnlay(x, m, coordZ)
-
-Exr = np.absolute(Ex)
-Eyr = np.absolute(Ey)
-Ezr = np.absolute(Ez)
+Er = np.absolute(E)
 
 # |E|/|Eo|
-Exh = np.sqrt(Exr[0, :, 0]**2 + Exr[0, :, 1]**2 + Exr[0, :, 2]**2)
-Eyh = np.sqrt(Eyr[0, :, 0]**2 + Eyr[0, :, 1]**2 + Eyr[0, :, 2]**2)
-Ezh = np.sqrt(Ezr[0, :, 0]**2 + Ezr[0, :, 1]**2 + Ezr[0, :, 2]**2)
+Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
 
-result = np.vstack((scan, Exh, Eyh, Ezh)).transpose()
-
-try:
-    import matplotlib.pyplot as plt
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-
-    ax.errorbar(result[:, 0], one, fmt = 'k')
-    ax.errorbar(result[:, 0], result[:, 1], fmt = 'r', label = 'X axis')
-    ax.errorbar(result[:, 0], result[:, 2], fmt = 'g', label = 'Y axis')
-    ax.errorbar(result[:, 0], result[:, 3], fmt = 'b', label = 'Z axis')
-
-    ax.legend()
-
-    plt.xlabel('X|Y|Z')
-    plt.ylabel('|E|/|Eo|')
-
-    plt.draw()
-    plt.show()
-
-finally:
-    np.savetxt("lfield.txt", result, fmt = "%.5f")
-    print result
-
-
+print x
+print m
+print np.vstack((coord[:, 0], Eh)).transpose()
 

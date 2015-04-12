@@ -23,12 +23,10 @@ cython: scattnlay.pyx
 	cython --cplus scattnlay.pyx
 
 python_ext: nmie.cc py_nmie.cc scattnlay.cpp
-	export CFLAGS='-std=c++11'
-	python setup.py build_ext --inplace
+	export CFLAGS='-std=c++11' && python setup.py build_ext --inplace
 
 cython_ext: nmie.cc py_nmie.cc scattnlay.pyx
-	export CFLAGS='-std=c++11'
-	python setup_cython.py build_ext --inplace
+	export CFLAGS='-std=c++11' && python setup_cython.py build_ext --inplace
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
