@@ -36,7 +36,6 @@
 #include <time.h>
 #include <string.h>
 #include "nmie.h"
-#include "nmie-wrapper.h"
 
 const double PI=3.14159265358979323846;
 
@@ -63,8 +62,8 @@ int main(int argc, char *argv[]) {
     std::vector<std::string> args;
     args.assign(argv, argv + argc);
     std::string error_msg(std::string("Insufficient parameters.\nUsage: ") + args[0]
-			  + " -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] "
-			  + "[-t ti tf nt] [-c comment]\n");
+                          + " -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] "
+                          + "[-t ti tf nt] [-c comment]\n");
     enum mode_states {read_L, read_x, read_mr, read_mi, read_ti, read_tf, read_nt, read_comment};
     // for (auto arg : args) std::cout<< arg <<std::endl;
     std::string comment;
@@ -92,43 +91,43 @@ int main(int argc, char *argv[]) {
 
       // Detecting new read mode (if it is a valid -key) 
       if (arg == "-l") {
-	mode = read_L;
-	continue;
+        mode = read_L;
+        continue;
       }
       if (arg == "-t") {
-	if ((mode != read_x) && (mode != read_comment))
-	  throw std::invalid_argument(std::string("Unfinished layer!\n")
-							 +error_msg);
-	mode = read_ti;
-	continue;
+        if ((mode != read_x) && (mode != read_comment))
+          throw std::invalid_argument(std::string("Unfinished layer!\n")
+                                                         +error_msg);
+        mode = read_ti;
+        continue;
       }
       if (arg == "-c") {
-	if ((mode != read_x) && (mode != read_nt))
-	  throw std::invalid_argument(std::string("Unfinished layer or theta!\n") + error_msg);
-	mode = read_comment;
-	continue;
+        if ((mode != read_x) && (mode != read_nt))
+          throw std::invalid_argument(std::string("Unfinished layer or theta!\n") + error_msg);
+        mode = read_comment;
+        continue;
       }
       // Reading data. For invalid date the exception will be thrown
       // with the std:: and catched in the end.
       if (mode == read_L) {
-	L = std::stoi(arg);
-	mode = read_x;
-	continue;
+        L = std::stoi(arg);
+        mode = read_x;
+        continue;
       }
       if (mode == read_x) {
-	x.push_back(std::stod(arg));
-	mode = read_mr;
-	continue;
+        x.push_back(std::stod(arg));
+        mode = read_mr;
+        continue;
       }
       if (mode == read_mr) {
-	tmp_mr = std::stod(arg);
-	mode = read_mi;
-	continue;
+        tmp_mr = std::stod(arg);
+        mode = read_mi;
+        continue;
       }
       if (mode == read_mi) {
-	m.push_back(std::complex<double>( tmp_mr,std::stod(arg) ));
-	mode = read_x;
-	continue;
+        m.push_back(std::complex<double>( tmp_mr,std::stod(arg) ));
+        mode = read_x;
+        continue;
       }
       // if (strcmp(argv[i], "-l") == 0) {
       //   i++;
@@ -136,7 +135,7 @@ int main(int argc, char *argv[]) {
       //   x.resize(L);
       //   m.resize(L);
       //   if (argc < 3*(L + 1)) {
-      // 	  throw std::invalid_argument(error_msg);
+      //           throw std::invalid_argument(error_msg);
       //   } else {
       //     for (l = 0; l < L; l++) {
       //       i++;
@@ -147,23 +146,23 @@ int main(int argc, char *argv[]) {
       //     }
       //   }
       if (mode == read_ti) {
-	ti = std::stod(arg);
-	mode = read_tf;
-	continue;
+        ti = std::stod(arg);
+        mode = read_tf;
+        continue;
       }
       if (mode == read_tf) {
-	tf = std::stod(arg);
-	mode = read_nt;
-	continue;
+        tf = std::stod(arg);
+        mode = read_nt;
+        continue;
       }
       if (mode == read_nt) {
-	nt = std::stoi(arg);
+        nt = std::stoi(arg);
         Theta.resize(nt);
         S1.resize(nt);
         S2.resize(nt);
         S1w.resize(nt);
         S2w.resize(nt);
-	continue;
+        continue;
       }
       //} else if (strcmp(argv[i], "-t") == 0) {
         // i++;
@@ -177,23 +176,23 @@ int main(int argc, char *argv[]) {
         // S1.resize(nt);
         // S2.resize(nt);
       if (mode ==  read_comment) {
-	comment = arg;
+        comment = arg;
         has_comment = 1;
-	continue;
+        continue;
       }
       // } else if (strcmp(argv[i], "-c") == 0) {
       //   i++;
-      // 	comment = args[i];
+      //         comment = args[i];
       //   //strcpy(comment, argv[i]);
       //   has_comment = 1;
       // } else { i++; }
     }
     if ( (x.size() != m.size()) || (L != x.size()) ) 
       throw std::invalid_argument(std::string("Broken structure!\n")
-							 +error_msg);
+                                                         +error_msg);
     if ( (0 == m.size()) || ( 0 == x.size()) ) 
       throw std::invalid_argument(std::string("Empty structure!\n")
-							 +error_msg);
+                                                         +error_msg);
     
     if (nt < 0) {
       printf("Error reading Theta.\n");
@@ -211,7 +210,7 @@ int main(int argc, char *argv[]) {
 
 
     //nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
-    nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
+    nmie::nMie(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
    
 
     if (has_comment) {

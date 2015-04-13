@@ -27,13 +27,13 @@
 #include <complex>
 #include <vector>
 
-int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m,
-         int nTheta, std::vector<double> Theta, int nmax,
+int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+         const int nTheta, std::vector<double>& Theta, const int nmax,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
 		 double S1r[], double S1i[], double S2r[], double S2i[]);
 
-int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
-           int nCoords, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
+int nField(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
+           const int nCoords, std::vector<double>& Xp, std::vector<double>& Yp, std::vector<double>& Zp,
            double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[],
            double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[]);
 

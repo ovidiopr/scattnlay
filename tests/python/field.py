@@ -42,15 +42,17 @@ print(scattnlay.__file__)
 from scattnlay import fieldnlay
 import numpy as np
 
-x = np.ones((1, 1), dtype = np.float64)
-x[0, 0] = 1.
+x = np.ones((1, 2), dtype = np.float64)
+x[0, 0] = 2.0*np.pi*0.05/1.064
+x[0, 1] = 2.0*np.pi*0.06/1.064
 
-m = np.ones((1, 1), dtype = np.complex128)
-m[0, 0] = (0.05 + 2.070j)/1.46
+m = np.ones((1, 2), dtype = np.complex128)
+m[0, 0] = 1.53413/1.3205
+m[0, 1] = (0.565838 + 7.23262j)/1.3205
 
-npts = 101
+npts = 501
 
-scan = np.linspace(-3.0*x[0, 0], 3.0*x[0, 0], npts)
+scan = np.linspace(-4.0*x[0, 1], 4.0*x[0, 1], npts)
 
 coordX, coordY = np.meshgrid(scan, scan)
 coordX.resize(npts*npts)
@@ -85,12 +87,12 @@ try:
     scale_y = np.linspace(min(coordY), max(coordY), npts)
 
     # Define scale ticks
-    min_tick = max(0.5, min(min_tick, np.amin(edata)))
+    min_tick = max(0.01, min(min_tick, np.amin(edata)))
     max_tick = max(max_tick, np.amax(edata))
     scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
-    cax = ax.imshow(edata, interpolation = 'bicubic', cmap = cm.afmhot,
+    cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.afmhot,
                     origin = 'lower', vmin = min_tick, vmax = max_tick,
                     extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y)),
                     norm = LogNorm())
@@ -104,9 +106,21 @@ try:
     plt.xlabel('X')
     plt.ylabel('Y')
 
+    # This part draws the nanoshell
+    from matplotlib import patches
+
+    s1 = patches.Arc((0, 0), 2.0*x[0, 0], 2.0*x[0, 0], angle=0.0, zorder=2,
+                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
+    ax.add_patch(s1)
+
+    s2 = patches.Arc((0, 0), 2.0*x[0, 1], 2.0*x[0, 1], angle=0.0, zorder=2,
+                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
+    ax.add_patch(s2)
+    # End of drawing
+
     plt.draw()
 
-    # plt.show()
+    plt.show()
 
     plt.clf()
     plt.close()

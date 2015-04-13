@@ -24,71 +24,35 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include "nmie.h"
-#include "py_nmie.h"
+#define VERSION "0.3.1"
+#include <complex>
+#include <vector>
 
-// Same as nMie in 'nmie.h' but uses double arrays to return the results (useful for python).
-// This is a workaround because I have not been able to return the results using 
-// std::vector<std::complex<double> >
-int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
-         const int nTheta, std::vector<double>& Theta, const int nmax,
+int ScattCoeffs(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
+		        std::vector<std::complex<double> > &an, std::vector<std::complex<double> > &bn);
+
+int nMie(int L, std::vector<double> x, std::vector<std::complex<double> > m,
+         int nTheta, std::vector<double> Theta,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-		 double S1r[], double S1i[], double S2r[], double S2i[]) {
+         std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
-  int i, result;
-  std::vector<std::complex<double> > S1, S2;
-  S1.resize(nTheta);
-  S2.resize(nTheta);
+int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m,
+         int nTheta, std::vector<double> Theta,
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+         std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
-  result = nmie::nMie(L, pl, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+int nMie(int L, std::vector<double> x, std::vector<std::complex<double> > m,
+         int nTheta, std::vector<double> Theta, int nmax,
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+         std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
-  for (i = 0; i < nTheta; i++) {
-    S1r[i] = S1[i].real();
-    S1i[i] = S1[i].imag();
-    S2r[i] = S2[i].real();
-    S2i[i] = S2[i].imag();
-  }
+int nMie(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m,
+         int nTheta, std::vector<double> Theta, int nmax,
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+		 std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
 
-  return result;
-}
+int nField(int L, int pl, std::vector<double> x, std::vector<std::complex<double> > m, int nmax,
+           int ncoord, std::vector<double> Xp, std::vector<double> Yp, std::vector<double> Zp,
+		   std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
 
-// Same as nField in 'nmie.h' but uses double arrays to return the results (useful for python).
-// This is a workaround because I have not been able to return the results using 
-// std::vector<std::complex<double> >
-int nField(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
-           const int nCoords, std::vector<double>& Xp, std::vector<double>& Yp, std::vector<double>& Zp,
-           double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[],
-           double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[]) {
-
-  int i, result;
-  std::vector<std::vector<std::complex<double> > > E, H;
-  E.resize(nCoords);
-  H.resize(nCoords);
-  for (i = 0; i < nCoords; i++) {
-    E[i].resize(3);
-    H[i].resize(3);
-  }
-
-  result = nmie::nField(L, pl, x, m, nmax, nCoords, Xp, Yp, Zp, E, H);
-
-  for (i = 0; i < nCoords; i++) {
-    Erx[i] = E[i][0].real();
-    Ery[i] = E[i][1].real();
-    Erz[i] = E[i][2].real();
-    Eix[i] = E[i][0].imag();
-    Eiy[i] = E[i][1].imag();
-    Eiz[i] = E[i][2].imag();
-    Hrx[i] = H[i][0].real();
-    Hry[i] = H[i][1].real();
-    Hrz[i] = H[i][2].real();
-    Hix[i] = H[i][0].imag();
-    Hiy[i] = H[i][1].imag();
-    Hiz[i] = H[i][2].imag();
-  }
-
-  return result;
-}
 

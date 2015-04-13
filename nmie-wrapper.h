@@ -120,8 +120,7 @@ namespace nmie {
       GetFieldE(){return E_field_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<double> > >
       GetFieldH(){return H_field_;};
-    std::vector< std::vector<double> >   GetSpectra(double from_WL, double to_WL,
-                                                   int samples);  // ext, sca, abs, bk
+    std::vector< std::vector<double> > GetSpectra(double from_WL, double to_WL, int samples);  // ext, sca, abs, bk
     double GetRCSext();
     double GetRCSsca();
     double GetRCSabs();
@@ -129,19 +128,16 @@ namespace nmie {
     std::vector<double> GetPatternEk();
     std::vector<double> GetPatternHk();
     std::vector<double> GetPatternUnpolarized();
-    
-
 
     // Size parameter units
-    std::vector<double>                  GetLayerWidthSP();
+    std::vector<double> GetLayerWidthSP();
     // Same as to get target and coating index
-    std::vector< std::complex<double> >  GetLayerIndex();  
-    std::vector< std::array<double,3> >   GetFieldPointsSP();
+    std::vector< std::complex<double> > GetLayerIndex();  
+    std::vector< std::array<double,3> > GetFieldPointsSP();
     // Do we need normalize field to size parameter?
     /* std::vector<std::vector<std::complex<double> > >  GetFieldESP(); */
     /* std::vector<std::vector<std::complex<double> > >  GetFieldHSP(); */
-    std::vector< std::array<double,5> >   GetSpectraSP(double from_SP, double to_SP,
-						       int samples);  // WL,ext, sca, abs, bk
+    std::vector< std::array<double,5> > GetSpectraSP(double from_SP, double to_SP, int samples);  // WL,ext, sca, abs, bk
     double GetQext();
     double GetQsca();
     double GetQabs();
@@ -210,14 +206,16 @@ namespace nmie {
 			             std::vector<double>& Tau);
     void calcAllPiTau(std::vector< std::vector<double> >& Pi,
 		              std::vector< std::vector<double> >& Tau);
-    void ScattCoeffs(std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
-    void ScattCoeffsLayerd();
-    void ScattCoeffsLayerdInit();
+    void ExtScattCoeffs(std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
+    void IntScattCoeffs();
+    void IntScattCoeffsInit();
 
     void fieldExt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
 
     void fieldInt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
     
+    bool areIntCoeffsCalc_ = false;
+    bool areExtCoeffsCalc_ = false;
     bool isMieCalculated_ = false;
     double wavelength_ = 1.0;
     double total_radius_ = 0.0;
@@ -232,7 +230,7 @@ namespace nmie {
     std::vector<double> theta_;
     // Should be -1 if there is no PEC.
     int PEC_layer_position_ = -1;
-    // Set nmax_ manualy with SetMaxTermsNumber(int nmax) or in ScattCoeffs(..)
+    // Set nmax_ manualy with SetMaxTermsNumber(int nmax) or in ExtScattCoeffs(..)
     // with Nmax(int first_layer);
     int nmax_ = -1;
     int nmax_used_ = -1;

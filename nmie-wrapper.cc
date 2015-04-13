@@ -71,6 +71,10 @@ namespace nmie {
       *Albedo = multi_layer_mie.GetAlbedo();
       S1 = multi_layer_mie.GetS1();
       S2 = multi_layer_mie.GetS2();
+      
+      printf("S1 = %16.14f + i*%16.14f, S1_ass =  %16.14f + i*%16.14f\n",
+             multi_layer_mie.GetS1()[0].real(), multi_layer_mie.GetS1()[0].imag(), S1[0].real(), S1[0].real());
+      
       //multi_layer_mie.GetFailed();
     } catch(const std::invalid_argument& ia) {
       // Will catch if  multi_layer_mie fails or other errors.
@@ -505,6 +509,7 @@ namespace nmie {
     }
     nmax_ += 15;  // Final nmax_ value
   }
+
   //**********************************************************************************//
   // This function calculates the spherical Bessel (jn) and Hankel (h1n) functions    //
   // and their derivatives for a given complex value z. See pag. 87 B&H.              //
@@ -796,7 +801,7 @@ c    MM + 1  and - 1, alternately
     MM = - 1; 
     KK = 2*N +3; //debug 3
 // c                                 ** Eq. R25b, k=2
-    CAK    = static_cast<std::complex<double> >(MM*KK) * ZINV; //debug -3 ZINV
+    CAK    = static_cast<std::complex<double> >(MM*KK)*ZINV; //debug -3 ZINV
     CDENOM = CAK;
     CNUMER = CDENOM + one/CONFRA; //-3zinv+z
     KOUNT  = 1;
@@ -807,15 +812,15 @@ c    MM + 1  and - 1, alternately
         throw std::invalid_argument("ConFra--Iteration failed to converge!\n");
       }
       MM *= - 1;      KK += 2;  //debug  mm=1 kk=5
-      CAK = static_cast<std::complex<double> >(MM*KK) * ZINV; //    ** Eq. R25b //debug 5zinv
+      CAK = static_cast<std::complex<double> >(MM*KK)*ZINV; //    ** Eq. R25b //debug 5zinv
      //  //c ** Eq. R32    Ill-conditioned case -- stride two terms instead of one
      //  if (std::abs(CNUMER/CAK) >= EPS1 ||  std::abs(CDENOM/CAK) >= EPS1) {
      //         //c                       ** Eq. R34
-     //         CNTN   = CAK * CNUMER + 1.0;
-     //         CDTD   = CAK * CDENOM + 1.0;
-     //         CONFRA = (CNTN/CDTD) * CONFRA; // ** Eq. R33
+     //         CNTN   = CAK*CNUMER + 1.0;
+     //         CDTD   = CAK*CDENOM + 1.0;
+     //         CONFRA = (CNTN/CDTD)*CONFRA; // ** Eq. R33
      //         MM  *= - 1;        KK  += 2;
-     //         CAK = static_cast<std::complex<double> >(MM*KK) * ZINV; // ** Eq. R25b
+     //         CAK = static_cast<std::complex<double> >(MM*KK)*ZINV; // ** Eq. R25b
      //         //c                        ** Eq. R35
      //         CNUMER = CAK + CNUMER/CNTN;
      //         CDENOM = CAK + CDENOM/CDTD;
@@ -826,7 +831,7 @@ c    MM + 1  and - 1, alternately
       {
         CAPT   = CNUMER/CDENOM; // ** Eq. R27 //debug (-3zinv + z)/(-3zinv)
         // printf("re(%g):im(%g)**\t", CAPT.real(), CAPT.imag());
-       CONFRA = CAPT * CONFRA; // ** Eq. R26
+       CONFRA = CAPT*CONFRA; // ** Eq. R26
        //if (N == 0) {output=true;printf(" re:");prn(CONFRA.real());printf(" im:"); prn(CONFRA.imag());output=false;};
        //c                                  ** Check for convergence; Eq. R31
        if (std::abs(CAPT.real() - 1.0) >= EPS2 ||  std::abs(CAPT.imag()) >= EPS2) {
@@ -931,6 +936,7 @@ c    MM + 1  and - 1, alternately
       //calcSinglePiTau(std::cos(theta_[t]), Pi[t], Tau[t]); // It is slow!!
     }
   }  // end of void MultiLayerMie::calcAllPiTau(...)
+
   //**********************************************************************************//
   // This function calculates the scattering coefficients required to calculate       //
   // both the near- and far-field parameters.                                         //
@@ -950,7 +956,7 @@ c    MM + 1  and - 1, alternately
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  void MultiLayerMie::ScattCoeffs(std::vector<std::complex<double> >& an,
+  void MultiLayerMie::ExtScattCoeffs(std::vector<std::complex<double> >& an,
                                   std::vector<std::complex<double> >& bn) {
     const std::vector<double>& x = size_parameter_;
     const std::vector<std::complex<double> >& m = index_;
@@ -966,6 +972,8 @@ c    MM + 1  and - 1, alternately
     // int fl = (pl > - 1) ? pl : 0;
     // This will give the same result, however, it corresponds the
     // logic - if there is PEC, than first layer is PEC.
+    // Well, I followed the logic: First layer is always zero unless it has 
+    // an upper PEC layer.
     int fl = (pl > 0) ? pl : 0;
     if (nmax_ <= 0) Nmax(fl);
 
@@ -979,22 +987,23 @@ c    MM + 1  and - 1, alternately
     //**************************************************************************//
     // Allocate memory to the arrays
     std::vector<std::complex<double> > D1_mlxl(nmax_ + 1), D1_mlxlM1(nmax_ + 1),
-      D3_mlxl(nmax_ + 1), D3_mlxlM1(nmax_ + 1);
+                                       D3_mlxl(nmax_ + 1), D3_mlxlM1(nmax_ + 1);
+
     std::vector<std::vector<std::complex<double> > > Q(L), Ha(L), Hb(L);
+
     for (int l = 0; l < L; l++) {
-      // D1_mlxl[l].resize(nmax_ + 1);
-      // D1_mlxlM1[l].resize(nmax_ + 1);
-      // D3_mlxl[l].resize(nmax_ + 1);
-      // D3_mlxlM1[l].resize(nmax_ + 1);
       Q[l].resize(nmax_ + 1);
       Ha[l].resize(nmax_);
       Hb[l].resize(nmax_);
     }
+
     an.resize(nmax_);
     bn.resize(nmax_);
     PsiZeta_.resize(nmax_ + 1);
+
     std::vector<std::complex<double> > D1XL(nmax_ + 1), D3XL(nmax_ + 1), 
-      PsiXL(nmax_ + 1), ZetaXL(nmax_ + 1);
+                                       PsiXL(nmax_ + 1), ZetaXL(nmax_ + 1);
+
     //*************************************************//
     // Calculate D1 and D3 for z1 in the first layer   //
     //*************************************************//
@@ -1044,7 +1053,7 @@ c    MM + 1  and - 1, alternately
       //*********************************************//
       // Upward recurrence for Q - equations (19a) and (19b)
       Num = std::exp(-2.0*(z1.imag() - z2.imag()))
-        * std::complex<double>(std::cos(-2.0*z2.real()) - std::exp(-2.0*z2.imag()), std::sin(-2.0*z2.real()));
+       *std::complex<double>(std::cos(-2.0*z2.real()) - std::exp(-2.0*z2.imag()), std::sin(-2.0*z2.real()));
       Denom = std::complex<double>(std::cos(-2.0*z1.real()) - std::exp(-2.0*z1.imag()), std::sin(-2.0*z1.real()));
       Q[l][0] = Num/Denom;
       for (int n = 1; n <= nmax_; n++) {
@@ -1108,7 +1117,7 @@ c    MM + 1  and - 1, alternately
         bn[n] = PsiXL[n + 1]/ZetaXL[n + 1];
       }
     }  // end of for an and bn terms
-  }  // end of void MultiLayerMie::ScattCoeffs(...)
+  }  // end of void MultiLayerMie::ExtScattCoeffs(...)
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1138,7 +1147,7 @@ c    MM + 1  and - 1, alternately
     Qbk_ch_norm_.resize(nmax_ - 1);
     Qpr_ch_norm_.resize(nmax_ - 1);
     // Initialize the scattering amplitudes
-    std::vector<std::complex<double> >        tmp1(theta_.size(),std::complex<double>(0.0, 0.0));
+    std::vector<std::complex<double> > tmp1(theta_.size(),std::complex<double>(0.0, 0.0));
     S1_.swap(tmp1);
     S2_ = S1_;
   }
@@ -1162,15 +1171,15 @@ c    MM + 1  and - 1, alternately
   //                                                                                  //
   // Input parameters:                                                                //
   //   L: Number of layers                                                            //
-  //   pl: Index of PEC layer. If there is none just send - 1                          //
-  //   x: Array containing the size parameters of the layers [0..L - 1]                 //
-  //   m: Array containing the relative refractive indexes of the layers [0..L - 1]     //
+  //   pl: Index of PEC layer. If there is none just send -1                          //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
   //   nTheta: Number of scattering angles                                            //
   //   Theta: Array containing all the scattering angles where the scattering         //
   //          amplitudes will be calculated                                           //
-  //   nmax_: Maximum number of multipolar expansion terms to be used for the          //
+  //   nmax_: Maximum number of multipolar expansion terms to be used for the         //
   //         calculations. Only use it if you know what you are doing, otherwise      //
-  //         set this parameter to - 1 and the function will calculate it              //
+  //         set this parameter to -1 and the function will calculate it              //
   //                                                                                  //
   // Output parameters:                                                               //
   //   Qext: Efficiency factor for extinction                                         //
@@ -1195,7 +1204,7 @@ c    MM + 1  and - 1, alternately
       throw std::invalid_argument("Initialize model first!");
     const std::vector<double>& x = size_parameter_;
     // Calculate scattering coefficients
-    ScattCoeffs(an_, bn_);
+    ExtScattCoeffs(an_, bn_);
 
     // std::vector< std::vector<double> > Pi(nmax_), Tau(nmax_);
     std::vector< std::vector<double> > Pi, Tau;
@@ -1276,7 +1285,7 @@ c    MM + 1  and - 1, alternately
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::ScattCoeffsLayerdInit() {
+  void MultiLayerMie::IntScattCoeffsInit() {
     const int L = index_.size();
     // we need to fill
     // std::vector< std::vector<std::complex<double> > > al_n_, bl_n_, cl_n_, dl_n_;
@@ -1300,25 +1309,25 @@ c    MM + 1  and - 1, alternately
       bl_n_[L][i] = bn_[i];
       cl_n_[L][i] = c_one;
       dl_n_[L][i] = c_one;
-      if (i<3) printf(" (%g) ", std::abs(an_[i]));
+      if (i < 3) printf(" (%g) ", std::abs(an_[i]));
     }
 
   }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::ScattCoeffsLayerd() {
+  void MultiLayerMie::IntScattCoeffs() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("(ScattCoeffsLayerd) You should run calculations first!");
-    ScattCoeffsLayerdInit();
+      throw std::invalid_argument("(IntScattCoeffs) You should run calculations first!");
+    IntScattCoeffsInit();
     const int L = index_.size();
     std::vector<std::complex<double> > z(L), z1(L);
     for (int i = 0; i < L - 1; ++i) {
       z[i]  =size_parameter_[i]*index_[i];
       z1[i]=size_parameter_[i]*index_[i + 1];
     }
-    z[L - 1]  =size_parameter_[L - 1]*index_[L - 1];
-    z1[L - 1]  =size_parameter_[L - 1];
+    z[L - 1] = size_parameter_[L - 1]*index_[L - 1];
+    z1[L - 1] = size_parameter_[L - 1];
     std::vector< std::vector<std::complex<double> > > D1z(L), D1z1(L), D3z(L), D3z1(L);
     std::vector< std::vector<std::complex<double> > > Psiz(L), Psiz1(L), Zetaz(L), Zetaz1(L);
     for (int l = 0; l < L; ++l) {
@@ -1345,37 +1354,31 @@ c    MM + 1  and - 1, alternately
     for (int l = L - 1; l >= 0; --l) {
       for (int n = 0; n < nmax_; ++n) {
         // al_n
-        auto denom = m1[l]*Zetaz[l][n + 1] * (D1z[l][n + 1] - D3z[l][n + 1]);
-        al_n_[l][n] = D1z[l][n + 1]* m1[l]
-          *(al_n_[l + 1][n]*Zetaz1[l][n + 1] - dl_n_[l + 1][n]*Psiz1[l][n + 1])
-          - m[l]*(-D1z1[l][n + 1]*dl_n_[l + 1][n]*Psiz1[l][n + 1]
-                  +D3z1[l][n + 1]*al_n_[l + 1][n]*Zetaz1[l][n + 1]);
+        auto denom = m1[l]*Zetaz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
+        al_n_[l][n] = D1z[l][n + 1]*m1[l]*(al_n_[l + 1][n]*Zetaz1[l][n + 1] - dl_n_[l + 1][n]*Psiz1[l][n + 1])
+                      - m[l]*(-D1z1[l][n + 1]*dl_n_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*al_n_[l + 1][n]*Zetaz1[l][n + 1]);
         al_n_[l][n] /= denom;
-        // if (n<2) printf("denom[%d][%d]:%g \n", l, n,
-        //                   std::abs(Psiz[l][n + 1]));
+
         // dl_n
-        denom = m1[l]*Psiz[l][n + 1] * (D1z[l][n + 1] - D3z[l][n + 1]);
-        dl_n_[l][n] = D3z[l][n + 1]*m1[l]
-          *(al_n_[l + 1][n]*Zetaz1[l][n + 1] - dl_n_[l + 1][n]*Psiz1[l][n + 1])
-          - m[l]*(-D1z1[l][n + 1]*dl_n_[l + 1][n]*Psiz1[l][n + 1]
-                  +D3z1[l][n + 1]*al_n_[l + 1][n]*Zetaz1[l][n + 1]);
+        denom = m1[l]*Psiz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
+        dl_n_[l][n] = D3z[l][n + 1]*m1[l]*(al_n_[l + 1][n]*Zetaz1[l][n + 1] - dl_n_[l + 1][n]*Psiz1[l][n + 1])
+                      - m[l]*(-D1z1[l][n + 1]*dl_n_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*al_n_[l + 1][n]*Zetaz1[l][n + 1]);
         dl_n_[l][n] /= denom;
+
         // bl_n
-        denom = m1[l]*Zetaz[l][n + 1] * (D1z[l][n + 1] - D3z[l][n + 1]);
-        bl_n_[l][n] = D1z[l][n + 1]* m[l]
-          *(bl_n_[l + 1][n]*Zetaz1[l][n + 1] - cl_n_[l + 1][n]*Psiz1[l][n + 1])
-          - m1[l]*(-D1z1[l][n + 1]*cl_n_[l + 1][n]*Psiz1[l][n + 1]
-                  +D3z1[l][n + 1]*bl_n_[l + 1][n]*Zetaz1[l][n + 1]);
+        denom = m1[l]*Zetaz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
+        bl_n_[l][n] = D1z[l][n + 1]*m[l]*(bl_n_[l + 1][n]*Zetaz1[l][n + 1] - cl_n_[l + 1][n]*Psiz1[l][n + 1])
+                      - m1[l]*(-D1z1[l][n + 1]*cl_n_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bl_n_[l + 1][n]*Zetaz1[l][n + 1]);
         bl_n_[l][n] /= denom;
+
         // cl_n
-        denom = m1[l]*Psiz[l][n + 1] * (D1z[l][n + 1] - D3z[l][n + 1]);
-        cl_n_[l][n] = D3z[l][n + 1]*m[l]
-          *(bl_n_[l + 1][n]*Zetaz1[l][n + 1] - cl_n_[l + 1][n]*Psiz1[l][n + 1])
-          - m1[l]*(-D1z1[l][n + 1]*cl_n_[l + 1][n]*Psiz1[l][n + 1]
-                  +D3z1[l][n + 1]*bl_n_[l + 1][n]*Zetaz1[l][n + 1]);
+        denom = m1[l]*Psiz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
+        cl_n_[l][n] = D3z[l][n + 1]*m[l]*(bl_n_[l + 1][n]*Zetaz1[l][n + 1] - cl_n_[l + 1][n]*Psiz1[l][n + 1])
+                      - m1[l]*(-D1z1[l][n + 1]*cl_n_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bl_n_[l + 1][n]*Zetaz1[l][n + 1]);
         cl_n_[l][n] /= denom;   
       }  // end of all n
     }  // end of for all l
+
     // Check the result and change  an__0 and bn__0 for exact zero
     for (int n = 0; n < nmax_; ++n) {
       if (std::abs(al_n_[0][n]) < 1e-10) al_n_[0][n] = 0.0;
@@ -1597,10 +1600,8 @@ c    MM + 1  and - 1, alternately
       for (int i = 0; i < 3; i++) {
         // if (n<3 && i==0) printf("\nn=%d",n);
         // if (n<3) printf("\nbefore !El[%d]=%g,%g! ", i, El[i].real(), El[i].imag());
-        Ei[i] = encap*(
-                       cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]
-          + c_i*al_n_[l][n]*vn3e1n[i] - bl_n_[l][n]*vm3o1n[i]
-);
+        Ei[i] = encap*(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]
+                       + c_i*al_n_[l][n]*vn3e1n[i] - bl_n_[l][n]*vm3o1n[i]);
         El[i] = El[i] + encap*(cl_n_[l][n]*vm1o1n[i] - c_i*dl_n_[l][n]*vn1e1n[i]
                                + c_i*al_n_[l][n]*vn3e1n[i] - bl_n_[l][n]*vm3o1n[i]);
         Hl[i] = Hl[i] + encap*(-dl_n_[l][n]*vm1e1n[i] - c_i*cl_n_[l][n]*vn1o1n[i]
@@ -1664,7 +1665,7 @@ c    MM + 1  and - 1, alternately
     // Calculate scattering coefficients an_ and bn_
     RunMieCalculations();
     //nmax_=10;
-    ScattCoeffsLayerd();
+    IntScattCoeffs();
 
     std::vector<double> Pi(nmax_), Tau(nmax_);
     long total_points = coords_sp_[0].size();
