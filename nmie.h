@@ -98,9 +98,7 @@ namespace nmie {
   private:
     void calcNstop();
     void calcNmax(int first_layer);
-    void sbesjh(std::complex<double> z,
-                std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp, 
-                std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np);
+
     std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
                                  std::complex<double> PsiXL, std::complex<double> ZetaXL,
                                  std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
@@ -111,14 +109,15 @@ namespace nmie {
                                  double Pi, double Tau);
     std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
                                  double Pi, double Tau);
-    void calcPsiZeta(std::complex<double> x,
-                     std::vector<std::complex<double> > D1,
-                     std::vector<std::complex<double> > D3,
-                     std::vector<std::complex<double> >& Psi,
-                     std::vector<std::complex<double> >& Zeta);
     void calcD1D3(std::complex<double> z,
                   std::vector<std::complex<double> >& D1,
                   std::vector<std::complex<double> >& D3);
+    void calcPsiZeta(std::complex<double> x,
+                     std::vector<std::complex<double> >& Psi,
+                     std::vector<std::complex<double> >& Zeta);
+    void sbesjh(std::complex<double> z,
+                std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp, 
+                std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np);
     void calcPiTau(const double& costheta,
                    std::vector<double>& Pi, std::vector<double>& Tau);
     void calcSpherHarm(const double Rho, const double Phi, const double Theta,

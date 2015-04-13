@@ -508,125 +508,6 @@ namespace nmie {
     nmax_ += 15;  // Final nmax_ value
   }
 
-
-  //**********************************************************************************//
-  // This function calculates the spherical Bessel (jn) and Hankel (h1n) functions    //
-  // and their derivatives for a given complex value z. See pag. 87 B&H.              //
-  //                                                                                  //
-  // Input parameters:                                                                //
-  //   z: Complex argument to evaluate jn and h1n                                     //
-  //   nmax_: Maximum number of terms to calculate jn and h1n                         //
-  //                                                                                  //
-  // Output parameters:                                                               //
-  //   jn, h1n: Spherical Bessel and Hankel functions                                 //
-  //   jnp, h1np: Derivatives of the spherical Bessel and Hankel functions            //
-  //                                                                                  //
-  // The implementation follows the algorithm by I.J. Thompson and A.R. Barnett,      //
-  // Comp. Phys. Comm. 47 (1987) 245-257.                                             //
-  //                                                                                  //
-  // Complex spherical Bessel functions from n=0..nmax_-1 for z in the upper half     //
-  // plane (Im(z) > -3).                                                              //
-  //                                                                                  //
-  //     j[n]   = j/n(z)                Regular solution: j[0]=sin(z)/z               //
-  //     j'[n]  = d[j/n(z)]/dz                                                        //
-  //     h1[n]  = h[0]/n(z)             Irregular Hankel function:                    //
-  //     h1'[n] = d[h[0]/n(z)]/dz                h1[0] = j0(z) + i*y0(z)              //
-  //                                                   = (sin(z)-i*cos(z))/z          //
-  //                                                   = -i*exp(i*z)/z                //
-  // Using complex CF1, and trigonometric forms for n=0 solutions.                    //
-  //**********************************************************************************//
-  void MultiLayerMie::sbesjh(std::complex<double> z,
-                             std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp,
-                             std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np) {
-    const int limit = 20000;
-    const double accur = 1.0e-12;
-    const double tm30 = 1e-30;
-    const std::complex<double> c_i(0.0, 1.0);
-
-    double absc;
-    std::complex<double> zi, w;
-    std::complex<double> pl, f, b, d, c, del, jn0;
-
-    absc = std::abs(std::real(z)) + std::abs(std::imag(z));
-    if ((absc < accur) || (std::imag(z) < -3.0)) {
-      throw std::invalid_argument("TODO add error description for condition if ((absc < accur) || (std::imag(z) < -3.0))");
-    }
-
-    zi = 1.0/z;
-    w = zi + zi;
-
-    pl = double(nmax_)*zi;
-
-    f = pl + zi;
-    b = f + f + zi;
-    d = 0.0;
-    c = f;
-    for (int l = 0; l < limit; l++) {
-      d = b - d;
-      c = b - 1.0/c;
-
-      absc = std::abs(std::real(d)) + std::abs(std::imag(d));
-      if (absc < tm30) {
-        d = tm30;
-      }
-
-      absc = std::abs(std::real(c)) + std::abs(std::imag(c));
-      if (absc < tm30) {
-        c = tm30;
-      }
-
-      d = 1.0/d;
-      del = d*c;
-      f = f*del;
-      b += w;
-
-      absc = std::abs(std::real(del - 1.0)) + std::abs(std::imag(del - 1.0));
-
-      // We have obtained the desired accuracy
-      if (absc < accur) break;
-    }
-
-    if (absc > accur) {
-      throw std::invalid_argument("We were not able to obtain the desired accuracy (MultiLayerMie::sbesjh)");
-    }
-
-    jn[nmax_ - 1] = tm30;
-    jnp[nmax_ - 1] = f*jn[nmax_ - 1];
-
-    // Downward recursion to n=0 (N.B.  Coulomb Functions)
-    for (int n = nmax_ - 2; n >= 0; n--) {
-      jn[n] = pl*jn[n + 1] + jnp[n + 1];
-      jnp[n] = pl*jn[n] - jn[n + 1];
-      pl = pl - zi;
-    }
-
-    // Calculate the n=0 Bessel Functions
-    jn0 = zi*std::sin(z);
-    h1n[0] = -c_i*zi*std::exp(c_i*z);
-    h1np[0] = h1n[0]*(c_i - zi);
-
-    // Rescale j[n], j'[n], converting to spherical Bessel functions.
-    // Recur   h1[n], h1'[n] as spherical Bessel functions.
-    w = 1.0/jn[0];
-    pl = zi;
-    for (int n = 0; n < nmax_; n++) {
-      jn[n] = jn0*w*jn[n];
-      jnp[n] = jn0*w*jnp[n] - zi*jn[n];
-      if (n > 0) {
-        h1n[n] = (pl - zi)*h1n[n - 1] - h1np[n - 1];
-
-        // check if hankel is increasing (upward stable)
-        if (std::abs(h1n[n]) < std::abs(h1n[n - 1])) {
-          throw std::invalid_argument("Error: Hankel not increasing! (MultiLayerMie::sbesjh)");
-        }
-
-        pl += zi;
-
-        h1np[n] = -pl*h1n[n] + h1n[n - 1];
-      }
-    }
-  }
-
   // ********************************************************************** //
   // Calculate an - equation (5)                                            //
   // ********************************************************************** //
@@ -675,36 +556,6 @@ namespace nmie {
 
 
   //**********************************************************************************//
-  // This function calculates the Riccati-Bessel functions (Psi and Zeta) for a       //
-  // real argument (x).                                                               //
-  // Equations (20a) - (21b)                                                          //
-  //                                                                                  //
-  // Input parameters:                                                                //
-  //   x: Real argument to evaluate Psi and Zeta                                      //
-  //   nmax: Maximum number of terms to calculate Psi and Zeta                        //
-  //                                                                                  //
-  // Output parameters:                                                               //
-  //   Psi, Zeta: Riccati-Bessel functions                                            //
-  //**********************************************************************************//
-  void MultiLayerMie::calcPsiZeta(std::complex<double> z,
-                                  std::vector<std::complex<double> > D1,
-                                  std::vector<std::complex<double> > D3,
-                                  std::vector<std::complex<double> >& Psi,
-                                  std::vector<std::complex<double> >& Zeta) {
-
-    //Upward recurrence for Psi and Zeta - equations (20a) - (21b)
-    std::complex<double> c_i(0.0, 1.0);
-    Psi[0] = std::sin(z);
-    Zeta[0] = std::sin(z) - c_i*std::cos(z);
-    for (int n = 1; n <= nmax_; n++) {
-      Psi[n] = Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
-      Zeta[n] = Zeta[n - 1]*(static_cast<double>(n)/z - D3[n - 1]);
-    }
-
-  }
-
-
-  //**********************************************************************************//
   // This function calculates the logarithmic derivatives of the Riccati-Bessel       //
   // functions (D1 and D3) for a complex argument (z).                                //
   // Equations (16a), (16b) and (18a) - (18d)                                         //
@@ -744,6 +595,86 @@ namespace nmie {
 
 
   //**********************************************************************************//
+  // This function calculates the Riccati-Bessel functions (Psi and Zeta) for a       //
+  // complex argument (z).                                                            //
+  // Equations (20a) - (21b)                                                          //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   z: Complex argument to evaluate Psi and Zeta                                   //
+  //   nmax: Maximum number of terms to calculate Psi and Zeta                        //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   Psi, Zeta: Riccati-Bessel functions                                            //
+  //**********************************************************************************//
+  void MultiLayerMie::calcPsiZeta(std::complex<double> z,
+                                  std::vector<std::complex<double> >& Psi,
+                                  std::vector<std::complex<double> >& Zeta) {
+
+    std::vector<std::complex<double> > D1(nmax_ + 1), D3(nmax_ + 1);
+
+    // First, calculate the logarithmic derivatives
+    calcD1D3(z, D1, D3);
+
+    // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
+    std::complex<double> c_i(0.0, 1.0);
+    Psi[0] = std::sin(z);
+    Zeta[0] = std::sin(z) - c_i*std::cos(z);
+    for (int n = 1; n <= nmax_; n++) {
+      Psi[n] = Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
+      Zeta[n] = Zeta[n - 1]*(static_cast<double>(n)/z - D3[n - 1]);
+    }
+
+  }
+
+
+  //**********************************************************************************//
+  // This function calculates the spherical Bessel (jn) and Hankel (h1n) functions    //
+  // and their derivatives for a given complex value z. See pag. 87 B&H.              //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   z: Complex argument to evaluate jn and h1n                                     //
+  //   nmax_: Maximum number of terms to calculate jn and h1n                         //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   jn, h1n: Spherical Bessel and Hankel functions                                 //
+  //   jnp, h1np: Derivatives of the spherical Bessel and Hankel functions            //
+  //                                                                                  //
+  // What we actually calculate are the Ricatti-Bessel fucntions and then simply      //
+  // evaluate the spherical Bessel and Hankel functions and their derivatives         //
+  // using the relations:                                                             //
+  //                                                                                  //
+  //     j[n]   = Psi[n]/z                                                            //
+  //     j'[n]  = 0.5*(Psi[n-1]-Psi[n+1]-jn[n])/z                                     //
+  //     h1[n]  = Zeta[n]/z                                                           //
+  //     h1'[n] = 0.5*(Zeta[n-1]-Zeta[n+1]-h1n[n])/z                                  //
+  //                                                                                  //
+  //**********************************************************************************//
+  void MultiLayerMie::sbesjh(std::complex<double> z,
+                             std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp,
+                             std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np) {
+
+    std::vector<std::complex<double> > Psi(nmax_ + 1), Zeta(nmax_ + 1);
+
+    // First, calculate the Riccati-Bessel functions
+    calcPsiZeta(z, Psi, Zeta);
+
+    // Now, calculate Spherical Bessel and Hankel functions and their derivatives
+    for (int n = 0; n < nmax_; n++) {
+      jn[n] = Psi[n]/z;
+      h1n[n] = Zeta[n]/z;
+
+      if (n == 0) {
+        jnp[n] = -Psi[1]/z - 0.5*jn[n]/z;
+        h1np[n] = -Zeta[1]/z - 0.5*h1n[n]/z;
+      } else {
+        jnp[n] = 0.5*(Psi[n - 1] - Psi[n + 1] - jn[n])/z;
+        h1np[n] = 0.5*(Zeta[n - 1] - Zeta[n + 1] - h1n[n])/z;
+      }
+    }
+  }
+
+
+  //**********************************************************************************//
   // This function calculates Pi and Tau for a given value of cos(Theta).             //
   // Equations (26a) - (26c)                                                          //
   //                                                                                  //
@@ -776,6 +707,7 @@ namespace nmie {
       }
     }
   }  // end of MultiLayerMie::calcPiTau(...)
+
 
   void MultiLayerMie::calcSpherHarm(const double Rho, const double Phi, const double Theta,
                                     const std::complex<double>& zn, const std::complex<double>& dzn,
@@ -872,8 +804,7 @@ namespace nmie {
     bn_.resize(nmax_);
     PsiZeta_.resize(nmax_ + 1);
 
-    std::vector<std::complex<double> > D1XL(nmax_ + 1), D3XL(nmax_ + 1),
-                                       PsiXL(nmax_ + 1), ZetaXL(nmax_ + 1);
+    std::vector<std::complex<double> > PsiXL(nmax_ + 1), ZetaXL(nmax_ + 1);
 
     //*************************************************//
     // Calculate D1 and D3 for z1 in the first layer   //
@@ -956,13 +887,11 @@ namespace nmie {
     }  // end of for layers iteration
 
     //**************************************//
-    //Calculate D1, D3, Psi and Zeta for XL //
+    //Calculate Psi and Zeta for XL         //
     //**************************************//
-    // Calculate D1XL and D3XL
-    calcD1D3(x[L - 1], D1XL, D3XL);
-
     // Calculate PsiXL and ZetaXL
-    calcPsiZeta(x[L - 1], D1XL, D3XL, PsiXL, ZetaXL);
+    calcPsiZeta(x[L - 1], PsiXL, ZetaXL);
+
     //*********************************************************************//
     // Finally, we calculate the scattering coefficients (an and bn) and   //
     // the angular functions (Pi and Tau). Note that for these arrays the  //
@@ -983,7 +912,7 @@ namespace nmie {
       }
     }  // end of for an and bn terms
     areExtCoeffsCalc_ = true;
-  }  // end of void MultiLayerMie::ExtScattCoeffs(...)
+  }  // end of MultiLayerMie::ExtScattCoeffs(...)
 
 
   //**********************************************************************************//
@@ -1191,8 +1120,8 @@ namespace nmie {
     for (int l = 0; l < L; ++l) {
       calcD1D3(z[l], D1z[l], D3z[l]);
       calcD1D3(z1[l], D1z1[l], D3z1[l]);
-      calcPsiZeta(z[l], D1z[l], D3z[l], Psiz[l], Zetaz[l]);
-      calcPsiZeta(z1[l], D1z1[l], D3z1[l], Psiz1[l], Zetaz1[l]);
+      calcPsiZeta(z[l], Psiz[l], Zetaz[l]);
+      calcPsiZeta(z1[l], Psiz1[l], Zetaz1[l]);
     }
     auto& m = refr_index_;
     std::vector< std::complex<double> > m1(L);
@@ -1381,6 +1310,9 @@ namespace nmie {
 
     // Calculate spherical Bessel and Hankel functions
     sbesjh(Rho*ml, jn, jnp, h1n, h1np);
+//    E[0] = jnp[1];
+//    printf("\njn[%i] = %g, %g\n", 1, E[0].real(), E[0].imag());
+//    return;
 
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
@@ -1392,7 +1324,7 @@ namespace nmie {
       // using BH 4.12 and 4.50
       calcSpherHarm(Rho, Phi, Theta, jn[n1], jnp[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
 
-      calcSpherHarm(Rho, Phi, Theta, h1n[n1], h1np[n], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
+      calcSpherHarm(Rho, Phi, Theta, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
 
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
       std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
@@ -1409,7 +1341,7 @@ namespace nmie {
 
 
     // Debug field calculation outside the particle
-    if (l == size_param_.size()) {
+/*    if (l == size_param_.size()) {
       // incident E field: BH p.89 (4.21); cf. p.92 (4.37), p.93 (4.38)
       // basis unit vectors = er, etheta, ephi
       std::complex<double> eifac = std::exp(std::complex<double>(0.0, Rho*std::cos(Theta)));
@@ -1425,7 +1357,7 @@ namespace nmie {
       for (int i = 0; i < 3; i++) {
         printf("Ei[%i] = %g, %g; Eic[%i] = %g, %g\n", i, Ei[i].real(), Ei[i].imag(), i, Eic[i].real(), Eic[i].imag());
       }
-    }
+    }*/
 
 
     // magnetic field
@@ -1516,8 +1448,7 @@ namespace nmie {
 //        printf("\nFin E int: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]), Rho);
       }
 
-      //Now, convert the fields back to cartesian coordinates
-      {
+      { //Now, convert the fields back to cartesian coordinates
         using std::sin;
         using std::cos;
         E_[point][0] = sin(Theta)*cos(Phi)*Es[0] + cos(Theta)*cos(Phi)*Es[1] - sin(Phi)*Es[2];
