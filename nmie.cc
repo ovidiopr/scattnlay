@@ -588,7 +588,7 @@ namespace nmie {
     D3[0] = std::complex<double>(0.0, 1.0);
     for (int n = 1; n <= nmax_; n++) {
       PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)*zinv - D1[n - 1])
-        *(static_cast<double>(n)*zinv- D3[n - 1]);
+                   *(static_cast<double>(n)*zinv- D3[n - 1]);
       D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
     }
   }
@@ -733,6 +733,7 @@ namespace nmie {
     Ne1n[0] = cos(Phi)*(n*n + n)*sin(Theta)*Pi*zn/Rho;
     Ne1n[1] = cos(Phi)*Tau*deriv/Rho;
     Ne1n[2] = -sin(Phi)*Pi*deriv/Rho;
+
   }  // end of MultiLayerMie::calcSpherHarm(...)
 
 
@@ -958,10 +959,6 @@ namespace nmie {
     // Calculate scattering coefficients
     ExtScattCoeffs();
 
-//    for (int i = 0; i < nmax_; i++) {
-//      printf("a[%i] = %g, %g; b[%i] = %g, %g\n", i, an_[i].real(), an_[i].imag(), i, bn_[i].real(), bn_[i].imag());
-//    }
-
     if (!areExtCoeffsCalc_)
       throw std::invalid_argument("Calculation of scattering coefficients failed!");
 
@@ -1075,24 +1072,24 @@ namespace nmie {
     const int L = refr_index_.size();
 
     // we need to fill
-    // std::vector< std::vector<std::complex<double> > > anl_, bnl_, cnl_, dnl_;
+    // std::vector< std::vector<std::complex<double> > > aln_, bln_, cnl_, dnl_;
     //     for n = [0..nmax_) and for l=[L..0)
     // TODO: to decrease cache miss outer loop is with n and inner with reversed l
     // at the moment outer is forward l and inner in n
-    anl_.resize(L + 1);
-    bnl_.resize(L + 1);
+    aln_.resize(L + 1);
+    bln_.resize(L + 1);
     cnl_.resize(L + 1);
     dnl_.resize(L + 1);
-    for (auto& element:anl_) element.resize(nmax_);
-    for (auto& element:bnl_) element.resize(nmax_);
+    for (auto& element:aln_) element.resize(nmax_);
+    for (auto& element:bln_) element.resize(nmax_);
     for (auto& element:cnl_) element.resize(nmax_);
     for (auto& element:dnl_) element.resize(nmax_);
 
     // Yang, paragraph under eq. A3
     // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
     for (int i = 0; i < nmax_; ++i) {
-      anl_[L][i] = an_[i];
-      bnl_[L][i] = bn_[i];
+      aln_[L][i] = an_[i];
+      bln_[L][i] = bn_[i];
       cnl_[L][i] = c_one;
       dnl_[L][i] = c_one;
     }
@@ -1104,6 +1101,7 @@ namespace nmie {
     }
     z[L - 1] = size_param_[L - 1]*refr_index_[L - 1];
     z1[L - 1] = size_param_[L - 1];
+
     std::vector< std::vector<std::complex<double> > > D1z(L), D1z1(L), D3z(L), D3z1(L);
     std::vector< std::vector<std::complex<double> > > Psiz(L), Psiz1(L), Zetaz(L), Zetaz1(L);
     for (int l = 0; l < L; ++l) {
@@ -1129,22 +1127,21 @@ namespace nmie {
     for (int l = 0; l < L - 1; ++l) m1[l] = m[l + 1];
     m1[L - 1] = std::complex<double> (1.0, 0.0);
 
-    // for (auto zz : m) printf ("m[i]=%g \n\n ", zz.real());
     for (int l = L - 1; l >= 0; l--) {
       for (int n = nmax_ - 2; n >= 0; n--) {
         auto denomZeta = m1[l]*Zetaz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
         auto denomPsi = m1[l]*Psiz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
 
-        auto T1 = anl_[l + 1][n]*Zetaz1[l][n + 1] - dnl_[l + 1][n]*Psiz1[l][n + 1];
-        auto T2 = bnl_[l + 1][n]*Zetaz1[l][n + 1] - cnl_[l + 1][n]*Psiz1[l][n + 1];
+        auto T1 = aln_[l + 1][n]*Zetaz1[l][n + 1] - dnl_[l + 1][n]*Psiz1[l][n + 1];
+        auto T2 = bln_[l + 1][n]*Zetaz1[l][n + 1] - cnl_[l + 1][n]*Psiz1[l][n + 1];
 
-        auto T3 = -D1z1[l][n + 1]*dnl_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*anl_[l + 1][n]*Zetaz1[l][n + 1];
-        auto T4 = -D1z1[l][n + 1]*cnl_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bnl_[l + 1][n]*Zetaz1[l][n + 1];
+        auto T3 = -D1z1[l][n + 1]*dnl_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*aln_[l + 1][n]*Zetaz1[l][n + 1];
+        auto T4 = -D1z1[l][n + 1]*cnl_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bln_[l + 1][n]*Zetaz1[l][n + 1];
 
         // anl
-        anl_[l][n] = (D1z[l][n + 1]*m1[l]*T1 - m[l]*T3)/denomZeta;
+        aln_[l][n] = (D1z[l][n + 1]*m1[l]*T1 - m[l]*T3)/denomZeta;
         // bnl
-        bnl_[l][n] = (D1z[l][n + 1]*m[l]*T2 - m1[l]*T4)/denomZeta;
+        bln_[l][n] = (D1z[l][n + 1]*m[l]*T2 - m1[l]*T4)/denomZeta;
         // cnl
         cnl_[l][n] = (D3z[l][n + 1]*m[l]*T2 - m1[l]*T4)/denomPsi;
         // dnl
@@ -1152,48 +1149,14 @@ namespace nmie {
       }  // end of all n
     }  // end of all l
 
-    // Check the result and change  an__0 and bn__0 for exact zero
+    // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
     for (int n = 0; n < nmax_; ++n) {
-      if (std::abs(anl_[0][n]) < 1e-10) anl_[0][n] = 0.0;
-      else throw std::invalid_argument("Unstable calculation of a__0_n!");
-      if (std::abs(bnl_[0][n]) < 1e-10) bnl_[0][n] = 0.0;
-      else throw std::invalid_argument("Unstable calculation of b__0_n!");
+      if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
+      else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
+      if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
+      else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
     }
 
-    // for (int l = 0; l < L; ++l) {
-    //   printf("l=%d --> ", l);
-    //   for (int n = 0; n < nmax_ + 1; ++n) {
-    //         if (n < 20) continue;
-    //         printf("n=%d --> D1zn=%g, D3zn=%g, D1zn=%g, D3zn=%g || ",
-    //                n,
-    //                D1z[l][n].real(), D3z[l][n].real(),
-    //                D1z1[l][n].real(), D3z1[l][n].real());
-    //   }
-    //   printf("\n\n");
-    // }
-    // for (int l = 0; l < L; ++l) {
-    //   printf("l=%d --> ", l);
-    //   for (int n = 0; n < nmax_ + 1; ++n) {
-    //         printf("n=%d --> D1zn=%g, D3zn=%g, D1zn=%g, D3zn=%g || ",
-    //                n,
-    //                D1z[l][n].real(), D3z[l][n].real(),
-    //                D1z1[l][n].real(), D3z1[l][n].real());
-    //   }
-    //   printf("\n\n");
-    // }
-    //for (int i = 0; i < L + 1; ++i) {
-    //  printf("Layer =%d ---> \n", i);
-    //  for (int n = 0; n < nmax_; ++n) {
-    //                if (n < 20) continue;
-    //        printf(" || n=%d --> a=%g,%g b=%g,%g c=%g,%g d=%g,%g\n",
-    //               n,
-    //               anl_[i][n].real(), anl_[i][n].imag(),
-    //               bnl_[i][n].real(), bnl_[i][n].imag(),
-    //               cnl_[i][n].real(), cnl_[i][n].imag(),
-    //               dnl_[i][n].real(), dnl_[i][n].imag());
-    //  }
-    //  printf("\n\n");
-    //}
     areIntCoeffsCalc_ = true;
   }
   // ********************************************************************** //
@@ -1269,7 +1232,6 @@ namespace nmie {
       // electric field E [V m - 1] = EF*E0
       E[i] = Ei[i] + Es[i];
       H[i] = Hi[i] + Hs[i];
-      // printf("ext E[%d]=%g",i,std::abs(E[i]));
     }
    }  // end of MultiLayerMie::fieldExt(...)
 
@@ -1284,7 +1246,7 @@ namespace nmie {
     std::vector<std::complex<double> > ipow = {c_one, c_i, -c_one, -c_i}; // Vector containing precomputed integer powers of i to avoid computation
     std::vector<std::complex<double> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
     std::vector<std::complex<double> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
-    std::vector<std::complex<double> > El(3, c_zero), Ei(3, c_zero), Eic(3, c_zero), Hl(3, c_zero);
+    std::vector<std::complex<double> > El(3, c_zero), Hl(3, c_zero);
     std::vector<std::complex<double> > jn(nmax_ + 1), jnp(nmax_ + 1), h1n(nmax_ + 1), h1np(nmax_ + 1);
     std::vector<double> Pi(nmax_), Tau(nmax_);
 
@@ -1295,24 +1257,16 @@ namespace nmie {
       l = size_param_.size();
       ml = c_one;
     } else {
-      for (int i = 0; i < size_param_.size() - 1; ++i) {
-        if (size_param_[i] < Rho && Rho <= size_param_[i + 1]) {
+      for (int i = size_param_.size() - 1; i >= 0 ; i--) {
+        if (Rho <= size_param_[i]) {
           l = i;
         }
       }
       ml = refr_index_[l];
     }
 
-//    for (int i = 0; i < size_param_.size(); i++) {
-//      printf("x[%i] = %g; m[%i] = %g, %g; ", i, size_param_[i], i, refr_index_[i].real(), refr_index_[i].imag());
-//    }
-//    printf("\nRho = %g; Phi = %g; Theta = %g; x[%i] = %g; m[%i] = %g, %g\n", Rho, Phi, Theta, l, size_param_[l], l, ml.real(), ml.imag());
-
     // Calculate spherical Bessel and Hankel functions
     sbesjh(Rho*ml, jn, jnp, h1n, h1np);
-//    E[0] = jnp[1];
-//    printf("\njn[%i] = %g, %g\n", 1, E[0].real(), E[0].imag());
-//    return;
 
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
@@ -1323,42 +1277,18 @@ namespace nmie {
 
       // using BH 4.12 and 4.50
       calcSpherHarm(Rho, Phi, Theta, jn[n1], jnp[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
-
       calcSpherHarm(Rho, Phi, Theta, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
 
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
       std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
       for (int i = 0; i < 3; i++) {
-        Ei[i] = Ei[i] + En*(M1o1n[i] - c_i*N1e1n[i]);
-
         El[i] = El[i] + En*(cnl_[l][n]*M1o1n[i] - c_i*dnl_[l][n]*N1e1n[i]
-                      + c_i*anl_[l][n]*N3e1n[i] -     bnl_[l][n]*M3o1n[i]);
+                      + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
 
         Hl[i] = Hl[i] + En*(-dnl_[l][n]*M1e1n[i] - c_i*cnl_[l][n]*N1o1n[i]
-                      +  c_i*bnl_[l][n]*N3o1n[i] +     anl_[l][n]*M3e1n[i]);
+                      +  c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
       }
     }  // end of for all n
-
-
-    // Debug field calculation outside the particle
-/*    if (l == size_param_.size()) {
-      // incident E field: BH p.89 (4.21); cf. p.92 (4.37), p.93 (4.38)
-      // basis unit vectors = er, etheta, ephi
-      std::complex<double> eifac = std::exp(std::complex<double>(0.0, Rho*std::cos(Theta)));
-      {
-        using std::sin;
-        using std::cos;
-        Eic[0] = eifac*sin(Theta)*cos(Phi);
-        Eic[1] = eifac*cos(Theta)*cos(Phi);
-        Eic[2] = -eifac*sin(Phi);
-      }
-
-      printf("Rho = %g; Phi = %g; Theta = %g\n", Rho, Phi, Theta);
-      for (int i = 0; i < 3; i++) {
-        printf("Ei[%i] = %g, %g; Eic[%i] = %g, %g\n", i, Ei[i].real(), Ei[i].imag(), i, Eic[i].real(), Eic[i].imag());
-      }
-    }*/
-
 
     // magnetic field
     double hffact = 1.0/(cc_*mu_);
@@ -1399,12 +1329,8 @@ namespace nmie {
   void MultiLayerMie::RunFieldCalculation() {
     // Calculate external scattering coefficients an_ and bn_
     ExtScattCoeffs();
-    // Calculate internal scattering coefficients anl_ and bnl_
+    // Calculate internal scattering coefficients aln_ and bln_
     IntScattCoeffs();
-
-//    for (int i = 0; i < nmax_; i++) {
-//      printf("a[%i] = %g, %g; b[%i] = %g, %g\n", i, an_[i].real(), an_[i].imag(), i, bn_[i].real(), bn_[i].imag());
-//    }
 
     long total_points = coords_[0].size();
     E_.resize(total_points);

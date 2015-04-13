@@ -52,7 +52,7 @@ m[0, 1] = (0.565838 + 7.23262j)/1.3205
 
 npts = 501
 
-scan = np.linspace(-4.0*x[0, 1], 4.0*x[0, 1], npts)
+scan = np.linspace(-2.0*x[0, 1], 2.0*x[0, 1], npts)
 
 coordX, coordY = np.meshgrid(scan, scan)
 coordX.resize(npts*npts)
@@ -87,7 +87,7 @@ try:
     scale_y = np.linspace(min(coordY), max(coordY), npts)
 
     # Define scale ticks
-    min_tick = max(0.01, min(min_tick, np.amin(edata)))
+    min_tick = max(0.1, min(min_tick, np.amin(edata)))
     max_tick = max(max_tick, np.amax(edata))
     scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
 

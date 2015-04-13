@@ -51,7 +51,7 @@ coordX = np.zeros((nc, 3), dtype = np.float64)
 coordY = np.zeros((nc, 3), dtype = np.float64)
 coordZ = np.zeros((nc, 3), dtype = np.float64)
 
-scan = np.linspace(-10.0*x[0, 1], 10.0*x[0, 1], nc)
+scan = np.linspace(-4.0*x[0, 1], 4.0*x[0, 1], nc)
 one = np.ones(nc, dtype = np.float64)
 
 coordX[:, 0] = scan
