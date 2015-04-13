@@ -34,41 +34,13 @@
 
 int main(int argc, char *argv[]) {
   
-  // auto result = nmie::bessel::bh_bessel_j(20, 1);
-  auto result = nmie::bessel::bessel_j(20, 1);
-  printf("Calculate and compare against Wolfram Alpha\n");
-  printf("j(0,1) = %16.18f\n", real(result[0]));
-  printf("WA j() = 0.841470984807896506652502321630\n");
-  printf("j(1,1) = %16.18f\n", real(result[1]));
-  printf("WA j() = 0.301168678939756789251565714187322395890252640\n");
-  printf("j(20,1) = %16.18f\n", real(result[20]));
-  printf("WA j() = 7.537795722236872993957557741584960855614358030 × 10^-26\n");
-  
-  result = nmie::bessel::bessel_j(4, std::complex<double>(1,2));
-  printf("Calculate and compare against Wolfram Alpha\n");
-  printf("j(0,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
-	 real(result[0]),
-	 imag(result[0]));
-  printf("WA j() = re(1.4169961192118759)\n         im(-0.874391197002)\n");
-
-  printf("j(1,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
-	 real(result[1]),
-	 imag(result[1]));
-  printf("WA j() = re(0.74785726329830368)\n         im(0.68179207555304)\n");
-
-  printf("j(4,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
-	 real(result[4]),
-	 imag(result[4]));
-  printf("WA j() = re(-0.01352410550046)\n         im(-0.027169663050653)\n");
-
-
   int n = 10;
   std::complex<double> z(1.0, 2.0);
   int nm;
   std::vector< std::complex<double> > csj, cdj, csy, cdy;
   nmie::bessel::csphjy (n, z, nm, csj, cdj,  csy, cdy );
 
-  result =  csj;
+  auto result =  csj;
   printf("===========Calculate and compare against Wolfram Alpha\n");
   printf("j(0,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
 	 real(result[0]),
@@ -85,6 +57,21 @@ int main(int argc, char *argv[]) {
 	 imag(result[4]));
   printf("WA j() = re(-0.01352410550046)\n         im(-0.027169663050653)\n");
 
+
+  n = 20;
+  std::complex<double> z1(1.0, 0.0);
+  nmie::bessel::csphjy (n, z1, nm, csj, cdj,  csy, cdy );
+  result =  csj;
+
+  printf("$$$$ REAL $$$$$$ Calculate and compare against Wolfram Alpha\n");
+  printf("j(0,1) = %16.18f\n", real(result[0]));
+  printf("WA j() = 0.841470984807896506652502321630\n");
+  printf("j(1,1) = %16.18f\n", real(result[1]));
+  printf("WA j() = 0.301168678939756789251565714187322395890252640\n");
+  printf("j(1,1) = %.14g\n", real(result[10]));
+  printf("WA j() = 7.116552640047313023966191737248811458533809572 × 10^-11\n");
+  printf("j(20,1) = %.14g\n", real(result[20]));
+  printf("WA j() = 7.537795722236872993957557741584960855614358030 × 10^-26\n");
 
 }
 
