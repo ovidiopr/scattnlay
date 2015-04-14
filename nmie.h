@@ -141,7 +141,7 @@ namespace nmie {
     // Size parameter for all layers
     std::vector<double> size_param_;
     // Refractive index for all layers
-    std::vector< std::complex<double> > refr_index_;
+    std::vector< std::complex<double> > refractive_index_;
     // Scattering angles for scattering pattern in radians
     std::vector<double> theta_;
     // Should be -1 if there is no PEC.

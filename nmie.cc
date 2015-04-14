@@ -48,7 +48,6 @@
 namespace nmie {
   //helpers
   template<class T> inline T pow2(const T value) {return value*value;}
-
   int round(double x) {
     return x >= 0 ? (int)(x + 0.5):(int)(x - 0.5);
   }
@@ -114,9 +113,9 @@ namespace nmie {
       throw std::invalid_argument(ia);
       return -1;
     }
-
     return 0;
   }
+
 
   //**********************************************************************************//
   // This function is just a wrapper to call the full 'nMie' function with fewer      //
@@ -180,6 +179,7 @@ namespace nmie {
   int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nmie::nMie(L, pl, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
+
 
   //**********************************************************************************//
   // This function is just a wrapper to call the full 'nMie' function with fewer      //
@@ -251,21 +251,19 @@ namespace nmie {
         throw std::invalid_argument("Field H is not 3D!");
     try {
       MultiLayerMie multi_layer_mie;
-      //multi_layer_mie.SetPECLayer(pl);
+      //multi_layer_mie.SetPECLayer(pl); // TODO add PEC layer to field plotting
       multi_layer_mie.SetLayersSize(x);
       multi_layer_mie.SetLayersIndex(m);
       multi_layer_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
       multi_layer_mie.RunFieldCalculation();
       E = multi_layer_mie.GetFieldE();
       H = multi_layer_mie.GetFieldH();
-      //multi_layer_mie.GetFailed();
     } catch(const std::invalid_argument& ia) {
       // Will catch if  multi_layer_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
       return - 1;
     }
-
     return 0;
   }
 
@@ -399,7 +397,7 @@ namespace nmie {
     isIntCoeffsCalc_ = false;
     isExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
-    refr_index_ = index;
+    refractive_index_ = index;
   }
 
 
@@ -458,7 +456,7 @@ namespace nmie {
     isExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     size_param_.clear();
-    refr_index_.clear();
+    refractive_index_.clear();
   }
 
 
@@ -472,7 +470,7 @@ namespace nmie {
 
 
   // ********************************************************************** //
-  // Calculate calcNstop - equation (17)                                        //
+  // Calculate calcNstop - equation (17)                                    //
   // ********************************************************************** //
   void MultiLayerMie::calcNstop() {
     const double& xL = size_param_.back();
@@ -492,7 +490,7 @@ namespace nmie {
   void MultiLayerMie::calcNmax(int first_layer) {
     int ri, riM1;
     const std::vector<double>& x = size_param_;
-    const std::vector<std::complex<double> >& m = refr_index_;
+    const std::vector<std::complex<double> >& m = refractive_index_;
     calcNstop();  // Set initial nmax_ value
     for (int i = first_layer; i < x.size(); i++) {
       if (i > PEC_layer_position_)
@@ -509,6 +507,7 @@ namespace nmie {
     }
     nmax_ += 15;  // Final nmax_ value
   }
+
 
   // ********************************************************************** //
   // Calculate an - equation (5)                                            //
@@ -711,6 +710,9 @@ namespace nmie {
   }  // end of MultiLayerMie::calcPiTau(...)
 
 
+  //**********************************************************************************//
+  // This function calculates vector spherical harmonics.                             //
+  //**********************************************************************************//
   void MultiLayerMie::calcSpherHarm(const double Rho, const double Phi, const double Theta,
                                     const std::complex<double>& zn, const std::complex<double>& dzn,
                                     const double& Pi, const double& Tau, const double& n,
@@ -735,7 +737,6 @@ namespace nmie {
     Ne1n[0] = cos(Phi)*(n*n + n)*sin(Theta)*Pi*zn/Rho;
     Ne1n[1] = cos(Phi)*Tau*deriv/Rho;
     Ne1n[2] = -sin(Phi)*Pi*deriv/Rho;
-
   }  // end of MultiLayerMie::calcSpherHarm(...)
 
 
@@ -763,22 +764,15 @@ namespace nmie {
     isExtCoeffsCalc_ = false;
 
     const std::vector<double>& x = size_param_;
-    const std::vector<std::complex<double> >& m = refr_index_;
+    const std::vector<std::complex<double> >& m = refractive_index_;
     const int& pl = PEC_layer_position_;
-    const int L = refr_index_.size();
+    const int L = refractive_index_.size();
 
     //************************************************************************//
     // Calculate the index of the first layer. It can be either 0 (default)   //
     // or the index of the outermost PEC layer. In the latter case all layers //
     // below the PEC are discarded.                                           //
     // ***********************************************************************//
-    // TODO, is it possible for PEC to have a zero index? If yes than
-    // is should be:
-    // int fl = (pl > - 1) ? pl : 0;
-    // This will give the same result, however, it corresponds the
-    // logic - if there is PEC, than first layer is PEC.
-    // Well, I followed the logic: First layer is always zero unless it has
-    // an upper PEC layer.
     int fl = (pl > 0) ? pl : 0;
     if (nmax_preset_ <= 0) calcNmax(fl);
     else nmax_ = nmax_preset_;
@@ -837,7 +831,7 @@ namespace nmie {
     std::complex<double> G1, G2;
     for (int l = fl + 1; l < L; l++) {
       //************************************************************//
-      //Calculate D1 and D3 for z1 and z2 in the layers fl + 1..L     //
+      //Calculate D1 and D3 for z1 and z2 in the layers fl + 1..L   //
       //************************************************************//
       z1 = x[l]*m[l];
       z2 = x[l - 1]*m[l];
@@ -846,9 +840,9 @@ namespace nmie {
       //Calculate D1 and D3 for z2
       calcD1D3(z2, D1_mlxlM1, D3_mlxlM1);
 
-      //*********************************************//
-      //Calculate Q, Ha and Hb in the layers fl + 1..L //
-      //*********************************************//
+      //*************************************************//
+      //Calculate Q, Ha and Hb in the layers fl + 1..L   //
+      //*************************************************//
       // Upward recurrence for Q - equations (19a) and (19b)
       Num = std::exp(-2.0*(z1.imag() - z2.imag()))
            *std::complex<double>(std::cos(-2.0*z2.real()) - std::exp(-2.0*z2.imag()), std::sin(-2.0*z2.real()));
@@ -947,7 +941,7 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   void MultiLayerMie::RunMieCalculation() {
-    if (size_param_.size() != refr_index_.size())
+    if (size_param_.size() != refractive_index_.size())
       throw std::invalid_argument("Each size parameter should have only one index!");
     if (size_param_.size() == 0)
       throw std::invalid_argument("Initialize model first!");
@@ -1015,11 +1009,7 @@ namespace nmie {
       // Qsca_ch_[i] += (n + n + 1)*(an_[i].real()*an_[i].real() + an_[i].imag()*an_[i].imag()
       //                             + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
 
-      // Equation (29) TODO We must check carefully this equation. If we
-      // remove the typecast to double then the result changes. Which is
-      // the correct one??? Ovidio (2014/12/10) With cast ratio will
-      // give double, without cast (n + n + 1)/(n*(n + 1)) will be
-      // rounded to integer. Tig (2015/02/24)
+      // Equation (29)
       Qpr_ch_[i]=((n*(n + 2)/(n + 1))*((an_[i]*std::conj(an_[n]) + bn_[i]*std::conj(bn_[n])).real())
                + ((double)(n + n + 1)/(n*(n + 1)))*(an_[i]*std::conj(bn_[i])).real());
       Qpr_ += Qpr_ch_[i];
@@ -1071,13 +1061,8 @@ namespace nmie {
     std::complex<double> c_one(1.0, 0.0);
     std::complex<double> c_zero(0.0, 0.0);
 
-    const int L = refr_index_.size();
+    const int L = refractive_index_.size();
 
-    // we need to fill
-    // std::vector< std::vector<std::complex<double> > > aln_, bln_, cnl_, dln_;
-    //     for n = [0..nmax_) and for l=[L..0)
-    // TODO: to decrease cache miss outer loop is with n and inner with reversed l
-    // at the moment outer is forward l and inner in n
     aln_.resize(L + 1);
     bln_.resize(L + 1);
     cln_.resize(L + 1);
@@ -1098,10 +1083,10 @@ namespace nmie {
 
     std::vector<std::complex<double> > z(L), z1(L);
     for (int i = 0; i < L - 1; ++i) {
-      z[i] = size_param_[i]*refr_index_[i];
-      z1[i] = size_param_[i]*refr_index_[i + 1];
+      z[i] = size_param_[i]*refractive_index_[i];
+      z1[i] = size_param_[i]*refractive_index_[i + 1];
     }
-    z[L - 1] = size_param_[L - 1]*refr_index_[L - 1];
+    z[L - 1] = size_param_[L - 1]*refractive_index_[L - 1];
     z1[L - 1] = size_param_[L - 1];
 
     std::vector< std::vector<std::complex<double> > > D1z(L), D1z1(L), D3z(L), D3z1(L);
@@ -1123,7 +1108,7 @@ namespace nmie {
       calcPsiZeta(z[l], Psiz[l], Zetaz[l]);
       calcPsiZeta(z1[l], Psiz1[l], Zetaz1[l]);
     }
-    auto& m = refr_index_;
+    auto& m = refractive_index_;
     std::vector< std::complex<double> > m1(L);
 
     for (int l = 0; l < L - 1; ++l) m1[l] = m[l + 1];
@@ -1161,8 +1146,6 @@ namespace nmie {
 
     isIntCoeffsCalc_ = true;
   }
-  // ********************************************************************** //
-  // ********************************************************************** //
 
 
   // ********************************************************************** //
@@ -1170,7 +1153,6 @@ namespace nmie {
   // BH p.92 (4.37), 94 (4.45), 95 (4.50)                                   //
   // assume: medium is non-absorbing; refim = 0; Uabs = 0                   //
   // ********************************************************************** //
-
   void MultiLayerMie::fieldExt(const double Rho, const double Phi, const double Theta,
                                std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
@@ -1264,7 +1246,7 @@ namespace nmie {
           l = i;
         }
       }
-      ml = refr_index_[l];
+      ml = refractive_index_[l];
     }
 
     // Calculate spherical Bessel and Hankel functions
@@ -1331,7 +1313,7 @@ namespace nmie {
   void MultiLayerMie::RunFieldCalculation() {
     // Calculate external scattering coefficients an_ and bn_
     ExtScattCoeffs();
-    // Calculate internal scattering coefficients aln_ and bln_
+    // Calculate internal scattering coefficients aln_,  bln_, cln_, and dln_
     IntScattCoeffs();
 
     long total_points = coords_[0].size();
@@ -1370,10 +1352,8 @@ namespace nmie {
       if (Rho >= GetSizeParameter()) {
         fieldInt(Rho, Phi, Theta, Es, Hs);
 //        fieldExt(Rho, Phi, Theta, Es, Hs);
-        //printf("\nFin E ext: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]), Rho);
       } else {
         fieldInt(Rho, Phi, Theta, Es, Hs);
-//        printf("\nFin E int: %g,%g,%g   Rho=%g\n", std::abs(Es[0]), std::abs(Es[1]),std::abs(Es[2]), Rho);
       }
 
       { //Now, convert the fields back to cartesian coordinates
@@ -1387,9 +1367,6 @@ namespace nmie {
         H_[point][1] = sin(Theta)*sin(Phi)*Hs[0] + cos(Theta)*sin(Phi)*Hs[1] + cos(Phi)*Hs[2];
         H_[point][2] = cos(Theta)*Hs[0] - sin(Theta)*Hs[1];
       }
-      //printf("Cart E: %g,%g,%g   Rho=%g\n", std::abs(Ex), std::abs(Ey),std::abs(Ez), Rho);
     }  // end of for all field coordinates
-
   }  //  end of MultiLayerMie::RunFieldCalculation()
-
 }  // end of namespace nmie
