@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "../../bessel.h"
+#include "../../nmie.h"
 
 int main(int argc, char *argv[]) {
   
@@ -72,6 +73,9 @@ int main(int argc, char *argv[]) {
   printf("WA j() = 7.116552640047313023966191737248811458533809572 × 10^-11\n");
   printf("j(20,1) = %.14g\n", real(result[20]));
   printf("WA j() = 7.537795722236872993957557741584960855614358030 × 10^-26\n");
+
+
+    
 
 }
 

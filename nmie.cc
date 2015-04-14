@@ -1213,6 +1213,37 @@ namespace nmie {
       ml = refractive_index_[l];
     }
 
+  // std::complex<double> z1(1.0, 0.0);
+  // sbesjh(z1, jn, jnp, h1n, h1np);
+  // printf("nmax_ = %d\n", nmax_);
+  // printf("$$$$ REAL $$$$$$ Ricatti-Bessel: Calculate and compare against Wolfram Alpha\n");
+  // printf("j(0,1) = %16.18f\n", real(jn[0]));
+  // printf("WA j() = 0.841470984807896506652502321630\n");
+  // printf("j(1,1) = %16.18f\n", real(jn[1]));
+  // printf("WA j() = 0.301168678939756789251565714187322395890252640\n");
+  // printf("j(10,1) = %.14g\n", real(jn[10]));
+  // printf("WA j() = 7.116552640047313023966191737248811458533809572 × 10^-11\n");
+  // printf("j(20,1) = %.14g\n", real(jn[16]));
+  // printf("WA j() = 7.537795722236872993957557741584960855614358030 × 10^-26\n");
+  // std::complex<double> z(1.0, 2.0);
+  // sbesjh(z, jn, jnp, h1n, h1np);
+  // auto result =  jn;
+  // printf("===========Calculate and compare against Wolfram Alpha\n");
+  // printf("j(0,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
+  // 	 real(result[0]),
+  // 	 imag(result[0]));
+  // printf("WA j() = re(1.4169961192118759)\n         im(-0.874391197002)\n");
+
+  // printf("j(1,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
+  // 	 real(result[1]),
+  // 	 imag(result[1]));
+  // printf("WA j() = re(0.74785726329830368)\n         im(0.68179207555304)\n");
+
+  // printf("j(4,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
+  // 	 real(result[4]),
+  // 	 imag(result[4]));
+  // printf("WA j() = re(-0.01352410550046)\n         im(-0.027169663050653)\n");
+
     // Calculate spherical Bessel and Hankel functions
     sbesjh(Rho*ml, jn, jnp, h1n, h1np);
 

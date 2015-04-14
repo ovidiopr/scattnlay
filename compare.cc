@@ -282,7 +282,7 @@ int main(int argc, char *argv[]) {
     //range.push_back(size*0.99999);
     range.push_back(size/2.0);
     //range.push_back(size*1.00001);
-     range.push_back(3);
+    //range.push_back(3);
     //printf("r=%g  ", range.back());
     //}
     int samples = range.size();
@@ -302,7 +302,7 @@ int main(int argc, char *argv[]) {
     Zp.insert(Zp.end(), range.begin(), range.end());
     int ncoord = Xp.size();
     x = {size};
-    m = {std::complex<double>(2.000000,1.00)};
+    m = {std::complex<double>(4.000000,0.00)};
     // x = {size};
     //m = {std::complex<double>(1.33,0.0)};
     // x = {1.017, 2.016};
