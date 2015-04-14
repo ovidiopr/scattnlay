@@ -82,7 +82,7 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
 
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -144,7 +144,7 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nmie::nMie(L, -1, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
@@ -176,7 +176,7 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nmie::nMie(L, pl, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
@@ -210,7 +210,7 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nmie::nMie(L, -1, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
@@ -237,7 +237,7 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nField(const int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
+  int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const unsigned int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
     if (x.size() != L || m.size() != L)
       throw std::invalid_argument("Declared number of layers do not fit x and m!");
     if (Xp_vec.size() != ncoord || Yp_vec.size() != ncoord || Zp_vec.size() != ncoord
@@ -420,7 +420,7 @@ namespace nmie {
     isIntCoeffsCalc_ = false;
     isExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
-    if (layer_position < 0)
+    if (layer_position < 0 && layer_position != -1)
       throw std::invalid_argument("Error! Layers are numbered from 0!");
     PEC_layer_position_ = layer_position;
   }
@@ -487,19 +487,19 @@ namespace nmie {
   // ********************************************************************** //
   // Maximum number of terms required for the calculation                   //
   // ********************************************************************** //
-  void MultiLayerMie::calcNmax(int first_layer) {
+  void MultiLayerMie::calcNmax(unsigned int first_layer) {
     int ri, riM1;
     const std::vector<double>& x = size_param_;
     const std::vector<std::complex<double> >& m = refractive_index_;
     calcNstop();  // Set initial nmax_ value
-    for (int i = first_layer; i < x.size(); i++) {
-      if (i > PEC_layer_position_)
+    for (unsigned int i = first_layer; i < x.size(); i++) {
+      if (static_cast<int>(i) > PEC_layer_position_)  // static_cast used to avoid warning
         ri = round(std::abs(x[i]*m[i]));
       else
         ri = 0;
       nmax_ = std::max(nmax_, ri);
       // first layer is pec, if pec is present
-      if ((i > first_layer) && ((i - 1) > PEC_layer_position_))
+      if ((i > first_layer) && (static_cast<int>(i - 1) > PEC_layer_position_))
         riM1 = round(std::abs(x[i - 1]* m[i]));
       else
         riM1 = 0;
@@ -993,7 +993,7 @@ namespace nmie {
       Qbktmp += (double)(n + n + 1)*(1 - 2*(n % 2))*(an_[i]- bn_[i]);
       // Calculate the scattering amplitudes (S1 and S2)    //
       // Equations (25a) - (25b)                            //
-      for (int t = 0; t < theta_.size(); t++) {
+      for (unsigned int t = 0; t < theta_.size(); t++) {
         calcPiTau(std::cos(theta_[t]), Pi, Tau);
 
         S1_[t] += calc_S1(n, an_[i], bn_[i], Pi[i], Tau[i]);
@@ -1313,12 +1313,11 @@ namespace nmie {
       std::vector<std::complex<double> > Es(3), Hs(3);
 
       // Firstly the easiest case: the field outside the particle
-      if (Rho >= GetSizeParameter()) {
-        fieldInt(Rho, Phi, Theta, Es, Hs);
-//        fieldExt(Rho, Phi, Theta, Es, Hs);
-      } else {
-        fieldInt(Rho, Phi, Theta, Es, Hs);
-      }
+      //      if (Rho >= GetSizeParameter()) {
+      //        fieldExt(Rho, Phi, Theta, Es, Hs);
+      // } else {
+      fieldInt(Rho, Phi, Theta, Es, Hs);  //Should work fine both: inside and outside the particle
+      //}
 
       { //Now, convert the fields back to cartesian coordinates
         using std::sin;

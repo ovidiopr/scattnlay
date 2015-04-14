@@ -44,7 +44,7 @@ builddeb:
 	export CFLAGS='-std=c++11' && dpkg-buildpackage -i -I -rfakeroot
 
 standalone: standalone.cc nmie.cc
-	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -std=c++11 standalone.cc nmie.cc -lm -o scattnlay
+	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 standalone.cc nmie.cc -lm -o scattnlay
 	mv scattnlay ../
 
 clean:

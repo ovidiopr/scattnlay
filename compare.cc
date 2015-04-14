@@ -38,7 +38,7 @@
 //sudo aptitude install libgoogle-perftools-dev
 #include <google/heap-profiler.h>
 #include "nmie.h"
-#include "nmie-wrapper.h"
+#include "nmie-old.h"
 
 timespec diff(timespec start, timespec end);
 const double PI=3.14159265358979323846;
@@ -223,7 +223,7 @@ int main(int argc, char *argv[]) {
     // do {
     //   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
     //   for (int i = 0; i<repeats; ++i) {
-    // 	nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw,
+    // 	nmie::nMie(L, x, m, nt, Theta, &Qextw, &Qscaw,
     // 			   &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
     //   }
     //   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
@@ -252,15 +252,15 @@ int main(int argc, char *argv[]) {
     // } while (cpptime_nsec < 1e8 && ctime_nsec < 1e8);
 
     nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
-    nmie::nMie_wrapper(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
+    nmie::nMie(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
         printf("\n");
     
     if (has_comment) {
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  old\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
+      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     } else {
       printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  old\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
+      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     }
     
     if (nt > 0) {
@@ -268,21 +268,21 @@ int main(int argc, char *argv[]) {
       
       for (i = 0; i < nt; i++) {
         printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  old\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
-        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
+        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  \n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
       }
     }
     // Field testing
     double from_coord = -3.0, to_coord = 3000.0;
     //double size=2.0*PI*1.0/6.0;
-    double size=0.001;
+    double size=0.01;
     std::vector<double> range;
     // for (int i = 0; i < samples; ++i) {
       //range.push_back( from_coord + (to_coord-from_coord)/(static_cast<double>(samples)-1)*i );
     //range.push_back(size*0.01);
     //range.push_back(size*0.99999);
     range.push_back(size/2.0);
-    //  range.push_back(size*1.00001);
-    // range.push_back(3);
+    //range.push_back(size*1.00001);
+     range.push_back(3);
     //printf("r=%g  ", range.back());
     //}
     int samples = range.size();
@@ -302,9 +302,9 @@ int main(int argc, char *argv[]) {
     Zp.insert(Zp.end(), range.begin(), range.end());
     int ncoord = Xp.size();
     x = {size};
-    //m = {std::complex<double>(1.0000002,0.00)};
+    m = {std::complex<double>(2.000000,1.00)};
     // x = {size};
-    m = {std::complex<double>(1.33,0.0)};
+    //m = {std::complex<double>(1.33,0.0)};
     // x = {1.017, 2.016};
     // m = {std::complex<double>(1.5016,1.023), std::complex<double>(2.014,2.012)};
     L = x.size();
@@ -315,23 +315,10 @@ int main(int argc, char *argv[]) {
     for (auto& f:H) f.resize(3);
     double free_impedance = 376.73031;
     //double free_impedance = 1.0;
-    nmax =  nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
-    double sum_e = 0.0, sum_h = 0.0;
-    printf ("Field total sum (old)\n");
-    for (auto f:E) {
-      sum_e = 0.0;
-      for (auto c:f) sum_e+=std::abs(pow2(c));
-      printf("Field E=%g\n", std::sqrt(std::abs(sum_e)));
-    }
-    for (auto f:H) {
-      sum_h = 0.0;
-      for (auto c:f) sum_h+=std::abs(pow2(c));
-      printf("Field H=%g\n", std::sqrt(std::abs(sum_h))*free_impedance);
-    }
 
     nmie::nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
-    sum_e = 0.0, sum_h = 0.0;
-    printf ("Field total sum (wrapper)\n");
+    double sum_e = 0.0, sum_h = 0.0;
+    printf ("Field total sum ()\n");
     for (auto f:E) {
       sum_e = 0.0;
       for (auto c:f) sum_e+=std::abs(pow2(c));

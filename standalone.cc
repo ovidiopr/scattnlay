@@ -68,7 +68,8 @@ int main(int argc, char *argv[]) {
     // for (auto arg : args) std::cout<< arg <<std::endl;
     std::string comment;
     int has_comment = 0;
-    int i, l, L = 0;
+    int i;
+    unsigned int L = 0;
     std::vector<double> x, Theta;
     std::vector<std::complex<double> > m, S1, S2;
     double Qext, Qabs, Qsca, Qbk, Qpr, g, Albedo;
