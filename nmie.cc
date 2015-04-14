@@ -94,6 +94,8 @@ namespace nmie {
       multi_layer_mie.SetLayersSize(x);
       multi_layer_mie.SetLayersIndex(m);
       multi_layer_mie.SetAngles(Theta);
+      multi_layer_mie.SetPECLayer(pl);
+      multi_layer_mie.SetMaxTerms(nmax);
 
       multi_layer_mie.RunMieCalculation();
 

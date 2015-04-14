@@ -28,8 +28,6 @@
 #include <vector>
 namespace nmie {
   namespace bessel {
-    std::vector< std::complex<double> > bessel_j(int n, std::complex<double> rho);
-    std::vector< std::complex<double> > bh_bessel_j(int n, std::complex<double> rho);
     void csphjy (int n, std::complex<double>z, int& nm,
 		 std::vector< std::complex<double> >& csj,
 		 std::vector< std::complex<double> >& cdj,

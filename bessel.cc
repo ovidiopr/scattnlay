@@ -34,59 +34,6 @@
 
 namespace nmie {
   namespace bessel {
-    // Implementation of spherical Bessel functions from
-    // L.-W. Cai / Computer Physics Communications 182 (2011) 663–668
-    std::vector< std::complex<double> > bessel_j(int nmax, std::complex<double> rho) {
-      if (nmax < 0) throw std::invalid_argument("Bessel order should be >= 0 (nmie::bessel_j)\n");
-      std::complex<double> c_zero(0.0,0.0);
-      std::vector< std::complex<double> > j(nmax+1, c_zero);
-      // Select normalization amplitude
-      int norm_n = 0;
-      std::complex<double> norm_value = std::sin(rho)/rho,
-	tmp = std::sin(rho)/(rho*rho) - std::cos(rho)/rho;
-      if (std::abs(tmp) > std::abs(norm_value)) {
-	norm_value = tmp;
-	norm_n = 1;
-      }
-      // calculate number of terms for backward recursion Cai eq(11)
-      double theta = std::arg(rho), r = std::abs(rho);
-      double M = (1.83 + 4.1* std::pow(std::sin(theta), 0.36)) *
-	std::pow(r, (0.91 - 0.43*std::pow(std::sin(theta),0.33)))
-	+ 9.0*(1.0-std::sqrt(std::sin(theta)));
-      int terms = std::max(nmax+2, static_cast<int>(std::ceil(M))+2);
-      printf("terms = %d\n", terms);
-      // Seed for eq(2)
-      std::complex<double> b_np1(0.0, 0.0), b_nm1;
-      double eps = std::numeric_limits<double>::epsilon();
-      std::complex<double> b_n(eps, 0.0);
-      //recurence
-      for (int n = terms*2; n > 0; --n) {
-	b_nm1 = (2.0*static_cast<double>(n)+1.0)/rho*b_n - b_np1;
-	if (n-1 < nmax+1) j[n-1] = b_nm1;
-      }
-      // normalize
-      norm_value /= j[norm_n];
-      for (auto& value : j) value *=norm_value;
-      
-      return j;
-    }
-    // Implementation of Bessel functions from Bohren and Huffman book, pp. 86-87, eq 4.11
-    // Calculate all orders of function from 0 to nmax (included) for argument rho
-    std::vector< std::complex<double> > bh_bessel_j(int nmax, std::complex<double> rho) {
-      if (nmax < 0) throw std::invalid_argument("Bessel order should be >= 0 (nmie::bessel_j)\n");
-      std::vector< std::complex<double> > j(nmax+1);
-      j[0] = std::sin(rho)/rho;
-      if (nmax == 0) return j;
-      j[1] = std::sin(rho)/(rho*rho) - std::cos(rho)/rho;
-      if (nmax == 1) return j;
-      for (int i = 2; i < nmax+1; ++i) {
-	int n = i - 1;
-	j[n+1] = static_cast<double>(2*n+1)/rho*j[n] - j[n-1];
-      }
-      return j;
-    }
-
-
 // !*****************************************************************************80
 //  
 //  C++ port of fortran code
