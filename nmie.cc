@@ -364,8 +364,8 @@ namespace nmie {
   // Modify scattering (theta) angles                                       //
   // ********************************************************************** //
   void MultiLayerMie::SetAngles(const std::vector<double>& angles) {
-    areIntCoeffsCalc_ = false;
-    areExtCoeffsCalc_ = false;
+    isIntCoeffsCalc_ = false;
+    isExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     theta_ = angles;
   }
@@ -375,8 +375,8 @@ namespace nmie {
   // Modify size of all layers                                             //
   // ********************************************************************** //
   void MultiLayerMie::SetLayersSize(const std::vector<double>& layer_size) {
-    areIntCoeffsCalc_ = false;
-    areExtCoeffsCalc_ = false;
+    isIntCoeffsCalc_ = false;
+    isExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     size_param_.clear();
     double prev_layer_size = 0.0;
@@ -396,8 +396,8 @@ namespace nmie {
   // Modify refractive index of all layers                                  //
   // ********************************************************************** //
   void MultiLayerMie::SetLayersIndex(const std::vector< std::complex<double> >& index) {
-    areIntCoeffsCalc_ = false;
-    areExtCoeffsCalc_ = false;
+    isIntCoeffsCalc_ = false;
+    isExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     refr_index_ = index;
   }
@@ -419,8 +419,8 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::SetPECLayer(int layer_position) {
-    areIntCoeffsCalc_ = false;
-    areExtCoeffsCalc_ = false;
+    isIntCoeffsCalc_ = false;
+    isExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     if (layer_position < 0)
       throw std::invalid_argument("Error! Layers are numbered from 0!");
@@ -432,8 +432,8 @@ namespace nmie {
   // Set maximun number of terms to be used                                 //
   // ********************************************************************** //
   void MultiLayerMie::SetMaxTerms(int nmax) {
-    areIntCoeffsCalc_ = false;
-    areExtCoeffsCalc_ = false;
+    isIntCoeffsCalc_ = false;
+    isExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     nmax_preset_ = nmax;
   }
@@ -454,8 +454,8 @@ namespace nmie {
   // Clear layer information                                                //
   // ********************************************************************** //
   void MultiLayerMie::ClearLayers() {
-    areIntCoeffsCalc_ = false;
-    areExtCoeffsCalc_ = false;
+    isIntCoeffsCalc_ = false;
+    isExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
     size_param_.clear();
     refr_index_.clear();
@@ -760,7 +760,7 @@ namespace nmie {
   //**********************************************************************************//
   void MultiLayerMie::ExtScattCoeffs() {
 
-    areExtCoeffsCalc_ = false;
+    isExtCoeffsCalc_ = false;
 
     const std::vector<double>& x = size_param_;
     const std::vector<std::complex<double> >& m = refr_index_;
@@ -914,7 +914,7 @@ namespace nmie {
         bn_[n] = PsiXL[n + 1]/ZetaXL[n + 1];
       }
     }  // end of for an and bn terms
-    areExtCoeffsCalc_ = true;
+    isExtCoeffsCalc_ = true;
   }  // end of MultiLayerMie::ExtScattCoeffs(...)
 
 
@@ -954,14 +954,14 @@ namespace nmie {
 
     const std::vector<double>& x = size_param_;
 
-    areIntCoeffsCalc_ = false;
-    areExtCoeffsCalc_ = false;
+    isIntCoeffsCalc_ = false;
+    isExtCoeffsCalc_ = false;
     isMieCalculated_ = false;
 
     // Calculate scattering coefficients
     ExtScattCoeffs();
 
-    if (!areExtCoeffsCalc_)
+    if (!isExtCoeffsCalc_) // TODO seems to be unreachable
       throw std::invalid_argument("Calculation of scattering coefficients failed!");
 
     // Initialize the scattering parameters
@@ -1063,10 +1063,10 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::IntScattCoeffs() {
-    if (!areExtCoeffsCalc_)
+    if (!isExtCoeffsCalc_)
       throw std::invalid_argument("(IntScattCoeffs) You should calculate external coefficients first!");
 
-    areIntCoeffsCalc_ = false;
+    isIntCoeffsCalc_ = false;
 
     std::complex<double> c_one(1.0, 0.0);
     std::complex<double> c_zero(0.0, 0.0);
@@ -1074,26 +1074,26 @@ namespace nmie {
     const int L = refr_index_.size();
 
     // we need to fill
-    // std::vector< std::vector<std::complex<double> > > aln_, bln_, cnl_, dnl_;
+    // std::vector< std::vector<std::complex<double> > > aln_, bln_, cnl_, dln_;
     //     for n = [0..nmax_) and for l=[L..0)
     // TODO: to decrease cache miss outer loop is with n and inner with reversed l
     // at the moment outer is forward l and inner in n
     aln_.resize(L + 1);
     bln_.resize(L + 1);
-    cnl_.resize(L + 1);
-    dnl_.resize(L + 1);
+    cln_.resize(L + 1);
+    dln_.resize(L + 1);
     for (auto& element:aln_) element.resize(nmax_);
     for (auto& element:bln_) element.resize(nmax_);
-    for (auto& element:cnl_) element.resize(nmax_);
-    for (auto& element:dnl_) element.resize(nmax_);
+    for (auto& element:cln_) element.resize(nmax_);
+    for (auto& element:dln_) element.resize(nmax_);
 
     // Yang, paragraph under eq. A3
     // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
     for (int i = 0; i < nmax_; ++i) {
       aln_[L][i] = an_[i];
       bln_[L][i] = bn_[i];
-      cnl_[L][i] = c_one;
-      dnl_[L][i] = c_one;
+      cln_[L][i] = c_one;
+      dln_[L][i] = c_one;
     }
 
     std::vector<std::complex<double> > z(L), z1(L);
@@ -1134,20 +1134,20 @@ namespace nmie {
         auto denomZeta = m1[l]*Zetaz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
         auto denomPsi = m1[l]*Psiz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
 
-        auto T1 = aln_[l + 1][n]*Zetaz1[l][n + 1] - dnl_[l + 1][n]*Psiz1[l][n + 1];
-        auto T2 = bln_[l + 1][n]*Zetaz1[l][n + 1] - cnl_[l + 1][n]*Psiz1[l][n + 1];
+        auto T1 = aln_[l + 1][n]*Zetaz1[l][n + 1] - dln_[l + 1][n]*Psiz1[l][n + 1];
+        auto T2 = bln_[l + 1][n]*Zetaz1[l][n + 1] - cln_[l + 1][n]*Psiz1[l][n + 1];
 
-        auto T3 = -D1z1[l][n + 1]*dnl_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*aln_[l + 1][n]*Zetaz1[l][n + 1];
-        auto T4 = -D1z1[l][n + 1]*cnl_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bln_[l + 1][n]*Zetaz1[l][n + 1];
+        auto T3 = -D1z1[l][n + 1]*dln_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*aln_[l + 1][n]*Zetaz1[l][n + 1];
+        auto T4 = -D1z1[l][n + 1]*cln_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bln_[l + 1][n]*Zetaz1[l][n + 1];
 
         // anl
         aln_[l][n] = (D1z[l][n + 1]*m1[l]*T1 - m[l]*T3)/denomZeta;
         // bnl
         bln_[l][n] = (D1z[l][n + 1]*m[l]*T2 - m1[l]*T4)/denomZeta;
         // cnl
-        cnl_[l][n] = (D3z[l][n + 1]*m[l]*T2 - m1[l]*T4)/denomPsi;
+        cln_[l][n] = (D3z[l][n + 1]*m[l]*T2 - m1[l]*T4)/denomPsi;
         // dnl
-        dnl_[l][n] = (D3z[l][n + 1]*m1[l]*T1 - m[l]*T3)/denomPsi;
+        dln_[l][n] = (D3z[l][n + 1]*m1[l]*T1 - m[l]*T3)/denomPsi;
       }  // end of all n
     }  // end of all l
 
@@ -1159,7 +1159,7 @@ namespace nmie {
       else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
     }
 
-    areIntCoeffsCalc_ = true;
+    isIntCoeffsCalc_ = true;
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -1284,10 +1284,10 @@ namespace nmie {
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
       std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
       for (int i = 0; i < 3; i++) {
-        El[i] = El[i] + En*(cnl_[l][n]*M1o1n[i] - c_i*dnl_[l][n]*N1e1n[i]
+        El[i] = El[i] + En*(cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
                       + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
 
-        Hl[i] = Hl[i] + En*(-dnl_[l][n]*M1e1n[i] - c_i*cnl_[l][n]*N1o1n[i]
+        Hl[i] = Hl[i] + En*(-dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
                       +  c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
       }
     }  // end of for all n

@@ -134,8 +134,8 @@ namespace nmie {
     void fieldInt(const double Rho, const double Phi, const double Theta,
                   std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
 
-    bool areIntCoeffsCalc_ = false;
-    bool areExtCoeffsCalc_ = false;
+    bool isIntCoeffsCalc_ = false;
+    bool isExtCoeffsCalc_ = false;
     bool isMieCalculated_ = false;
 
     // Size parameter for all layers
@@ -157,7 +157,7 @@ namespace nmie {
     // boost, if $a^(L+1)_n$ stored in aln_[n][0], $a^(L)_n$ in
     // aln_[n][1] and so on...
     // at the moment order is forward!
-    std::vector< std::vector<std::complex<double> > > aln_, bln_, cnl_, dnl_;
+    std::vector< std::vector<std::complex<double> > > aln_, bln_, cln_, dln_;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::vector< std::complex<double> > > E_, H_;  // {X[], Y[], Z[]}
