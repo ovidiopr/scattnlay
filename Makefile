@@ -41,10 +41,10 @@ builddeb:
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../ --prune
 	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
-	dpkg-buildpackage -i -I -rfakeroot
+	export CFLAGS='-std=c++11' && dpkg-buildpackage -i -I -rfakeroot
 
 standalone: standalone.cc nmie.cc
-	c++ -DNDEBUG -O2 -std=c++11 standalone.cc nmie.cc -lm -o scattnlay
+	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -std=c++11 standalone.cc nmie.cc -lm -o scattnlay
 	mv scattnlay ../
 
 clean:
