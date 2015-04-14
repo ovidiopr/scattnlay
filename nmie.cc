@@ -759,7 +759,7 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  void MultiLayerMie::ExtScattCoeffs() {
+  void MultiLayerMie::ExternalScattCoeffs() {
 
     isExtCoeffsCalc_ = false;
 
@@ -909,7 +909,7 @@ namespace nmie {
       }
     }  // end of for an and bn terms
     isExtCoeffsCalc_ = true;
-  }  // end of MultiLayerMie::ExtScattCoeffs(...)
+  }  // end of MultiLayerMie::ExternalScattCoeffs(...)
 
 
   //**********************************************************************************//
@@ -953,34 +953,19 @@ namespace nmie {
     isMieCalculated_ = false;
 
     // Calculate scattering coefficients
-    ExtScattCoeffs();
+    ExternalScattCoeffs();
 
     if (!isExtCoeffsCalc_) // TODO seems to be unreachable
       throw std::invalid_argument("Calculation of scattering coefficients failed!");
 
     // Initialize the scattering parameters
-    Qext_ = 0;
-    Qsca_ = 0;
-    Qabs_ = 0;
-    Qbk_ = 0;
-    Qpr_ = 0;
-    asymmetry_factor_ = 0;
-    albedo_ = 0;
-    Qsca_ch_.clear();
-    Qext_ch_.clear();
-    Qabs_ch_.clear();
-    Qbk_ch_.clear();
-    Qpr_ch_.clear();
-    Qsca_ch_.resize(nmax_ - 1);
-    Qext_ch_.resize(nmax_ - 1);
-    Qabs_ch_.resize(nmax_ - 1);
-    Qbk_ch_.resize(nmax_ - 1);
-    Qpr_ch_.resize(nmax_ - 1);
-    Qsca_ch_norm_.resize(nmax_ - 1);
-    Qext_ch_norm_.resize(nmax_ - 1);
-    Qabs_ch_norm_.resize(nmax_ - 1);
-    Qbk_ch_norm_.resize(nmax_ - 1);
-    Qpr_ch_norm_.resize(nmax_ - 1);
+    Qext_ = 0.0;
+    Qsca_ = 0.0;
+    Qabs_ = 0.0;
+    Qbk_ = 0.0;
+    Qpr_ = 0.0;
+    asymmetry_factor_ = 0.0;
+    albedo_ = 0.0;
 
     // Initialize the scattering amplitudes
     std::vector<std::complex<double> > tmp1(theta_.size(),std::complex<double>(0.0, 0.0));
@@ -997,25 +982,15 @@ namespace nmie {
     for (int i = nmax_ - 2; i >= 0; i--) {
       const int n = i + 1;
       // Equation (27)
-      Qext_ch_norm_[i] = (an_[i].real() + bn_[i].real());
-      Qext_ch_[i] = (n + n + 1.0)*Qext_ch_norm_[i];
-      //Qext_ch_[i] = (n + n + 1)*(an_[i].real() + bn_[i].real());
-      Qext_ += Qext_ch_[i];
+      Qext_ += (n + n + 1.0)*(an_[i].real() + bn_[i].real());
       // Equation (28)
-      Qsca_ch_norm_[i] = (an_[i].real()*an_[i].real() + an_[i].imag()*an_[i].imag()
-                          + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
-      Qsca_ch_[i] = (n + n + 1.0)*Qsca_ch_norm_[i];
-      Qsca_ += Qsca_ch_[i];
-      // Qsca_ch_[i] += (n + n + 1)*(an_[i].real()*an_[i].real() + an_[i].imag()*an_[i].imag()
-      //                             + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
-
+      Qsca_ += (n + n + 1.0)*(an_[i].real()*an_[i].real() + an_[i].imag()*an_[i].imag()
+			     + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
       // Equation (29)
-      Qpr_ch_[i]=((n*(n + 2)/(n + 1))*((an_[i]*std::conj(an_[n]) + bn_[i]*std::conj(bn_[n])).real())
+      Qpr_ += ((n*(n + 2)/(n + 1))*((an_[i]*std::conj(an_[n]) + bn_[i]*std::conj(bn_[n])).real())
                + ((double)(n + n + 1)/(n*(n + 1)))*(an_[i]*std::conj(bn_[i])).real());
-      Qpr_ += Qpr_ch_[i];
       // Equation (33)
-      Qbktmp_ch[i] = (double)(n + n + 1)*(1 - 2*(n % 2))*(an_[i]- bn_[i]);
-      Qbktmp += Qbktmp_ch[i];
+      Qbktmp += (double)(n + n + 1)*(1 - 2*(n % 2))*(an_[i]- bn_[i]);
       // Calculate the scattering amplitudes (S1 and S2)    //
       // Equations (25a) - (25b)                            //
       for (int t = 0; t < theta_.size(); t++) {
@@ -1027,22 +1002,11 @@ namespace nmie {
     }
     double x2 = pow2(x.back());
     Qext_ = 2.0*(Qext_)/x2;                                 // Equation (27)
-    for (double& Q : Qext_ch_) Q = 2.0*Q/x2;
     Qsca_ = 2.0*(Qsca_)/x2;                                 // Equation (28)
-    for (double& Q : Qsca_ch_) Q = 2.0*Q/x2;
-    //for (double& Q : Qsca_ch_norm_) Q = 2.0*Q/x2;
     Qpr_ = Qext_ - 4.0*(Qpr_)/x2;                           // Equation (29)
-    for (int i = 0; i < nmax_ - 1; ++i) Qpr_ch_[i] = Qext_ch_[i] - 4.0*Qpr_ch_[i]/x2;
-
-    Qabs_ = Qext_ - Qsca_;                                // Equation (30)
-    for (int i = 0; i < nmax_ - 1; ++i) {
-      Qabs_ch_[i] = Qext_ch_[i] - Qsca_ch_[i];
-      Qabs_ch_norm_[i] = Qext_ch_norm_[i] - Qsca_ch_norm_[i];
-    }
-
-    albedo_ = Qsca_/Qext_;                              // Equation (31)
-    asymmetry_factor_ = (Qext_ - Qpr_)/Qsca_;                          // Equation (32)
-
+    Qabs_ = Qext_ - Qsca_;                                  // Equation (30)
+    albedo_ = Qsca_/Qext_;                                  // Equation (31)
+    asymmetry_factor_ = (Qext_ - Qpr_)/Qsca_;               // Equation (32)
     Qbk_ = (Qbktmp.real()*Qbktmp.real() + Qbktmp.imag()*Qbktmp.imag())/x2;    // Equation (33)
 
     isMieCalculated_ = true;
@@ -1052,9 +1016,9 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMie::IntScattCoeffs() {
+  void MultiLayerMie::InternalScattCoeffs() {
     if (!isExtCoeffsCalc_)
-      throw std::invalid_argument("(IntScattCoeffs) You should calculate external coefficients first!");
+      throw std::invalid_argument("(InternalScattCoeffs) You should calculate external coefficients first!");
 
     isIntCoeffsCalc_ = false;
 
@@ -1145,7 +1109,7 @@ namespace nmie {
     }
 
     isIntCoeffsCalc_ = true;
-  }
+  }  // end of   void MultiLayerMie::InternalScattCoeffs()
 
 
   // ********************************************************************** //
@@ -1312,9 +1276,9 @@ namespace nmie {
   //**********************************************************************************//
   void MultiLayerMie::RunFieldCalculation() {
     // Calculate external scattering coefficients an_ and bn_
-    ExtScattCoeffs();
+    ExternalScattCoeffs();
     // Calculate internal scattering coefficients aln_,  bln_, cln_, and dln_
-    IntScattCoeffs();
+    InternalScattCoeffs();
 
     long total_points = coords_[0].size();
     E_.resize(total_points);

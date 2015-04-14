@@ -125,8 +125,8 @@ namespace nmie {
                        const double& Pi, const double& Tau, const double& n,
                        std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
                        std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
-    void ExtScattCoeffs();
-    void IntScattCoeffs();
+    void ExternalScattCoeffs();
+    void InternalScattCoeffs();
 
     void fieldExt(const double Rho, const double Phi, const double Theta,
                   std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
@@ -161,9 +161,6 @@ namespace nmie {
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::vector< std::complex<double> > > E_, H_;  // {X[], Y[], Z[]}
-    // Mie efficinecy from each multipole channel.
-    std::vector<double> Qsca_ch_, Qext_ch_, Qabs_ch_, Qbk_ch_, Qpr_ch_;
-    std::vector<double> Qsca_ch_norm_, Qext_ch_norm_, Qabs_ch_norm_, Qbk_ch_norm_, Qpr_ch_norm_;
     std::vector<std::complex<double> > S1_, S2_;
 
     //Used constants
