@@ -41,4 +41,3 @@ cov-int
 build*
 .ipynb_checkpoints
 tests/python/field.txt
-scattnlay.cpp
