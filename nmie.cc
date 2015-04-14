@@ -611,13 +611,13 @@ namespace nmie {
                                   std::vector<std::complex<double> >& Psi,
                                   std::vector<std::complex<double> >& Zeta) {
 
+    std::complex<double> c_i(0.0, 1.0);
     std::vector<std::complex<double> > D1(nmax_ + 1), D3(nmax_ + 1);
 
     // First, calculate the logarithmic derivatives
     calcD1D3(z, D1, D3);
 
     // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
-    std::complex<double> c_i(0.0, 1.0);
     Psi[0] = std::sin(z);
     Zeta[0] = std::sin(z) - c_i*std::cos(z);
     for (int n = 1; n <= nmax_; n++) {
@@ -711,7 +711,20 @@ namespace nmie {
 
 
   //**********************************************************************************//
-  // This function calculates vector spherical harmonics.                             //
+  // This function calculates vector spherical harmonics (eq. 4.50, p. 95 BH),        //
+  // required to calculate the near-field parameters.                                 //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   Rho: Radial distance                                                           //
+  //   Phi: Azimuthal angle                                                           //
+  //   Theta: Polar angle                                                             //
+  //   zn: Either the spherical Bessel or Hankel function of first kind               //
+  //   dzn: Derivative of zn                                                          //
+  //   Pi, Tau: Angular functions Pi and Tau                                          //
+  //   n: Order of vector spherical harmonics                                         //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   Mo1n, Me1n, No1n, Ne1n: Complex vector spherical harmonics                     //
   //**********************************************************************************//
   void MultiLayerMie::calcSpherHarm(const double Rho, const double Phi, const double Theta,
                                     const std::complex<double>& zn, const std::complex<double>& dzn,
@@ -1013,9 +1026,25 @@ namespace nmie {
   }
 
 
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
+  //**********************************************************************************//
+  // This function calculates the scattering coefficients inside the particle,        //
+  // required to calculate the near-field parameters.                                 //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   L: Number of layers                                                            //
+  //   pl: Index of PEC layer. If there is none just send -1                          //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
+  //         calculations. Only use it if you know what you are doing, otherwise      //
+  //         set this parameter to -1 and the function will calculate it.             //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   aln, bln, cln, dln: Complex scattering amplitudes inside the particle          //
+  //                                                                                  //
+  // Return value:                                                                    //
+  //   Number of multipolar expansion terms used for the calculations                 //
+  //**********************************************************************************//
   void MultiLayerMie::InternalScattCoeffs() {
     if (!isExtCoeffsCalc_)
       throw std::invalid_argument("(InternalScattCoeffs) You should calculate external coefficients first!");
@@ -1184,11 +1213,20 @@ namespace nmie {
    }  // end of MultiLayerMie::fieldExt(...)
 
 
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
-  void MultiLayerMie::fieldInt(const double Rho, const double Phi, const double Theta,
-                               std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
+  //**********************************************************************************//
+  // This function calculates the electric (E) and magnetic (H) fields inside and     //
+  // around the particle.                                                             //
+  //                                                                                  //
+  // Input parameters (coordinates of the point):                                     //
+  //   Rho: Radial distance                                                           //
+  //   Phi: Azimuthal angle                                                           //
+  //   Theta: Polar angle                                                             //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   E, H: Complex electric and magnetic fields                                     //
+  //**********************************************************************************//
+  void MultiLayerMie::calcField(const double Rho, const double Phi, const double Theta,
+                                std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
     std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
     std::vector<std::complex<double> > ipow = {c_one, c_i, -c_one, -c_i}; // Vector containing precomputed integer powers of i to avoid computation
@@ -1244,7 +1282,7 @@ namespace nmie {
   // 	 imag(result[4]));
   // printf("WA j() = re(-0.01352410550046)\n         im(-0.027169663050653)\n");
 
-    // Calculate spherical Bessel and Hankel functions
+    // Calculate spherical Bessel and Hankel functions and their derivatives
     sbesjh(Rho*ml, jn, jnp, h1n, h1np);
 
     // Calculate angular functions Pi and Tau
@@ -1280,12 +1318,12 @@ namespace nmie {
       E[i] = El[i];
       H[i] = Hl[i];
     }
-   }  // end of MultiLayerMie::fieldInt(...)
+   }  // end of MultiLayerMie::calcField(...)
 
 
   //**********************************************************************************//
   // This function calculates complex electric and magnetic field in the surroundings //
-  // and inside (TODO) the particle.                                                  //
+  // and inside the particle.                                                         //
   //                                                                                  //
   // Input parameters:                                                                //
   //   L: Number of layers                                                            //
@@ -1347,7 +1385,7 @@ namespace nmie {
       //      if (Rho >= GetSizeParameter()) {
       //        fieldExt(Rho, Phi, Theta, Es, Hs);
       // } else {
-      fieldInt(Rho, Phi, Theta, Es, Hs);  //Should work fine both: inside and outside the particle
+      calcField(Rho, Phi, Theta, Es, Hs);  //Should work fine both: inside and outside the particle
       //}
 
       { //Now, convert the fields back to cartesian coordinates

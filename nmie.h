@@ -131,8 +131,8 @@ namespace nmie {
     void fieldExt(const double Rho, const double Phi, const double Theta,
                   std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
 
-    void fieldInt(const double Rho, const double Phi, const double Theta,
-                  std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
+    void calcField(const double Rho, const double Phi, const double Theta,
+                   std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
 
     bool isIntCoeffsCalc_ = false;
     bool isExtCoeffsCalc_ = false;
