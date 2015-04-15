@@ -1125,15 +1125,17 @@ namespace nmie {
 
     // Yang, paragraph under eq. A3
     // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
-    for (int i = 0; i < nmax_; ++i) {
-      aln_[L][i] = an_[i];
-      bln_[L][i] = bn_[i];
-      cln_[L][i] = c_one;
-      dln_[L][i] = c_one;
+    for (int n = 0; n < nmax_; n++) {
+      aln_[L][n] = an_[n];
+      bln_[L][n] = bn_[n];
+      cln_[L][n] = c_one;
+      dln_[L][n] = c_one;
     }
 
     std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
     std::vector<std::complex<double> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
+
+    std::complex<double> denomZeta, denomPsi, T1, T2, T3, T4;
 
     auto& m = refractive_index_;
     std::vector< std::complex<double> > m1(L);
@@ -1152,14 +1154,14 @@ namespace nmie {
       calcPsiZeta(z1, Psiz1, Zetaz1);
 
       for (int n = 0; n < nmax_; n++) {
-        std::complex<double> denomZeta = m1[l]*Zetaz[n + 1]*(D1z[n + 1] - D3z[n + 1]);
-        std::complex<double> denomPsi = m1[l]*Psiz[n + 1]*(D1z[n + 1] - D3z[n + 1]);
+        denomZeta = m1[l]*Zetaz[n + 1]*(D1z[n + 1] - D3z[n + 1]);
+        denomPsi = m1[l]*Psiz[n + 1]*(D1z[n + 1] - D3z[n + 1]);
 
-        std::complex<double> T1 = aln_[l + 1][n]*Zetaz1[n + 1] - dln_[l + 1][n]*Psiz1[n + 1];
-        std::complex<double> T2 = bln_[l + 1][n]*Zetaz1[n + 1] - cln_[l + 1][n]*Psiz1[n + 1];
+        T1 = aln_[l + 1][n]*Zetaz1[n + 1] - dln_[l + 1][n]*Psiz1[n + 1];
+        T2 = bln_[l + 1][n]*Zetaz1[n + 1] - cln_[l + 1][n]*Psiz1[n + 1];
 
-        std::complex<double> T3 = -D1z1[n + 1]*dln_[l + 1][n]*Psiz1[n + 1] + D3z1[n + 1]*aln_[l + 1][n]*Zetaz1[n + 1];
-        std::complex<double> T4 = -D1z1[n + 1]*cln_[l + 1][n]*Psiz1[n + 1] + D3z1[n + 1]*bln_[l + 1][n]*Zetaz1[n + 1];
+        T3 = -D1z1[n + 1]*dln_[l + 1][n]*Psiz1[n + 1] + D3z1[n + 1]*aln_[l + 1][n]*Zetaz1[n + 1];
+        T4 = -D1z1[n + 1]*cln_[l + 1][n]*Psiz1[n + 1] + D3z1[n + 1]*bln_[l + 1][n]*Zetaz1[n + 1];
 
         // aln
         aln_[l][n] = (D1z[n + 1]*m1[l]*T1 - m[l]*T3)/denomZeta;
