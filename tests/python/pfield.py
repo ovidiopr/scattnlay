@@ -56,7 +56,7 @@ Er = np.absolute(E)
 # |E|/|Eo|
 Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
 
-print x
-print m
+print "x =", x
+print "m =", m
 print np.vstack((coord[:, 0], Eh)).transpose()
 

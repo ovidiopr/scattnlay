@@ -35,9 +35,9 @@
 # conditions.
 import scattnlay
 
-import os
-path = os.path.dirname(scattnlay.__file__)
-print(scattnlay.__file__)
+#import os
+#path = os.path.dirname(scattnlay.__file__)
+#print(scattnlay.__file__)
 
 from scattnlay import fieldnlay
 import numpy as np
@@ -52,7 +52,7 @@ m[0, 1] = (0.565838 + 7.23262j)/1.3205
 
 npts = 501
 
-scan = np.linspace(-2.0*x[0, 1], 2.0*x[0, 1], npts)
+scan = np.linspace(-4.0*x[0, 1], 4.0*x[0, 1], npts)
 
 coordX, coordY = np.meshgrid(scan, scan)
 coordX.resize(npts*npts)

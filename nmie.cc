@@ -783,7 +783,7 @@ namespace nmie {
   // Output parameters:                                                               //
   //   Mo1n, Me1n, No1n, Ne1n: Complex vector spherical harmonics                     //
   //**********************************************************************************//
-  void MultiLayerMie::calcSpherHarm(const double Rho, const double Phi, const double Theta,
+  void MultiLayerMie::calcSpherHarm(const double Rho, const double Theta, const double Phi,
                                     const std::complex<double>& zn, const std::complex<double>& dzn,
                                     const double& Pi, const double& Tau, const double& n,
                                     std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
@@ -1134,7 +1134,6 @@ namespace nmie {
 
     std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
     std::vector<std::complex<double> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
-
     std::complex<double> denomZeta, denomPsi, T1, T2, T3, T4;
 
     auto& m = refractive_index_;
@@ -1154,23 +1153,25 @@ namespace nmie {
       calcPsiZeta(z1, Psiz1, Zetaz1);
 
       for (int n = 0; n < nmax_; n++) {
-        denomZeta = m1[l]*Zetaz[n + 1]*(D1z[n + 1] - D3z[n + 1]);
-        denomPsi = m1[l]*Psiz[n + 1]*(D1z[n + 1] - D3z[n + 1]);
+        int n1 = n + 1;
 
-        T1 = aln_[l + 1][n]*Zetaz1[n + 1] - dln_[l + 1][n]*Psiz1[n + 1];
-        T2 = bln_[l + 1][n]*Zetaz1[n + 1] - cln_[l + 1][n]*Psiz1[n + 1];
+        denomZeta = m1[l]*Zetaz[n1]*(D1z[n1] - D3z[n1]);
+        denomPsi  =  m1[l]*Psiz[n1]*(D1z[n1] - D3z[n1]);
 
-        T3 = -D1z1[n + 1]*dln_[l + 1][n]*Psiz1[n + 1] + D3z1[n + 1]*aln_[l + 1][n]*Zetaz1[n + 1];
-        T4 = -D1z1[n + 1]*cln_[l + 1][n]*Psiz1[n + 1] + D3z1[n + 1]*bln_[l + 1][n]*Zetaz1[n + 1];
+        T1 = aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
+        T2 = bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1];
+
+        T3 = D1z1[n1]*dln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*aln_[l + 1][n]*Zetaz1[n1];
+        T4 = D1z1[n1]*cln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*bln_[l + 1][n]*Zetaz1[n1];
 
         // aln
-        aln_[l][n] = (D1z[n + 1]*m1[l]*T1 - m[l]*T3)/denomZeta;
+        aln_[l][n] = (D1z[n1]*m1[l]*T1 + m[l]*T3)/denomZeta;
         // bln
-        bln_[l][n] = (D1z[n + 1]*m[l]*T2 - m1[l]*T4)/denomZeta;
+        bln_[l][n] = (D1z[n1]*m[l]*T2 + m1[l]*T4)/denomZeta;
         // cln
-        cln_[l][n] = (D3z[n + 1]*m[l]*T2 - m1[l]*T4)/denomPsi;
+        cln_[l][n] = (D3z[n1]*m[l]*T2 + m1[l]*T4)/denomPsi;
         // dln
-        dln_[l][n] = (D3z[n + 1]*m1[l]*T1 - m[l]*T3)/denomPsi;
+        dln_[l][n] = (D3z[n1]*m1[l]*T1 + m[l]*T3)/denomPsi;
       }  // end of all n
     }  // end of all l
 
@@ -1191,7 +1192,7 @@ namespace nmie {
   // BH p.92 (4.37), 94 (4.45), 95 (4.50)                                   //
   // assume: medium is non-absorbing; refim = 0; Uabs = 0                   //
   // ********************************************************************** //
-  void MultiLayerMie::fieldExt(const double Rho, const double Phi, const double Theta,
+  void MultiLayerMie::fieldExt(const double Rho, const double Theta, const double Phi,
                                std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
     std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
@@ -1212,7 +1213,7 @@ namespace nmie {
       double rn = static_cast<double>(n1);
 
       // using BH 4.12 and 4.50
-      calcSpherHarm(Rho, Phi, Theta, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
+      calcSpherHarm(Rho, Theta, Phi, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
 
       // scattered field: BH p.94 (4.45)
       std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
@@ -1270,7 +1271,7 @@ namespace nmie {
   // Output parameters:                                                               //
   //   E, H: Complex electric and magnetic fields                                     //
   //**********************************************************************************//
-  void MultiLayerMie::calcField(const double Rho, const double Phi, const double Theta,
+  void MultiLayerMie::calcField(const double Rho, const double Theta, const double Phi,
                                 std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
 
     std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
@@ -1312,8 +1313,8 @@ namespace nmie {
       double rn = static_cast<double>(n1);
 
       // using BH 4.12 and 4.50
-      calcSpherHarm(Rho, Phi, Theta, jn[n1], jnp[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
-      calcSpherHarm(Rho, Phi, Theta, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
+      calcSpherHarm(Rho, Theta, Phi, jn[n1], jnp[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
+      calcSpherHarm(Rho, Theta, Phi, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
 
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
       std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
@@ -1327,10 +1328,12 @@ namespace nmie {
       }
     }  // end of for all n
 
+    //printf("rho = %10.5e; phi = %10.5eº; theta = %10.5eº; x[%i] = %10.5e; m[%i] = %10.5er%+10.5ei\n", Rho, Phi*180./PI_, Theta*180./PI_, l, size_param_[l], l, std::real(ml), std::imag(ml));
     // magnetic field
     double hffact = 1.0/(cc_*mu_);
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
+      //printf("E[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(H[i]), std::imag(H[i]));
     }
    }  // end of MultiLayerMie::calcField(...)
 
@@ -1358,6 +1361,8 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   void MultiLayerMie::RunFieldCalculation() {
+    double Rho, Theta, Phi;
+
     // Calculate scattering coefficients an_ and bn_
     ScattCoeffs();
 
@@ -1383,16 +1388,21 @@ namespace nmie {
       const double& Zp = coords_[2][point];
 
       // Convert to spherical coordinates
-      double Rho = std::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
+      Rho = std::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
 
       // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
-      double Theta = (Rho > 0.0) ? std::acos(Zp/Rho) : 0.0;
+      Theta = (Rho > 0.0) ? std::acos(Zp/Rho) : 0.0;
 
       // If Xp=Yp=0 then Phi is undefined. Just set it to zero to avoid problems
-      double Phi = (Xp != 0.0 || Yp != 0.0) ? std::acos(Xp/std::sqrt(pow2(Xp) + pow2(Yp))) : 0.0;
+      if (Xp == 0.0)
+        Phi = (Yp != 0.0) ? std::asin(Yp/std::sqrt(pow2(Xp) + pow2(Yp))) : 0.0;
+      else
+        Phi = std::acos(Xp/std::sqrt(pow2(Xp) + pow2(Yp)));
 
       // Avoid convergence problems due to Rho too small
       if (Rho < 1e-5) Rho = 1e-5;
+
+      //printf("X = %g; Y = %g; Z = %g; pho = %g; phi = %g; theta = %g\n", Xp, Yp, Zp, Rho, Phi*180./PI_, Theta*180./PI_);
 
       //*******************************************************//
       // external scattering field = incident + scattered      //
@@ -1405,9 +1415,9 @@ namespace nmie {
 
       // Firstly the easiest case: the field outside the particle
       //      if (Rho >= GetSizeParameter()) {
-      //        fieldExt(Rho, Phi, Theta, Es, Hs);
+      //        fieldExt(Rho, Theta, Phi, Es, Hs);
       // } else {
-      calcField(Rho, Phi, Theta, Es, Hs);  //Should work fine both: inside and outside the particle
+      calcField(Rho, Theta, Phi, Es, Hs);  //Should work fine both: inside and outside the particle
       //}
 
       { //Now, convert the fields back to cartesian coordinates
