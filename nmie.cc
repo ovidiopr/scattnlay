@@ -1314,7 +1314,7 @@ namespace nmie {
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
 
-    for (int n = nmax_ - 1; n >= 0; n--) {
+    for (int n = nmax_ - 2; n >= 0; n--) {
       int n1 = n + 1;
       double rn = static_cast<double>(n1);
 
@@ -1372,17 +1372,15 @@ namespace nmie {
   void MultiLayerMie::RunFieldCalculation() {
     // Calculate external scattering coefficients an_ and bn_
     ExternalScattCoeffs();
-    printf("an_\n");
-    for (auto a: an_) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
-    printf("\nbn_\n");
-    for (auto a: bn_) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
 
-    calc_an_bn_bulk(an_, bn_, size_param_.back(), refractive_index_.back());
-    printf("\nbulk an_\n");
-    for (auto a: an_) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
-    printf("\nbulk bn_\n");
-    for (auto a: bn_) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
-    printf("\nsize param: %g\n", size_param_.back());
+    std::vector<std::complex<double> > an1(nmax_), bn1(nmax_);
+
+    calc_an_bn_bulk(an1, bn1, size_param_.back(), refractive_index_.back());
+
+    for (int n = 0; n < nmax_; n++) {
+      printf("an_[%i] = %10.5er%+10.5ei;  an_bulk_[%i] = %10.5er%+10.5ei\n", n, std::real(an_[n]), std::imag(an_[n]), n, std::real(an1[n]), std::imag(an1[n]));
+      printf("bn_[%i] = %10.5er%+10.5ei;  bn_bulk_[%i] = %10.5er%+10.5ei\n", n, std::real(bn_[n]), std::imag(bn_[n]), n, std::real(bn1[n]), std::imag(bn1[n]));
+    }
 
     // Calculate internal scattering coefficients aln_,  bln_, cln_, and dln_
     InternalScattCoeffs();
