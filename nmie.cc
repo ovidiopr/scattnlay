@@ -37,6 +37,7 @@
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
+#include "bessel.h"
 #include "nmie.h"
 #include <array>
 #include <algorithm>
@@ -560,9 +561,9 @@ namespace nmie {
     for (int i = 0; i < nmax_ + 1; ++i) {
       dPsiX[i] = D1X[i]*PsiX[i];
       dPsiMX[i] = D1MX[i]*PsiMX[i];
-      dZetaX[i] = D3X[i]*ZetaX[i];
+      //dZetaX[i] = D3X[i]*ZetaX[i];
     }
-
+    bessel::calcZeta(ZetaX, dZetaX, nmax_, x);
     an.resize(nmax_);
     bn.resize(nmax_);
     for (int i = 0; i < nmax_; i++) {
@@ -575,15 +576,15 @@ namespace nmie {
       bn[i] = Num/Denom;      
     }
     printf("dPsiX\n");
-    for (auto a: dPsiX) printf("%10.5g + %10.5gi  ",std::real(a), std::imag(a));
+    for (auto a: dPsiX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
     printf("\ndPsiMX\n");
-    for (auto a: dPsiMX) printf("%10.5g + %10.5gi  ",std::real(a), std::imag(a));
+    for (auto a: dPsiMX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
     printf("\nPsiX\n");
-    for (auto a: PsiX) printf("%10.5g + %10.5gi  ",std::real(a), std::imag(a));
+    for (auto a: PsiX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
     printf("\nPsiMX\n");
-    for (auto a: PsiMX) printf("%10.5g + %10.5gi  ",std::real(a), std::imag(a));
+    for (auto a: PsiMX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
     printf("\nZetaX\n");
-    for (auto a: ZetaX) printf("%10.5e + %10.5ei  ",std::real(a), std::imag(a));
+    for (auto a: ZetaX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
     //   It should be
     // Columns 1 through 3:
     //   3.3333e-07 - 1.0000e+03i   2.6645e-10 - 3.0000e+06i   5.1499e-07 - 1.5000e+10i
@@ -599,7 +600,7 @@ namespace nmie {
     // -2.37587e+12 + -1.35135e+26i  -3.56380e+16 + -2.02703e+30i  -6.05846e+20 + -3.44594e+34i
 
     printf("\ndZetaX\n");
-    for (auto a: dZetaX) printf("%10.5g + %10.5gi  ",std::real(a), std::imag(a));
+    for (auto a: dZetaX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
 
     printf("\nsize param: %g\n", x);
 

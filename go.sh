@@ -5,17 +5,17 @@ file=compare.cc
 echo Compile with gcc
 rm -f *.bin
 rm -f ../scattnlay
-#g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay.bin -static
-# g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay-pg.bin -static -pg
+#g++ -Ofast -std=c++11 compare.cc nmie.cc bessel.cc nmie-wrapper.cc -lm -lrt -o scattnlay.bin -static
+# g++ -Ofast -std=c++11 compare.cc nmie.cc bessel.cc nmie-wrapper.cc -lm -lrt -o scattnlay-pg.bin -static -pg
 
 #google profiler  ######## FAST!!!
 echo Uncomment next line to compile compare.cc
-# g++ -Ofast -std=c++11 $file nmie.cc nmie-old.cc -lm -lrt -o scattnlay.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
+# g++ -Ofast -std=c++11 $file nmie.cc bessel.cc nmie-old.cc -lm -lrt -o scattnlay.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 
-#  g++ -Ofast -std=c++11 compare.cc nmie.cc nmie-wrapper.cc -lm -lrt -o scattnlay-g.bin -ltcmalloc -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -g
+#  g++ -Ofast -std=c++11 compare.cc nmie.cc bessel.cc nmie-wrapper.cc -lm -lrt -o scattnlay-g.bin -ltcmalloc -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -g
 
 #DEBUG!
-clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 compare.cc nmie.cc nmie-old.cc -lm -lrt -o scattnlay.bin
+clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 compare.cc nmie.cc bessel.cc nmie-old.cc -lm -lrt -o scattnlay.bin
 
 cp scattnlay.bin ../scattnlay
 # cp scattnlay-g.bin ../scattnlay-g

@@ -34,6 +34,22 @@
 
 namespace nmie {
   namespace bessel {
+
+    void calcZeta( std::vector< std::complex<double> >& Zeta,
+		   std::vector< std::complex<double> >& dZeta,
+		   int n,  std::complex<double>z) {
+      std::vector< std::complex<double> > csj, cdj, csy, cdy;
+      int nm;
+      csphjy (n, z, nm, csj, cdj,  csy, cdy );
+      Zeta.resize(n+1);
+      dZeta.resize(n+1);
+      auto c_i = std::complex<double>(0.0,1.0);
+      for (int i = 0; i < n+1; ++i) {
+	Zeta[i]=z*(csj[i] + c_i*csy[i]);
+	dZeta[i]=z*(cdj[i] + c_i*cdy[i])+csj[i] + c_i*csy[i];
+      }
+    }  // end of calcZeta()
+
 // !*****************************************************************************80
 //  
 //  C++ port of fortran code
@@ -100,7 +116,7 @@ namespace nmie {
 	  cdy[k] = 1.0e+300;
 	}
 	csj[0] = std::complex<double>( 1.0, 0.0);
-	cdj[1] =  std::complex<double>( 0.333333333333333, 0.0);
+	cdj[1] =  std::complex<double>( 0.3333333333333333, 0.0);
 	return;
       }
       csj[0] = std::sin ( z ) / z;

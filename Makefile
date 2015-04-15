@@ -22,10 +22,10 @@ source:
 cython: scattnlay.pyx
 	cython --cplus scattnlay.pyx
 
-python_ext: nmie.cc py_nmie.cc scattnlay.cpp
+python_ext: nmie.cc bessel.cc py_nmie.cc scattnlay.cpp
 	export CFLAGS='-std=c++11' && python setup.py build_ext --inplace
 
-cython_ext: nmie.cc py_nmie.cc scattnlay.pyx
+cython_ext: nmie.cc bessel.cc py_nmie.cc scattnlay.pyx
 	export CFLAGS='-std=c++11' && python setup_cython.py build_ext --inplace
 
 install:
@@ -43,8 +43,8 @@ builddeb:
 	# build the package
 	export CFLAGS='-std=c++11' && dpkg-buildpackage -i -I -rfakeroot
 
-standalone: standalone.cc nmie.cc
-	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 standalone.cc nmie.cc -lm -o scattnlay
+standalone: standalone.cc nmie.cc bessel.cc
+	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 standalone.cc nmie.cc bessel.cc -lm -o scattnlay
 	mv scattnlay ../
 
 clean:

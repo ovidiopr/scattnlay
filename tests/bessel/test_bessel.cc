@@ -60,19 +60,15 @@ int main(int argc, char *argv[]) {
 
 
   n = 20;
-  std::complex<double> z1(1.0, 0.0);
+
+  std::complex<double> z1(0.001, 0.0);
   nmie::bessel::csphjy (n, z1, nm, csj, cdj,  csy, cdy );
   result =  csj;
 
   printf("$$$$ REAL $$$$$$ Calculate and compare against Wolfram Alpha\n");
-  printf("j(0,1) = %16.18f\n", real(result[0]));
-  printf("WA j() = 0.841470984807896506652502321630\n");
-  printf("j(1,1) = %16.18f\n", real(result[1]));
-  printf("WA j() = 0.301168678939756789251565714187322395890252640\n");
-  printf("j(1,1) = %.14g\n", real(result[10]));
-  printf("WA j() = 7.116552640047313023966191737248811458533809572 × 10^-11\n");
-  printf("j(20,1) = %.14g\n", real(result[20]));
-  printf("WA j() = 7.537795722236872993957557741584960855614358030 × 10^-26\n");
+  printf("y(0,1) = %16.18f\n", real(result[0]));
+  printf("y(1,1) = %16.18f\n", real(result[1]));
+  printf("y(2,1) = %.14g\n", real(result[2]));
 
 
     

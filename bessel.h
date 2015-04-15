@@ -28,6 +28,9 @@
 #include <vector>
 namespace nmie {
   namespace bessel {
+    void calcZeta( std::vector< std::complex<double> >& Zeta,
+		   std::vector< std::complex<double> >& dZeta,
+		   int n,  std::complex<double>z);
     void csphjy (int n, std::complex<double>z, int& nm,
 		 std::vector< std::complex<double> >& csj,
 		 std::vector< std::complex<double> >& cdj,
