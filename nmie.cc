@@ -545,7 +545,7 @@ namespace nmie {
 				      std::vector<std::complex<double> >& bn,
 				      double x, std::complex<double> m) {
 
-    printf("==========\n m = %g,%g,    x= %g\n", std::real(m), std::imag(m), x);
+    //printf("==========\n m = %g,%g,    x= %g\n", std::real(m), std::imag(m), x);
     std::vector<std::complex<double> > PsiX(nmax_ + 1), ZetaX(nmax_ + 1);
     std::vector<std::complex<double> > PsiMX(nmax_ + 1), ZetaMX(nmax_ + 1);
     // First, calculate the Riccati-Bessel functions
@@ -575,34 +575,20 @@ namespace nmie {
       Denom = PsiMX[n]*dZetaX[n] - m*ZetaX[n]*dPsiMX[n];      
       bn[i] = Num/Denom;      
     }
-    printf("dPsiX\n");
-    for (auto a: dPsiX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
-    printf("\ndPsiMX\n");
-    for (auto a: dPsiMX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
-    printf("\nPsiX\n");
-    for (auto a: PsiX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
-    printf("\nPsiMX\n");
-    for (auto a: PsiMX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
-    printf("\nZetaX\n");
-    for (auto a: ZetaX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
-    //   It should be
-    // Columns 1 through 3:
-    //   3.3333e-07 - 1.0000e+03i   2.6645e-10 - 3.0000e+06i   5.1499e-07 - 1.5000e+10i
-    // Columns 4 through 6:
-    //  -3.3479e-03 - 1.0500e+14i   1.1890e+01 - 9.4500e+17i   1.1000e+06 - 1.0395e+22i
-    // Columns 7 through 9:
-    //   1.9937e+10 - 1.3514e+26i   3.6291e+14 - 2.0270e+30i   4.2838e+18 - 3.4459e+34i
-    
-    // We have ZetaX
-    // 1.00000e-03 + -1.00000e+00i
-    // 3.33333e-07 + -1.00000e+03i  -5.26776e-08 + -3.00000e+06i  -2.63721e-04 + -1.50000e+10i
-    // -1.84605e+00 + -1.05000e+14i  -1.66144e+04 + -9.45000e+17i  -1.82759e+08 + -1.03950e+22i
-    // -2.37587e+12 + -1.35135e+26i  -3.56380e+16 + -2.02703e+30i  -6.05846e+20 + -3.44594e+34i
+    // printf("dPsiX\n");
+    // for (auto a: dPsiX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    // printf("\ndPsiMX\n");
+    // for (auto a: dPsiMX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    // printf("\nPsiX\n");
+    // for (auto a: PsiX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    // printf("\nPsiMX\n");
+    // for (auto a: PsiMX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    // printf("\nZetaX\n");
+    // for (auto a: ZetaX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    // printf("\ndZetaX\n");
+    // for (auto a: dZetaX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
 
-    printf("\ndZetaX\n");
-    for (auto a: dZetaX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
-
-    printf("\nsize param: %g\n", x);
+    // printf("\nsize param: %g\n", x);
 
 
   }
@@ -1386,19 +1372,17 @@ namespace nmie {
   void MultiLayerMie::RunFieldCalculation() {
     // Calculate external scattering coefficients an_ and bn_
     ExternalScattCoeffs();
-  
-    // printf("an\n");
-    // for (auto a: an_) printf("%g + %g i\n",std::real(a), std::imag(a));
-    // printf("bn\n");
-    // for (auto a: bn_) printf("%g + %g i\n",std::real(a), std::imag(a));
-    // printf("size param: %g\n", size_param_.back());
+    printf("an_\n");
+    for (auto a: an_) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    printf("\nbn_\n");
+    for (auto a: bn_) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
 
     calc_an_bn_bulk(an_, bn_, size_param_.back(), refractive_index_.back());
-    // printf("bulk an\n");
-    // for (auto a: an_) printf("%g + %g i\n",std::real(a), std::imag(a));
-    // printf("bulk bn\n");
-    // for (auto a: bn_) printf("%g + %g i\n",std::real(a), std::imag(a));
-    // printf("size param: %g\n", size_param_.back());
+    printf("\nbulk an_\n");
+    for (auto a: an_) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    printf("\nbulk bn_\n");
+    for (auto a: bn_) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    printf("\nsize param: %g\n", size_param_.back());
 
     // Calculate internal scattering coefficients aln_,  bln_, cln_, and dln_
     InternalScattCoeffs();
