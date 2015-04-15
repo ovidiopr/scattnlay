@@ -134,22 +134,6 @@ int main(int argc, char *argv[]) {
 	mode = read_x;
 	continue;
       }
-      // if (strcmp(argv[i], "-l") == 0) {
-      //   i++;
-      //   L = atoi(argv[i]);
-      //   x.resize(L);
-      //   m.resize(L);
-      //   if (argc < 3*(L + 1)) {
-      // 	  throw std::invalid_argument(error_msg);
-      //   } else {
-      //     for (l = 0; l < L; l++) {
-      //       i++;
-      //       x[l] = atof(argv[i]);
-      //       i++;
-      //       m[l] = std::complex<double>(atof(argv[i]), atof(argv[i + 1]));
-      //       i++;
-      //     }
-      //   }
       if (mode == read_ti) {
 	ti = std::stod(arg);
 	mode = read_tf;
@@ -169,28 +153,11 @@ int main(int argc, char *argv[]) {
         S2w.resize(nt);
 	continue;
       }
-      //} else if (strcmp(argv[i], "-t") == 0) {
-        // i++;
-        // ti = atof(argv[i]);
-        // i++;
-        // tf = atof(argv[i]);
-        // i++;
-        // nt = atoi(argv[i]);
-
-        // Theta.resize(nt);
-        // S1.resize(nt);
-        // S2.resize(nt);
       if (mode ==  read_comment) {
 	comment = arg;
         has_comment = 1;
 	continue;
       }
-      // } else if (strcmp(argv[i], "-c") == 0) {
-      //   i++;
-      // 	comment = args[i];
-      //   //strcpy(comment, argv[i]);
-      //   has_comment = 1;
-      // } else { i++; }
     }
     if ( (x.size() != m.size()) || (L != x.size()) ) 
       throw std::invalid_argument(std::string("Broken structure!\n")
@@ -209,12 +176,7 @@ int main(int argc, char *argv[]) {
       Theta[i] = (ti + (double)i*(tf - ti)/(nt - 1))*PI/180.0;
       }
     }
-
-
-
-
-    timespec time1, time2;
-
+    // timespec time1, time2;
     // long cpptime_nsec, best_cpp;
     // long ctime_nsec, best_c;
     // long cpptime_sec, ctime_sec;
@@ -251,36 +213,36 @@ int main(int argc, char *argv[]) {
     //   repeats *= 10;
     // } while (cpptime_nsec < 1e8 && ctime_nsec < 1e8);
 
-    nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
-    nmie::nMie(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
-        printf("\n");
+    // nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+    // nmie::nMie(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
+    //     printf("\n");
     
-    if (has_comment) {
-      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  old\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
-    } else {
-      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  old\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
-    }
+    // if (has_comment) {
+    //   printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  old\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+    //   printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
+    // } else {
+    //   printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  old\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
+    //   printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
+    // }
     
-    if (nt > 0) {
-      printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i\n");
+    // if (nt > 0) {
+    //   printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i\n");
       
-      for (i = 0; i < nt; i++) {
-        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  old\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
-        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  \n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
-      }
-    }
+    //   for (i = 0; i < nt; i++) {
+    //     printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  old\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
+    //     printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  \n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
+    //   }
+    // }
     // Field testing
     double from_coord = -3.0, to_coord = 3000.0;
     //double size=2.0*PI*1.0/6.0;
-    double size=0.01;
+    double size=0.001;
     std::vector<double> range;
     // for (int i = 0; i < samples; ++i) {
       //range.push_back( from_coord + (to_coord-from_coord)/(static_cast<double>(samples)-1)*i );
     //range.push_back(size*0.01);
     //range.push_back(size*0.99999);
-    range.push_back(size/2.0);
+    range.push_back(size/20.0);
     //range.push_back(size*1.00001);
     //range.push_back(3);
     //printf("r=%g  ", range.back());
@@ -288,25 +250,22 @@ int main(int argc, char *argv[]) {
     int samples = range.size();
     std::vector<double> zero(samples, 0.0);
     std::vector<double> Xp, Yp, Zp;
-    // X line
-    Xp.insert(Xp.end(), range.begin(), range.end());
-    Yp.insert(Yp.end(), zero.begin(), zero.end());
-    Zp.insert(Zp.end(), zero.begin(), zero.end());
+    // // X line
+    // Xp.insert(Xp.end(), range.begin(), range.end());
+    // Yp.insert(Yp.end(), zero.begin(), zero.end());
+    // Zp.insert(Zp.end(), zero.begin(), zero.end());
     // Y line
     Xp.insert(Xp.end(), zero.begin(), zero.end());
     Yp.insert(Yp.end(), range.begin(), range.end());
     Zp.insert(Zp.end(), zero.begin(), zero.end());
-    // // Z line
-    Xp.insert(Xp.end(), zero.begin(), zero.end());
-    Yp.insert(Yp.end(), zero.begin(), zero.end());
-    Zp.insert(Zp.end(), range.begin(), range.end());
+    // // // Z line
+    // Xp.insert(Xp.end(), zero.begin(), zero.end());
+    // Yp.insert(Yp.end(), zero.begin(), zero.end());
+    // Zp.insert(Zp.end(), range.begin(), range.end());
     int ncoord = Xp.size();
+    // Test solid sphere
     x = {size};
-    m = {std::complex<double>(4.000000,0.00)};
-    // x = {size};
-    //m = {std::complex<double>(1.33,0.0)};
-    // x = {1.017, 2.016};
-    // m = {std::complex<double>(1.5016,1.023), std::complex<double>(2.014,2.012)};
+    m = {std::complex<double>(2.000000,0.00)};
     L = x.size();
     int pl = 0;
     int nmax = 0;
@@ -321,14 +280,17 @@ int main(int argc, char *argv[]) {
     printf ("Field total sum ()\n");
     for (auto f:E) {
       sum_e = 0.0;
-      for (auto c:f) sum_e+=std::abs(pow2(c));
+      for (auto c:f) {
+	sum_e+=std::abs(pow2(c));
+	printf("component: %g + %g i\n", std::real(c), std::imag(c));
+      }
       printf("Field E=%g\n", std::sqrt(std::abs(sum_e)));
     }
-    for (auto f:H) {
-      sum_h = 0.0;
-      for (auto c:f) sum_h+=std::abs(pow2(c));
-      printf("Field H=%g\n", std::sqrt(std::abs(sum_h))*free_impedance);
-    }
+    // for (auto f:H) {
+    //   sum_h = 0.0;
+    //   for (auto c:f) sum_h+=std::abs(pow2(c));
+    //   printf("Field H=%g\n", std::sqrt(std::abs(sum_h))*free_impedance);
+    // }
 
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.

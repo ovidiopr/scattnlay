@@ -105,6 +105,10 @@ namespace nmie {
     std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
                                  std::complex<double> PsiXL, std::complex<double> ZetaXL,
                                  std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
+    void calc_an_bn_bulk(std::vector<std::complex<double> >& an,
+			 std::vector<std::complex<double> >& bn,
+			 double x, std::complex<double> m);
+
     std::complex<double> calc_S1(int n, std::complex<double> an, std::complex<double> bn,
                                  double Pi, double Tau);
     std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,

@@ -536,6 +536,76 @@ namespace nmie {
     return Num/Denom;
   }
 
+  // ********************************************************************** //
+  // Calculate an and bn for bulk sphere size x and index m                 //
+  // equation (4.56) and (4.57) BH                                          //
+  // ********************************************************************** //
+  void MultiLayerMie::calc_an_bn_bulk(std::vector<std::complex<double> >& an,
+				      std::vector<std::complex<double> >& bn,
+				      double x, std::complex<double> m) {
+
+    printf("==========\n m = %g,%g,    x= %g\n", std::real(m), std::imag(m), x);
+    std::vector<std::complex<double> > PsiX(nmax_ + 1), ZetaX(nmax_ + 1);
+    std::vector<std::complex<double> > PsiMX(nmax_ + 1), ZetaMX(nmax_ + 1);
+    // First, calculate the Riccati-Bessel functions
+    calcPsiZeta(x, PsiX, ZetaX);
+    calcPsiZeta(m*x, PsiMX, ZetaMX);
+    std::vector<std::complex<double> > D1X(nmax_ + 1),  D3X(nmax_ + 1);
+    std::vector<std::complex<double> > D1MX(nmax_ + 1),  D3MX(nmax_ + 1);
+    // Calculate the logarithmic derivatives
+    calcD1D3(x, D1X, D3X);
+    calcD1D3(m*x, D1MX, D3MX);
+    std::vector<std::complex<double> > dPsiX(nmax_ + 1), dZetaX(nmax_ + 1);
+    std::vector<std::complex<double> > dPsiMX(nmax_ + 1);
+    for (int i = 0; i < nmax_ + 1; ++i) {
+      dPsiX[i] = D1X[i]*PsiX[i];
+      dPsiMX[i] = D1MX[i]*PsiMX[i];
+      dZetaX[i] = D3X[i]*ZetaX[i];
+    }
+
+    an.resize(nmax_);
+    bn.resize(nmax_);
+    for (int i = 0; i < nmax_; i++) {
+      int n = i+1;
+      std::complex<double> Num = m*PsiMX[n]*dPsiX[n] - PsiX[n]*dPsiMX[n];
+      std::complex<double> Denom = m*PsiMX[n]*dZetaX[n] - ZetaX[n]*dPsiMX[n];      
+      an[i] = Num/Denom;
+      Num = PsiMX[n]*dPsiX[n] - m*PsiX[n]*dPsiMX[n];
+      Denom = PsiMX[n]*dZetaX[n] - m*ZetaX[n]*dPsiMX[n];      
+      bn[i] = Num/Denom;      
+    }
+    printf("dPsiX\n");
+    for (auto a: dPsiX) printf("%10.5g + %10.5gi  ",std::real(a), std::imag(a));
+    printf("\ndPsiMX\n");
+    for (auto a: dPsiMX) printf("%10.5g + %10.5gi  ",std::real(a), std::imag(a));
+    printf("\nPsiX\n");
+    for (auto a: PsiX) printf("%10.5g + %10.5gi  ",std::real(a), std::imag(a));
+    printf("\nPsiMX\n");
+    for (auto a: PsiMX) printf("%10.5g + %10.5gi  ",std::real(a), std::imag(a));
+    printf("\nZetaX\n");
+    for (auto a: ZetaX) printf("%10.5e + %10.5ei  ",std::real(a), std::imag(a));
+    //   It should be
+    // Columns 1 through 3:
+    //   3.3333e-07 - 1.0000e+03i   2.6645e-10 - 3.0000e+06i   5.1499e-07 - 1.5000e+10i
+    // Columns 4 through 6:
+    //  -3.3479e-03 - 1.0500e+14i   1.1890e+01 - 9.4500e+17i   1.1000e+06 - 1.0395e+22i
+    // Columns 7 through 9:
+    //   1.9937e+10 - 1.3514e+26i   3.6291e+14 - 2.0270e+30i   4.2838e+18 - 3.4459e+34i
+    
+    // We have ZetaX
+    // 1.00000e-03 + -1.00000e+00i
+    // 3.33333e-07 + -1.00000e+03i  -5.26776e-08 + -3.00000e+06i  -2.63721e-04 + -1.50000e+10i
+    // -1.84605e+00 + -1.05000e+14i  -1.66144e+04 + -9.45000e+17i  -1.82759e+08 + -1.03950e+22i
+    // -2.37587e+12 + -1.35135e+26i  -3.56380e+16 + -2.02703e+30i  -6.05846e+20 + -3.44594e+34i
+
+    printf("\ndZetaX\n");
+    for (auto a: dZetaX) printf("%10.5g + %10.5gi  ",std::real(a), std::imag(a));
+
+    printf("\nsize param: %g\n", x);
+
+
+  }
+
 
   // ********************************************************************** //
   // Calculates S1 - equation (25a)                                         //
@@ -1251,37 +1321,6 @@ namespace nmie {
       ml = refractive_index_[l];
     }
 
-  // std::complex<double> z1(1.0, 0.0);
-  // sbesjh(z1, jn, jnp, h1n, h1np);
-  // printf("nmax_ = %d\n", nmax_);
-  // printf("$$$$ REAL $$$$$$ Ricatti-Bessel: Calculate and compare against Wolfram Alpha\n");
-  // printf("j(0,1) = %16.18f\n", real(jn[0]));
-  // printf("WA j() = 0.841470984807896506652502321630\n");
-  // printf("j(1,1) = %16.18f\n", real(jn[1]));
-  // printf("WA j() = 0.301168678939756789251565714187322395890252640\n");
-  // printf("j(10,1) = %.14g\n", real(jn[10]));
-  // printf("WA j() = 7.116552640047313023966191737248811458533809572 × 10^-11\n");
-  // printf("j(20,1) = %.14g\n", real(jn[16]));
-  // printf("WA j() = 7.537795722236872993957557741584960855614358030 × 10^-26\n");
-  // std::complex<double> z(1.0, 2.0);
-  // sbesjh(z, jn, jnp, h1n, h1np);
-  // auto result =  jn;
-  // printf("===========Calculate and compare against Wolfram Alpha\n");
-  // printf("j(0,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
-  // 	 real(result[0]),
-  // 	 imag(result[0]));
-  // printf("WA j() = re(1.4169961192118759)\n         im(-0.874391197002)\n");
-
-  // printf("j(1,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
-  // 	 real(result[1]),
-  // 	 imag(result[1]));
-  // printf("WA j() = re(0.74785726329830368)\n         im(0.68179207555304)\n");
-
-  // printf("j(4,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
-  // 	 real(result[4]),
-  // 	 imag(result[4]));
-  // printf("WA j() = re(-0.01352410550046)\n         im(-0.027169663050653)\n");
-
     // Calculate spherical Bessel and Hankel functions and their derivatives
     sbesjh(Rho*ml, jn, jnp, h1n, h1np);
 
@@ -1346,6 +1385,20 @@ namespace nmie {
   void MultiLayerMie::RunFieldCalculation() {
     // Calculate external scattering coefficients an_ and bn_
     ExternalScattCoeffs();
+  
+    // printf("an\n");
+    // for (auto a: an_) printf("%g + %g i\n",std::real(a), std::imag(a));
+    // printf("bn\n");
+    // for (auto a: bn_) printf("%g + %g i\n",std::real(a), std::imag(a));
+    // printf("size param: %g\n", size_param_.back());
+
+    calc_an_bn_bulk(an_, bn_, size_param_.back(), refractive_index_.back());
+    // printf("bulk an\n");
+    // for (auto a: an_) printf("%g + %g i\n",std::real(a), std::imag(a));
+    // printf("bulk bn\n");
+    // for (auto a: bn_) printf("%g + %g i\n",std::real(a), std::imag(a));
+    // printf("size param: %g\n", size_param_.back());
+
     // Calculate internal scattering coefficients aln_,  bln_, cln_, and dln_
     InternalScattCoeffs();
 

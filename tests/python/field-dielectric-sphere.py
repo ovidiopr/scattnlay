@@ -47,7 +47,7 @@ x[0, 0] = 0.001
 #x[0, 1] = 2.0*np.pi*0.06/1.064
 
 m = np.ones((1, 1), dtype = np.complex128)
-m[0, 0] = 2.0
+m[0, 0] = 4.0
 #m[0, 1] = (0.565838 + 7.23262j)/1.3205
 
 npts = 501
@@ -66,7 +66,8 @@ terms, E, H = fieldnlay(x, m, coord)
 Er = np.absolute(E)
 
 # |E|/|Eo|
-Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
+#Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
+Eh = Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2
 
 result = np.vstack((coordX, coordY, coordZ, Eh)).transpose()
 
@@ -90,12 +91,13 @@ try:
     min_tick = max(0.1, min(min_tick, np.amin(edata)))
     max_tick = max(max_tick, np.amax(edata))
     #scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
-    scale_ticks = np.linspace(0, 2, 11)
+    scale_ticks = np.linspace(min_tick,min_tick*1.2, 11)
+    #scale_ticks = np.linspace(0, 2, 11)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
     cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.afmhot,
-#                    origin = 'lower', vmin = min_tick, vmax = max_tick,
-                    origin = 'lower', vmin = 0, vmax = 2,
+                    #origin = 'lower', vmin = min_tick, vmax = max_tick,
+                    origin = 'lower', vmin = 0.25, vmax = 1,
                     extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y))
                     #,norm = LogNorm()
                     )
