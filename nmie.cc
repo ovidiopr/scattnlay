@@ -363,8 +363,8 @@ namespace nmie {
   // Modify scattering (theta) angles                                       //
   // ********************************************************************** //
   void MultiLayerMie::SetAngles(const std::vector<double>& angles) {
-    isIntCoeffsCalc_ = false;
-    isExtCoeffsCalc_ = false;
+    isExpCoeffsCalc_ = false;
+    isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
     theta_ = angles;
   }
@@ -374,8 +374,8 @@ namespace nmie {
   // Modify size of all layers                                             //
   // ********************************************************************** //
   void MultiLayerMie::SetLayersSize(const std::vector<double>& layer_size) {
-    isIntCoeffsCalc_ = false;
-    isExtCoeffsCalc_ = false;
+    isExpCoeffsCalc_ = false;
+    isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
     size_param_.clear();
     double prev_layer_size = 0.0;
@@ -395,8 +395,8 @@ namespace nmie {
   // Modify refractive index of all layers                                  //
   // ********************************************************************** //
   void MultiLayerMie::SetLayersIndex(const std::vector< std::complex<double> >& index) {
-    isIntCoeffsCalc_ = false;
-    isExtCoeffsCalc_ = false;
+    isExpCoeffsCalc_ = false;
+    isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
     refractive_index_ = index;
   }
@@ -418,8 +418,8 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::SetPECLayer(int layer_position) {
-    isIntCoeffsCalc_ = false;
-    isExtCoeffsCalc_ = false;
+    isExpCoeffsCalc_ = false;
+    isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
     if (layer_position < 0 && layer_position != -1)
       throw std::invalid_argument("Error! Layers are numbered from 0!");
@@ -431,8 +431,8 @@ namespace nmie {
   // Set maximun number of terms to be used                                 //
   // ********************************************************************** //
   void MultiLayerMie::SetMaxTerms(int nmax) {
-    isIntCoeffsCalc_ = false;
-    isExtCoeffsCalc_ = false;
+    isExpCoeffsCalc_ = false;
+    isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
     nmax_preset_ = nmax;
   }
@@ -453,8 +453,8 @@ namespace nmie {
   // Clear layer information                                                //
   // ********************************************************************** //
   void MultiLayerMie::ClearLayers() {
-    isIntCoeffsCalc_ = false;
-    isExtCoeffsCalc_ = false;
+    isExpCoeffsCalc_ = false;
+    isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
     size_param_.clear();
     refractive_index_.clear();
@@ -634,7 +634,7 @@ namespace nmie {
     const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
 
     for (int n = nmax_; n > 0; n--) {
-      D1[n - 1] = double(n)*zinv - 1.0/(D1[n] + double(n)*zinv);
+      D1[n - 1] = static_cast<double>(n)*zinv - 1.0/(D1[n] + static_cast<double>(n)*zinv);
     }
 
     if (std::abs(D1[0]) > 100000.0)
@@ -646,7 +646,7 @@ namespace nmie {
     D3[0] = std::complex<double>(0.0, 1.0);
     for (int n = 1; n <= nmax_; n++) {
       PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)*zinv - D1[n - 1])
-                   *(static_cast<double>(n)*zinv- D3[n - 1]);
+                                   *(static_cast<double>(n)*zinv - D3[n - 1]);
       D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
     }
   }
@@ -678,7 +678,7 @@ namespace nmie {
     Psi[0] = std::sin(z);
     Zeta[0] = std::sin(z) - c_i*std::cos(z);
     for (int n = 1; n <= nmax_; n++) {
-      Psi[n] = Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
+      Psi[n]  =  Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
       Zeta[n] = Zeta[n - 1]*(static_cast<double>(n)/z - D3[n - 1]);
     }
 
@@ -702,9 +702,9 @@ namespace nmie {
   // using the relations:                                                             //
   //                                                                                  //
   //     j[n]   = Psi[n]/z                                                            //
-  //     j'[n]  = 0.5*(Psi[n-1]-Psi[n+1]-jn[n])/z                                     //
+  //     j'[n]  = j[n-1]-(n+1)*jn[n])/z                                               //
   //     h1[n]  = Zeta[n]/z                                                           //
-  //     h1'[n] = 0.5*(Zeta[n-1]-Zeta[n+1]-h1n[n])/z                                  //
+  //     h1'[n] = h1[n-1]-(n+1)*h1n[n]/z                                              //
   //                                                                                  //
   //**********************************************************************************//
   void MultiLayerMie::sbesjh(std::complex<double> z,
@@ -717,16 +717,16 @@ namespace nmie {
     calcPsiZeta(z, Psi, Zeta);
 
     // Now, calculate Spherical Bessel and Hankel functions and their derivatives
-    for (int n = 0; n < nmax_; n++) {
+    for (int n = 0; n <= nmax_; n++) {
       jn[n] = Psi[n]/z;
       h1n[n] = Zeta[n]/z;
 
       if (n == 0) {
-        jnp[n] = -Psi[1]/z - 0.5*jn[n]/z;
-        h1np[n] = -Zeta[1]/z - 0.5*h1n[n]/z;
+        jnp[0] = -Psi[1]/z - jn[0]/z;
+        h1np[0] = -Zeta[1]/z - h1n[0]/z;
       } else {
-        jnp[n] = 0.5*(Psi[n - 1] - Psi[n + 1] - jn[n])/z;
-        h1np[n] = 0.5*(Zeta[n - 1] - Zeta[n + 1] - h1n[n])/z;
+        jnp[n] = jn[n - 1] - static_cast<double>(n + 1)*jn[n]/z;
+        h1np[n] = h1n[n - 1] - static_cast<double>(n + 1)*h1n[n]/z;
       }
     }
   }
@@ -829,9 +829,9 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  void MultiLayerMie::ExternalScattCoeffs() {
+  void MultiLayerMie::ScattCoeffs() {
 
-    isExtCoeffsCalc_ = false;
+    isScaCoeffsCalc_ = false;
 
     const std::vector<double>& x = size_param_;
     const std::vector<std::complex<double> >& m = refractive_index_;
@@ -978,8 +978,8 @@ namespace nmie {
         bn_[n] = PsiXL[n + 1]/ZetaXL[n + 1];
       }
     }  // end of for an and bn terms
-    isExtCoeffsCalc_ = true;
-  }  // end of MultiLayerMie::ExternalScattCoeffs(...)
+    isScaCoeffsCalc_ = true;
+  }  // end of MultiLayerMie::ScattCoeffs(...)
 
 
   //**********************************************************************************//
@@ -1018,14 +1018,14 @@ namespace nmie {
 
     const std::vector<double>& x = size_param_;
 
-    isIntCoeffsCalc_ = false;
-    isExtCoeffsCalc_ = false;
+    isExpCoeffsCalc_ = false;
+    isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
 
     // Calculate scattering coefficients
-    ExternalScattCoeffs();
+    ScattCoeffs();
 
-    if (!isExtCoeffsCalc_) // TODO seems to be unreachable
+    if (!isScaCoeffsCalc_) // TODO seems to be unreachable
       throw std::invalid_argument("Calculation of scattering coefficients failed!");
 
     // Initialize the scattering parameters
@@ -1084,7 +1084,7 @@ namespace nmie {
 
 
   //**********************************************************************************//
-  // This function calculates the scattering coefficients inside the particle,        //
+  // This function calculates the expansion coefficients inside the particle,         //
   // required to calculate the near-field parameters.                                 //
   //                                                                                  //
   // Input parameters:                                                                //
@@ -1102,14 +1102,13 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  void MultiLayerMie::InternalScattCoeffs() {
-    if (!isExtCoeffsCalc_)
-      throw std::invalid_argument("(InternalScattCoeffs) You should calculate external coefficients first!");
+  void MultiLayerMie::ExpanCoeffs() {
+    if (!isScaCoeffsCalc_)
+      throw std::invalid_argument("(ExpanCoeffs) You should calculate external coefficients first!");
 
-    isIntCoeffsCalc_ = false;
+    isExpCoeffsCalc_ = false;
 
-    std::complex<double> c_one(1.0, 0.0);
-    std::complex<double> c_zero(0.0, 0.0);
+    std::complex<double> c_one(1.0, 0.0), c_zero(0.0, 0.0);
 
     const int L = refractive_index_.size();
 
@@ -1117,10 +1116,12 @@ namespace nmie {
     bln_.resize(L + 1);
     cln_.resize(L + 1);
     dln_.resize(L + 1);
-    for (auto& element:aln_) element.resize(nmax_);
-    for (auto& element:bln_) element.resize(nmax_);
-    for (auto& element:cln_) element.resize(nmax_);
-    for (auto& element:dln_) element.resize(nmax_);
+    for (int l = 0; l <= L; l++) {
+      aln_[l].resize(nmax_);
+      bln_[l].resize(nmax_);
+      cln_[l].resize(nmax_);
+      dln_[l].resize(nmax_);
+    }
 
     // Yang, paragraph under eq. A3
     // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
@@ -1131,58 +1132,43 @@ namespace nmie {
       dln_[L][i] = c_one;
     }
 
-    std::vector<std::complex<double> > z(L), z1(L);
-    for (int i = 0; i < L - 1; ++i) {
-      z[i] = size_param_[i]*refractive_index_[i];
-      z1[i] = size_param_[i]*refractive_index_[i + 1];
-    }
-    z[L - 1] = size_param_[L - 1]*refractive_index_[L - 1];
-    z1[L - 1] = size_param_[L - 1];
+    std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
+    std::vector<std::complex<double> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
 
-    std::vector< std::vector<std::complex<double> > > D1z(L), D1z1(L), D3z(L), D3z1(L);
-    std::vector< std::vector<std::complex<double> > > Psiz(L), Psiz1(L), Zetaz(L), Zetaz1(L);
-    for (int l = 0; l < L; ++l) {
-      D1z[l].resize(nmax_ + 1);
-      D1z1[l].resize(nmax_ + 1);
-      D3z[l].resize(nmax_ + 1);
-      D3z1[l].resize(nmax_ + 1);
-      Psiz[l].resize(nmax_ + 1);
-      Psiz1[l].resize(nmax_ + 1);
-      Zetaz[l].resize(nmax_ + 1);
-      Zetaz1[l].resize(nmax_ + 1);
-    }
-
-    for (int l = 0; l < L; ++l) {
-      calcD1D3(z[l], D1z[l], D3z[l]);
-      calcD1D3(z1[l], D1z1[l], D3z1[l]);
-      calcPsiZeta(z[l], Psiz[l], Zetaz[l]);
-      calcPsiZeta(z1[l], Psiz1[l], Zetaz1[l]);
-    }
     auto& m = refractive_index_;
     std::vector< std::complex<double> > m1(L);
 
-    for (int l = 0; l < L - 1; ++l) m1[l] = m[l + 1];
+    for (int l = 0; l < L - 1; l++) m1[l] = m[l + 1];
     m1[L - 1] = std::complex<double> (1.0, 0.0);
 
+    std::complex<double> z, z1;
     for (int l = L - 1; l >= 0; l--) {
-      for (int n = nmax_ - 2; n >= 0; n--) {
-        auto denomZeta = m1[l]*Zetaz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
-        auto denomPsi = m1[l]*Psiz[l][n + 1]*(D1z[l][n + 1] - D3z[l][n + 1]);
+      z = size_param_[l]*m[l];
+      z1 = size_param_[l]*m1[l];
 
-        auto T1 = aln_[l + 1][n]*Zetaz1[l][n + 1] - dln_[l + 1][n]*Psiz1[l][n + 1];
-        auto T2 = bln_[l + 1][n]*Zetaz1[l][n + 1] - cln_[l + 1][n]*Psiz1[l][n + 1];
+      calcD1D3(z, D1z, D3z);
+      calcD1D3(z1, D1z1, D3z1);
+      calcPsiZeta(z, Psiz, Zetaz);
+      calcPsiZeta(z1, Psiz1, Zetaz1);
 
-        auto T3 = -D1z1[l][n + 1]*dln_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*aln_[l + 1][n]*Zetaz1[l][n + 1];
-        auto T4 = -D1z1[l][n + 1]*cln_[l + 1][n]*Psiz1[l][n + 1] + D3z1[l][n + 1]*bln_[l + 1][n]*Zetaz1[l][n + 1];
+      for (int n = 0; n < nmax_; n++) {
+        std::complex<double> denomZeta = m1[l]*Zetaz[n + 1]*(D1z[n + 1] - D3z[n + 1]);
+        std::complex<double> denomPsi = m1[l]*Psiz[n + 1]*(D1z[n + 1] - D3z[n + 1]);
 
-        // anl
-        aln_[l][n] = (D1z[l][n + 1]*m1[l]*T1 - m[l]*T3)/denomZeta;
-        // bnl
-        bln_[l][n] = (D1z[l][n + 1]*m[l]*T2 - m1[l]*T4)/denomZeta;
-        // cnl
-        cln_[l][n] = (D3z[l][n + 1]*m[l]*T2 - m1[l]*T4)/denomPsi;
-        // dnl
-        dln_[l][n] = (D3z[l][n + 1]*m1[l]*T1 - m[l]*T3)/denomPsi;
+        std::complex<double> T1 = aln_[l + 1][n]*Zetaz1[n + 1] - dln_[l + 1][n]*Psiz1[n + 1];
+        std::complex<double> T2 = bln_[l + 1][n]*Zetaz1[n + 1] - cln_[l + 1][n]*Psiz1[n + 1];
+
+        std::complex<double> T3 = -D1z1[n + 1]*dln_[l + 1][n]*Psiz1[n + 1] + D3z1[n + 1]*aln_[l + 1][n]*Zetaz1[n + 1];
+        std::complex<double> T4 = -D1z1[n + 1]*cln_[l + 1][n]*Psiz1[n + 1] + D3z1[n + 1]*bln_[l + 1][n]*Zetaz1[n + 1];
+
+        // aln
+        aln_[l][n] = (D1z[n + 1]*m1[l]*T1 - m[l]*T3)/denomZeta;
+        // bln
+        bln_[l][n] = (D1z[n + 1]*m[l]*T2 - m1[l]*T4)/denomZeta;
+        // cln
+        cln_[l][n] = (D3z[n + 1]*m[l]*T2 - m1[l]*T4)/denomPsi;
+        // dln
+        dln_[l][n] = (D3z[n + 1]*m1[l]*T1 - m[l]*T3)/denomPsi;
       }  // end of all n
     }  // end of all l
 
@@ -1194,8 +1180,8 @@ namespace nmie {
       else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
     }
 
-    isIntCoeffsCalc_ = true;
-  }  // end of   void MultiLayerMie::InternalScattCoeffs()
+    isExpCoeffsCalc_ = true;
+  }  // end of   void MultiLayerMie::ExpanCoeffs()
 
 
   // ********************************************************************** //
@@ -1289,12 +1275,17 @@ namespace nmie {
     std::vector<std::complex<double> > ipow = {c_one, c_i, -c_one, -c_i}; // Vector containing precomputed integer powers of i to avoid computation
     std::vector<std::complex<double> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
     std::vector<std::complex<double> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
-    std::vector<std::complex<double> > El(3, c_zero), Hl(3, c_zero);
     std::vector<std::complex<double> > jn(nmax_ + 1), jnp(nmax_ + 1), h1n(nmax_ + 1), h1np(nmax_ + 1);
     std::vector<double> Pi(nmax_), Tau(nmax_);
 
     int l = 0;  // Layer number
     std::complex<double> ml;
+
+    // Initialize E and H
+    for (int i = 0; i < 3; i++) {
+      E[i] = c_zero;
+      H[i] = c_zero;
+    }
 
     if (Rho > size_param_.back()) {
       l = size_param_.size();
@@ -1325,24 +1316,19 @@ namespace nmie {
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
       std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
       for (int i = 0; i < 3; i++) {
-        El[i] = El[i] + En*(cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
-                      + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
+        // electric field E [V m - 1] = EF*E0
+        E[i] += En*(cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
+              + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
 
-        Hl[i] = Hl[i] + En*(-dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
-                      +  c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
+        H[i] += En*(-dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
+              +  c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
       }
     }  // end of for all n
 
     // magnetic field
     double hffact = 1.0/(cc_*mu_);
     for (int i = 0; i < 3; i++) {
-      Hl[i] = hffact*Hl[i];
-    }
-
-    for (int i = 0; i < 3; i++) {
-      // electric field E [V m - 1] = EF*E0
-      E[i] = El[i];
-      H[i] = Hl[i];
+      H[i] = hffact*H[i];
     }
    }  // end of MultiLayerMie::calcField(...)
 
@@ -1370,20 +1356,18 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   void MultiLayerMie::RunFieldCalculation() {
-    // Calculate external scattering coefficients an_ and bn_
-    ExternalScattCoeffs();
+    // Calculate scattering coefficients an_ and bn_
+    ScattCoeffs();
 
     std::vector<std::complex<double> > an1(nmax_), bn1(nmax_);
-
     calc_an_bn_bulk(an1, bn1, size_param_.back(), refractive_index_.back());
-
     for (int n = 0; n < nmax_; n++) {
       printf("an_[%i] = %10.5er%+10.5ei;  an_bulk_[%i] = %10.5er%+10.5ei\n", n, std::real(an_[n]), std::imag(an_[n]), n, std::real(an1[n]), std::imag(an1[n]));
       printf("bn_[%i] = %10.5er%+10.5ei;  bn_bulk_[%i] = %10.5er%+10.5ei\n", n, std::real(bn_[n]), std::imag(bn_[n]), n, std::real(bn1[n]), std::imag(bn1[n]));
     }
 
-    // Calculate internal scattering coefficients aln_,  bln_, cln_, and dln_
-    InternalScattCoeffs();
+    // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
+    ExpanCoeffs();
 
     long total_points = coords_[0].size();
     E_.resize(total_points);

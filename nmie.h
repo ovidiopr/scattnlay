@@ -129,8 +129,8 @@ namespace nmie {
                        const double& Pi, const double& Tau, const double& n,
                        std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
                        std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
-    void ExternalScattCoeffs();
-    void InternalScattCoeffs();
+    void ScattCoeffs();
+    void ExpanCoeffs();
 
     void fieldExt(const double Rho, const double Phi, const double Theta,
                   std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
@@ -138,8 +138,8 @@ namespace nmie {
     void calcField(const double Rho, const double Phi, const double Theta,
                    std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
 
-    bool isIntCoeffsCalc_ = false;
-    bool isExtCoeffsCalc_ = false;
+    bool isExpCoeffsCalc_ = false;
+    bool isScaCoeffsCalc_ = false;
     bool isMieCalculated_ = false;
 
     // Size parameter for all layers
