@@ -58,12 +58,6 @@ coordX[:, 0] = scan
 coordY[:, 1] = scan
 coordZ[:, 2] = scan
 
-from scattnlay import scattnlay
-print "\nscattnlay"
-terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
-print "Results: ", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
-
-print "\nfieldnlay"
 terms, Ex, Hx = fieldnlay(x, m, coordX)
 terms, Ey, Hy = fieldnlay(x, m, coordY)
 terms, Ez, Hz = fieldnlay(x, m, coordZ)

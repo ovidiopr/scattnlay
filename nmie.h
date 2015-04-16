@@ -124,22 +124,22 @@ namespace nmie {
                 std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np);
     void calcPiTau(const double& costheta,
                    std::vector<double>& Pi, std::vector<double>& Tau);
-    void calcSpherHarm(const double Rho, const double Phi, const double Theta,
+    void calcSpherHarm(const double Rho, const double Theta, const double Phi,
                        const std::complex<double>& zn, const std::complex<double>& dzn,
                        const double& Pi, const double& Tau, const double& n,
                        std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
                        std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
-    void ExternalScattCoeffs();
-    void InternalScattCoeffs();
+    void ScattCoeffs();
+    void ExpanCoeffs();
 
-    void fieldExt(const double Rho, const double Phi, const double Theta,
+    void fieldExt(const double Rho, const double Theta, const double Phi,
                   std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
 
-    void calcField(const double Rho, const double Phi, const double Theta,
+    void calcField(const double Rho, const double Theta, const double Phi,
                    std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
 
-    bool isIntCoeffsCalc_ = false;
-    bool isExtCoeffsCalc_ = false;
+    bool isExpCoeffsCalc_ = false;
+    bool isScaCoeffsCalc_ = false;
     bool isMieCalculated_ = false;
 
     // Size parameter for all layers
