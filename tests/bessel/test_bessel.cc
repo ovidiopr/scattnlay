@@ -97,12 +97,12 @@ int main(int argc, char *argv[]) {
   printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
 	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
 	 dZeta[n_print].real(), dZeta[n_print].imag());
-  printf("WA dPsi =         e   r        e   i;  WA dZeta = +4.8284 e+04r-5.98822e+04i\n");
+  printf("WA dPsi = 0.800005e-03r+0.226667e-02i;  WA dZeta = +4.8284 e+04r-5.98822e+04i\n");
   n_print = n_big;
   printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_big,
 	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
 	 dZeta[n_print].real(), dZeta[n_print].imag());
-  printf(" WA dPsi =         e   r        e   i;   WA dZeta = +8.58553e+55r+7.47397e+55i\n");
+  printf(" WA dPsi = +1.75388e-53r-6.94429e-54i;   WA dZeta = +8.58553e+55r+7.47397e+55i\n");
 
 
 
@@ -152,12 +152,12 @@ int main(int argc, char *argv[]) {
   printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
   	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
   	 dZeta[n_print].real(), dZeta[n_print].imag());
-  printf("WA dPsi =         e   r        e   i;  WA dZeta = +1.99423e-01r-7.01483e-02i\n");
+  printf("WA dPsi = 2.41792e   r+1.27781 e   i;  WA dZeta = +1.99423e-01r-7.01483e-02i\n");
   n_print = n_big;
   printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_big,
   	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
   	 dZeta[n_print].real(), dZeta[n_print].imag());
-  printf(" WA dPsi =         e   r        e   i;   WA dZeta = -2.11402e+11r+8.34528e+10i\n");
+  printf(" WA dPsi = -1.03313e-11r-1.13267e-11i;   WA dZeta = -2.11402e+11r+8.34528e+10i\n");
 
 
   printf("===== Big ========\n");
@@ -210,7 +210,7 @@ int main(int argc, char *argv[]) {
   printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_big,
   	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
   	 dZeta[n_print].real(), dZeta[n_print].imag());
-  printf(" WA dPsi =         e   r        e   i;   WA dZeta = -6.13497e-07r-1.14967e-06i\n");
+  printf(" WA dPsi = -2.47740e+05r+3.05899e+05i;   WA dZeta = -6.13497e-07r-1.14967e-06i\n");
 
 
   printf("===== Big real========\n");
