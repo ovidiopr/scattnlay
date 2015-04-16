@@ -1454,6 +1454,8 @@ namespace nmie {
     std::vector<std::complex<double> > jn(nmax_ + 1), jnp(nmax_ + 1), h1n(nmax_ + 1), h1np(nmax_ + 1);
     std::vector<double> Pi(nmax_), Tau(nmax_);
 
+    std::vector<std::complex<double> > Ei(3), Hi(3);
+
     int l = 0;  // Layer number
     std::complex<double> ml;
 
@@ -1503,6 +1505,9 @@ namespace nmie {
 
         H[i] += En*(-dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
               +  c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
+        Ei[i] += En*(M1o1n[i] - c_i*N1e1n[i]);
+	Hi[i] += En*(-M1e1n[i] - c_i*N1o1n[i]);
+
       }
     }  // end of for all n
 
@@ -1511,7 +1516,8 @@ namespace nmie {
     double hffact = 1.0/(cc_*mu_);
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
-      //printf("E[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(H[i]), std::imag(H[i]));
+      Hi[i] *= hffact;
+      printf("E[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(H[i]), std::imag(H[i]));
     }
    }  // end of MultiLayerMie::calcField(...)
 
