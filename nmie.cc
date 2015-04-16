@@ -1149,11 +1149,11 @@ namespace nmie {
 
     // Yang, paragraph under eq. A3
     // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
-    for (int n = 0; n < nmax_; n++) {
-      aln_[L][n] = an_[n];
-      bln_[L][n] = bn_[n];
-      cln_[L][n] = c_one;
-      dln_[L][n] = c_one;
+    for (int i = 0; i < nmax_; ++i) {
+      aln_[L][i] = an_[i];
+      bln_[L][i] = bn_[i];
+      cln_[L][i] = c_one;
+      dln_[L][i] = c_one;
     }
 
     std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
@@ -1203,6 +1203,153 @@ namespace nmie {
     for (int n = 0; n < nmax_; ++n) {
       printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
 	     real(bln_[0][n]), imag(bln_[0][n]));
+      if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
+      else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
+      if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
+      else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
+    }
+
+    isExpCoeffsCalc_ = true;
+  }  // end of   void MultiLayerMie::ExpanCoeffs()
+
+
+  //**********************************************************************************//
+  // This function calculates the expansion coefficients inside the particle,         //
+  // required to calculate the near-field parameters.                                 //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   L: Number of layers                                                            //
+  //   pl: Index of PEC layer. If there is none just send -1                          //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
+  //         calculations. Only use it if you know what you are doing, otherwise      //
+  //         set this parameter to -1 and the function will calculate it.             //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   aln, bln, cln, dln: Complex scattering amplitudes inside the particle          //
+  //                                                                                  //
+  // Return value:                                                                    //
+  //   Number of multipolar expansion terms used for the calculations                 //
+  //**********************************************************************************//
+  void MultiLayerMie::ExpanCoeffsV2() {
+    if (!isScaCoeffsCalc_)
+      throw std::invalid_argument("(ExpanCoeffs) You should calculate external coefficients first!");
+
+    isExpCoeffsCalc_ = false;
+
+    std::complex<double> c_one(1.0, 0.0), c_zero(0.0, 0.0);
+
+    const int L = refractive_index_.size();
+
+    aln_.resize(L + 1);
+    bln_.resize(L + 1);
+    cln_.resize(L + 1);
+    dln_.resize(L + 1);
+    for (int l = 0; l <= L; l++) {
+      aln_[l].resize(nmax_);
+      bln_[l].resize(nmax_);
+      cln_[l].resize(nmax_);
+      dln_[l].resize(nmax_);
+    }
+
+    // Yang, paragraph under eq. A3
+    // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
+    for (int n = 0; n < nmax_; n++) {
+      aln_[L][n] = an_[n];
+      bln_[L][n] = bn_[n];
+      cln_[L][n] = c_one;
+      dln_[L][n] = c_one;
+    }
+
+    std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
+    std::vector<std::complex<double> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
+    std::complex<double> denomZeta, denomPsi, T1, T2, T3, T4;
+
+    std::vector<std::vector<std::complex<double> > > a(2);
+    a[0].resize(3);
+    a[1].resize(3);
+
+    auto& m = refractive_index_;
+    std::vector< std::complex<double> > m1(L);
+
+    for (int l = 0; l < L - 1; l++) m1[l] = m[l + 1];
+    m1[L - 1] = std::complex<double> (1.0, 0.0);
+
+    std::complex<double> z, z1;
+    for (int l = L - 1; l >= 0; l--) {
+      z = size_param_[l]*m[l];
+      z1 = size_param_[l]*m1[l];
+
+      calcD1D3(z, D1z, D3z);
+      calcD1D3(z1, D1z1, D3z1);
+      calcPsiZeta(z, Psiz, Zetaz);
+      calcPsiZeta(z1, Psiz1, Zetaz1);
+
+      for (int n = 0; n < nmax_; n++) {
+        int n1 = n + 1;
+
+        a[0][0] = m1[l]*D3z[n1]*Zetaz[n1];
+        a[0][1] = -m1[l]*D1z[n1]*Psiz[n1];
+        a[0][2] = aln_[l + 1][n]*m[l]*D3z1[n1]*Zetaz1[n1];
+        a[0][2] -= dln_[l + 1][n]*m[l]*D1z1[n1]*Psiz1[n1];
+
+        a[1][0] = Zetaz[n1];
+        a[1][1] = -Psiz[n1];
+        a[1][2] = aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
+
+        // aln
+        aln_[l][n] = (a[0][2]*a[1][1] - a[0][1]*a[1][2])/(a[0][0]*a[1][1] - a[0][1]*a[1][0]);
+        // dln
+        dln_[l][n] = (a[0][2]*a[1][0] - a[0][0]*a[1][2])/(a[0][1]*a[1][0] - a[0][0]*a[0][1]);
+
+        /*for (int i = 0; i < 2; i++) {
+          for (int j = 0; j < 3; j++) {
+            printf("a[%i, %i] = %g,%g ", i, j, real(a[i][j]), imag(a[i][j]));
+          }
+          printf("\n");
+        }
+        printf("aln_[%i, %i] = %g,%g; dln_[%i, %i] = %g,%g\n\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));*/
+
+        a[0][0] = D3z[n1]*Zetaz[n1];
+        a[0][1] = -D1z[n1]*Psiz[n1];
+        a[0][2] = bln_[l + 1][n]*D3z1[n1]*Zetaz1[n1];
+        a[0][2] -= cln_[l + 1][n]*D1z1[n1]*Psiz1[n1];
+
+        a[1][0] = m1[l]*Zetaz[n1];
+        a[1][1] = -m1[l]*Psiz[n1];
+        a[1][2] = bln_[l + 1][n]*m[l]*Zetaz1[n1] - cln_[l + 1][n]*m[l]*Psiz1[n1];
+
+        // bln
+        bln_[l][n] = (a[0][2]*a[1][1] - a[0][1]*a[1][2])/(a[0][0]*a[1][1] - a[0][1]*a[1][0]);
+        // cln
+        cln_[l][n] = (a[0][2]*a[1][0] - a[0][0]*a[1][2])/(a[0][1]*a[1][0] - a[0][0]*a[0][1]);
+
+        /*denomZeta = m1[l]*Zetaz[n1]*(D1z[n1] - D3z[n1]);
+        denomPsi  =  m1[l]*Psiz[n1]*(D1z[n1] - D3z[n1]);
+
+        T1 = aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
+        T2 = bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1];
+
+        T3 = D1z1[n1]*dln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*aln_[l + 1][n]*Zetaz1[n1];
+        T4 = D1z1[n1]*cln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*bln_[l + 1][n]*Zetaz1[n1];
+
+        // aln
+        aln_[l][n] = (D1z[n1]*m1[l]*T1 + m[l]*T3)/denomZeta;
+        // bln
+        bln_[l][n] = (D1z[n1]*m[l]*T2 + m1[l]*T4)/denomZeta;
+        // cln
+        cln_[l][n] = (D3z[n1]*m[l]*T2 + m1[l]*T4)/denomPsi;
+        // dln
+        dln_[l][n] = (D3z[n1]*m1[l]*T1 + m[l]*T3)/denomPsi;*/
+        printf("aln_[%i, %i] = %g,%g; bln_[%i, %i] = %g,%g; cln_[%i, %i] = %g,%g; dln_[%i, %i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
+      }  // end of all n
+    }  // end of all l
+
+    // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
+    for (int n = 0; n < nmax_; ++n) {
+//      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
+//	     real(bln_[0][n]), imag(bln_[0][n]));
       if (std::abs(aln_[0][n]) < 1e-1) aln_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
       if (std::abs(bln_[0][n]) < 1e-1) bln_[0][n] = 0.0;
@@ -1397,15 +1544,20 @@ namespace nmie {
     // Calculate scattering coefficients an_ and bn_
     ScattCoeffs();
 
-    std::vector<std::complex<double> > an1(nmax_), bn1(nmax_);
-    calc_an_bn_bulk(an1, bn1, size_param_.back(), refractive_index_.back());
-    for (int n = 0; n < nmax_; n++) {
-      printf("an_[%i] = %10.5er%+10.5ei;  an_bulk_[%i] = %10.5er%+10.5ei\n", n, std::real(an_[n]), std::imag(an_[n]), n, std::real(an1[n]), std::imag(an1[n]));
-      printf("bn_[%i] = %10.5er%+10.5ei;  bn_bulk_[%i] = %10.5er%+10.5ei\n", n, std::real(bn_[n]), std::imag(bn_[n]), n, std::real(bn1[n]), std::imag(bn1[n]));
-    }
+    // std::vector<std::complex<double> > an1(nmax_), bn1(nmax_);
+    // calc_an_bn_bulk(an1, bn1, size_param_.back(), refractive_index_.back());
+    // for (int n = 0; n < nmax_; n++) {
+    //   printf("an_[%i] = %10.5er%+10.5ei;  an_bulk_[%i] = %10.5er%+10.5ei\n", n, std::real(an_[n]), std::imag(an_[n]), n, std::real(an1[n]), std::imag(an1[n]));
+    //   printf("bn_[%i] = %10.5er%+10.5ei;  bn_bulk_[%i] = %10.5er%+10.5ei\n", n, std::real(bn_[n]), std::imag(bn_[n]), n, std::real(bn1[n]), std::imag(bn1[n]));
+    // }
 
     // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
     ExpanCoeffs();
+    // for (int i = 0; i < nmax_; ++i) {
+    //   printf("cln_[%i] = %10.5er%+10.5ei;  dln_[%i] = %10.5er%+10.5ei\n", i, std::real(cln_[0][i]), std::imag(cln_[0][i]),
+    // 	     i, std::real(dln_[0][i]), std::imag(dln_[0][i]));
+    // }
+
 
     long total_points = coords_[0].size();
     E_.resize(total_points);
