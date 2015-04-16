@@ -250,18 +250,18 @@ int main(int argc, char *argv[]) {
     int samples = range.size();
     std::vector<double> zero(samples, 0.0);
     std::vector<double> Xp, Yp, Zp;
-    // // X line
-    // Xp.insert(Xp.end(), range.begin(), range.end());
-    // Yp.insert(Yp.end(), zero.begin(), zero.end());
-    // Zp.insert(Zp.end(), zero.begin(), zero.end());
+    // X line
+    Xp.insert(Xp.end(), range.begin(), range.end());
+    Yp.insert(Yp.end(), zero.begin(), zero.end());
+    Zp.insert(Zp.end(), zero.begin(), zero.end());
     // Y line
     Xp.insert(Xp.end(), zero.begin(), zero.end());
     Yp.insert(Yp.end(), range.begin(), range.end());
     Zp.insert(Zp.end(), zero.begin(), zero.end());
-    // // // Z line
-    // Xp.insert(Xp.end(), zero.begin(), zero.end());
-    // Yp.insert(Yp.end(), zero.begin(), zero.end());
-    // Zp.insert(Zp.end(), range.begin(), range.end());
+    // Z line
+    Xp.insert(Xp.end(), zero.begin(), zero.end());
+    Yp.insert(Yp.end(), zero.begin(), zero.end());
+    Zp.insert(Zp.end(), range.begin(), range.end());
     int ncoord = Xp.size();
     // Test solid sphere
     x = {size};

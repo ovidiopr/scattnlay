@@ -649,6 +649,12 @@ namespace nmie {
                    *(static_cast<double>(n)*zinv- D3[n - 1]);
       D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
     }
+    std::vector<std::complex<double> >  ZetaZ(nmax_+1), dZetaZ(nmax_ + 1);
+    bessel::calcZeta(ZetaZ, dZetaZ, nmax_, z);
+    for (int n = 0; n < nmax_+1; ++n) {
+      D3[n]=dZetaZ[n]/ZetaZ[n];
+    }
+
   }
 
 
@@ -681,6 +687,10 @@ namespace nmie {
       Psi[n] = Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
       Zeta[n] = Zeta[n - 1]*(static_cast<double>(n)/z - D3[n - 1]);
     }
+    
+    std::vector<std::complex<double> >  dZetaZ(nmax_ + 1);
+    bessel::calcZeta(Zeta, dZetaZ, nmax_, z);
+
 
   }
 
@@ -1188,10 +1198,12 @@ namespace nmie {
 
     // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
     for (int n = 0; n < nmax_; ++n) {
-      if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
+      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
+	     real(bln_[0][n]), imag(bln_[0][n]));
+      if (std::abs(aln_[0][n]) < 1e-1) aln_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
-      if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
-      else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
+      if (std::abs(bln_[0][n]) < 1e-1) bln_[0][n] = 0.0;
+      else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
     }
 
     isIntCoeffsCalc_ = true;

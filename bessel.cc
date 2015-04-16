@@ -105,7 +105,7 @@ namespace nmie {
       csy.resize(n+1);
       cdy.resize(n+1);
       std::complex<double> cf, cf0, cf1, cs, csa, csb;
-      int k, m;
+      int m;
       a0 = std::abs(z);
       nm = n;      
       if (a0 < 1.0e-60) {
@@ -209,7 +209,7 @@ namespace nmie {
       // !
     int msta2 ( double x, int n, int mp ) {
       double a0, ejn, f, f0, f1, hmp;
-      int it, n0, n1, nn;
+      int  n0, n1, nn;
       double obj;
       a0 = std::abs ( x );
       hmp = 0.5 * mp;
@@ -281,7 +281,7 @@ namespace nmie {
 // !
     int  msta1 ( double x, int mp ) {
       double a0, f, f0, f1;
-      int it, n0, n1, nn;
+      int n0, n1, nn;
       a0 = std::abs ( x );
       n0 = static_cast<int> (1.1 * a0 ) + 1;
       f0 = envj ( n0, a0 ) - mp;
