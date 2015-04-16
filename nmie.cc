@@ -1495,7 +1495,7 @@ namespace nmie {
         H[i] += En*(-dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
               +  c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
         Ei[i] += En*(M1o1n[i] - c_i*N1e1n[i]);
-	Hi[i] += En*(-M1e1n[i] - c_i*N1o1n[i]);
+        Hi[i] += En*(-M1e1n[i] - c_i*N1o1n[i]);
 
       }
     }  // end of for all n
@@ -1505,12 +1505,8 @@ namespace nmie {
     double hffact = 1.0/(cc_*mu_);
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
-<<<<<<< HEAD
-      //printf("E[%i] = %11.4er%+10.5ei; H[%i] = %11.4er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(H[i]), std::imag(H[i]));
-=======
       Hi[i] *= hffact;
       printf("E[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(H[i]), std::imag(H[i]));
->>>>>>> 938bb8a75fc11cbca9d3f31c11409ef4dcda9a48
     }
    }  // end of MultiLayerMie::calcField(...)
 
