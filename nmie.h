@@ -131,6 +131,7 @@ namespace nmie {
                        std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
     void ScattCoeffs();
     void ExpanCoeffs();
+    void ExpanCoeffsV2();
 
     void fieldExt(const double Rho, const double Theta, const double Phi,
                   std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
