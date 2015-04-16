@@ -725,30 +725,34 @@ namespace nmie {
                              std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp,
                              std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np) {
 
-    std::vector<std::complex<double> > Psi(nmax_ + 1), Zeta(nmax_ + 1);
+    // std::vector<std::complex<double> > Psi(nmax_ + 1), Zeta(nmax_ + 1);
 
-    // First, calculate the Riccati-Bessel functions
-    calcPsiZeta(z, Psi, Zeta);
+    // // First, calculate the Riccati-Bessel functions
+    // calcPsiZeta(z, Psi, Zeta);
 
-    // Now, calculate Spherical Bessel and Hankel functions and their derivatives
-    for (int n = 0; n <= nmax_; n++) {
-      jn[n] = Psi[n]/z;
-      h1n[n] = Zeta[n]/z;
+    // // Now, calculate Spherical Bessel and Hankel functions and their derivatives
+    // for (int n = 0; n <= nmax_; n++) {
+    //   jn[n] = Psi[n]/z;
+    //   h1n[n] = Zeta[n]/z;
 
-      if (n == 0) {
-        jnp[0] = -Psi[1]/z - jn[0]/z;
-        h1np[0] = -Zeta[1]/z - h1n[0]/z;
-      } else {
-        jnp[n] = jn[n - 1] - static_cast<double>(n + 1)*jn[n]/z;
-        h1np[n] = h1n[n - 1] - static_cast<double>(n + 1)*h1n[n]/z;
-      }
+    //   if (n == 0) {
+    //     jnp[0] = -Psi[1]/z - jn[0]/z;
+    //     h1np[0] = -Zeta[1]/z - h1n[0]/z;
+    //   } else {
+    //     jnp[n] = jn[n - 1] - static_cast<double>(n + 1)*jn[n]/z;
+    //     h1np[n] = h1n[n - 1] - static_cast<double>(n + 1)*h1n[n]/z;
+    //   }
+    // }
+    std::vector< std::complex<double> > yn, ynp;
+    int nm;
+    bessel::csphjy (nmax_, z, nm, jn, jnp,  yn, ynp );
+    auto c_i = std::complex<double>(0.0,1.0);
+    h1n.resize(nmax_+1);
+    h1np.resize(nmax_+1);
+    for (int i = 0; i < nmax_+1; ++i) {
+      h1n[i] = jn[i] + c_i*yn[i];
+      h1np[i] = jnp[i] + c_i*ynp[i];
     }
-    // std::vector< std::complex<double> > yn, ynp;
-    // int nm;
-    // csphjy (nmax_, z, nm, jn, jnp,  yn, ynp );
-    // auto c_i = std::complex<double>(0.0,1.0);
-
-
   }
 
 
@@ -768,20 +772,20 @@ namespace nmie {
   void MultiLayerMie::calcPiTau(const double& costheta,
                                 std::vector<double>& Pi, std::vector<double>& Tau) {
 
-    int n;
+    int i;
     //****************************************************//
     // Equations (26a) - (26c)                            //
     //****************************************************//
     // Initialize Pi and Tau
-    Pi[0] = 1.0;
+    Pi[0] = 1.0;  // n=1
     Tau[0] = costheta;
     // Calculate the actual values
     if (nmax_ > 1) {
-      Pi[1] = 3*costheta*Pi[0];
+      Pi[1] = 3*costheta*Pi[0]; //n=2
       Tau[1] = 2*costheta*Pi[1] - 3*Pi[0];
-      for (n = 2; n < nmax_; n++) {
-        Pi[n] = ((n + n + 1)*costheta*Pi[n - 1] - (n + 1)*Pi[n - 2])/n;
-        Tau[n] = (n + 1)*costheta*Pi[n] - (n + 2)*Pi[n - 1];
+      for (i = 2; i < nmax_; i++) { //n=[3..nmax_]
+        Pi[i] = ((i + i + 1)*costheta*Pi[i - 1] - (i + 1)*Pi[i - 2])/i;
+        Tau[i] = (i + 1)*costheta*Pi[i] - (i + 2)*Pi[i - 1];
       }
     }
   }  // end of MultiLayerMie::calcPiTau(...)
@@ -1329,6 +1333,11 @@ namespace nmie {
 
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
+    printf("Thetd = %g, cos(Theta) = %g\n", Theta, std::cos(Theta));
+    printf("Pi:\n");
+    for (auto p : Pi) printf("%11.4e\n",p);
+    printf("Tau:\n");
+    for (auto p : Tau) printf("%11.4e\n",p);
 
     for (int n = nmax_ - 2; n >= 0; n--) {
       int n1 = n + 1;
