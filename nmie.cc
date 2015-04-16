@@ -1156,6 +1156,10 @@ namespace nmie {
     std::vector<std::complex<double> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
     std::complex<double> denomZeta, denomPsi, T1, T2, T3, T4;
 
+    std::vector<std::vector<std::complex<double> > > a(2);
+    a[0].resize(3);
+    a[1].resize(3);
+
     auto& m = refractive_index_;
     std::vector< std::complex<double> > m1(L);
 
@@ -1175,7 +1179,43 @@ namespace nmie {
       for (int n = 0; n < nmax_; n++) {
         int n1 = n + 1;
 
-        denomZeta = m1[l]*Zetaz[n1]*(D1z[n1] - D3z[n1]);
+        a[0][0] = m1[l]*D3z[n1]*Zetaz[n1];
+        a[0][1] = -m1[l]*D1z[n1]*Psiz[n1];
+        a[0][2] = aln_[l + 1][n]*m[l]*D3z1[n1]*Zetaz1[n1];
+        a[0][2] -= dln_[l + 1][n]*m[l]*D1z1[n1]*Psiz1[n1];
+
+        a[1][0] = Zetaz[n1];
+        a[1][1] = -Psiz[n1];
+        a[1][2] = aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
+
+        // aln
+        aln_[l][n] = (a[0][2]*a[1][1] - a[0][1]*a[1][2])/(a[0][0]*a[1][1] - a[0][1]*a[1][0]);
+        // dln
+        dln_[l][n] = (a[0][2]*a[1][0] - a[0][0]*a[1][2])/(a[0][1]*a[1][0] - a[0][0]*a[0][1]);
+
+        /*for (int i = 0; i < 2; i++) {
+          for (int j = 0; j < 3; j++) {
+            printf("a[%i, %i] = %g,%g ", i, j, real(a[i][j]), imag(a[i][j]));
+          }
+          printf("\n");
+        }
+        printf("aln_[%i, %i] = %g,%g; dln_[%i, %i] = %g,%g\n\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));*/
+
+        a[0][0] = D3z[n1]*Zetaz[n1];
+        a[0][1] = -D1z[n1]*Psiz[n1];
+        a[0][2] = bln_[l + 1][n]*D3z1[n1]*Zetaz1[n1];
+        a[0][2] -= cln_[l + 1][n]*D1z1[n1]*Psiz1[n1];
+
+        a[1][0] = m1[l]*Zetaz[n1];
+        a[1][1] = -m1[l]*Psiz[n1];
+        a[1][2] = bln_[l + 1][n]*m[l]*Zetaz1[n1] - cln_[l + 1][n]*m[l]*Psiz1[n1];
+
+        // bln
+        bln_[l][n] = (a[0][2]*a[1][1] - a[0][1]*a[1][2])/(a[0][0]*a[1][1] - a[0][1]*a[1][0]);
+        // cln
+        cln_[l][n] = (a[0][2]*a[1][0] - a[0][0]*a[1][2])/(a[0][1]*a[1][0] - a[0][0]*a[0][1]);
+
+        /*denomZeta = m1[l]*Zetaz[n1]*(D1z[n1] - D3z[n1]);
         denomPsi  =  m1[l]*Psiz[n1]*(D1z[n1] - D3z[n1]);
 
         T1 = aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
@@ -1191,14 +1231,15 @@ namespace nmie {
         // cln
         cln_[l][n] = (D3z[n1]*m[l]*T2 + m1[l]*T4)/denomPsi;
         // dln
-        dln_[l][n] = (D3z[n1]*m1[l]*T1 + m[l]*T3)/denomPsi;
+        dln_[l][n] = (D3z[n1]*m1[l]*T1 + m[l]*T3)/denomPsi;*/
+        printf("aln_[%i, %i] = %g,%g; bln_[%i, %i] = %g,%g; cln_[%i, %i] = %g,%g; dln_[%i, %i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
       }  // end of all n
     }  // end of all l
 
     // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
     for (int n = 0; n < nmax_; ++n) {
-      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
-	     real(bln_[0][n]), imag(bln_[0][n]));
+//      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
+//	     real(bln_[0][n]), imag(bln_[0][n]));
       if (std::abs(aln_[0][n]) < 1e-1) aln_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
       if (std::abs(bln_[0][n]) < 1e-1) bln_[0][n] = 0.0;
