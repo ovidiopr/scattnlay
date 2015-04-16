@@ -576,17 +576,17 @@ namespace nmie {
       bn[i] = Num/Denom;      
     }
     // printf("dPsiX\n");
-    // for (auto a: dPsiX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    // for (auto a: dPsiX) printf("%11.4er%+10.5ei  ",std::real(a), std::imag(a));
     // printf("\ndPsiMX\n");
-    // for (auto a: dPsiMX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    // for (auto a: dPsiMX) printf("%11.4er%+10.5ei  ",std::real(a), std::imag(a));
     // printf("\nPsiX\n");
-    // for (auto a: PsiX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    // for (auto a: PsiX) printf("%11.4er%+10.5ei  ",std::real(a), std::imag(a));
     // printf("\nPsiMX\n");
-    // for (auto a: PsiMX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    // for (auto a: PsiMX) printf("%11.4er%+10.5ei  ",std::real(a), std::imag(a));
     // printf("\nZetaX\n");
-    // for (auto a: ZetaX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    // for (auto a: ZetaX) printf("%11.4er%+10.5ei  ",std::real(a), std::imag(a));
     // printf("\ndZetaX\n");
-    // for (auto a: dZetaX) printf("%10.5er%+10.5ei  ",std::real(a), std::imag(a));
+    // for (auto a: dZetaX) printf("%11.4er%+10.5ei  ",std::real(a), std::imag(a));
 
     // printf("\nsize param: %g\n", x);
 
@@ -1149,11 +1149,13 @@ namespace nmie {
 
     // Yang, paragraph under eq. A3
     // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
-    for (int i = 0; i < nmax_; ++i) {
-      aln_[L][i] = an_[i];
-      bln_[L][i] = bn_[i];
-      cln_[L][i] = c_one;
-      dln_[L][i] = c_one;
+    for (int n = 0; n < nmax_; n++) {
+      aln_[L][n] = an_[n];
+      bln_[L][n] = bn_[n];
+      cln_[L][n] = c_one;
+      dln_[L][n] = c_one;
+
+      printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", L, n, std::real(aln_[L][n]), std::imag(aln_[L][n]), L, n, std::real(bln_[L][n]), std::imag(bln_[L][n]), L, n, std::real(cln_[L][n]), std::imag(cln_[L][n]), L, n, std::real(dln_[L][n]), std::imag(dln_[L][n]));
     }
 
     std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
@@ -1196,13 +1198,15 @@ namespace nmie {
         cln_[l][n] = (D3z[n1]*m[l]*T2 + m1[l]*T4)/denomPsi;
         // dln
         dln_[l][n] = (D3z[n1]*m1[l]*T1 + m[l]*T3)/denomPsi;
+
+        printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
       }  // end of all n
     }  // end of all l
 
     // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
     for (int n = 0; n < nmax_; ++n) {
-      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
-	     real(bln_[0][n]), imag(bln_[0][n]));
+//      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
+//	     real(bln_[0][n]), imag(bln_[0][n]));
       if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
       if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
@@ -1260,6 +1264,8 @@ namespace nmie {
       bln_[L][n] = bn_[n];
       cln_[L][n] = c_one;
       dln_[L][n] = c_one;
+
+      printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", L, n, std::real(aln_[L][n]), std::imag(aln_[L][n]), L, n, std::real(bln_[L][n]), std::imag(bln_[L][n]), L, n, std::real(cln_[L][n]), std::imag(cln_[L][n]), L, n, real(dln_[L][n]), std::imag(dln_[L][n]));
     }
 
     std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
@@ -1325,24 +1331,7 @@ namespace nmie {
         // cln
         cln_[l][n] = (a[0][2]*a[1][0] - a[0][0]*a[1][2])/(a[0][1]*a[1][0] - a[0][0]*a[0][1]);
 
-        /*denomZeta = m1[l]*Zetaz[n1]*(D1z[n1] - D3z[n1]);
-        denomPsi  =  m1[l]*Psiz[n1]*(D1z[n1] - D3z[n1]);
-
-        T1 = aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
-        T2 = bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1];
-
-        T3 = D1z1[n1]*dln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*aln_[l + 1][n]*Zetaz1[n1];
-        T4 = D1z1[n1]*cln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*bln_[l + 1][n]*Zetaz1[n1];
-
-        // aln
-        aln_[l][n] = (D1z[n1]*m1[l]*T1 + m[l]*T3)/denomZeta;
-        // bln
-        bln_[l][n] = (D1z[n1]*m[l]*T2 + m1[l]*T4)/denomZeta;
-        // cln
-        cln_[l][n] = (D3z[n1]*m[l]*T2 + m1[l]*T4)/denomPsi;
-        // dln
-        dln_[l][n] = (D3z[n1]*m1[l]*T1 + m[l]*T3)/denomPsi;*/
-        printf("aln_[%i, %i] = %g,%g; bln_[%i, %i] = %g,%g; cln_[%i, %i] = %g,%g; dln_[%i, %i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
+        printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
       }  // end of all n
     }  // end of all l
 
@@ -1480,12 +1469,12 @@ namespace nmie {
 
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
-    printf("Thetd = %g, cos(Theta) = %g\n", Theta, std::cos(Theta));
+/*    printf("Thetd = %g, cos(Theta) = %g\n", Theta, std::cos(Theta));
     printf("Pi:\n");
     for (auto p : Pi) printf("%11.4e\n",p);
     printf("Tau:\n");
     for (auto p : Tau) printf("%11.4e\n",p);
-
+*/
     for (int n = nmax_ - 2; n >= 0; n--) {
       int n1 = n + 1;
       double rn = static_cast<double>(n1);
@@ -1506,12 +1495,12 @@ namespace nmie {
       }
     }  // end of for all n
 
-    //printf("rho = %10.5e; phi = %10.5eº; theta = %10.5eº; x[%i] = %10.5e; m[%i] = %10.5er%+10.5ei\n", Rho, Phi*180./PI_, Theta*180./PI_, l, size_param_[l], l, std::real(ml), std::imag(ml));
+    //printf("rho = %11.4e; phi = %11.4eº; theta = %11.4eº; x[%i] = %11.4e; m[%i] = %11.4er%+10.5ei\n", Rho, Phi*180./PI_, Theta*180./PI_, l, size_param_[l], l, std::real(ml), std::imag(ml));
     // magnetic field
     double hffact = 1.0/(cc_*mu_);
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
-      //printf("E[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(H[i]), std::imag(H[i]));
+      //printf("E[%i] = %11.4er%+10.5ei; H[%i] = %11.4er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(H[i]), std::imag(H[i]));
     }
    }  // end of MultiLayerMie::calcField(...)
 
@@ -1547,14 +1536,14 @@ namespace nmie {
     // std::vector<std::complex<double> > an1(nmax_), bn1(nmax_);
     // calc_an_bn_bulk(an1, bn1, size_param_.back(), refractive_index_.back());
     // for (int n = 0; n < nmax_; n++) {
-    //   printf("an_[%i] = %10.5er%+10.5ei;  an_bulk_[%i] = %10.5er%+10.5ei\n", n, std::real(an_[n]), std::imag(an_[n]), n, std::real(an1[n]), std::imag(an1[n]));
-    //   printf("bn_[%i] = %10.5er%+10.5ei;  bn_bulk_[%i] = %10.5er%+10.5ei\n", n, std::real(bn_[n]), std::imag(bn_[n]), n, std::real(bn1[n]), std::imag(bn1[n]));
+    //   printf("an_[%i] = %11.4er%+10.5ei;  an_bulk_[%i] = %11.4er%+10.5ei\n", n, std::real(an_[n]), std::imag(an_[n]), n, std::real(an1[n]), std::imag(an1[n]));
+    //   printf("bn_[%i] = %11.4er%+10.5ei;  bn_bulk_[%i] = %11.4er%+10.5ei\n", n, std::real(bn_[n]), std::imag(bn_[n]), n, std::real(bn1[n]), std::imag(bn1[n]));
     // }
 
     // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
     ExpanCoeffs();
     // for (int i = 0; i < nmax_; ++i) {
-    //   printf("cln_[%i] = %10.5er%+10.5ei;  dln_[%i] = %10.5er%+10.5ei\n", i, std::real(cln_[0][i]), std::imag(cln_[0][i]),
+    //   printf("cln_[%i] = %11.4er%+10.5ei;  dln_[%i] = %11.4er%+10.5ei\n", i, std::real(cln_[0][i]), std::imag(cln_[0][i]),
     // 	     i, std::real(dln_[0][i]), std::imag(dln_[0][i]));
     // }
 
