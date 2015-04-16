@@ -35,9 +35,8 @@
 namespace nmie {
   namespace bessel {
 
-    void calcZeta( std::vector< std::complex<double> >& Zeta,
-		   std::vector< std::complex<double> >& dZeta,
-		   int n,  std::complex<double>z) {
+    void calcZeta(int n,  std::complex<double>z,  std::vector< std::complex<double> >& Zeta,
+		   std::vector< std::complex<double> >& dZeta) {
       std::vector< std::complex<double> > csj, cdj, csy, cdy;
       int nm;
       csphjy (n, z, nm, csj, cdj,  csy, cdy );
@@ -49,6 +48,19 @@ namespace nmie {
 	dZeta[i]=z*(cdj[i] + c_i*cdy[i])+csj[i] + c_i*csy[i];
       }
     }  // end of calcZeta()
+
+    void calcPsi(int n,  std::complex<double>z,  std::vector< std::complex<double> >& Psi,
+		   std::vector< std::complex<double> >& dPsi) {
+      std::vector< std::complex<double> > csj, cdj, csy, cdy;
+      int nm;
+      csphjy (n, z, nm, csj, cdj,  csy, cdy );
+      Psi.resize(n+1);
+      dPsi.resize(n+1);
+      for (int i = 0; i < n+1; ++i) {
+	Psi[i]=z*(csj[i]);
+	dPsi[i]=z*(cdj[i])+csj[i];
+      }
+    }  // end of calcPsi()
 
 // !*****************************************************************************80
 //  

@@ -563,7 +563,7 @@ namespace nmie {
       dPsiMX[i] = D1MX[i]*PsiMX[i];
       //dZetaX[i] = D3X[i]*ZetaX[i];
     }
-    bessel::calcZeta(ZetaX, dZetaX, nmax_, x);
+    bessel::calcZeta(nmax_, x, ZetaX, dZetaX);
     an.resize(nmax_);
     bn.resize(nmax_);
     for (int i = 0; i < nmax_; i++) {
@@ -650,7 +650,7 @@ namespace nmie {
       D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
     }
     std::vector<std::complex<double> >  ZetaZ(nmax_+1), dZetaZ(nmax_ + 1);
-    bessel::calcZeta(ZetaZ, dZetaZ, nmax_, z);
+    bessel::calcZeta(nmax_, z, ZetaZ, dZetaZ );
     for (int n = 0; n < nmax_+1; ++n) {
       D3[n]=dZetaZ[n]/ZetaZ[n];
     }
@@ -689,7 +689,7 @@ namespace nmie {
     }
     
     std::vector<std::complex<double> >  dZetaZ(nmax_ + 1);
-    bessel::calcZeta(Zeta, dZetaZ, nmax_, z);
+    bessel::calcZeta(nmax_, z, Zeta, dZetaZ);
 
 
   }

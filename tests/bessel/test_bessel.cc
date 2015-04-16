@@ -35,43 +35,287 @@
 
 int main(int argc, char *argv[]) {
   
-  int n = 10;
-  std::complex<double> z(1.0, 2.0);
+  int n_small = 1, n_big = 15;
+  int n = n_big+2, n_print;
+  std::complex<double> z_small(0.0012, 0.0034);
+  std::complex<double> z_medium(1.0, 2.0);
+  std::complex<double> z_big(18.0, 17.0);
+  std::complex<double> z_big_real(81.0, 0.0);
+  std::complex<double> z_big_imag(0.0, 13.0);
+  std::complex<double> z;
+
   int nm;
-  std::vector< std::complex<double> > csj, cdj, csy, cdy;
+  // csj and cdj - complex argument spherical bessel first kind and derivative
+  // csy and cdy - complex argument spherical bessel second kind and derivative
+  std::vector< std::complex<double> > csj, cdj, csy, cdy, csh;
+  std::vector<std::complex<double> > Psi, Zeta, dPsi, dZeta;
+
+  auto c_i = std::complex<double>(0.0,1.0);
+
+  printf("===== Small ========\n");
+  z = z_small;
+  printf("z = %+10.5er%+10.5ei\n", z.real(), z.imag());
   nmie::bessel::csphjy (n, z, nm, csj, cdj,  csy, cdy );
+  csh.resize(csj.size());
+  for (unsigned int i = 0; i < csj.size(); ++i)
+    csh[i] = csj[i]+c_i*csy[i];
+  nmie::bessel::calcPsi(n, z, Psi, dPsi);
+  nmie::bessel::calcZeta(n, z, Zeta, dZeta);  
 
-  auto result =  csj;
-  printf("===========Calculate and compare against Wolfram Alpha\n");
-  printf("j(0,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
-	 real(result[0]),
-	 imag(result[0]));
-  printf("WA j() = re(1.4169961192118759)\n         im(-0.874391197002)\n");
+  // n_print = n_small;
+  // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csj[n_print].real(), csj[n_print].imag(), n_print,
+  // 	 csy[n_print].real(), csy[n_print].imag());
+  // printf("WA csj =         e   r        e   i;  WA csy =         e   r        e   i\n");
+  // n_print = n_big;
+  // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_big,
+  // 	 csj[n_print].real(), csj[n_print].imag(), n_print,
+  // 	 csy[n_print].real(), csy[n_print].imag());
+  // printf(" WA csj =         e   r        e   i;   WA csy =         e   r        e   i\n");
 
-  printf("j(1,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
-	 real(result[1]),
-	 imag(result[1]));
-  printf("WA j() = re(0.74785726329830368)\n         im(0.68179207555304)\n");
-
-  printf("j(4,1+i2) = re(%16.18f)\n         im(%16.18f)\n", 
-	 real(result[4]),
-	 imag(result[4]));
-  printf("WA j() = re(-0.01352410550046)\n         im(-0.027169663050653)\n");
-
-
-  n = 20;
-
-  std::complex<double> z1(0.001, 0.0);
-  nmie::bessel::csphjy (n, z1, nm, csj, cdj,  csy, cdy );
-  result =  csj;
-
-  printf("$$$$ REAL $$$$$$ Calculate and compare against Wolfram Alpha\n");
-  printf("y(0,1) = %16.18f\n", real(result[0]));
-  printf("y(1,1) = %16.18f\n", real(result[1]));
-  printf("y(2,1) = %.14g\n", real(result[2]));
-
-
+  // n_print = n_small;
+  // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csh[n_print].real(), csh[n_print].imag());
+  // printf("WA csj =         e   r        e   i;\n");
+  // n_print = n_big;
+  // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csh[n_print].real(), csh[n_print].imag());
+  // printf("WA csj  =         e   r        e   i;\n");
     
+  // n_print = n_small;
+  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
+  // printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  // n_print = n_big;
+  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
+  // printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
+
+  n_print = n_small;
+  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
+	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+	 dZeta[n_print].real(), dZeta[n_print].imag());
+  printf("WA dPsi =         e   r        e   i;  WA dZeta = +4.8284 e+04r-5.98822e+04i\n");
+  n_print = n_big;
+  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_big,
+	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+	 dZeta[n_print].real(), dZeta[n_print].imag());
+  printf(" WA dPsi =         e   r        e   i;   WA dZeta = +8.58553e+55r+7.47397e+55i\n");
+
+
+
+
+  printf("===== Medium ========\n");
+  z = z_medium;
+  printf("z = %+10.5er%+10.5ei\n", z.real(), z.imag());
+  nmie::bessel::csphjy (n, z, nm, csj, cdj,  csy, cdy );
+  csh.resize(csj.size());
+  for (unsigned int i = 0; i < csj.size(); ++i)
+    csh[i] = csj[i]+c_i*csy[i];
+  nmie::bessel::calcPsi(n, z, Psi, dPsi);
+  nmie::bessel::calcZeta(n, z, Zeta, dZeta);  
+
+  // n_print = n_small;
+  // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csj[n_print].real(), csj[n_print].imag(), n_print,
+  // 	 csy[n_print].real(), csy[n_print].imag());
+  // printf("WA csj =         e   r        e   i;  WA csy =         e   r        e   i\n");
+  // n_print = n_big;
+  // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_big,
+  // 	 csj[n_print].real(), csj[n_print].imag(), n_print,
+  // 	 csy[n_print].real(), csy[n_print].imag());
+  // printf(" WA csj =         e   r        e   i;   WA csy =         e   r        e   i\n");
+
+  // n_print = n_small;
+  // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csh[n_print].real(), csh[n_print].imag());
+  // printf("WA csj =         e   r        e   i;\n");
+  // n_print = n_big;
+  // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csh[n_print].real(), csh[n_print].imag());
+  // printf("WA csj  =         e   r        e   i;\n");
+    
+  // n_print = n_small;
+  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
+  // printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  // n_print = n_big;
+  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
+  // printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
+
+  n_print = n_small;
+  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+  	 dZeta[n_print].real(), dZeta[n_print].imag());
+  printf("WA dPsi =         e   r        e   i;  WA dZeta = +1.99423e-01r-7.01483e-02i\n");
+  n_print = n_big;
+  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+  	 dZeta[n_print].real(), dZeta[n_print].imag());
+  printf(" WA dPsi =         e   r        e   i;   WA dZeta = -2.11402e+11r+8.34528e+10i\n");
+
+
+  printf("===== Big ========\n");
+  z = z_big;
+  printf("z = %+10.5er%+10.5ei\n", z.real(), z.imag());
+  nmie::bessel::csphjy (n, z, nm, csj, cdj,  csy, cdy );
+  csh.resize(csj.size());
+  for (unsigned int i = 0; i < csj.size(); ++i)
+    csh[i] = csj[i]+c_i*csy[i];
+  nmie::bessel::calcPsi(n, z, Psi, dPsi);
+  nmie::bessel::calcZeta(n, z, Zeta, dZeta);  
+
+  // n_print = n_small;
+  // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csj[n_print].real(), csj[n_print].imag(), n_print,
+  // 	 csy[n_print].real(), csy[n_print].imag());
+  // printf("WA csj =         e   r        e   i;  WA csy =         e   r        e   i\n");
+  // n_print = n_big;
+  // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_big,
+  // 	 csj[n_print].real(), csj[n_print].imag(), n_print,
+  // 	 csy[n_print].real(), csy[n_print].imag());
+  // printf(" WA csj =         e   r        e   i;   WA csy =         e   r        e   i\n");
+
+  // n_print = n_small;
+  // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csh[n_print].real(), csh[n_print].imag());
+  // printf("WA csj =         e   r        e   i;\n");
+  // n_print = n_big;
+  // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csh[n_print].real(), csh[n_print].imag());
+  // printf("WA csj  =         e   r        e   i;\n");
+    
+  // n_print = n_small;
+  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
+  // printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  // n_print = n_big;
+  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
+  // printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
+
+  n_print = n_small;
+  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+  	 dZeta[n_print].real(), dZeta[n_print].imag());
+  printf("WA dPsi =         e   r        e   i;  WA dZeta = -3.11025e-08r-2.90558e-08i\n");
+  n_print = n_big;
+  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+  	 dZeta[n_print].real(), dZeta[n_print].imag());
+  printf(" WA dPsi =         e   r        e   i;   WA dZeta = -6.13497e-07r-1.14967e-06i\n");
+
+
+  printf("===== Big real========\n");
+  z = z_big_real;
+  printf("z = %+10.5er%+10.5ei\n", z.real(), z.imag());
+  nmie::bessel::csphjy (n, z, nm, csj, cdj,  csy, cdy );
+  csh.resize(csj.size());
+  for (unsigned int i = 0; i < csj.size(); ++i)
+    csh[i] = csj[i]+c_i*csy[i];
+  nmie::bessel::calcPsi(n, z, Psi, dPsi);
+  nmie::bessel::calcZeta(n, z, Zeta, dZeta);  
+
+  // n_print = n_small;
+  // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csj[n_print].real(), csj[n_print].imag(), n_print,
+  // 	 csy[n_print].real(), csy[n_print].imag());
+  // printf("WA csj =         e   r        e   i;  WA csy =         e   r        e   i\n");
+  // n_print = n_big;
+  // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_big,
+  // 	 csj[n_print].real(), csj[n_print].imag(), n_print,
+  // 	 csy[n_print].real(), csy[n_print].imag());
+  // printf(" WA csj =         e   r        e   i;   WA csy =         e   r        e   i\n");
+
+  // n_print = n_small;
+  // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csh[n_print].real(), csh[n_print].imag());
+  // printf("WA csj =         e   r        e   i;\n");
+  // n_print = n_big;
+  // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csh[n_print].real(), csh[n_print].imag());
+  // printf("WA csj  =         e   r        e   i;\n");
+    
+  // n_print = n_small;
+  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
+  // printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  // n_print = n_big;
+  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
+  // printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
+
+  n_print = n_small;
+  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+  	 dZeta[n_print].real(), dZeta[n_print].imag());
+  printf("WA dPsi =         e   r        e   i;  WA dZeta = -6.20203e-01r-7.84344e-01i\n");
+  n_print = n_big;
+  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+  	 dZeta[n_print].real(), dZeta[n_print].imag());
+  printf(" WA dPsi =         e   r        e   i;   WA dZeta = -7.13982e-01r+6.86858e-01i\n");
+
+  printf("===== Big imag========\n");
+  z = z_big_imag;
+  printf("z = %+10.5er%+10.5ei\n", z.real(), z.imag());
+  nmie::bessel::csphjy (n, z, nm, csj, cdj,  csy, cdy );
+  csh.resize(csj.size());
+  for (unsigned int i = 0; i < csj.size(); ++i)
+    csh[i] = csj[i]+c_i*csy[i];
+  nmie::bessel::calcPsi(n, z, Psi, dPsi);
+  nmie::bessel::calcZeta(n, z, Zeta, dZeta);  
+
+  // n_print = n_small;
+  // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csj[n_print].real(), csj[n_print].imag(), n_print,
+  // 	 csy[n_print].real(), csy[n_print].imag());
+  // printf("WA csj =         e   r        e   i;  WA csy =         e   r        e   i\n");
+  // n_print = n_big;
+  // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_big,
+  // 	 csj[n_print].real(), csj[n_print].imag(), n_print,
+  // 	 csy[n_print].real(), csy[n_print].imag());
+  // printf(" WA csj =         e   r        e   i;   WA csy =         e   r        e   i\n");
+
+  // n_print = n_small;
+  // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csh[n_print].real(), csh[n_print].imag());
+  // printf("WA csj =         e   r        e   i;\n");
+  // n_print = n_big;
+  // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 csh[n_print].real(), csh[n_print].imag());
+  // printf("WA csj  =         e   r        e   i;\n");
+    
+  // n_print = n_small;
+  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
+  // printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  // n_print = n_big;
+  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
+  // printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
+
+  n_print = n_small;
+  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+  	 dZeta[n_print].real(), dZeta[n_print].imag());
+  printf("WA dPsi =         e   r        e   i;  WA dZeta = -2.47233e-22r-2.44758e-06i\n");
+  n_print = n_big;
+  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+  	 dZeta[n_print].real(), dZeta[n_print].imag());
+  printf(" WA dPsi =         e   r        e   i;   WA dZeta =  8.39449e-19r+1.28767e-02i\n");
 
 }
 
