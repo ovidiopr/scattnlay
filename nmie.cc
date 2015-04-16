@@ -629,32 +629,36 @@ namespace nmie {
                                std::vector<std::complex<double> >& D1,
                                std::vector<std::complex<double> >& D3) {
 
-    // Downward recurrence for D1 - equations (16a) and (16b)
-    D1[nmax_] = std::complex<double>(0.0, 0.0);
-    const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
+    // // Downward recurrence for D1 - equations (16a) and (16b)
+    // D1[nmax_] = std::complex<double>(0.0, 0.0);
+    // const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
 
-    for (int n = nmax_; n > 0; n--) {
-      D1[n - 1] = static_cast<double>(n)*zinv - 1.0/(D1[n] + static_cast<double>(n)*zinv);
-    }
+    // for (int n = nmax_; n > 0; n--) {
+    //   D1[n - 1] = static_cast<double>(n)*zinv - 1.0/(D1[n] + static_cast<double>(n)*zinv);
+    // }
 
-    if (std::abs(D1[0]) > 100000.0)
-      throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
+    // if (std::abs(D1[0]) > 100000.0)
+    //   throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
 
-    // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
-    PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(std::cos(2.0*z.real()), std::sin(2.0*z.real()))
-                       *std::exp(-2.0*z.imag()));
-    D3[0] = std::complex<double>(0.0, 1.0);
-    for (int n = 1; n <= nmax_; n++) {
-      PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)*zinv - D1[n - 1])
-                                   *(static_cast<double>(n)*zinv - D3[n - 1]);
-      D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
-    }
+    // // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
+    // PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(std::cos(2.0*z.real()), std::sin(2.0*z.real()))
+    //                    *std::exp(-2.0*z.imag()));
+    // D3[0] = std::complex<double>(0.0, 1.0);
+    // for (int n = 1; n <= nmax_; n++) {
+    //   PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)*zinv - D1[n - 1])
+    //                                *(static_cast<double>(n)*zinv - D3[n - 1]);
+    //   D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
+    // }
     std::vector<std::complex<double> >  ZetaZ(nmax_+1), dZetaZ(nmax_ + 1);
     bessel::calcZeta(nmax_, z, ZetaZ, dZetaZ );
     for (int n = 0; n < nmax_+1; ++n) {
       D3[n]=dZetaZ[n]/ZetaZ[n];
     }
-
+    std::vector<std::complex<double> >  PsiZ(nmax_+1), dPsiZ(nmax_ + 1);
+    bessel::calcPsi(nmax_, z, PsiZ, dPsiZ );
+    for (int n = 0; n < nmax_+1; ++n) {
+      D1[n]=dPsiZ[n]/PsiZ[n];
+    }
   }
 
 
@@ -674,24 +678,24 @@ namespace nmie {
                                   std::vector<std::complex<double> >& Psi,
                                   std::vector<std::complex<double> >& Zeta) {
 
-    std::complex<double> c_i(0.0, 1.0);
-    std::vector<std::complex<double> > D1(nmax_ + 1), D3(nmax_ + 1);
+    // std::complex<double> c_i(0.0, 1.0);
+    // std::vector<std::complex<double> > D1(nmax_ + 1), D3(nmax_ + 1);
 
-    // First, calculate the logarithmic derivatives
-    calcD1D3(z, D1, D3);
+    // // First, calculate the logarithmic derivatives
+    // calcD1D3(z, D1, D3);
 
-    // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
-    Psi[0] = std::sin(z);
-    Zeta[0] = std::sin(z) - c_i*std::cos(z);
-    for (int n = 1; n <= nmax_; n++) {
-      Psi[n]  =  Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
-      Zeta[n] = Zeta[n - 1]*(static_cast<double>(n)/z - D3[n - 1]);
-    }
+    // // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
+    // Psi[0] = std::sin(z);
+    // Zeta[0] = std::sin(z) - c_i*std::cos(z);
+    // for (int n = 1; n <= nmax_; n++) {
+    //   Psi[n]  =  Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
+    //   Zeta[n] = Zeta[n - 1]*(static_cast<double>(n)/z - D3[n - 1]);
+    // }
     
     std::vector<std::complex<double> >  dZetaZ(nmax_ + 1);
     bessel::calcZeta(nmax_, z, Zeta, dZetaZ);
-
-
+    std::vector<std::complex<double> > dPsiZ(nmax_ + 1);
+    bessel::calcPsi(nmax_, z, Psi, dPsiZ );
   }
 
 
@@ -739,6 +743,12 @@ namespace nmie {
         h1np[n] = h1n[n - 1] - static_cast<double>(n + 1)*h1n[n]/z;
       }
     }
+    // std::vector< std::complex<double> > yn, ynp;
+    // int nm;
+    // csphjy (nmax_, z, nm, jn, jnp,  yn, ynp );
+    // auto c_i = std::complex<double>(0.0,1.0);
+
+
   }
 
 
