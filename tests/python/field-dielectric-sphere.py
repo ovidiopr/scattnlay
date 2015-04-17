@@ -66,7 +66,7 @@ terms, E, H = fieldnlay(x, m, coord)
 Er = np.absolute(E)
 
 # |E|/|Eo|
-#Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
+Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
 Eh = Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2
 
 result = np.vstack((coordX, coordY, coordZ, Eh)).transpose()
