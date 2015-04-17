@@ -242,10 +242,10 @@ int main(int argc, char *argv[]) {
     // for (int i = 0; i < samples; ++i) {
     //range.push_back( from_coord + (to_coord-from_coord)/(static_cast<double>(samples)-1)*i );
     //range.push_back(size*0.01);
-    //range.push_back(size*0.99999);
+    range.push_back(size*0.99999);
     //range.push_back(R/2.0);
-    //range.push_back(size*1.00001);
-    range.push_back(3);
+    range.push_back(size*1.00001);
+    //range.push_back(3);
     //printf("r=%g  ", range.back());
     //}
     //printf("r/2 = %g\n", R/2.0);
@@ -268,6 +268,8 @@ int main(int argc, char *argv[]) {
     // Test solid sphere
     x = {size};
     m = {std::complex<double>(2.000000,0.00)};
+    //m = {std::complex<double>(1.414213562, 0.00)};
+
     L = x.size();
     int pl = 0;
     int nmax = 0;
