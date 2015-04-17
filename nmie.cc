@@ -542,8 +542,8 @@ namespace nmie {
   // equation (4.56) and (4.57) BH                                          //
   // ********************************************************************** //
   void MultiLayerMie::calc_an_bn_bulk(std::vector<std::complex<double> >& an,
-				      std::vector<std::complex<double> >& bn,
-				      double x, std::complex<double> m) {
+                                      std::vector<std::complex<double> >& bn,
+                                      double x, std::complex<double> m) {
 
     //printf("==========\n m = %g,%g,    x= %g\n", std::real(m), std::imag(m), x);
     std::vector<std::complex<double> > PsiX(nmax_ + 1), ZetaX(nmax_ + 1);
@@ -710,33 +710,23 @@ namespace nmie {
                              std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp,
                              std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np) {
 
-    // std::vector<std::complex<double> > Psi(nmax_ + 1), Zeta(nmax_ + 1);
+    std::vector<std::complex<double> > Psi(nmax_ + 1), Zeta(nmax_ + 1);
 
-    // // First, calculate the Riccati-Bessel functions
-    // calcPsiZeta(z, Psi, Zeta);
+    // First, calculate the Riccati-Bessel functions
+    calcPsiZeta(z, Psi, Zeta);
 
-    // // Now, calculate Spherical Bessel and Hankel functions and their derivatives
-    // for (int n = 0; n <= nmax_; n++) {
-    //   jn[n] = Psi[n]/z;
-    //   h1n[n] = Zeta[n]/z;
+    // Now, calculate Spherical Bessel and Hankel functions and their derivatives
+    for (int n = 0; n <= nmax_; n++) {
+      jn[n] = Psi[n]/z;
+      h1n[n] = Zeta[n]/z;
 
-    //   if (n == 0) {
-    //     jnp[0] = -Psi[1]/z - jn[0]/z;
-    //     h1np[0] = -Zeta[1]/z - h1n[0]/z;
-    //   } else {
-    //     jnp[n] = jn[n - 1] - static_cast<double>(n + 1)*jn[n]/z;
-    //     h1np[n] = h1n[n - 1] - static_cast<double>(n + 1)*h1n[n]/z;
-    //   }
-    // }
-    std::vector< std::complex<double> > yn, ynp;
-    int nm;
-    bessel::csphjy (nmax_, z, nm, jn, jnp,  yn, ynp );
-    auto c_i = std::complex<double>(0.0,1.0);
-    h1n.resize(nmax_+1);
-    h1np.resize(nmax_+1);
-    for (int i = 0; i < nmax_+1; ++i) {
-      h1n[i] = jn[i] + c_i*yn[i];
-      h1np[i] = jnp[i] + c_i*ynp[i];
+      if (n == 0) {
+        jnp[0] = -Psi[1]/z - jn[0]/z;
+        h1np[0] = -Zeta[1]/z - h1n[0]/z;
+      } else {
+        jnp[n] = jn[n - 1] - static_cast<double>(n + 1)*jn[n]/z;
+        h1np[n] = h1n[n - 1] - static_cast<double>(n + 1)*h1n[n]/z;
+      }
     }
   }
 
@@ -1063,7 +1053,7 @@ namespace nmie {
       Qext_ += (n + n + 1.0)*(an_[i].real() + bn_[i].real());
       // Equation (28)
       Qsca_ += (n + n + 1.0)*(an_[i].real()*an_[i].real() + an_[i].imag()*an_[i].imag()
-			     + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
+                  + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
       // Equation (29)
       Qpr_ += ((n*(n + 2)/(n + 1))*((an_[i]*std::conj(an_[n]) + bn_[i]*std::conj(bn_[n])).real())
                + ((double)(n + n + 1)/(n*(n + 1)))*(an_[i]*std::conj(bn_[i])).real());
@@ -1165,23 +1155,23 @@ namespace nmie {
       for (int n = 0; n < nmax_; n++) {
         int n1 = n + 1;
 
-        denomZeta = m1[l]*Zetaz[n1]*(D1z[n1] - D3z[n1]);
-        denomPsi  =  m1[l]*Psiz[n1]*(D1z[n1] - D3z[n1]);
+        denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
+        denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
 
         T1 = aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
-        T2 = bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1];
+        T2 = (bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1])*m[l]/m1[l];
 
-        T3 = D1z1[n1]*dln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*aln_[l + 1][n]*Zetaz1[n1];
+        T3 = (D1z1[n1]*dln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*aln_[l + 1][n]*Zetaz1[n1])*m[l]/m1[l];
         T4 = D1z1[n1]*cln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*bln_[l + 1][n]*Zetaz1[n1];
 
         // aln
-        aln_[l][n] = (D1z[n1]*m1[l]*T1 + m[l]*T3)/denomZeta;
+        aln_[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
         // bln
-        bln_[l][n] = (D1z[n1]*m[l]*T2 + m1[l]*T4)/denomZeta;
+        bln_[l][n] = (D1z[n1]*T2 + T4)/denomZeta;
         // cln
-        cln_[l][n] = (D3z[n1]*m[l]*T2 + m1[l]*T4)/denomPsi;
+        cln_[l][n] = (D3z[n1]*T2 + T4)/denomPsi;
         // dln
-        dln_[l][n] = (D3z[n1]*m1[l]*T1 + m[l]*T3)/denomPsi;
+        dln_[l][n] = (D3z[n1]*T1 + T3)/denomPsi;
 
         printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
       }  // end of all n
@@ -1190,7 +1180,7 @@ namespace nmie {
     // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
     for (int n = 0; n < nmax_; ++n) {
 //      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
-//	     real(bln_[0][n]), imag(bln_[0][n]));
+//         real(bln_[0][n]), imag(bln_[0][n]));
       if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
       if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
@@ -1322,7 +1312,7 @@ namespace nmie {
     // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
     for (int n = 0; n < nmax_; ++n) {
 //      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
-//	     real(bln_[0][n]), imag(bln_[0][n]));
+//         real(bln_[0][n]), imag(bln_[0][n]));
       if (std::abs(aln_[0][n]) < 1e-1) aln_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
       if (std::abs(bln_[0][n]) < 1e-1) bln_[0][n] = 0.0;
@@ -1457,7 +1447,7 @@ namespace nmie {
       for (int i = size_param_.size() - 1; i >= 0 ; i--) {
         if (Rho <= size_param_[i]) {
           l = i;
-	  break;
+      break;
         }
       }
       ml = refractive_index_[l];
@@ -1517,7 +1507,7 @@ namespace nmie {
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
       Hi[i] *= hffact;
-      printf("E[%i] = %10.5er%+10.5ei; Ei[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei; Hi[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(Ei[i]), std::imag(Ei[i]), i, std::real(H[i]), std::imag(H[i]), i, std::real(Hi[i]), std::imag(Hi[i]));
+      //printf("E[%i] = %10.5er%+10.5ei; Ei[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei; Hi[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(Ei[i]), std::imag(Ei[i]), i, std::real(H[i]), std::imag(H[i]), i, std::real(Hi[i]), std::imag(Hi[i]));
     }
    }  // end of MultiLayerMie::calcField(...)
 
@@ -1561,7 +1551,7 @@ namespace nmie {
     ExpanCoeffs();
     // for (int i = 0; i < nmax_; ++i) {
     //   printf("cln_[%i] = %11.4er%+10.5ei;  dln_[%i] = %11.4er%+10.5ei\n", i, std::real(cln_[0][i]), std::imag(cln_[0][i]),
-    // 	     i, std::real(dln_[0][i]), std::imag(dln_[0][i]));
+    //          i, std::real(dln_[0][i]), std::imag(dln_[0][i]));
     // }
 
 
