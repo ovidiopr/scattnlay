@@ -76,8 +76,8 @@ try:
     from matplotlib import cm
     from matplotlib.colors import LogNorm
 
-    min_tick = 0.1
-    max_tick = 1.0
+    min_tick = 0.16
+    max_tick = 0.18
 
     edata = np.resize(Eh, (npts, npts))
 
@@ -88,8 +88,8 @@ try:
     scale_y = np.linspace(min(coordY), max(coordY), npts)
 
     # Define scale ticks
-    min_tick = max(0.1, min(min_tick, np.amin(edata)))
-    max_tick = max(max_tick, np.amax(edata))
+    # min_tick = max(0.1, min(min_tick, np.amin(edata)))
+    # max_tick = max(max_tick, np.amax(edata))
     #scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
     scale_ticks = np.linspace(min_tick,max_tick, 11)
     #scale_ticks = np.linspace(0, 2, 11)
@@ -97,7 +97,7 @@ try:
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
     cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.afmhot,
                     origin = 'lower', vmin = min_tick, vmax = max_tick,
-                    #origin = 'lower', vmin = 0.25, vmax = 1,
+                    #origin = 'lower', vmin = 0.16, vmax = 0.18,
                     extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y))
                     #,norm = LogNorm()
                     )
