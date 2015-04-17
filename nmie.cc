@@ -1081,8 +1081,6 @@ namespace nmie {
       bln_[L][n] = bn_[n];
       cln_[L][n] = c_one;
       dln_[L][n] = c_one;
-
-      //printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", L, n, std::real(aln_[L][n]), std::imag(aln_[L][n]), L, n, std::real(bln_[L][n]), std::imag(bln_[L][n]), L, n, std::real(cln_[L][n]), std::imag(cln_[L][n]), L, n, std::real(dln_[L][n]), std::imag(dln_[L][n]));
     }
 
     std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
@@ -1095,10 +1093,16 @@ namespace nmie {
     for (int l = 0; l < L - 1; l++) m1[l] = m[l + 1];
     m1[L - 1] = std::complex<double> (1.0, 0.0);
 
+    //for (int l = 0; l < L; l++) {
+    //  printf("m[%i] = %gr%+gi; m[%i] = %gr%+gi\n", l, std::real(m[l]), std::imag(m[l]), l + 1, std::real(m1[l]), std::imag(m1[l]));
+    //}
+
     std::complex<double> z, z1;
     for (int l = L - 1; l >= 0; l--) {
       z = size_param_[l]*m[l];
       z1 = size_param_[l]*m1[l];
+
+      printf("\nz[%i] = %gr%+gi; z1[%i] = %gr%+gi\n", l, std::real(z), std::imag(z), l, std::real(z1), std::imag(z1));
 
       calcD1D3(z, D1z, D3z);
       calcD1D3(z1, D1z1, D3z1);
@@ -1108,14 +1112,18 @@ namespace nmie {
       for (int n = 0; n < nmax_; n++) {
         int n1 = n + 1;
 
+        printf("Psiz[%02i] = %11.4e,%11.4e\tZetaz[%02i] = %11.4e,%11.4e\tPsiz1[%02i] = %11.4e,%11.4e\tZetaz1[%02i] = %11.4e,%11.4e\n", n1, real(Psiz[n1]), imag(Psiz[n1]), n1, real(Zetaz[n1]), imag(Zetaz[n1]), n1, real(Psiz1[n1]), imag(Psiz1[n1]), n1, real(Zetaz1[n1]), imag(Zetaz1[n1]));
+
         denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
         denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
 
-        T1 = aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
+        T1 =  aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
         T2 = (bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1])*m[l]/m1[l];
 
-        T3 = (D1z1[n1]*dln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*aln_[l + 1][n]*Zetaz1[n1])*m[l]/m1[l];
-        T4 = D1z1[n1]*cln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*bln_[l + 1][n]*Zetaz1[n1];
+        T3 = (dln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - aln_[l + 1][n]*D3z1[n1]*Zetaz1[n1])*m[l]/m1[l];
+        T4 =  cln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - bln_[l + 1][n]*D3z1[n1]*Zetaz1[n1];
+
+        printf("T1[%02i] = %11.4e,%11.4e\tT2[%02i] = %11.4e,%11.4e\tT3[%02i] = %11.4e,%11.4e\tT4[%02i] = %11.4e,%11.4e\n", n, real(D1z[n1]*T1 + T3), imag(D1z[n1]*T1 + T3), n, real(D1z[n1]*T2 + T4), imag(D1z[n1]*T2 + T4), n, real(D3z[n1]*T2 + T4), imag(D3z[n1]*T2 + T4), n, real(D3z[n1]*T1 + T3), imag(D3z[n1]*T1 + T3));
 
         // aln
         aln_[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
@@ -1125,8 +1133,6 @@ namespace nmie {
         cln_[l][n] = (D3z[n1]*T2 + T4)/denomPsi;
         // dln
         dln_[l][n] = (D3z[n1]*T1 + T3)/denomPsi;
-
-        //printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
       }  // end of all n
     }  // end of all l
 
@@ -1140,6 +1146,13 @@ namespace nmie {
       //else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
       //if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
       //else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
+    }
+
+    for (int l = L; l >= 0; l--) {
+      for (int n = 0; n < nmax_; n++) {
+        printf("aln_[%02i, %02i] = %11.4e,%11.4e\tbln_[%02i, %02i] = %11.4e,%11.4e\tcln_[%02i, %02i] = %11.4e,%11.4e\tdln_[%02i, %02i] = %11.4e,%11.4e\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
+      }
+      printf("\n");
     }
 
     isExpCoeffsCalc_ = true;
@@ -1401,11 +1414,11 @@ namespace nmie {
       for (int i = size_param_.size() - 1; i >= 0 ; i--) {
         if (Rho <= size_param_[i]) {
           l = i;
-	  //      break;
         }
       }
       ml = refractive_index_[l];
     }
+    //printf("rho = %g; phi = %gº; theta = %gº; m[%i] = %gr%+gi\n", Rho, Phi*180./PI_, Theta*180./PI_, l, std::real(ml), std::imag(ml));
 
     // Calculate logarithmic derivative of the Ricatti-Bessel functions
     calcD1D3(Rho, D1n, D3n);
@@ -1419,6 +1432,7 @@ namespace nmie {
       int n1 = n + 1;
       double rn = static_cast<double>(n1);
 
+      //printf("D1n[%i] = %gr%+gi; D3n[%i] = %gr%+gi; Psi[%i] = %gr%+gi; Zeta[%i] = %gr%+gi\n", n1, std::real(D1n[n1]), std::imag(D1n[n1]), n1, std::real(D3n[n1]), std::imag(D3n[n1]), n1, std::real(Psi[n]), std::imag(Psi[n]), n1, std::real(Zeta[n]), std::imag(Zeta[n]));
       // using BH 4.12 and 4.50
       calcSpherHarm(Rho, Theta, Phi, Psi[n1], D1n[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
       calcSpherHarm(Rho, Theta, Phi, Zeta[n1], D3n[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);

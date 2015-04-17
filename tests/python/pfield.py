@@ -36,13 +36,19 @@
 from scattnlay import fieldnlay
 import numpy as np
 
-x = np.ones((1, 2), dtype = np.float64)
-x[0, 0] = 2.0*np.pi*0.05/1.064
-x[0, 1] = 2.0*np.pi*0.06/1.064
+n1 = 1.53413
+n2 = 0.565838 + 7.23262j
+nm = 1.3205
 
-m = np.ones((1, 2), dtype = np.complex128)
-m[0, 0] = 1.53413/1.3205
-m[0, 1] = (0.565838 + 7.23262j)/1.3205
+x = np.ones((1, 3), dtype = np.float64)
+x[0, 0] = 2.0*np.pi*nm*0.05/1.064
+x[0, 1] = 2.0*np.pi*nm*0.06/1.064
+x[0, 2] = 2.0*np.pi*nm*0.07/1.064
+
+m = np.ones((1, 3), dtype = np.complex128)
+m[0, 0] = n1/nm
+m[0, 1] = n2/nm
+m[0, 2] = 1.0
 
 coord = np.zeros((3, 3), dtype = np.float64)
 coord[0, 0] = x[0, 0]/2.0
