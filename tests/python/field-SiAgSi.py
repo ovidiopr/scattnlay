@@ -34,8 +34,11 @@ import scattnlay
 from scattnlay import fieldnlay
 import numpy as np
 
-epsilon_Si = 13.64 + 0.047j
-epsilon_Ag = -28.05 + 1.525j
+# epsilon_Si = 13.64 + 0.047j
+# epsilon_Ag = -28.05 + 1.525j
+epsilon_Si = 2.0 + 0.047j
+epsilon_Ag = -2.0 + 1.525j
+
 index_Si = epsilon_Si*epsilon_Si
 index_Ag = epsilon_Ag*epsilon_Ag
 
@@ -50,7 +53,7 @@ outer_r = inner_r+outer_width
 
 # n1 = 1.53413
 # n2 = 0.565838 + 7.23262j
-# nm = 1.3205
+nm = 1.0
 
 x = np.ones((1, 3), dtype = np.float64)
 x[0, 0] = 2.0*np.pi*core_r/WL
@@ -65,7 +68,7 @@ m[0, 2] = index_Si
 print "x =", x
 print "m =", m
 
-npts = 281
+npts = 28
 
 scan = np.linspace(-2.0*x[0, 2], 2.0*x[0, 2], npts)
 
@@ -99,18 +102,18 @@ try:
     ax = fig.add_subplot(111)
     # Rescale to better show the axes
     scale_x = np.linspace(min(coordX)*1.064/2.0/np.pi/nm, max(coordX)*1.064/2.0/np.pi/nm, npts)
-    scale_y = np.linspace(min(coordY)*1.064/2.0/np.pi/nm, max(coordY)*1.064/2.0/np.pi/nm, npts)
+    scale_z = np.linspace(min(coordZ)*1.064/2.0/np.pi/nm, max(coordZ)*1.064/2.0/np.pi/nm, npts)
 
     # Define scale ticks
     min_tick = min(min_tick, np.amin(edata))
     max_tick = max(max_tick, np.amax(edata))
     # scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
-    scale_ticks = np.linspace(np.log10(min_tick), np.log10(max_tick), 6)
+    scale_ticks = np.linspace(min_tick, max_tick, 6)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
     cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.jet,
                     origin = 'lower', vmin = min_tick, vmax = max_tick,
-                    extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y))
+                    extent = (min(scale_x), max(scale_x), min(scale_z), max(scale_z))
                     #,norm = LogNorm()
                     )
 
@@ -121,7 +124,7 @@ try:
     fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
     plt.xlabel('X')
-    plt.ylabel('Y')
+    plt.ylabel('Z')
 
     # This part draws the nanoshell
 #    from matplotlib import patches
