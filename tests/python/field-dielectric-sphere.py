@@ -47,7 +47,7 @@ x[0, 0] = 0.001
 #x[0, 1] = 2.0*np.pi*0.06/1.064
 
 m = np.ones((1, 1), dtype = np.complex128)
-m[0, 0] = 4.0
+m[0, 0] = 2.0
 #m[0, 1] = (0.565838 + 7.23262j)/1.3205
 
 npts = 501
@@ -63,12 +63,13 @@ coord = np.vstack((coordX, coordY, coordZ)).transpose()
 
 terms, E, H = fieldnlay(x, m, coord)
 
-Er = np.absolute(E)
+Er = E
 
 # |E|/|Eo|
-Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
-Eh = Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2
+#Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
+Eh = np.absolute(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
 
+print("max: "+str(Eh)+" min: "+str(min(E)))
 result = np.vstack((coordX, coordY, coordZ, Eh)).transpose()
 
 try:
@@ -106,7 +107,7 @@ try:
     cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
     cbar.ax.set_yticklabels(['%3.1e' % (a) for a in scale_ticks]) # vertically oriented colorbar
     pos = list(cbar.ax.get_position().bounds)
-    fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
+    fig.text(pos[0] - 0.02, 0.925, 'E$^2$/E$_0$$^2$', fontsize = 14)
 
     plt.xlabel('X')
     plt.ylabel('Y')
