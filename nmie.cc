@@ -1108,23 +1108,23 @@ namespace nmie {
       for (int n = 0; n < nmax_; n++) {
         int n1 = n + 1;
 
-        denomZeta = m1[l]*Zetaz[n1]*(D1z[n1] - D3z[n1]);
-        denomPsi  =  m1[l]*Psiz[n1]*(D1z[n1] - D3z[n1]);
+        denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
+        denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
 
         T1 = aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
-        T2 = bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1];
+        T2 = (bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1])*m[l]/m1[l];
 
-        T3 = D1z1[n1]*dln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*aln_[l + 1][n]*Zetaz1[n1];
+        T3 = (D1z1[n1]*dln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*aln_[l + 1][n]*Zetaz1[n1])*m[l]/m1[l];
         T4 = D1z1[n1]*cln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*bln_[l + 1][n]*Zetaz1[n1];
 
         // aln
-        aln_[l][n] = (D1z[n1]*m1[l]*T1 + m[l]*T3)/denomZeta;
+        aln_[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
         // bln
-        bln_[l][n] = (D1z[n1]*m[l]*T2 + m1[l]*T4)/denomZeta;
+        bln_[l][n] = (D1z[n1]*T2 + T4)/denomZeta;
         // cln
-        cln_[l][n] = (D3z[n1]*m[l]*T2 + m1[l]*T4)/denomPsi;
+        cln_[l][n] = (D3z[n1]*T2 + T4)/denomPsi;
         // dln
-        dln_[l][n] = (D3z[n1]*m1[l]*T1 + m[l]*T3)/denomPsi;
+        dln_[l][n] = (D3z[n1]*T1 + T3)/denomPsi;
 
         //printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
       }  // end of all n
@@ -1132,12 +1132,14 @@ namespace nmie {
 
     // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
     for (int n = 0; n < nmax_; ++n) {
-//      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
-//         real(bln_[0][n]), imag(bln_[0][n]));
-      if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
-      else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
-      if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
-      else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
+      aln_[0][n] = 0.0;
+      bln_[0][n] = 0.0;
+      //printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
+      //   real(bln_[0][n]), imag(bln_[0][n]));
+      //if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
+      //else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
+      //if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
+      //else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
     }
 
     isExpCoeffsCalc_ = true;
