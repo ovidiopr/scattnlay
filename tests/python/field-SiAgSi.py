@@ -39,8 +39,12 @@ import numpy as np
 epsilon_Si = 2.0 + 0.047j
 epsilon_Ag = -2.0 + 1.525j
 
-index_Si = epsilon_Si*epsilon_Si
-index_Ag = epsilon_Ag*epsilon_Ag
+index_Si = np.sqrt(epsilon_Si)
+index_Ag = np.sqrt(epsilon_Ag)
+
+# Values for 800 nm, taken from http://refractiveindex.info/
+index_Si = 3.69410 + 0.0065435j
+index_Ag = 0.18599 + 4.9886j
 
 WL=800 #nm
 core_width = 17.74 #nm Si
@@ -61,14 +65,14 @@ x[0, 1] = 2.0*np.pi*inner_r/WL
 x[0, 2] = 2.0*np.pi*outer_r/WL
 
 m = np.ones((1, 3), dtype = np.complex128)
-m[0, 0] = index_Si
-m[0, 1] = index_Ag
-m[0, 2] = index_Si
+m[0, 0] = index_Si/nm
+m[0, 1] = index_Ag/nm
+m[0, 2] = index_Si/nm
 
 print "x =", x
 print "m =", m
 
-npts = 28
+npts = 281
 
 scan = np.linspace(-2.0*x[0, 2], 2.0*x[0, 2], npts)
 
