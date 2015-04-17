@@ -735,7 +735,7 @@ namespace nmie {
   // Output parameters:                                                               //
   //   Mo1n, Me1n, No1n, Ne1n: Complex vector spherical harmonics                     //
   //**********************************************************************************//
-  void MultiLayerMie::calcSpherHarm(const double Rho, const double Theta, const double Phi,
+  void MultiLayerMie::calcSpherHarm(const std::complex<double> Rho, const double Theta, const double Phi,
                                     const std::complex<double>& rn, const std::complex<double>& Dn,
                                     const double& Pi, const double& Tau, const double& n,
                                     std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
@@ -1421,9 +1421,9 @@ namespace nmie {
     //printf("rho = %g; phi = %gº; theta = %gº; m[%i] = %gr%+gi\n", Rho, Phi*180./PI_, Theta*180./PI_, l, std::real(ml), std::imag(ml));
 
     // Calculate logarithmic derivative of the Ricatti-Bessel functions
-    calcD1D3(Rho, D1n, D3n);
+    calcD1D3(Rho*ml, D1n, D3n);
     // Calculate Ricatti-Bessel functions
-    calcPsiZeta(Rho, Psi, Zeta);
+    calcPsiZeta(Rho*ml, Psi, Zeta);
 
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
@@ -1434,8 +1434,8 @@ namespace nmie {
 
       //printf("D1n[%i] = %gr%+gi; D3n[%i] = %gr%+gi; Psi[%i] = %gr%+gi; Zeta[%i] = %gr%+gi\n", n1, std::real(D1n[n1]), std::imag(D1n[n1]), n1, std::real(D3n[n1]), std::imag(D3n[n1]), n1, std::real(Psi[n]), std::imag(Psi[n]), n1, std::real(Zeta[n]), std::imag(Zeta[n]));
       // using BH 4.12 and 4.50
-      calcSpherHarm(Rho, Theta, Phi, Psi[n1], D1n[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
-      calcSpherHarm(Rho, Theta, Phi, Zeta[n1], D3n[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
+      calcSpherHarm(Rho*ml, Theta, Phi, Psi[n1], D1n[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
+      calcSpherHarm(Rho*ml, Theta, Phi, Zeta[n1], D3n[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
 //      auto deriv1 = -rn*jn[n1]+Rho*jn[n1-1];
 //      auto deriv2 = Rho*jnp[n1] + jn[n1];
 //      printf("n=%d   deriv1: %+11.4e   deriv2: %+11.4ei\n",n1, deriv1.real(), deriv2.real());

@@ -66,15 +66,15 @@ x[0, 2] = 2.0*np.pi*outer_r/WL
 
 m = np.ones((1, 3), dtype = np.complex128)
 m[0, 0] = index_Si/nm
-m[0, 1] = index_Ag/nm
-m[0, 2] = index_Si/nm
+m[0, 1] = index_Si/nm
+m[0, 2] = index_Ag/nm
 
 print "x =", x
 print "m =", m
 
-npts = 281
+npts = 1001
 
-scan = np.linspace(-2.0*x[0, 2], 2.0*x[0, 2], npts)
+scan = np.linspace(-4.0*x[0, 2], 4.0*x[0, 2], npts)
 
 coord = np.zeros((npts, 3), dtype = np.float64)
 coord[:, 0] = scan
