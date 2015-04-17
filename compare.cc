@@ -240,15 +240,15 @@ int main(int argc, char *argv[]) {
     double R = size/(2.0*PI);
     std::vector<double> range;
     // for (int i = 0; i < samples; ++i) {
-      //range.push_back( from_coord + (to_coord-from_coord)/(static_cast<double>(samples)-1)*i );
+    //range.push_back( from_coord + (to_coord-from_coord)/(static_cast<double>(samples)-1)*i );
     //range.push_back(size*0.01);
     //range.push_back(size*0.99999);
-    range.push_back(R/2.0);
+    //range.push_back(R/2.0);
     //range.push_back(size*1.00001);
-    //range.push_back(3);
+    range.push_back(3);
     //printf("r=%g  ", range.back());
     //}
-    printf("r/2 = %g\n", R/2.0);
+    //printf("r/2 = %g\n", R/2.0);
     int samples = range.size();
     std::vector<double> zero(samples, 0.0);
     std::vector<double> Xp, Yp, Zp;
