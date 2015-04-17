@@ -1461,23 +1461,23 @@ namespace nmie {
       for (int i = size_param_.size() - 1; i >= 0 ; i--) {
         if (Rho <= size_param_[i]) {
           l = i;
+	  break;
         }
       }
-      ml = refractive_index_[l];
-    }
-
+      ml = refractive_index_[l]; // TODO check the correct layer is used
+    }    
     // Calculate spherical Bessel and Hankel functions and their derivatives
-    sbesjh(Rho*ml, jn, jnp, h1n, h1np);
-    printf("Rho*ml = %10.5er%+10.5ei\n",std::real(Rho*ml), std::imag(Rho*ml));
+    sbesjh(2.0*PI_*Rho*ml, jn, jnp, h1n, h1np);
+    printf("2.0*PI*Rho*ml = %10.5er%+10.5ei\n",std::real(2.0*PI_*Rho*ml), std::imag(2.0*PI_*Rho*ml));
     
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
-/*    printf("Thetd = %g, cos(Theta) = %g\n", Theta, std::cos(Theta));
+    printf("Thetd = %g, cos(Theta) = %g\n", Theta, std::cos(Theta));
     printf("Pi:\n");
     for (auto p : Pi) printf("%11.4e\n",p);
     printf("Tau:\n");
     for (auto p : Tau) printf("%11.4e\n",p);
-*/
+
     for (int n = nmax_ - 2; n >= 0; n--) {
       int n1 = n + 1;
       double rn = static_cast<double>(n1);
