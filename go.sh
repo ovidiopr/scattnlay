@@ -94,11 +94,11 @@ time  ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-3.4  $PROGRAM -l 5 0.4642 1.
 # ./$file.bin
 
 ### Cython
-# rm scattnlay.so
-# export CFLAGS='-std=c++11'
-# python setup.py build_ext --inplace
-# cp scattnlay.so tests/python/
-# cd tests/python/
+rm scattnlay.so
+export CFLAGS='-std=c++11'
+python setup.py build_ext --inplace
+cp scattnlay.so tests/python/
+cd tests/python/
 # ./lfield.py
 # ./field-dielectric-sphere.py
 # ./field.py

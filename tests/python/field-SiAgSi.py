@@ -26,50 +26,66 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # This test case calculates the electric field in the 
-# XY plane, for an spherical silver nanoparticle
-# embedded in glass.
+# E-k plane, for an spherical Si-Ag-Si nanoparticle. Core radius is 17.74 nm,
+# inner layer 23.31nm, outer layer 22.95nm. Working wavelength is 800nm, we use
+# silicon epsilon=13.64+i0.047, silver epsilon= -28.05+i1.525
 
-# Refractive index values correspond to a wavelength of
-# 400 nm. Maximum of the surface plasmon resonance (and,
-# hence, of electric field) is expected under those
-# conditions.
 import scattnlay
-
-import os
-path = os.path.dirname(scattnlay.__file__)
-print(scattnlay.__file__)
-
 from scattnlay import fieldnlay
 import numpy as np
 
-x = np.ones((1, 1), dtype = np.float64)
-x[0, 0] = 0.001
-#x[0, 1] = 2.0*np.pi*0.06/1.064
+# epsilon_Si = 13.64 + 0.047j
+# epsilon_Ag = -28.05 + 1.525j
+epsilon_Si = 2.0 + 0.047j
+epsilon_Ag = -2.0 + 1.525j
 
-m = np.ones((1, 1), dtype = np.complex128)
-m[0, 0] = 2.0
-#m[0, 1] = (0.565838 + 7.23262j)/1.3205
+index_Si = epsilon_Si*epsilon_Si
+index_Ag = epsilon_Ag*epsilon_Ag
 
-npts = 501
+WL=800 #nm
+core_width = 17.74 #nm Si
+inner_width = 23.31 #nm Ag
+outer_width = 22.95 #nm  Si
 
-scan = np.linspace(-1.5*x[0, 0], 1.5*x[0, 0], npts)
+core_r = core_width
+inner_r = core_r+inner_width
+outer_r = inner_r+outer_width
 
-coordX, coordY = np.meshgrid(scan, scan)
+# n1 = 1.53413
+# n2 = 0.565838 + 7.23262j
+nm = 1.0
+
+x = np.ones((1, 3), dtype = np.float64)
+x[0, 0] = 2.0*np.pi*core_r/WL
+x[0, 1] = 2.0*np.pi*inner_r/WL
+x[0, 2] = 2.0*np.pi*outer_r/WL
+
+m = np.ones((1, 3), dtype = np.complex128)
+m[0, 0] = index_Si
+m[0, 1] = index_Ag
+m[0, 2] = index_Si
+
+print "x =", x
+print "m =", m
+
+npts = 28
+
+scan = np.linspace(-2.0*x[0, 2], 2.0*x[0, 2], npts)
+
+coordX, coordZ = np.meshgrid(scan, scan)
 coordX.resize(npts*npts)
-coordY.resize(npts*npts)
-coordZ = np.zeros(npts*npts, dtype = np.float64)
+coordZ.resize(npts*npts)
+coordY = np.zeros(npts*npts, dtype = np.float64)
 
 coord = np.vstack((coordX, coordY, coordZ)).transpose()
 
 terms, E, H = fieldnlay(x, m, coord)
 
-Er = E
+Er = np.absolute(E)
 
 # |E|/|Eo|
-#Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
-Eh = np.absolute(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
+Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
 
-print("max: "+str(Eh)+" min: "+str(min(E)))
 result = np.vstack((coordX, coordY, coordZ, Eh)).transpose()
 
 try:
@@ -77,7 +93,7 @@ try:
     from matplotlib import cm
     from matplotlib.colors import LogNorm
 
-    min_tick = 0.25
+    min_tick = 0.1
     max_tick = 1.0
 
     edata = np.resize(Eh, (npts, npts))
@@ -85,21 +101,19 @@ try:
     fig = plt.figure()
     ax = fig.add_subplot(111)
     # Rescale to better show the axes
-    scale_x = np.linspace(min(coordX), max(coordX), npts)
-    scale_y = np.linspace(min(coordY), max(coordY), npts)
+    scale_x = np.linspace(min(coordX)*1.064/2.0/np.pi/nm, max(coordX)*1.064/2.0/np.pi/nm, npts)
+    scale_z = np.linspace(min(coordZ)*1.064/2.0/np.pi/nm, max(coordZ)*1.064/2.0/np.pi/nm, npts)
 
     # Define scale ticks
-    min_tick = max(0.1, min(min_tick, np.amin(edata)))
+    min_tick = min(min_tick, np.amin(edata))
     max_tick = max(max_tick, np.amax(edata))
-    #scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
-    scale_ticks = np.linspace(min_tick,max_tick, 5)
-    #scale_ticks = np.linspace(0, 2, 11)
+    # scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
+    scale_ticks = np.linspace(min_tick, max_tick, 6)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
     cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.jet,
                     origin = 'lower', vmin = min_tick, vmax = max_tick,
-                    #origin = 'lower', vmin = 0.16, vmax = 0.18,
-                    extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y))
+                    extent = (min(scale_x), max(scale_x), min(scale_z), max(scale_z))
                     #,norm = LogNorm()
                     )
 
@@ -107,22 +121,22 @@ try:
     cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
     cbar.ax.set_yticklabels(['%3.1e' % (a) for a in scale_ticks]) # vertically oriented colorbar
     pos = list(cbar.ax.get_position().bounds)
-    fig.text(pos[0] - 0.02, 0.925, 'E$^2$/E$_0$$^2$', fontsize = 14)
+    fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
     plt.xlabel('X')
-    plt.ylabel('Y')
+    plt.ylabel('Z')
 
-    # # This part draws the nanoshell
-    # from matplotlib import patches
+    # This part draws the nanoshell
+#    from matplotlib import patches
 
-    # s1 = patches.Arc((0, 0), 2.0*x[0, 0], 2.0*x[0, 0], angle=0.0, zorder=2,
-    #                   theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
-    # ax.add_patch(s1)
+#    s1 = patches.Arc((0, 0), 2.0*x[0, 0], 2.0*x[0, 0], angle=0.0, zorder=2,
+#                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
+#    ax.add_patch(s1)
 
-    # s2 = patches.Arc((0, 0), 2.0*x[0, 0], 2.0*x[0, 0], angle=0.0, zorder=2,
-    #                   theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
-    # ax.add_patch(s2)
-    # # End of drawing
+#    s2 = patches.Arc((0, 0), 2.0*x[0, 1], 2.0*x[0, 1], angle=0.0, zorder=2,
+#                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
+#    ax.add_patch(s2)
+    # End of drawing
 
     plt.draw()
 
