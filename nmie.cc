@@ -710,23 +710,33 @@ namespace nmie {
                              std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp,
                              std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np) {
 
-    std::vector<std::complex<double> > Psi(nmax_ + 1), Zeta(nmax_ + 1);
+    // std::vector<std::complex<double> > Psi(nmax_ + 1), Zeta(nmax_ + 1);
 
-    // First, calculate the Riccati-Bessel functions
-    calcPsiZeta(z, Psi, Zeta);
+    // // First, calculate the Riccati-Bessel functions
+    // calcPsiZeta(z, Psi, Zeta);
 
-    // Now, calculate Spherical Bessel and Hankel functions and their derivatives
-    for (int n = 0; n <= nmax_; n++) {
-      jn[n] = Psi[n]/z;
-      h1n[n] = Zeta[n]/z;
+    // // Now, calculate Spherical Bessel and Hankel functions and their derivatives
+    // for (int n = 0; n <= nmax_; n++) {
+    //   jn[n] = Psi[n]/z;
+    //   h1n[n] = Zeta[n]/z;
 
-      if (n == 0) {
-        jnp[0] = -Psi[1]/z - jn[0]/z;
-        h1np[0] = -Zeta[1]/z - h1n[0]/z;
-      } else {
-        jnp[n] = jn[n - 1] - static_cast<double>(n + 1)*jn[n]/z;
-        h1np[n] = h1n[n - 1] - static_cast<double>(n + 1)*h1n[n]/z;
-      }
+    //   if (n == 0) {
+    //     jnp[0] = -Psi[1]/z - jn[0]/z;
+    //     h1np[0] = -Zeta[1]/z - h1n[0]/z;
+    //   } else {
+    //     jnp[n] = jn[n - 1] - static_cast<double>(n + 1)*jn[n]/z;
+    //     h1np[n] = h1n[n - 1] - static_cast<double>(n + 1)*h1n[n]/z;
+    //   }
+    // }
+    std::vector< std::complex<double> > yn, ynp;
+    int nm;
+    bessel::csphjy (nmax_, z, nm, jn, jnp,  yn, ynp );
+    auto c_i = std::complex<double>(0.0,1.0);
+    h1n.resize(nmax_+1);
+    h1np.resize(nmax_+1);
+    for (int i = 0; i < nmax_+1; ++i) {
+      h1n[i] = jn[i] + c_i*yn[i];
+      h1np[i] = jnp[i] + c_i*ynp[i];
     }
   }
 
@@ -1155,23 +1165,23 @@ namespace nmie {
       for (int n = 0; n < nmax_; n++) {
         int n1 = n + 1;
 
-        denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
-        denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
+        denomZeta = m1[l]*Zetaz[n1]*(D1z[n1] - D3z[n1]);
+        denomPsi  =  m1[l]*Psiz[n1]*(D1z[n1] - D3z[n1]);
 
         T1 = aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
-        T2 = (bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1])*m[l]/m1[l];
+        T2 = bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1];
 
-        T3 = (D1z1[n1]*dln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*aln_[l + 1][n]*Zetaz1[n1])*m[l]/m1[l];
+        T3 = D1z1[n1]*dln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*aln_[l + 1][n]*Zetaz1[n1];
         T4 = D1z1[n1]*cln_[l + 1][n]*Psiz1[n1] - D3z1[n1]*bln_[l + 1][n]*Zetaz1[n1];
 
         // aln
-        aln_[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
+        aln_[l][n] = (D1z[n1]*m1[l]*T1 + m[l]*T3)/denomZeta;
         // bln
-        bln_[l][n] = (D1z[n1]*T2 + T4)/denomZeta;
+        bln_[l][n] = (D1z[n1]*m[l]*T2 + m1[l]*T4)/denomZeta;
         // cln
-        cln_[l][n] = (D3z[n1]*T2 + T4)/denomPsi;
+        cln_[l][n] = (D3z[n1]*m[l]*T2 + m1[l]*T4)/denomPsi;
         // dln
-        dln_[l][n] = (D3z[n1]*T1 + T3)/denomPsi;
+        dln_[l][n] = (D3z[n1]*m1[l]*T1 + m[l]*T3)/denomPsi;
 
         printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
       }  // end of all n
@@ -1244,6 +1254,7 @@ namespace nmie {
 
     std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
     std::vector<std::complex<double> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
+    std::complex<double> denomZeta, denomPsi, T1, T2, T3, T4;
 
     std::vector<std::vector<std::complex<double> > > a(2);
     a[0].resize(3);
@@ -1446,7 +1457,7 @@ namespace nmie {
       for (int i = size_param_.size() - 1; i >= 0 ; i--) {
         if (Rho <= size_param_[i]) {
           l = i;
-      break;
+	  //      break;
         }
       }
       ml = refractive_index_[l];
