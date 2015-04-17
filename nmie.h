@@ -119,9 +119,6 @@ namespace nmie {
     void calcPsiZeta(std::complex<double> x,
                      std::vector<std::complex<double> >& Psi,
                      std::vector<std::complex<double> >& Zeta);
-    void sbesjh(std::complex<double> z,
-                std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp, 
-                std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np);
     void calcPiTau(const double& costheta,
                    std::vector<double>& Pi, std::vector<double>& Tau);
     void calcSpherHarm(const double Rho, const double Theta, const double Phi,
