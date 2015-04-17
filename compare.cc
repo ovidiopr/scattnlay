@@ -234,22 +234,26 @@ int main(int argc, char *argv[]) {
       }
     }
     // Field testing
-    double from_coord = -3.0, to_coord = 3000.0;
     //double size=2.0*PI*1.0/6.0;
     double size=0.001;
     double R = size/(2.0*PI);
+    double from_coord = -3.0*size, to_coord = 3.0*size;
     std::vector<double> range;
-    // for (int i = 0; i < samples; ++i) {
-    //range.push_back( from_coord + (to_coord-from_coord)/(static_cast<double>(samples)-1)*i );
+    int samples = 1251;
+    for (int i = 0; i < samples; ++i) {
+    range.push_back( from_coord + (to_coord-from_coord)/(static_cast<double>(samples)-1)*i );
     //range.push_back(size*0.01);
-    range.push_back(size*0.99999);
+    //range.push_back(size*0.99999);
     //range.push_back(R/2.0);
-    range.push_back(size*1.00001);
+    //range.push_back(size*1.00001);
     //range.push_back(3);
     //printf("r=%g  ", range.back());
-    //}
+    }
+    // range.push_back(size*0.99999999);
+    // range.push_back(R/2.0);
+    // range.push_back(size*1.00000001);
     //printf("r/2 = %g\n", R/2.0);
-    int samples = range.size();
+    //int samples = range.size();
     std::vector<double> zero(samples, 0.0);
     std::vector<double> Xp, Yp, Zp;
      // X line
@@ -282,14 +286,25 @@ int main(int argc, char *argv[]) {
     nmie::nField( L,  pl,  x,  m, nmax,  ncoord,  Xp,  Yp,  Zp, E, H);
     double sum_e = 0.0, sum_h = 0.0;
     printf ("Field total sum ()\n");
+    double min_E, max_E;
+    for (auto c:E[0]) {
+      sum_e+=std::abs(pow2(c));
+    }
+    min_E = sum_e;
+    max_E = sum_e;
+
     for (auto f:E) {
       sum_e = 0.0;
       for (auto c:f) {
 	sum_e+=std::abs(pow2(c));
-	printf("component: %g + %g i\n", std::real(c), std::imag(c));
+	//printf("component: %g + %g i\n", std::real(c), std::imag(c));
       }
-      printf("Field E=%g\n", std::sqrt(std::abs(sum_e)));
+      if (sum_e > max_E) max_E = sum_e;
+      if (sum_e < min_E) min_E = sum_e;
+    
+      //printf("Field E=%g\n", std::sqrt(std::abs(sum_e)));
     }
+    printf("Min E = %g; max E =%g", min_E, max_E);
     // for (auto f:H) {
     //   sum_h = 0.0;
     //   for (auto c:f) sum_h+=std::abs(pow2(c));
