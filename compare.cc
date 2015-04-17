@@ -242,7 +242,7 @@ int main(int argc, char *argv[]) {
       //range.push_back( from_coord + (to_coord-from_coord)/(static_cast<double>(samples)-1)*i );
     //range.push_back(size*0.01);
     //range.push_back(size*0.99999);
-    range.push_back(size/20.0);
+    range.push_back(size/2.0);
     //range.push_back(size*1.00001);
     //range.push_back(3);
     //printf("r=%g  ", range.back());

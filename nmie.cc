@@ -1479,7 +1479,8 @@ namespace nmie {
 
     // Calculate spherical Bessel and Hankel functions and their derivatives
     sbesjh(Rho*ml, jn, jnp, h1n, h1np);
-
+    printf("Rho*ml = %10.5er%+10.5ei\n",std::real(Rho*ml), std::imag(Rho*ml));
+    
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
     printf("Thetd = %g, cos(Theta) = %g\n", Theta, std::cos(Theta));
