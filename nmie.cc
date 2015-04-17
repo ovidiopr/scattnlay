@@ -685,63 +685,6 @@ namespace nmie {
 
 
   //**********************************************************************************//
-  // This function calculates the spherical Bessel (jn) and Hankel (h1n) functions    //
-  // and their derivatives for a given complex value z. See pag. 87 B&H.              //
-  //                                                                                  //
-  // Input parameters:                                                                //
-  //   z: Complex argument to evaluate jn and h1n                                     //
-  //   nmax_: Maximum number of terms to calculate jn and h1n                         //
-  //                                                                                  //
-  // Output parameters:                                                               //
-  //   jn, h1n: Spherical Bessel and Hankel functions                                 //
-  //   jnp, h1np: Derivatives of the spherical Bessel and Hankel functions            //
-  //                                                                                  //
-  // What we actually calculate are the Ricatti-Bessel fucntions and then simply      //
-  // evaluate the spherical Bessel and Hankel functions and their derivatives         //
-  // using the relations:                                                             //
-  //                                                                                  //
-  //     j[n]   = Psi[n]/z                                                            //
-  //     j'[n]  = j[n-1]-(n+1)*jn[n])/z                                               //
-  //     h1[n]  = Zeta[n]/z                                                           //
-  //     h1'[n] = h1[n-1]-(n+1)*h1n[n]/z                                              //
-  //                                                                                  //
-  //**********************************************************************************//
-  void MultiLayerMie::sbesjh(std::complex<double> z,
-                             std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp,
-                             std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np) {
-
-    // std::vector<std::complex<double> > Psi(nmax_ + 1), Zeta(nmax_ + 1);
-
-    // // First, calculate the Riccati-Bessel functions
-    // calcPsiZeta(z, Psi, Zeta);
-
-    // // Now, calculate Spherical Bessel and Hankel functions and their derivatives
-    // for (int n = 0; n <= nmax_; n++) {
-    //   jn[n] = Psi[n]/z;
-    //   h1n[n] = Zeta[n]/z;
-
-    //   if (n == 0) {
-    //     jnp[0] = -Psi[1]/z - jn[0]/z;
-    //     h1np[0] = -Zeta[1]/z - h1n[0]/z;
-    //   } else {
-    //     jnp[n] = jn[n - 1] - static_cast<double>(n + 1)*jn[n]/z;
-    //     h1np[n] = h1n[n - 1] - static_cast<double>(n + 1)*h1n[n]/z;
-    //   }
-    // }
-    std::vector< std::complex<double> > yn, ynp;
-    int nm;
-    bessel::csphjy (nmax_, z, nm, jn, jnp,  yn, ynp );
-    auto c_i = std::complex<double>(0.0,1.0);
-    h1n.resize(nmax_+1);
-    h1np.resize(nmax_+1);
-    for (int i = 0; i < nmax_+1; ++i) {
-      h1n[i] = jn[i] + c_i*yn[i];
-      h1np[i] = jnp[i] + c_i*ynp[i];
-    }
-  }
-
-
-  //**********************************************************************************//
   // This function calculates Pi and Tau for a given value of cos(Theta).             //
   // Equations (26a) - (26c)                                                          //
   //                                                                                  //
@@ -1139,7 +1082,7 @@ namespace nmie {
       cln_[L][n] = c_one;
       dln_[L][n] = c_one;
 
-      printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", L, n, std::real(aln_[L][n]), std::imag(aln_[L][n]), L, n, std::real(bln_[L][n]), std::imag(bln_[L][n]), L, n, std::real(cln_[L][n]), std::imag(cln_[L][n]), L, n, std::real(dln_[L][n]), std::imag(dln_[L][n]));
+      //printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", L, n, std::real(aln_[L][n]), std::imag(aln_[L][n]), L, n, std::real(bln_[L][n]), std::imag(bln_[L][n]), L, n, std::real(cln_[L][n]), std::imag(cln_[L][n]), L, n, std::real(dln_[L][n]), std::imag(dln_[L][n]));
     }
 
     std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
@@ -1183,7 +1126,7 @@ namespace nmie {
         // dln
         dln_[l][n] = (D3z[n1]*m1[l]*T1 + m[l]*T3)/denomPsi;
 
-        printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
+        //printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
       }  // end of all n
     }  // end of all l
 
@@ -1249,7 +1192,7 @@ namespace nmie {
       cln_[L][n] = c_one;
       dln_[L][n] = c_one;
 
-      printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", L, n, std::real(aln_[L][n]), std::imag(aln_[L][n]), L, n, std::real(bln_[L][n]), std::imag(bln_[L][n]), L, n, std::real(cln_[L][n]), std::imag(cln_[L][n]), L, n, real(dln_[L][n]), std::imag(dln_[L][n]));
+      //printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", L, n, std::real(aln_[L][n]), std::imag(aln_[L][n]), L, n, std::real(bln_[L][n]), std::imag(bln_[L][n]), L, n, std::real(cln_[L][n]), std::imag(cln_[L][n]), L, n, real(dln_[L][n]), std::imag(dln_[L][n]));
     }
 
     std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
@@ -1315,7 +1258,7 @@ namespace nmie {
         // cln
         cln_[l][n] = (a[0][2]*a[1][0] - a[0][0]*a[1][2])/(a[0][1]*a[1][0] - a[0][0]*a[0][1]);
 
-        printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
+        //printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
       }  // end of all n
     }  // end of all l
 
@@ -1357,11 +1300,10 @@ namespace nmie {
       return;
     }
 
+    // Calculate logarithmic derivative of the Ricatti-Bessel functions
     calcD1D3(Rho, D1n, D3n);
+    // Calculate Ricatti-Bessel functions
     calcPsiZeta(Rho, Psi, Zeta);
-
-    // Calculate spherical Bessel and Hankel functions
-    //sbesjh(Rho, jn, jnp, h1n, h1np);
 
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
@@ -1463,24 +1405,13 @@ namespace nmie {
       ml = refractive_index_[l];
     }
 
-
+    // Calculate logarithmic derivative of the Ricatti-Bessel functions
     calcD1D3(Rho, D1n, D3n);
+    // Calculate Ricatti-Bessel functions
     calcPsiZeta(Rho, Psi, Zeta);
-
-    // Calculate spherical Bessel and Hankel functions and their derivatives
-    //sbesjh(Rho*ml, jn, jnp, h1n, h1np);
-    //sbesjh(2.0*PI_*Rho*ml, jn, jnp, h1n, h1np);
-    //printf("2.0*PI*Rho*ml = %10.5er%+10.5ei\n",std::real(2.0*PI_*Rho*ml), std::imag(2.0*PI_*Rho*ml));
 
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
-    //printf("Thetd = %g, cos(Theta) = %g\n", Theta, std::cos(Theta));
-    //printf("jn:\n");
-    //for (auto p : jn) printf("%+11.4er%+11.4ei\n",p.real(), p.imag());
-    //printf("Pi:\n");
-    //for (auto p : Pi) printf("%11.4e\n",p);
-    //printf("Tau:\n");
-    //for (auto p : Tau) printf("%11.4e\n",p);
 
     for (int n = nmax_ - 2; n >= 0; n--) {
       int n1 = n + 1;
