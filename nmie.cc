@@ -1285,15 +1285,9 @@ namespace nmie {
 
     // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
     for (int n = 0; n < nmax_; ++n) {
-<<<<<<< HEAD
 //      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
 //         real(bln_[0][n]), imag(bln_[0][n]));
       if (std::abs(aln_[0][n]) < 1e-1) aln_[0][n] = 0.0;
-=======
-      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
-	     real(bln_[0][n]), imag(bln_[0][n]));
-      if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
->>>>>>> 37185fd2687e6d9718d784dde979ccc892d25c5d
       else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
       if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
@@ -1487,11 +1481,7 @@ namespace nmie {
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
       Hi[i] *= hffact;
-<<<<<<< HEAD
       //printf("E[%i] = %10.5er%+10.5ei; Ei[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei; Hi[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(Ei[i]), std::imag(Ei[i]), i, std::real(H[i]), std::imag(H[i]), i, std::real(Hi[i]), std::imag(Hi[i]));
-=======
-      //      printf("E[%i] = %10.5er%+10.5ei; Ei[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei; Hi[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(Ei[i]), std::imag(Ei[i]), i, std::real(H[i]), std::imag(H[i]), i, std::real(Hi[i]), std::imag(Hi[i]));
->>>>>>> 37185fd2687e6d9718d784dde979ccc892d25c5d
     }
    }  // end of MultiLayerMie::calcField(...)
 
