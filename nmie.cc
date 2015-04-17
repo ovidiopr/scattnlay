@@ -629,35 +629,25 @@ namespace nmie {
                                std::vector<std::complex<double> >& D1,
                                std::vector<std::complex<double> >& D3) {
 
-    // // Downward recurrence for D1 - equations (16a) and (16b)
-    // D1[nmax_] = std::complex<double>(0.0, 0.0);
-    // const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
+    // Downward recurrence for D1 - equations (16a) and (16b)
+    D1[nmax_] = std::complex<double>(0.0, 0.0);
+    const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
 
-    // for (int n = nmax_; n > 0; n--) {
-    //   D1[n - 1] = static_cast<double>(n)*zinv - 1.0/(D1[n] + static_cast<double>(n)*zinv);
-    // }
-
-    // if (std::abs(D1[0]) > 100000.0)
-    //   throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
-
-    // // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
-    // PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(std::cos(2.0*z.real()), std::sin(2.0*z.real()))
-    //                    *std::exp(-2.0*z.imag()));
-    // D3[0] = std::complex<double>(0.0, 1.0);
-    // for (int n = 1; n <= nmax_; n++) {
-    //   PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)*zinv - D1[n - 1])
-    //                                *(static_cast<double>(n)*zinv - D3[n - 1]);
-    //   D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
-    // }
-    std::vector<std::complex<double> >  ZetaZ(nmax_+1), dZetaZ(nmax_ + 1);
-    bessel::calcZeta(nmax_, z, ZetaZ, dZetaZ );
-    for (int n = 0; n < nmax_+1; ++n) {
-      D3[n]=dZetaZ[n]/ZetaZ[n];
+    for (int n = nmax_; n > 0; n--) {
+      D1[n - 1] = static_cast<double>(n)*zinv - 1.0/(D1[n] + static_cast<double>(n)*zinv);
     }
-    std::vector<std::complex<double> >  PsiZ(nmax_+1), dPsiZ(nmax_ + 1);
-    bessel::calcPsi(nmax_, z, PsiZ, dPsiZ );
-    for (int n = 0; n < nmax_+1; ++n) {
-      D1[n]=dPsiZ[n]/PsiZ[n];
+
+    if (std::abs(D1[0]) > 100000.0)
+      throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
+
+    // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
+    PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(std::cos(2.0*z.real()), std::sin(2.0*z.real()))
+                      *std::exp(-2.0*z.imag()));
+    D3[0] = std::complex<double>(0.0, 1.0);
+    for (int n = 1; n <= nmax_; n++) {
+      PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)*zinv - D1[n - 1])
+                                   *(static_cast<double>(n)*zinv - D3[n - 1]);
+      D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
     }
   }
 
@@ -678,24 +668,19 @@ namespace nmie {
                                   std::vector<std::complex<double> >& Psi,
                                   std::vector<std::complex<double> >& Zeta) {
 
-    // std::complex<double> c_i(0.0, 1.0);
-    // std::vector<std::complex<double> > D1(nmax_ + 1), D3(nmax_ + 1);
+    std::complex<double> c_i(0.0, 1.0);
+    std::vector<std::complex<double> > D1(nmax_ + 1), D3(nmax_ + 1);
 
-    // // First, calculate the logarithmic derivatives
-    // calcD1D3(z, D1, D3);
+    // First, calculate the logarithmic derivatives
+    calcD1D3(z, D1, D3);
 
-    // // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
-    // Psi[0] = std::sin(z);
-    // Zeta[0] = std::sin(z) - c_i*std::cos(z);
-    // for (int n = 1; n <= nmax_; n++) {
-    //   Psi[n]  =  Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
-    //   Zeta[n] = Zeta[n - 1]*(static_cast<double>(n)/z - D3[n - 1]);
-    // }
-    
-    std::vector<std::complex<double> >  dZetaZ(nmax_ + 1);
-    bessel::calcZeta(nmax_, z, Zeta, dZetaZ);
-    std::vector<std::complex<double> > dPsiZ(nmax_ + 1);
-    bessel::calcPsi(nmax_, z, Psi, dPsiZ );
+    // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
+    Psi[0] = std::sin(z);
+    Zeta[0] = std::sin(z) - c_i*std::cos(z);
+    for (int n = 1; n <= nmax_; n++) {
+      Psi[n]  =  Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
+      Zeta[n] = Zeta[n - 1]*(static_cast<double>(n)/z - D3[n - 1]);
+    }
   }
 
 
@@ -799,8 +784,8 @@ namespace nmie {
   //   Rho: Radial distance                                                           //
   //   Phi: Azimuthal angle                                                           //
   //   Theta: Polar angle                                                             //
-  //   zn: Either the spherical Bessel or Hankel function of first kind               //
-  //   dzn: Derivative of zn                                                          //
+  //   rn: Either the spherical Ricatti-Bessel function of first or third kind        //
+  //   Dn: Logarithmic derivative of rn                                               //
   //   Pi, Tau: Angular functions Pi and Tau                                          //
   //   n: Order of vector spherical harmonics                                         //
   //                                                                                  //
@@ -808,29 +793,28 @@ namespace nmie {
   //   Mo1n, Me1n, No1n, Ne1n: Complex vector spherical harmonics                     //
   //**********************************************************************************//
   void MultiLayerMie::calcSpherHarm(const double Rho, const double Theta, const double Phi,
-                                    const std::complex<double>& zn, const std::complex<double>& dzn,
+                                    const std::complex<double>& rn, const std::complex<double>& Dn,
                                     const double& Pi, const double& Tau, const double& n,
                                     std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
                                     std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n) {
 
     // using eq 4.50 in BH
     std::complex<double> c_zero(0.0, 0.0);
-    std::complex<double> deriv = Rho*dzn + zn;
 
     using std::sin;
     using std::cos;
     Mo1n[0] = c_zero;
-    Mo1n[1] = cos(Phi)*Pi*zn;
-    Mo1n[2] = -sin(Phi)*Tau*zn;
+    Mo1n[1] = cos(Phi)*Pi*rn/Rho;
+    Mo1n[2] = -sin(Phi)*Tau*rn/Rho;
     Me1n[0] = c_zero;
-    Me1n[1] = -sin(Phi)*Pi*zn;
-    Me1n[2] = -cos(Phi)*Tau*zn;
-    No1n[0] = sin(Phi)*(n*n + n)*sin(Theta)*Pi*zn/Rho;
-    No1n[1] = sin(Phi)*Tau*deriv/Rho;
-    No1n[2] = cos(Phi)*Pi*deriv/Rho;
-    Ne1n[0] = cos(Phi)*(n*n + n)*sin(Theta)*Pi*zn/Rho;
-    Ne1n[1] = cos(Phi)*Tau*deriv/Rho;
-    Ne1n[2] = -sin(Phi)*Pi*deriv/Rho;
+    Me1n[1] = -sin(Phi)*Pi*rn/Rho;
+    Me1n[2] = -cos(Phi)*Tau*rn/Rho;
+    No1n[0] = sin(Phi)*(n*n + n)*sin(Theta)*Pi*rn/Rho/Rho;
+    No1n[1] = sin(Phi)*Tau*Dn*rn/Rho;
+    No1n[2] = cos(Phi)*Pi*Dn*rn/Rho;
+    Ne1n[0] = cos(Phi)*(n*n + n)*sin(Theta)*Pi*rn/Rho/Rho;
+    Ne1n[1] = cos(Phi)*Tau*Dn*rn/Rho;
+    Ne1n[2] = -sin(Phi)*Pi*Dn*rn/Rho;
   }  // end of MultiLayerMie::calcSpherHarm(...)
 
 
@@ -1361,11 +1345,23 @@ namespace nmie {
     std::vector<std::complex<double> > ipow = {c_one, c_i, -c_one, -c_i}; // Vector containing precomputed integer powers of i to avoid computation
     std::vector<std::complex<double> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
     std::vector<std::complex<double> > Ei(3, c_zero), Hi(3, c_zero), Es(3, c_zero), Hs(3, c_zero);
-    std::vector<std::complex<double> > jn(nmax_ + 1), jnp(nmax_ + 1), h1n(nmax_ + 1), h1np(nmax_ + 1);
+    std::vector<std::complex<double> > Psi(nmax_ + 1), D1n(nmax_ + 1), Zeta(nmax_ + 1), D3n(nmax_ + 1);
     std::vector<double> Pi(nmax_), Tau(nmax_);
 
+    // Avoid calculation inside the particle
+    if (Rho < size_param_.back()) {
+       for (int i = 0; i < 3; i++) {
+        E[i] = c_zero;
+        H[i] = c_zero;
+      }
+      return;
+    }
+
+    calcD1D3(Rho, D1n, D3n);
+    calcPsiZeta(Rho, Psi, Zeta);
+
     // Calculate spherical Bessel and Hankel functions
-    sbesjh(Rho, jn, jnp, h1n, h1np);
+    //sbesjh(Rho, jn, jnp, h1n, h1np);
 
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
@@ -1375,7 +1371,7 @@ namespace nmie {
       double rn = static_cast<double>(n1);
 
       // using BH 4.12 and 4.50
-      calcSpherHarm(Rho, Theta, Phi, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
+      calcSpherHarm(Rho, Theta, Phi, Zeta[n1], D3n[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
 
       // scattered field: BH p.94 (4.45)
       std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
@@ -1440,7 +1436,7 @@ namespace nmie {
     std::vector<std::complex<double> > ipow = {c_one, c_i, -c_one, -c_i}; // Vector containing precomputed integer powers of i to avoid computation
     std::vector<std::complex<double> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
     std::vector<std::complex<double> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
-    std::vector<std::complex<double> > jn(nmax_ + 1), jnp(nmax_ + 1), h1n(nmax_ + 1), h1np(nmax_ + 1);
+    std::vector<std::complex<double> > Psi(nmax_ + 1), D1n(nmax_ + 1), Zeta(nmax_ + 1), D3n(nmax_ + 1);
     std::vector<double> Pi(nmax_), Tau(nmax_);
 
     std::vector<std::complex<double> > Ei(3), Hi(3);
@@ -1466,8 +1462,12 @@ namespace nmie {
       ml = refractive_index_[l];
     }
 
+
+    calcD1D3(Rho, D1n, D3n);
+    calcPsiZeta(Rho, Psi, Zeta);
+
     // Calculate spherical Bessel and Hankel functions and their derivatives
-    sbesjh(Rho*ml, jn, jnp, h1n, h1np);
+    //sbesjh(Rho*ml, jn, jnp, h1n, h1np);
 
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
@@ -1482,8 +1482,8 @@ namespace nmie {
       double rn = static_cast<double>(n1);
 
       // using BH 4.12 and 4.50
-      calcSpherHarm(Rho, Theta, Phi, jn[n1], jnp[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
-      calcSpherHarm(Rho, Theta, Phi, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
+      calcSpherHarm(Rho, Theta, Phi, Psi[n1], D1n[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
+      calcSpherHarm(Rho, Theta, Phi, Zeta[n1], D3n[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
 
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
       std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
@@ -1506,7 +1506,7 @@ namespace nmie {
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
       Hi[i] *= hffact;
-      printf("E[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(H[i]), std::imag(H[i]));
+      printf("E[%i] = %10.5er%+10.5ei; Ei[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei; Hi[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(Ei[i]), std::imag(Ei[i]), i, std::real(H[i]), std::imag(H[i]), i, std::real(Hi[i]), std::imag(Hi[i]));
     }
    }  // end of MultiLayerMie::calcField(...)
 
