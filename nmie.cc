@@ -816,7 +816,8 @@ namespace nmie {
     // using eq 4.50 in BH
     std::complex<double> c_zero(0.0, 0.0);
     std::complex<double> deriv = Rho*dzn + zn;
-
+    //std::complex<double> deriv (6.6667e-04, 0.0);
+    //printf("n=%g, Phi=%g Pi=%g Tau=%g zn=%+er%+ei deriv=%+er%+ei\n", n, Phi, Pi, Tau, zn.real(), zn.imag(), deriv.real(), deriv.imag());
     using std::sin;
     using std::cos;
     Mo1n[0] = c_zero;
@@ -1473,6 +1474,8 @@ namespace nmie {
     // Calculate angular functions Pi and Tau
     calcPiTau(std::cos(Theta), Pi, Tau);
     printf("Thetd = %g, cos(Theta) = %g\n", Theta, std::cos(Theta));
+    printf("jn:\n");
+    for (auto p : jn) printf("%+11.4er%+11.4ei\n",p.real(), p.imag());
     printf("Pi:\n");
     for (auto p : Pi) printf("%11.4e\n",p);
     printf("Tau:\n");
@@ -1484,7 +1487,13 @@ namespace nmie {
 
       // using BH 4.12 and 4.50
       calcSpherHarm(Rho, Theta, Phi, jn[n1], jnp[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
-      calcSpherHarm(Rho, Theta, Phi, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
+      calcSpherHarm(Rho, Theta, Phi, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n); //TODO uncomment line
+      auto deriv1 = -rn*jn[n1]+Rho*jn[n1-1];
+      auto deriv2 = Rho*jnp[n1] + jn[n1];
+      printf("n=%d   deriv1: %+11.4e   deriv2: %+11.4ei\n",n1, deriv1.real(), deriv2.real());
+      // printf("N1e1n[%d]: ", n1);
+      // for (auto p : N1e1n) printf("%+11.4er%+11.4ei\t",p.real(), p.imag());
+      // printf("\n");
 
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
       std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
