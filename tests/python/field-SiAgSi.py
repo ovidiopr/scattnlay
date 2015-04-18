@@ -32,12 +32,13 @@
 
 import scattnlay
 from scattnlay import fieldnlay
+from scattnlay import scattnlay
 import numpy as np
 
-# epsilon_Si = 13.64 + 0.047j
-# epsilon_Ag = -28.05 + 1.525j
-epsilon_Si = 2.0 + 0.047j
-epsilon_Ag = -2.0 + 1.525j
+epsilon_Si = 13.64 + 0.047j
+epsilon_Ag = -28.05 + 1.525j
+# epsilon_Si = 2.0 + 0.047j
+# epsilon_Ag = -2.0 + 1.525j
 
 index_Si = np.sqrt(epsilon_Si)
 index_Ag = np.sqrt(epsilon_Ag)
@@ -83,8 +84,9 @@ coordY = np.zeros(npts*npts, dtype = np.float64)
 
 coord = np.vstack((coordX, coordY, coordZ)).transpose()
 
+terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 terms, E, H = fieldnlay(x, m, coord)
-
+print("Qabs = "+str(Qabs));
 Er = np.absolute(E)
 
 # |E|/|Eo|
@@ -100,7 +102,7 @@ try:
     min_tick = 0.1
     max_tick = 1.0
 
-    edata = np.resize(Eh, (npts, npts))
+    edata = np.resize(Eh, (npts, npts)).T
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -127,20 +129,23 @@ try:
     pos = list(cbar.ax.get_position().bounds)
     fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
-    plt.xlabel('X')
-    plt.ylabel('Z')
+    plt.xlabel('Z')
+    plt.ylabel('X')
 
-    # This part draws the nanoshell
-#    from matplotlib import patches
+    # # This part draws the nanoshell
+    # from matplotlib import patches
 
-#    s1 = patches.Arc((0, 0), 2.0*x[0, 0], 2.0*x[0, 0], angle=0.0, zorder=2,
-#                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
-#    ax.add_patch(s1)
+    # s1 = patches.Arc((0, 0), 1.0*x[0, 0], 1.0*x[0, 0],  angle=0.0, zorder=2,
+    #                  theta1=0.0, theta2=360.0, linewidth=1, color='black')
+    # ax.add_patch(s1)
 
-#    s2 = patches.Arc((0, 0), 2.0*x[0, 1], 2.0*x[0, 1], angle=0.0, zorder=2,
-#                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
-#    ax.add_patch(s2)
-    # End of drawing
+    # s2 = patches.Arc((0, 0), 2.0*x[0, 1], 2.0*x[0, 1], angle=0.0, zorder=2,
+    #                  theta1=0.0, theta2=360.0, linewidth=1, color='black')
+    # ax.add_patch(s2) 
+    # s3 = patches.Arc((0, 0), 2.0*x[0, 2], 2.0*x[0, 2], angle=0.0, zorder=2,
+    #                  theta1=0.0, theta2=360.0, linewidth=1, color='black')
+    # ax.add_patch(s3) 
+    # # End of drawing
 
     plt.draw()
 
