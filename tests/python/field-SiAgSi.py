@@ -111,10 +111,10 @@ try:
     scale_z = np.linspace(min(coordZ)*1.064/2.0/np.pi/nm, max(coordZ)*1.064/2.0/np.pi/nm, npts)
 
     # Define scale ticks
-    #min_tick = min(min_tick, np.amin(edata))
+    # min_tick = min(min_tick, np.amin(edata))
     max_tick = max(max_tick, np.amax(edata))
     # scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
-    scale_ticks = np.linspace(min_tick, max_tick, 6)
+    scale_ticks = np.linspace(min_tick, max_tick, 12)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
     cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.jet,
@@ -125,7 +125,7 @@ try:
 
     # Add colorbar
     cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
-    cbar.ax.set_yticklabels(['%3.1e' % (a) for a in scale_ticks]) # vertically oriented colorbar
+    cbar.ax.set_yticklabels(['%5.3g' % (a) for a in scale_ticks]) # vertically oriented colorbar
     pos = list(cbar.ax.get_position().bounds)
     fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
