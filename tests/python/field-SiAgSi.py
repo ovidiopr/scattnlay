@@ -43,9 +43,9 @@ epsilon_Ag = -28.05 + 1.525j
 index_Si = np.sqrt(epsilon_Si)
 index_Ag = np.sqrt(epsilon_Ag)
 
-# Values for 800 nm, taken from http://refractiveindex.info/
-index_Si = 3.69410 + 0.0065435j
-index_Ag = 0.18599 + 4.9886j
+# # Values for 800 nm, taken from http://refractiveindex.info/
+# index_Si = 3.69410 + 0.0065435j
+# index_Ag = 0.18599 + 4.9886j
 
 WL=800 #nm
 core_width = 17.74 #nm Si
@@ -99,7 +99,7 @@ try:
     from matplotlib import cm
     from matplotlib.colors import LogNorm
 
-    min_tick = 0.1
+    min_tick = 0.0
     max_tick = 1.0
 
     edata = np.resize(Eh, (npts, npts)).T
@@ -111,7 +111,7 @@ try:
     scale_z = np.linspace(min(coordZ)*1.064/2.0/np.pi/nm, max(coordZ)*1.064/2.0/np.pi/nm, npts)
 
     # Define scale ticks
-    min_tick = min(min_tick, np.amin(edata))
+    #min_tick = min(min_tick, np.amin(edata))
     max_tick = max(max_tick, np.amax(edata))
     # scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
     scale_ticks = np.linspace(min_tick, max_tick, 6)
