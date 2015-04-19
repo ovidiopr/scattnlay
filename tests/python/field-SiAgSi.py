@@ -146,7 +146,7 @@ try:
                      theta1=0.0, theta2=360.0, linewidth=1, color='black')
     ax.add_patch(s3) 
     # End of drawing
-    plt.savefig("SiAgSi.svg")
+    plt.savefig("SiAgSi.png")
     plt.draw()
 
     plt.show()
