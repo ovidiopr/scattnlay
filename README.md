@@ -1,4 +1,4 @@
-[[/doc/SiAgSi.svg  | height = 300px ]]
+![output example](./doc/SiAgSi.svg  | height = 300px )
 
 How to use scattnlay
 ====================
