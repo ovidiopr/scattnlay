@@ -1,7 +1,7 @@
 How to use scattnlay
 ====================
 
-Table of contents:
+**Table of contents:**
 - [Compile code](#compile-code)
 - [Use](#use)
 - [Papers](#papers)
@@ -85,6 +85,15 @@ Papers
    Konstantin Ladutenko, Ovidio Peña-Rodríguez, Irina Melchakova, Ilya
    Yagupov, and Pavel Belov  J. Appl. Phys., vol. 116, pp. 184508,
    2014 http://dx.doi.org/10.1063/1.4900529 
+
+Acknowledgment
+--------------
+
+We expect that all publications describing work using this software,
+or all commercial products using it, cite the following reference:
+> O. Pena and U. Pal, "Scattering of electromagnetic radiation
+> by a multilayered sphere," Computer Physics Communications,
+> vol. 180, Nov. 2009, pp. 2348-2354.
 
 License
 -------
