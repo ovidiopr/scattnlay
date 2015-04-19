@@ -137,9 +137,10 @@ namespace nmie {
       if ( 2 <= n ) {
 	csa = csj[0];
 	csb = csj[1];
-	m = msta1 ( a0, 200 );
+	int precision = 1;
+	m = msta1 ( a0, 200*precision);
 	if ( m < n ) nm = m;
-	else m = msta2 ( a0, n, 15 );
+	else m = msta2 ( a0, n, 15*precision);
 	cf0 = 0.0;
 	cf1 = 1.0e-100;
 	for (int k = m; k>=0; --k) {

@@ -73,7 +73,7 @@ m[0, 2] = index_Si/nm
 print "x =", x
 print "m =", m
 
-npts = 281
+npts = 1281
 
 scan = np.linspace(-2.0*x[0, 2], 2.0*x[0, 2], npts)
 
@@ -107,8 +107,8 @@ try:
     fig = plt.figure()
     ax = fig.add_subplot(111)
     # Rescale to better show the axes
-    scale_x = np.linspace(min(coordX)*1.064/2.0/np.pi/nm, max(coordX)*1.064/2.0/np.pi/nm, npts)
-    scale_z = np.linspace(min(coordZ)*1.064/2.0/np.pi/nm, max(coordZ)*1.064/2.0/np.pi/nm, npts)
+    scale_x = np.linspace(min(coordX)*WL/2.0/np.pi/nm, max(coordX)*WL/2.0/np.pi/nm, npts)
+    scale_z = np.linspace(min(coordZ)*WL/2.0/np.pi/nm, max(coordZ)*WL/2.0/np.pi/nm, npts)
 
     # Define scale ticks
     # min_tick = min(min_tick, np.amin(edata))
@@ -129,23 +129,23 @@ try:
     pos = list(cbar.ax.get_position().bounds)
     fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
-    plt.xlabel('Z')
-    plt.ylabel('X')
+    plt.xlabel('Z, nm')
+    plt.ylabel('X, nm')
 
-    # # This part draws the nanoshell
-    # from matplotlib import patches
+    # This part draws the nanoshell
+    from matplotlib import patches
 
-    # s1 = patches.Arc((0, 0), 1.0*x[0, 0], 1.0*x[0, 0],  angle=0.0, zorder=2,
-    #                  theta1=0.0, theta2=360.0, linewidth=1, color='black')
-    # ax.add_patch(s1)
+    s1 = patches.Arc((0, 0), 2.0*core_r, 2.0*core_r,  angle=0.0, zorder=2,
+                     theta1=0.0, theta2=360.0, linewidth=1, color='black')
+    ax.add_patch(s1)
 
-    # s2 = patches.Arc((0, 0), 2.0*x[0, 1], 2.0*x[0, 1], angle=0.0, zorder=2,
-    #                  theta1=0.0, theta2=360.0, linewidth=1, color='black')
-    # ax.add_patch(s2) 
-    # s3 = patches.Arc((0, 0), 2.0*x[0, 2], 2.0*x[0, 2], angle=0.0, zorder=2,
-    #                  theta1=0.0, theta2=360.0, linewidth=1, color='black')
-    # ax.add_patch(s3) 
-    # # End of drawing
+    s2 = patches.Arc((0, 0), 2.0*inner_r, 2.0*inner_r, angle=0.0, zorder=2,
+                     theta1=0.0, theta2=360.0, linewidth=1, color='black')
+    ax.add_patch(s2) 
+    s3 = patches.Arc((0, 0), 2.0*outer_r, 2.0*outer_r, angle=0.0, zorder=2,
+                     theta1=0.0, theta2=360.0, linewidth=1, color='black')
+    ax.add_patch(s3) 
+    # End of drawing
 
     plt.draw()
 
