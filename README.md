@@ -17,27 +17,30 @@ Use:
 ----
 
 1. Python library
-    * Use scattnlay directly
-```python
+  * Use scattnlay directly
+  ```python
 from scattnlay import scattnlay
 ...
 x = ...
 m = ...
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 ...
-```
-    * Execute some of the test scripts (located in the folder 'tests/python')
+  ```
+  * Execute some of the test scripts (located in the folder 'tests/python')
           Example:
 ```bash
 ./test01.py
 ```
-
 2. Standalone program
-      * Execute scattnlay directly
-          Usage: scattnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-c comment]
+  * Execute scattnlay directly
+          Usage:
+```bash
+scattnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-c comment]
+```
+  * Execute some of the test scripts (located in the folder 'tests/shell')
+          Example:
+```bash
+./test01.sh > test01.csv
+```
 
-      * Execute some of the test scripts (located in the folder 'tests/shell')
-          Example:  ./test01.sh > test01.csv
-
-*******************************************************************************
 
