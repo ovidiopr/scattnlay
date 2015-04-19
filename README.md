@@ -1,3 +1,5 @@
+[[/doc/SiAgSi.svg  | height = 300px ]]
+
 How to use scattnlay
 ====================
 

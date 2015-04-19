@@ -73,7 +73,7 @@ m[0, 2] = index_Si/nm
 print "x =", x
 print "m =", m
 
-npts = 1281
+npts = 281
 
 scan = np.linspace(-2.0*x[0, 2], 2.0*x[0, 2], npts)
 
@@ -146,7 +146,7 @@ try:
                      theta1=0.0, theta2=360.0, linewidth=1, color='black')
     ax.add_patch(s3) 
     # End of drawing
-
+    plt.savefig("SiAgSi.svg")
     plt.draw()
 
     plt.show()
