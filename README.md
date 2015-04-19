@@ -9,6 +9,7 @@ How to use scattnlay
 - [Compile code](#compile-code)
 - [Use](#use)
 - [Papers](#papers)
+- [Acknowledgment](#acknowledgment)
 - [License](#license)
 
 Compile Code:
