@@ -42,5 +42,22 @@ scattnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-c comment]
   ```bash
 ./test01.sh > test01.csv
   ```
+3. C++ library
+```C++
+    try {
+      MultiLayerMie multi_layer_mie;
+      multi_layer_mie.SetLayersSize(x);
+      multi_layer_mie.SetLayersIndex(m);
 
+      multi_layer_mie.RunMieCalculation();
+
+      *Qsca = multi_layer_mie.GetQsca();
+      *Qabs = multi_layer_mie.GetQabs();
+    } catch(const std::invalid_argument& ia) {
+      // Will catch if  multi_layer_mie fails or other errors.
+      std::cerr << "Invalid argument: " << ia.what() << std::endl;
+      throw std::invalid_argument(ia);
+      return -1;
+    }
+```
 
