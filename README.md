@@ -1,6 +1,8 @@
 How to use scattnlay
 ====================
 
+[TOC]
+
 Compile Code:
 -------------
 
@@ -18,6 +20,7 @@ Use:
 
 1. Python library
   * Use scattnlay directly
+  
   ```python
 from scattnlay import scattnlay
 ...
@@ -26,23 +29,29 @@ m = ...
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 ...
   ```
+  
   * Execute some of the test scripts (located in the folder 'tests/python')
           Example:
+		  
   ```bash
 ./test01.py
   ```
+  
 2. Standalone program
   * Execute scattnlay directly
           Usage:
+		  
   ```bash
 scattnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-c comment]
   ```
   * Execute some of the test scripts (located in the folder 'tests/shell')
-          Example:
+      Example:
+
   ```bash
 ./test01.sh > test01.csv
   ```
 3. C++ library
+
 ```C++
     try {
       MultiLayerMie multi_layer_mie;
@@ -61,3 +70,19 @@ scattnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-c comment]
     }
 ```
 
+Papers
+------
+
+1. "Scattering of electromagnetic radiation by a multilayered sphere"
+   O. Pena and U. Pal,  Computer Physics Communications, vol. 180,
+   Nov. 2009, pp. 2348-2354. http://dx.doi.org/10.1016/j.cpc.2009.07.010
+
+2. "Reduction of scattering using thin all-dielectric shells designed by stochastic optimizer"
+   Konstantin Ladutenko, Ovidio Peña-Rodríguez, Irina Melchakova, Ilya
+   Yagupov, and Pavel Belov  J. Appl. Phys., vol. 116, pp. 184508,
+   2014 http://dx.doi.org/10.1063/1.4900529 
+
+License
+-------
+
+GPL v3+
