@@ -17,20 +17,20 @@ Use:
 ----
 
 1. Python library
-   * Use scattnlay directly
-        ```python
-		from scattnlay import scattnlay
-		...
-		x = ...
-		m = ...
-		terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
-		...
-		```
-      * Execute some of the test scripts (located in the folder 'tests/python')
+    * Use scattnlay directly
+```python
+from scattnlay import scattnlay
+...
+x = ...
+m = ...
+terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
+...
+```
+    * Execute some of the test scripts (located in the folder 'tests/python')
           Example:
-		  ```bash
-		  ./test01.py
-		  ```
+```bash
+./test01.py
+```
 
 2. Standalone program
       * Execute scattnlay directly
