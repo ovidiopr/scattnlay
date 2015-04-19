@@ -1,7 +1,11 @@
 How to use scattnlay
 ====================
 
-[TOC]
+Table of contents:
+- [Compile code](#compile-code)
+- [Use](#use)
+- [Papers](#papers)
+- [License](#license)
 
 Compile Code:
 -------------
