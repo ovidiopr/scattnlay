@@ -1,7 +1,6 @@
-Output example: Field distribution inside layered Si\Ag\Si sphere
-calculated with Scattnlay.
-
 ![output example](/doc/SiAgSi.png)
+**Output example:** Field distribution inside layered Si\Ag\Si sphere
+calculated with Scattnlay.
 
 How to use scattnlay
 ====================
