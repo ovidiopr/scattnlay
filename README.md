@@ -53,12 +53,14 @@ terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
   ```bash
 scattnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-c comment]
   ```
+
   * Execute some of the test scripts (located in the folder 'tests/shell')
       Example:
 
   ```bash
 ./test01.sh > test01.csv
   ```
+  
 3. C++ library
 
 ```C++
