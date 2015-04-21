@@ -57,7 +57,7 @@ m[0, 1] = n2/nm
 print "x =", x
 print "m =", m
 
-npts = 281
+npts = 501
 
 scan = np.linspace(-4.0*x[0, 0], 4.0*x[0, 0], npts)
 

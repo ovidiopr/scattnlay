@@ -52,7 +52,7 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
     z_pos = flow_z[-1]
     x_idx = get_index(scale_x, x_pos)
     z_idx = get_index(scale_z, z_pos)
-    S=np.cross(Ec[npts*z_idx+x_idx], np.conjugate(Hc[npts*z_idx+x_idx]) ).real
+    S=np.cross(Ec[npts*z_idx+x_idx], Hc[npts*z_idx+x_idx]).real
     #if (np.linalg.norm(S)> 1e-4):
     Snorm_prev=S/np.linalg.norm(S)
     for n in range(0, nmax):
@@ -62,29 +62,34 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
         z_pos = flow_z[-1]
         x_idx = get_index(scale_x, x_pos)
         z_idx = get_index(scale_z, z_pos)
-        S=np.cross(Ec[npts*z_idx+x_idx], np.conjugate(Hc[npts*z_idx+x_idx]) ).real
+        #print x_idx, z_idx
+        S=np.cross(Ec[npts*z_idx+x_idx], Hc[npts*z_idx+x_idx]).real
         #if (np.linalg.norm(S)> 1e-4):
         Snorm=S/np.linalg.norm(S)
         #2. Evaluate displacement = half of the discrete and new position
         dpos = abs(scale_z[0]-scale_z[1])/2.0
         dx = dpos*Snorm[0]
         dz = dpos*Snorm[2]
-        x_pos = x_pos+dx
-        z_pos = z_pos+dz
+        if (dz < 0.0):
+            x_pos = x_pos-dx
+            z_pos = z_pos-dz
+        else:
+            x_pos = x_pos+dx
+            z_pos = z_pos+dz
         #3. Save result
         flow_x.append(x_pos)
         flow_z.append(z_pos)
     return flow_x, flow_z
 
 # # a)
-# WL=400 #nm
-# core_r = WL/20.0
-# epsilon_Ag = -2.0 + 10.0j
+#WL=400 #nm
+#core_r = WL/20.0
+#epsilon_Ag = -2.0 + 10.0j
 
 # # b)
-# WL=400 #nm
-# core_r = WL/20.0
-# epsilon_Ag = -2.0 + 1.0j
+#WL=400 #nm
+#core_r = WL/20.0
+#epsilon_Ag = -2.0 + 1.0j
 
 # c)
 WL=354 #nm
@@ -115,7 +120,7 @@ print "m =", m
 
 npts = 281
 
-factor=5
+factor=2
 scan = np.linspace(-factor*x[0, 0], factor*x[0, 0], npts)
 
 coordX, coordZ = np.meshgrid(scan, scan)
@@ -125,29 +130,14 @@ coordY = np.zeros(npts*npts, dtype = np.float64)
 
 coord = np.vstack((coordX, coordY, coordZ)).transpose()
 #coord = np.vstack((coordY, coordX, coordZ)).transpose()
-#coord = np.vstack((coordY, coordX, coordZ)).transpose()
-
 
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 terms, E, H = fieldnlay(x, m, coord)
-Er = np.absolute(E)
-Hr = np.absolute(H)
 
-# |E|/|Eo|
-Eabs = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
+P = np.array(map(lambda n: np.linalg.norm( np.cross(E[0][n], H[0][n]).real ), range(0, len(E[0]))))
+
 Ec = E[0, :, :]
 Hc = H[0, :, :]
-Eangle = np.angle(E[0, :, 0])/np.pi*180
-
-P=[]
-for n in range(0, len(E[0])):
-    P.append(np.linalg.norm( np.cross(Ec[n], np.conjugate(Hc[n]) ).real/2 ))
-
-print(min(P))
-
-Habs= np.sqrt(Hr[0, :, 0]**2 + Hr[0, :, 1]**2 + Hr[0, :, 2]**2)
-Hangle = np.angle(H[0, :, 1])/np.pi*180
-
 
 
 try:
@@ -172,10 +162,10 @@ try:
     scale_z = np.linspace(min(coordZ)*WL/2.0/np.pi/nm, max(coordZ)*WL/2.0/np.pi/nm, npts)
 
     # Define scale ticks
-    min_tick = np.amin(Eabs_data)
-    max_tick = np.amax(Eabs_data)
+    # min_tick = min(min_tick, np.amin(Eabs_data))
+    # max_tick = max(max_tick, np.amax(Eabs_data))
     # scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
-    scale_ticks = np.linspace(min_tick, max_tick, 11)
+    #scale_ticks = np.linspace(min_tick, max_tick, 11)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
     #ax.set_title('Eabs')
@@ -188,13 +178,13 @@ try:
     ax.axis("image")
 
     # # Add colorbar
-    cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
-    cbar.ax.set_yticklabels(['%5.3g' % (a) for a in scale_ticks]) # vertically oriented colorbar
+    # cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
+    # cbar.ax.set_yticklabels(['%5.3g' % (a) for a in scale_ticks]) # vertically oriented colorbar
     # pos = list(cbar.ax.get_position().bounds)
     # fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
-    # plt.xlabel('Z, nm')
-    # plt.ylabel('X, nm')
+    plt.xlabel('Z, nm')
+    plt.ylabel('X, nm')
 
     # This part draws the nanoshell
     from matplotlib import patches
@@ -204,8 +194,7 @@ try:
 
     from matplotlib.path import Path
     #import matplotlib.patches as patches
-
-    flow_total = 31
+    flow_total = 41
     for flow in range(0,flow_total):
         flow_x, flow_z = GetFlow(scale_x, scale_z, Ec, Hc,
                                  min(scale_x)+flow*(scale_x[-1]-scale_x[0])/(flow_total-1),
@@ -218,7 +207,6 @@ try:
         path = Path(verts, codes)
         patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='white')
         ax.add_patch(patch)
-
     # # Start powerflow lines in the middle of the image
     # flow_total = 131
     # for flow in range(0,flow_total):
@@ -234,7 +222,7 @@ try:
     #     patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='white')
     #     ax.add_patch(patch)
  
-    plt.savefig("Ag-flow.png")
+    # plt.savefig("SiAgSi.png")
     plt.draw()
 
     plt.show()
