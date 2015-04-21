@@ -105,10 +105,6 @@ namespace nmie {
     std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
                                  std::complex<double> PsiXL, std::complex<double> ZetaXL,
                                  std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
-    void calc_an_bn_bulk(std::vector<std::complex<double> >& an,
-			 std::vector<std::complex<double> >& bn,
-			 double x, std::complex<double> m);
-
     std::complex<double> calc_S1(int n, std::complex<double> an, std::complex<double> bn,
                                  double Pi, double Tau);
     std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
@@ -128,10 +124,6 @@ namespace nmie {
                        std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
     void ScattCoeffs();
     void ExpanCoeffs();
-    void ExpanCoeffsV2();
-
-    void fieldExt(const double Rho, const double Theta, const double Phi,
-                  std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
 
     void calcField(const double Rho, const double Theta, const double Phi,
                    std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
