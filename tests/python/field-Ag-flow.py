@@ -125,22 +125,25 @@ coordY = np.zeros(npts*npts, dtype = np.float64)
 
 coord = np.vstack((coordX, coordY, coordZ)).transpose()
 #coord = np.vstack((coordY, coordX, coordZ)).transpose()
+#coord = np.vstack((coordY, coordX, coordZ)).transpose()
+
 
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 terms, E, H = fieldnlay(x, m, coord)
 Er = np.absolute(E)
 Hr = np.absolute(H)
-P=[]
-for n in range(0, len(E[0])):
-    P.append(np.linalg.norm( np.cross(E[0][n], np.conjugate(H[0][n]) ).real/2 ))
-
-print(min(P))
 
 # |E|/|Eo|
 Eabs = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
 Ec = E[0, :, :]
 Hc = H[0, :, :]
 Eangle = np.angle(E[0, :, 0])/np.pi*180
+
+P=[]
+for n in range(0, len(E[0])):
+    P.append(np.linalg.norm( np.cross(Ec[n], np.conjugate(Hc[n]) ).real/2 ))
+
+print(min(P))
 
 Habs= np.sqrt(Hr[0, :, 0]**2 + Hr[0, :, 1]**2 + Hr[0, :, 2]**2)
 Hangle = np.angle(H[0, :, 1])/np.pi*180
@@ -169,10 +172,10 @@ try:
     scale_z = np.linspace(min(coordZ)*WL/2.0/np.pi/nm, max(coordZ)*WL/2.0/np.pi/nm, npts)
 
     # Define scale ticks
-    # min_tick = min(min_tick, np.amin(Eabs_data))
-    # max_tick = max(max_tick, np.amax(Eabs_data))
+    min_tick = np.amin(Eabs_data)
+    max_tick = np.amax(Eabs_data)
     # scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
-    #scale_ticks = np.linspace(min_tick, max_tick, 11)
+    scale_ticks = np.linspace(min_tick, max_tick, 11)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
     #ax.set_title('Eabs')
@@ -185,13 +188,13 @@ try:
     ax.axis("image")
 
     # # Add colorbar
-    # cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
-    # cbar.ax.set_yticklabels(['%5.3g' % (a) for a in scale_ticks]) # vertically oriented colorbar
+    cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
+    cbar.ax.set_yticklabels(['%5.3g' % (a) for a in scale_ticks]) # vertically oriented colorbar
     # pos = list(cbar.ax.get_position().bounds)
     # fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
-    plt.xlabel('Z, nm')
-    plt.ylabel('X, nm')
+    # plt.xlabel('Z, nm')
+    # plt.ylabel('X, nm')
 
     # This part draws the nanoshell
     from matplotlib import patches
@@ -201,6 +204,7 @@ try:
 
     from matplotlib.path import Path
     #import matplotlib.patches as patches
+
     flow_total = 31
     for flow in range(0,flow_total):
         flow_x, flow_z = GetFlow(scale_x, scale_z, Ec, Hc,
@@ -214,6 +218,7 @@ try:
         path = Path(verts, codes)
         patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='white')
         ax.add_patch(patch)
+
     # # Start powerflow lines in the middle of the image
     # flow_total = 131
     # for flow in range(0,flow_total):
@@ -229,7 +234,7 @@ try:
     #     patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='white')
     #     ax.add_patch(patch)
  
-    # plt.savefig("SiAgSi.png")
+    plt.savefig("Ag-flow.png")
     plt.draw()
 
     plt.show()

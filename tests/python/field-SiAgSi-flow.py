@@ -84,6 +84,8 @@ epsilon_Ag = -28.05 + 1.525j
 index_Si = np.sqrt(epsilon_Si)
 index_Ag = np.sqrt(epsilon_Ag)
 
+print(index_Si)
+print(index_Ag)
 # # Values for 800 nm, taken from http://refractiveindex.info/
 # index_Si = 3.69410 + 0.0065435j
 # index_Ag = 0.18599 + 4.9886j
@@ -114,7 +116,7 @@ m[0, 2] = index_Si/nm
 print "x =", x
 print "m =", m
 
-npts = 1281
+npts = 241
 
 factor=2.5
 scan = np.linspace(-factor*x[0, 2], factor*x[0, 2], npts)
@@ -124,7 +126,7 @@ coordX.resize(npts*npts)
 coordZ.resize(npts*npts)
 coordY = np.zeros(npts*npts, dtype = np.float64)
 
-coord = np.vstack((coordX, coordX, coordZ)).transpose()
+coord = np.vstack((coordX, coordY, coordZ)).transpose()
 
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 terms, E, H = fieldnlay(x, m, coord)
@@ -136,6 +138,10 @@ Eabs = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
 Ec = E[0, :, :]
 Hc = H[0, :, :]
 Eangle = np.angle(E[0, :, 0])/np.pi*180
+
+P=[]
+for n in range(0, len(E[0])):
+    P.append(np.linalg.norm( np.cross(Ec[n], np.conjugate(Hc[n]) ).real/2 ))
 
 Habs= np.sqrt(Hr[0, :, 0]**2 + Hr[0, :, 1]**2 + Hr[0, :, 2]**2)
 Hangle = np.angle(H[0, :, 1])/np.pi*180
@@ -150,6 +156,7 @@ try:
     min_tick = 0.0
     max_tick = 1.0
 
+    # Eabs_data = np.resize(P, (npts, npts)).T
     Eabs_data = np.resize(Eabs, (npts, npts)).T
     # Eangle_data = np.resize(Eangle, (npts, npts)).T
     # Habs_data = np.resize(Habs, (npts, npts)).T
@@ -164,6 +171,7 @@ try:
     # Define scale ticks
     min_tick = min(min_tick, np.amin(Eabs_data))
     max_tick = max(max_tick, np.amax(Eabs_data))
+    #max_tick = 5
     # scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
     scale_ticks = np.linspace(min_tick, max_tick, 11)
 
@@ -171,7 +179,7 @@ try:
     ax.set_title('Eabs')
     cax = ax.imshow(Eabs_data, interpolation = 'nearest', cmap = cm.jet,
                     origin = 'lower'
-                    #, vmin = min_tick, vmax = max_tick
+                    , vmin = min_tick, vmax = max_tick
                     , extent = (min(scale_x), max(scale_x), min(scale_z), max(scale_z))
                     #,norm = LogNorm()
                     )
@@ -214,7 +222,7 @@ try:
         ax.add_patch(patch)
 
  
-    # plt.savefig("SiAgSi.png")
+    plt.savefig("SiAgSi-flow.png")
     plt.draw()
 
     plt.show()

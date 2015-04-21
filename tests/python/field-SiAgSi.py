@@ -82,7 +82,7 @@ print "m =", m
 
 npts = 281
 
-factor=4.5
+factor=2.5
 scan = np.linspace(-factor*x[0, 2], factor*x[0, 2], npts)
 
 coordX, coordZ = np.meshgrid(scan, scan)

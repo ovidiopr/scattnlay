@@ -42,7 +42,17 @@
 
 timespec diff(timespec start, timespec end);
 const double PI=3.14159265358979323846;
-  template<class T> inline T pow2(const T value) {return value*value;}
+template<class T> inline T pow2(const T value) {return value*value;}
+
+template <class VectorType, int dimensions> inline
+std::vector<VectorType> CrossProduct(std::vector<VectorType>& a, std::vector<VectorType>& b) {
+  if (a.size() != 3 || b.size() != 3) throw std::invalid_argument("Cross product only for 3D vectors!");
+  std::vector<VectorType> r (3);   
+  r[0] = a[1]*b[2]-a[2]*b[1];
+  r[1] = a[2]*b[0]-a[0]*b[2];
+  r[2] = a[0]*b[1]-a[1]*b[0];
+  return r;
+}
 
 //***********************************************************************************//
 // This is the main function of 'scattnlay', here we read the parameters as          //
@@ -235,7 +245,12 @@ int main(int argc, char *argv[]) {
     }
     // Field testing
     //double size=2.0*PI*1.0/6.0;
-    double size=0.001;
+    double WL=354; //nm
+    double core_r = WL/20.0;
+    double r_x = 2.0*PI*core_r/WL;
+
+
+    double size=r_x;
     double R = size/(2.0*PI);
     double from_coord = -3.0*size, to_coord = 3.0*size;
     std::vector<double> range;
@@ -256,14 +271,14 @@ int main(int argc, char *argv[]) {
     //int samples = range.size();
     std::vector<double> zero(samples, 0.0);
     std::vector<double> Xp, Yp, Zp;
-     // X line
-    Xp.insert(Xp.end(), range.begin(), range.end());
-    Yp.insert(Yp.end(), zero.begin(), zero.end());
-    Zp.insert(Zp.end(), zero.begin(), zero.end());
-    //Y line
-    Xp.insert(Xp.end(), zero.begin(), zero.end());
-    Yp.insert(Yp.end(), range.begin(), range.end());
-    Zp.insert(Zp.end(), zero.begin(), zero.end());
+    //  // X line
+    // Xp.insert(Xp.end(), range.begin(), range.end());
+    // Yp.insert(Yp.end(), zero.begin(), zero.end());
+    // Zp.insert(Zp.end(), zero.begin(), zero.end());
+    // //Y line
+    // Xp.insert(Xp.end(), zero.begin(), zero.end());
+    // Yp.insert(Yp.end(), range.begin(), range.end());
+    // Zp.insert(Zp.end(), zero.begin(), zero.end());
     // Z line
     Xp.insert(Xp.end(), zero.begin(), zero.end());
     Yp.insert(Yp.end(), zero.begin(), zero.end());
@@ -271,7 +286,11 @@ int main(int argc, char *argv[]) {
     int ncoord = Xp.size();
     // Test solid sphere
     x = {size};
-    m = {std::complex<double>(2.000000,0.00)};
+
+    std::complex<double> epsilon_Ag(-2.0, 0.28);
+    m = {std::sqrt(epsilon_Ag)};
+    //m = {std::complex<double>(2.000000,0.00)};
+
     //m = {std::complex<double>(1.414213562, 0.00)};
 
     L = x.size();
