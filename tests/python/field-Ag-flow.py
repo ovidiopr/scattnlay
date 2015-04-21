@@ -52,7 +52,7 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
     z_pos = flow_z[-1]
     x_idx = get_index(scale_x, x_pos)
     z_idx = get_index(scale_z, z_pos)
-    S=np.cross(Ec[npts*z_idx+x_idx], np.conjugate(Hc[npts*z_idx+x_idx]) ).real
+    S=np.cross(Ec[npts*z_idx+x_idx], Hc[npts*z_idx+x_idx]).real
     #if (np.linalg.norm(S)> 1e-4):
     Snorm_prev=S/np.linalg.norm(S)
     for n in range(0, nmax):
@@ -63,7 +63,7 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
         x_idx = get_index(scale_x, x_pos)
         z_idx = get_index(scale_z, z_pos)
         #print x_idx, z_idx
-        S=np.cross(Ec[npts*z_idx+x_idx], np.conjugate(Hc[npts*z_idx+x_idx]) ).real
+        S=np.cross(Ec[npts*z_idx+x_idx], Hc[npts*z_idx+x_idx]).real
         #if (np.linalg.norm(S)> 1e-4):
         Snorm=S/np.linalg.norm(S)
         #2. Evaluate displacement = half of the discrete and new position
@@ -134,7 +134,7 @@ coord = np.vstack((coordX, coordY, coordZ)).transpose()
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 terms, E, H = fieldnlay(x, m, coord)
 
-P = np.array(map(lambda n: np.linalg.norm( np.cross(E[0][n], np.conjugate(H[0][n]) ).real ), range(0, len(E[0]))))
+P = np.array(map(lambda n: np.linalg.norm( np.cross(E[0][n], H[0][n]).real ), range(0, len(E[0]))))
 
 Ec = E[0, :, :]
 Hc = H[0, :, :]
