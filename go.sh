@@ -99,6 +99,7 @@ export CFLAGS='-std=c++11'
 python setup.py build_ext --inplace
 cp scattnlay.so tests/python/
 cd tests/python/
+#./field-Ag-flow.py
 # ./lfield.py
 # ./field-dielectric-sphere.py
 # ./field.py

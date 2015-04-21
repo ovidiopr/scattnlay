@@ -1112,7 +1112,7 @@ namespace nmie {
       E[i] = c_zero;
       H[i] = c_zero;
     }
-
+    
     if (Rho > size_param_.back()) {
       l = size_param_.size();
       ml = c_one;

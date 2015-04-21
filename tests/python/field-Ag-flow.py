@@ -70,12 +70,8 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
         dpos = abs(scale_z[0]-scale_z[1])/2.0
         dx = dpos*Snorm[0]
         dz = dpos*Snorm[2]
-        if (dz < 0.0):
-            x_pos = x_pos-dx
-            z_pos = z_pos-dz
-        else:
-            x_pos = x_pos+dx
-            z_pos = z_pos+dz
+        x_pos = x_pos+dx
+        z_pos = z_pos+dz
         #3. Save result
         flow_x.append(x_pos)
         flow_z.append(z_pos)
@@ -162,10 +158,10 @@ try:
     scale_z = np.linspace(min(coordZ)*WL/2.0/np.pi/nm, max(coordZ)*WL/2.0/np.pi/nm, npts)
 
     # Define scale ticks
-    # min_tick = min(min_tick, np.amin(Eabs_data))
-    # max_tick = max(max_tick, np.amax(Eabs_data))
+    min_tick = np.amin(Eabs_data)
+    max_tick = np.amax(Eabs_data)
     # scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
-    #scale_ticks = np.linspace(min_tick, max_tick, 11)
+    scale_ticks = np.linspace(min_tick, max_tick, 11)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
     #ax.set_title('Eabs')
@@ -178,8 +174,8 @@ try:
     ax.axis("image")
 
     # # Add colorbar
-    # cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
-    # cbar.ax.set_yticklabels(['%5.3g' % (a) for a in scale_ticks]) # vertically oriented colorbar
+    cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
+    cbar.ax.set_yticklabels(['%5.3g' % (a) for a in scale_ticks]) # vertically oriented colorbar
     # pos = list(cbar.ax.get_position().bounds)
     # fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
