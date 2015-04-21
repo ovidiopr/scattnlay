@@ -1102,7 +1102,7 @@ namespace nmie {
       z = size_param_[l]*m[l];
       z1 = size_param_[l]*m1[l];
 
-      printf("\nz[%i] = %gr%+gi; z1[%i] = %gr%+gi\n", l, std::real(z), std::imag(z), l, std::real(z1), std::imag(z1));
+      //printf("\nz[%i] = %gr%+gi; z1[%i] = %gr%+gi\n", l, std::real(z), std::imag(z), l, std::real(z1), std::imag(z1));
 
       calcD1D3(z, D1z, D3z);
       calcD1D3(z1, D1z1, D3z1);
@@ -1112,7 +1112,7 @@ namespace nmie {
       for (int n = 0; n < nmax_; n++) {
         int n1 = n + 1;
 
-        printf("Psiz[%02i] = %11.4e,%11.4e\tZetaz[%02i] = %11.4e,%11.4e\tPsiz1[%02i] = %11.4e,%11.4e\tZetaz1[%02i] = %11.4e,%11.4e\n", n1, real(Psiz[n1]), imag(Psiz[n1]), n1, real(Zetaz[n1]), imag(Zetaz[n1]), n1, real(Psiz1[n1]), imag(Psiz1[n1]), n1, real(Zetaz1[n1]), imag(Zetaz1[n1]));
+        //printf("Psiz[%02i] = %11.4e,%11.4e\tZetaz[%02i] = %11.4e,%11.4e\tPsiz1[%02i] = %11.4e,%11.4e\tZetaz1[%02i] = %11.4e,%11.4e\n", n1, real(Psiz[n1]), imag(Psiz[n1]), n1, real(Zetaz[n1]), imag(Zetaz[n1]), n1, real(Psiz1[n1]), imag(Psiz1[n1]), n1, real(Zetaz1[n1]), imag(Zetaz1[n1]));
 
         denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
         denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
@@ -1123,7 +1123,7 @@ namespace nmie {
         T3 = (dln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - aln_[l + 1][n]*D3z1[n1]*Zetaz1[n1])*m[l]/m1[l];
         T4 =  cln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - bln_[l + 1][n]*D3z1[n1]*Zetaz1[n1];
 
-        printf("T1[%02i] = %11.4e,%11.4e\tT2[%02i] = %11.4e,%11.4e\tT3[%02i] = %11.4e,%11.4e\tT4[%02i] = %11.4e,%11.4e\n", n, real(D1z[n1]*T1 + T3), imag(D1z[n1]*T1 + T3), n, real(D1z[n1]*T2 + T4), imag(D1z[n1]*T2 + T4), n, real(D3z[n1]*T2 + T4), imag(D3z[n1]*T2 + T4), n, real(D3z[n1]*T1 + T3), imag(D3z[n1]*T1 + T3));
+        //printf("T1[%02i] = %11.4e,%11.4e\tT2[%02i] = %11.4e,%11.4e\tT3[%02i] = %11.4e,%11.4e\tT4[%02i] = %11.4e,%11.4e\n", n, real(D1z[n1]*T1 + T3), imag(D1z[n1]*T1 + T3), n, real(D1z[n1]*T2 + T4), imag(D1z[n1]*T2 + T4), n, real(D3z[n1]*T2 + T4), imag(D3z[n1]*T2 + T4), n, real(D3z[n1]*T1 + T3), imag(D3z[n1]*T1 + T3));
 
         // aln
         aln_[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
@@ -1138,22 +1138,20 @@ namespace nmie {
 
     // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
     for (int n = 0; n < nmax_; ++n) {
-      aln_[0][n] = 0.0;
-      bln_[0][n] = 0.0;
       //printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
       //   real(bln_[0][n]), imag(bln_[0][n]));
-      //if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
-      //else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
-      //if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
-      //else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
+      if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
+      else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
+      if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
+      else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
     }
 
-    for (int l = L; l >= 0; l--) {
-      for (int n = 0; n < nmax_; n++) {
-        printf("aln_[%02i, %02i] = %11.4e,%11.4e\tbln_[%02i, %02i] = %11.4e,%11.4e\tcln_[%02i, %02i] = %11.4e,%11.4e\tdln_[%02i, %02i] = %11.4e,%11.4e\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
-      }
-      printf("\n");
-    }
+//    for (int l = L; l >= 0; l--) {
+//      for (int n = 0; n < nmax_; n++) {
+//        printf("aln_[%02i, %02i] = %11.4e,%11.4e\tbln_[%02i, %02i] = %11.4e,%11.4e\tcln_[%02i, %02i] = %11.4e,%11.4e\tdln_[%02i, %02i] = %11.4e,%11.4e\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
+//      }
+//      printf("\n");
+//    }
 
     isExpCoeffsCalc_ = true;
   }  // end of   void MultiLayerMie::ExpanCoeffs()

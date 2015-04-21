@@ -62,6 +62,7 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
         z_pos = flow_z[-1]
         x_idx = get_index(scale_x, x_pos)
         z_idx = get_index(scale_z, z_pos)
+        #print x_idx, z_idx
         S=np.cross(Ec[npts*z_idx+x_idx], np.conjugate(Hc[npts*z_idx+x_idx]) ).real
         #if (np.linalg.norm(S)> 1e-4):
         Snorm=S/np.linalg.norm(S)
@@ -69,22 +70,26 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
         dpos = abs(scale_z[0]-scale_z[1])/2.0
         dx = dpos*Snorm[0]
         dz = dpos*Snorm[2]
-        x_pos = x_pos+dx
-        z_pos = z_pos+dz
+        if (dz < 0.0):
+            x_pos = x_pos-dx
+            z_pos = z_pos-dz
+        else:
+            x_pos = x_pos+dx
+            z_pos = z_pos+dz
         #3. Save result
         flow_x.append(x_pos)
         flow_z.append(z_pos)
     return flow_x, flow_z
 
 # # a)
-# WL=400 #nm
-# core_r = WL/20.0
-# epsilon_Ag = -2.0 + 10.0j
+#WL=400 #nm
+#core_r = WL/20.0
+#epsilon_Ag = -2.0 + 10.0j
 
 # # b)
-# WL=400 #nm
-# core_r = WL/20.0
-# epsilon_Ag = -2.0 + 1.0j
+#WL=400 #nm
+#core_r = WL/20.0
+#epsilon_Ag = -2.0 + 1.0j
 
 # c)
 WL=354 #nm
@@ -115,7 +120,7 @@ print "m =", m
 
 npts = 281
 
-factor=5
+factor=2
 scan = np.linspace(-factor*x[0, 0], factor*x[0, 0], npts)
 
 coordX, coordZ = np.meshgrid(scan, scan)
@@ -128,23 +133,11 @@ coord = np.vstack((coordX, coordY, coordZ)).transpose()
 
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 terms, E, H = fieldnlay(x, m, coord)
-Er = np.absolute(E)
-Hr = np.absolute(H)
-P=[]
-for n in range(0, len(E[0])):
-    P.append(np.linalg.norm( np.cross(E[0][n], np.conjugate(H[0][n]) ).real/2 ))
 
-print(min(P))
+P = np.array(map(lambda n: np.linalg.norm( np.cross(E[0][n], np.conjugate(H[0][n]) ).real ), range(0, len(E[0]))))
 
-# |E|/|Eo|
-Eabs = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
 Ec = E[0, :, :]
 Hc = H[0, :, :]
-Eangle = np.angle(E[0, :, 0])/np.pi*180
-
-Habs= np.sqrt(Hr[0, :, 0]**2 + Hr[0, :, 1]**2 + Hr[0, :, 2]**2)
-Hangle = np.angle(H[0, :, 1])/np.pi*180
-
 
 
 try:
@@ -201,7 +194,7 @@ try:
 
     from matplotlib.path import Path
     #import matplotlib.patches as patches
-    flow_total = 31
+    flow_total = 41
     for flow in range(0,flow_total):
         flow_x, flow_z = GetFlow(scale_x, scale_z, Ec, Hc,
                                  min(scale_x)+flow*(scale_x[-1]-scale_x[0])/(flow_total-1),
