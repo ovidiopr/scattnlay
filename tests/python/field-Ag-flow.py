@@ -124,7 +124,7 @@ print "m =", m
 
 npts = 281
 
-factor=7
+factor=3
 scan = np.linspace(-factor*x[0, 0], factor*x[0, 0], npts)
 
 coordX, coordZ = np.meshgrid(scan, scan)
@@ -159,20 +159,20 @@ try:
     #Eabs_data = np.resize(Habs, (npts, npts)).T
     #Eabs_data = np.resize(Hangle, (npts, npts)).T
 
-    fig, axs = plt.subplots(1, 2)#, sharey=True, sharex=True)
+    fig, ax = plt.subplots(1, 1)#, sharey=True, sharex=True)
 
-    idxs = np.where(np.abs(coordX) < 1e-10)
+    #idxs = np.where(np.abs(coordX) < 1e-10)
     #print H[0, idxs][0, :, 1]
-    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, P[idxs], fmt = 'r', label = 'Poynting vector')
+    #axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, P[idxs], fmt = 'r', label = 'Poynting vector')
     #axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, np.linalg.norm(E[0, idxs][0], axis = 1), fmt = 'g', label = 'E')
     # axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, np.linalg.norm(H[0, idxs][0], axis = 1), fmt = 'b', label = 'H')
     # axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 1].real, fmt = 'k', label = 'H.r')
     # axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 1].imag, fmt = 'b', label = 'H.i')
-    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 0].real, fmt = 'b', label = 'Px')
-    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 1].real, fmt = 'k', label = 'Py')
-    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 2].real, fmt = 'b', label = 'Pz')
+    #axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 0].real, fmt = 'b', label = 'Px')
+    #axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 1].real, fmt = 'k', label = 'Py')
+    #axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 2].real, fmt = 'b', label = 'Pz')
 
-    axs[0].legend()
+    #axs[0].legend()
 
     #fig.tight_layout()
     # Rescale to better show the axes
@@ -186,19 +186,19 @@ try:
     scale_ticks = np.linspace(min_tick, max_tick, 11)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
-    #axs[1].set_title('Eabs')
-    cax = axs[1].imshow(Eabs_data, interpolation = 'nearest', cmap = cm.jet,
+    #ax.set_title('Eabs')
+    cax = ax.imshow(Eabs_data, interpolation = 'nearest', cmap = cm.jet,
                         origin = 'lower'
                         #, vmin = min_tick, vmax = max_tick
                         , extent = (min(scale_x), max(scale_x), min(scale_z), max(scale_z))
                         #,norm = LogNorm()
                        )
-    axs[1].axis("image")
+    ax.axis("image")
 
     # # Add colorbar
     cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
     cbar.ax.set_yticklabels(['%5.3g' % (a) for a in scale_ticks]) # vertically oriented colorbar
-    # pos = list(cbar.axs[1].get_position().bounds)
+    # pos = list(cbar.ax.get_position().bounds)
     # fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
     plt.xlabel('Z, nm')
@@ -208,11 +208,11 @@ try:
     from matplotlib import patches
     s1 = patches.Arc((0, 0), 2.0*core_r, 2.0*core_r,  angle=0.0, zorder=2,
                      theta1=0.0, theta2=360.0, linewidth=1, color='black')
-    axs[1].add_patch(s1)
+    ax.add_patch(s1)
 
     from matplotlib.path import Path
     #import matplotlib.patches as patches
-    flow_total = 41
+    flow_total = 39
     for flow in range(0,flow_total):
         flow_x, flow_z = GetFlow(scale_x, scale_z, Ec, Hc,
                                  min(scale_x)+flow*(scale_x[-1]-scale_x[0])/(flow_total-1),
@@ -225,7 +225,7 @@ try:
         codes[0] = Path.MOVETO
         path = Path(verts, codes)
         patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='white')
-        axs[1].add_patch(patch)
+        ax.add_patch(patch)
     # # Start powerflow lines in the middle of the image
     # flow_total = 131
     # for flow in range(0,flow_total):
@@ -239,7 +239,7 @@ try:
     #     codes[0] = Path.MOVETO
     #     path = Path(verts, codes)
     #     patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='white')
-    #     axs[1].add_patch(patch)
+    #     ax.add_patch(patch)
  
     # plt.savefig("SiAgSi.png")
     plt.draw()
