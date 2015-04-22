@@ -63,8 +63,9 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
         z_pos = flow_z[-1]
         x_idx = get_index(scale_x, x_pos)
         z_idx = get_index(scale_z, z_pos)
-        #print x_idx, z_idx
-        S=np.cross(Ec[npts*z_idx+x_idx], Hc[npts*z_idx+x_idx])
+        Epoint = Ec[npts*z_idx+x_idx]
+        Hpoint = Hc[npts*z_idx+x_idx]
+        S=np.cross(Epoint, Hpoint.conjugate())
         #if (np.linalg.norm(S)> 1e-4):
         Snorm=S.real/np.linalg.norm(S)
         #Snorm=Snorm.real
@@ -92,7 +93,10 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
 # c)
 WL=354 #nm
 core_r = WL/20.0
-epsilon_Ag = -2.0 + 0.28j
+epsilon_Ag = -2.0 + 0.28j   #original
+#epsilon_ag = -1.59 + 0.01j  # strange
+#epsilon_Ag = 1.09 + 1.1j  # good
+#epsilon_Ag = -1.3 + 0.1j  # 
 
 # # d)
 # WL=367 #nm
@@ -107,18 +111,20 @@ index_Ag = np.sqrt(epsilon_Ag)
 # n2 = 0.565838 + 7.23262j
 nm = 1.0
 
-x = np.ones((1, 1), dtype = np.float64)
-x[0, 0] = 2.0*np.pi*core_r/WL
+x = np.ones((1, 2), dtype = np.float64)
+x[0, 0] = 2.0*np.pi*core_r/WL/4.0*3.0
+x[0, 1] = 2.0*np.pi*core_r/WL
 
-m = np.ones((1, 1), dtype = np.complex128)
+m = np.ones((1, 2), dtype = np.complex128)
 m[0, 0] = index_Ag/nm
+m[0, 1] = index_Ag/nm
 
 print "x =", x
 print "m =", m
 
 npts = 281
 
-factor=2
+factor=7
 scan = np.linspace(-factor*x[0, 0], factor*x[0, 0], npts)
 
 coordX, coordZ = np.meshgrid(scan, scan)
@@ -211,7 +217,8 @@ try:
         flow_x, flow_z = GetFlow(scale_x, scale_z, Ec, Hc,
                                  min(scale_x)+flow*(scale_x[-1]-scale_x[0])/(flow_total-1),
                                  min(scale_z),
-                                 npts*6)
+                                 #0.0,
+                                 npts*16)
         verts = np.vstack((flow_z, flow_x)).transpose().tolist()
         #codes = [Path.CURVE4]*len(verts)
         codes = [Path.LINETO]*len(verts)
