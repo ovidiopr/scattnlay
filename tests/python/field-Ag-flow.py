@@ -66,12 +66,12 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
         #print x_idx, z_idx
         S=np.cross(Ec[npts*z_idx+x_idx], Hc[npts*z_idx+x_idx])
         #if (np.linalg.norm(S)> 1e-4):
-        Snorm=S/np.linalg.norm(S)
-        Snorm=Snorm.real
+        Snorm=S.real/np.linalg.norm(S)
+        #Snorm=Snorm.real
         #2. Evaluate displacement = half of the discrete and new position
         dpos = abs(scale_z[0]-scale_z[1])/2.0
-        dx = dpos*Snorm[0]/abs(Snorm[2])
-        dz = dpos*Snorm[2]/abs(Snorm[2])
+        dx = dpos*Snorm[0];
+        dz = dpos*Snorm[2];
         x_pos = x_pos+dx
         z_pos = z_pos+dz
         #3. Save result
@@ -159,9 +159,12 @@ try:
     #print H[0, idxs][0, :, 1]
     axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, P[idxs], fmt = 'r', label = 'Poynting vector')
     #axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, np.linalg.norm(E[0, idxs][0], axis = 1), fmt = 'g', label = 'E')
-    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, np.linalg.norm(H[0, idxs][0], axis = 1), fmt = 'b', label = 'H')
-    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 1].real, fmt = 'k', label = 'H.r')
-    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 1].imag, fmt = 'b', label = 'H.i')
+    # axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, np.linalg.norm(H[0, idxs][0], axis = 1), fmt = 'b', label = 'H')
+    # axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 1].real, fmt = 'k', label = 'H.r')
+    # axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 1].imag, fmt = 'b', label = 'H.i')
+    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 0].real, fmt = 'b', label = 'Px')
+    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 1].real, fmt = 'k', label = 'Py')
+    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 2].real, fmt = 'b', label = 'Pz')
 
     axs[0].legend()
 
