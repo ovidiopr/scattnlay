@@ -55,6 +55,7 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
     S=np.cross(Ec[npts*z_idx+x_idx], Hc[npts*z_idx+x_idx]).real
     #if (np.linalg.norm(S)> 1e-4):
     Snorm_prev=S/np.linalg.norm(S)
+    Snorm_prev=Snorm_prev.real
     for n in range(0, nmax):
         #Get the next position
         #1. Find Poynting vector and normalize it
@@ -63,13 +64,14 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
         x_idx = get_index(scale_x, x_pos)
         z_idx = get_index(scale_z, z_pos)
         #print x_idx, z_idx
-        S=np.cross(Ec[npts*z_idx+x_idx], Hc[npts*z_idx+x_idx]).real
+        S=np.cross(Ec[npts*z_idx+x_idx], Hc[npts*z_idx+x_idx])
         #if (np.linalg.norm(S)> 1e-4):
         Snorm=S/np.linalg.norm(S)
+        Snorm=Snorm.real
         #2. Evaluate displacement = half of the discrete and new position
         dpos = abs(scale_z[0]-scale_z[1])/2.0
-        dx = dpos*Snorm[0]
-        dz = dpos*Snorm[2]
+        dx = dpos*Snorm[0]/abs(Snorm[2])
+        dz = dpos*Snorm[2]/abs(Snorm[2])
         x_pos = x_pos+dx
         z_pos = z_pos+dz
         #3. Save result
@@ -130,7 +132,7 @@ coord = np.vstack((coordX, coordY, coordZ)).transpose()
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 terms, E, H = fieldnlay(x, m, coord)
 
-P = np.array(map(lambda n: np.linalg.norm( np.cross(E[0][n], H[0][n]).real ), range(0, len(E[0]))))
+P = np.array(map(lambda n: np.linalg.norm(np.cross(E[0][n], H[0][n])).real, range(0, len(E[0]))))
 
 Ec = E[0, :, :]
 Hc = H[0, :, :]
@@ -151,7 +153,18 @@ try:
     #Eabs_data = np.resize(Habs, (npts, npts)).T
     #Eabs_data = np.resize(Hangle, (npts, npts)).T
 
-    fig, ax = plt.subplots(1,1)#, sharey=True, sharex=True)
+    fig, axs = plt.subplots(1, 2)#, sharey=True, sharex=True)
+
+    idxs = np.where(np.abs(coordX) < 1e-10)
+    #print H[0, idxs][0, :, 1]
+    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, P[idxs], fmt = 'r', label = 'Poynting vector')
+    #axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, np.linalg.norm(E[0, idxs][0], axis = 1), fmt = 'g', label = 'E')
+    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, np.linalg.norm(H[0, idxs][0], axis = 1), fmt = 'b', label = 'H')
+    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 1].real, fmt = 'k', label = 'H.r')
+    axs[0].errorbar(coordZ[idxs]*WL/2.0/np.pi/nm, H[0, idxs][0, :, 1].imag, fmt = 'b', label = 'H.i')
+
+    axs[0].legend()
+
     #fig.tight_layout()
     # Rescale to better show the axes
     scale_x = np.linspace(min(coordX)*WL/2.0/np.pi/nm, max(coordX)*WL/2.0/np.pi/nm, npts)
@@ -164,19 +177,19 @@ try:
     scale_ticks = np.linspace(min_tick, max_tick, 11)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
-    #ax.set_title('Eabs')
-    cax = ax.imshow(Eabs_data, interpolation = 'nearest', cmap = cm.jet,
-                    origin = 'lower'
-                    #, vmin = min_tick, vmax = max_tick
-                    , extent = (min(scale_x), max(scale_x), min(scale_z), max(scale_z))
-                    #,norm = LogNorm()
-                    )
-    ax.axis("image")
+    #axs[1].set_title('Eabs')
+    cax = axs[1].imshow(Eabs_data, interpolation = 'nearest', cmap = cm.jet,
+                        origin = 'lower'
+                        #, vmin = min_tick, vmax = max_tick
+                        , extent = (min(scale_x), max(scale_x), min(scale_z), max(scale_z))
+                        #,norm = LogNorm()
+                       )
+    axs[1].axis("image")
 
     # # Add colorbar
     cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
     cbar.ax.set_yticklabels(['%5.3g' % (a) for a in scale_ticks]) # vertically oriented colorbar
-    # pos = list(cbar.ax.get_position().bounds)
+    # pos = list(cbar.axs[1].get_position().bounds)
     # fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
     plt.xlabel('Z, nm')
@@ -186,7 +199,7 @@ try:
     from matplotlib import patches
     s1 = patches.Arc((0, 0), 2.0*core_r, 2.0*core_r,  angle=0.0, zorder=2,
                      theta1=0.0, theta2=360.0, linewidth=1, color='black')
-    ax.add_patch(s1)
+    axs[1].add_patch(s1)
 
     from matplotlib.path import Path
     #import matplotlib.patches as patches
@@ -202,7 +215,7 @@ try:
         codes[0] = Path.MOVETO
         path = Path(verts, codes)
         patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='white')
-        ax.add_patch(patch)
+        axs[1].add_patch(patch)
     # # Start powerflow lines in the middle of the image
     # flow_total = 131
     # for flow in range(0,flow_total):
@@ -216,7 +229,7 @@ try:
     #     codes[0] = Path.MOVETO
     #     path = Path(verts, codes)
     #     patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='white')
-    #     ax.add_patch(patch)
+    #     axs[1].add_patch(patch)
  
     # plt.savefig("SiAgSi.png")
     plt.draw()

@@ -950,7 +950,7 @@ namespace nmie {
       Qext_ += (n + n + 1.0)*(an_[i].real() + bn_[i].real());
       // Equation (28)
       Qsca_ += (n + n + 1.0)*(an_[i].real()*an_[i].real() + an_[i].imag()*an_[i].imag()
-                  + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
+                            + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
       // Equation (29)
       Qpr_ += ((n*(n + 2)/(n + 1))*((an_[i]*std::conj(an_[n]) + bn_[i]*std::conj(bn_[n])).real())
                + ((double)(n + n + 1)/(n*(n + 1)))*(an_[i]*std::conj(bn_[i])).real());
@@ -1154,7 +1154,7 @@ namespace nmie {
     }  // end of for all n
 
     // magnetic field
-    double hffact = 1.0/(cc_*mu_);
+    std::complex<double> hffact = ml/(cc_*mu_);
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
     }
