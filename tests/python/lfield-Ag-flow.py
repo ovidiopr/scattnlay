@@ -126,7 +126,8 @@ coord[:, 2] = scan
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 terms, E, H = fieldnlay(x, m, coord)
 
-P = np.array(map(lambda n:  np.cross(E[0][n], H[0][n])[2].real, range(0, len(E[0]))))
+#P = np.array(map(lambda n:  np.cross(E[0][n], H[0][n])[2].real, range(0, len(E[0]))))
+P = np.array(map(lambda n:  abs(np.cross(E[0][n], H[0][n])[2]), range(0, len(E[0]))))
 
 Ec = E[0, :, :]
 Hc = H[0, :, :]
@@ -146,6 +147,7 @@ try:
     plt.xlabel('X')
 #    plt.ylabel('|P|/|Eo|')
 
+    plt.savefig("Ag-abs(Px)-nmie.png")
     plt.draw()
     plt.show()
 finally:
