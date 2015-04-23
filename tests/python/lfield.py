@@ -91,7 +91,7 @@ try:
     ax.legend()
 
     plt.xlabel('X|Y|Z')
-    plt.ylabel('|E|/|Eo|')
+    plt.ylabel('|E|/|E$_0$|')
 
     plt.draw()
     plt.show()

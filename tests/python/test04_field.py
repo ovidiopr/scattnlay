@@ -25,41 +25,39 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# This test case calculates the electric field in the 
-# XY plane, for an spherical silver nanoparticle
-# embedded in glass.
+# This test case calculates the the electric field in the
+# XY plane, for a Luneburg lens, as described in:
+# B. R. Johnson, Applied Optics 35 (1996) 3286-3296.
 
-# Refractive index values correspond to a wavelength of
-# 400 nm. Maximum of the surface plasmon resonance (and,
-# hence, of electric field) is expected under those
-# conditions.
-import scattnlay
+# The Luneburg lens is a sphere of radius a, with a
+# radially-varying index of refraction, given by:
+# m(r) = [2 - (r/a)**1]**(1/2)
 
-#import os
-#path = os.path.dirname(scattnlay.__file__)
-#print(scattnlay.__file__)
+# For the calculations, the Luneburg lens was approximated
+# as a multilayered sphere with 500 equally spaced layers.
+# The refractive index of each layer is defined to be equal to
+# m(r) at the midpoint of the layer: ml = [2 - (xm/xL)**1]**(1/2),
+# with xm = (xl-1 + xl)/2, for l = 1,2,...,L. The size
+# parameter in the lth layer is xl = l*xL/500.
 
 from scattnlay import fieldnlay
 import numpy as np
 
-n1 = 1.53413
-n2 = 0.565838 + 7.23262j
-nm = 1.3205
+nL = 500.0
+Xmax = 60.0
 
-x = np.ones((1, 2), dtype = np.float64)
-x[0, 0] = 2.0*np.pi*nm*0.05/1.064
-x[0, 1] = 2.0*np.pi*nm*0.06/1.064
+x = np.ones((1, nL), dtype = np.float64)
+x[0] = np.arange(1.0, nL + 1.0)*Xmax/nL
 
-m = np.ones((1, 2), dtype = np.complex128)
-m[0, 0] = n1/nm
-m[0, 1] = n2/nm
+m = np.ones((1, nL), dtype = np.complex128)
+m[0] = np.sqrt((2.0 - ((x[0] - 0.5*Xmax/nL)/60.0)**2.0)) + 0.0j
 
 print "x =", x
 print "m =", m
 
 npts = 501
 
-scan = np.linspace(-4.0*x[0, 0], 4.0*x[0, 0], npts)
+scan = np.linspace(-10.0*x[0, -1], 10.0*x[0, -1], npts)
 
 coordX, coordY = np.meshgrid(scan, scan)
 coordX.resize(npts*npts)
@@ -90,8 +88,8 @@ try:
     fig = plt.figure()
     ax = fig.add_subplot(111)
     # Rescale to better show the axes
-    scale_x = np.linspace(min(coordX)*1.064/2.0/np.pi/nm, max(coordX)*1.064/2.0/np.pi/nm, npts)
-    scale_y = np.linspace(min(coordY)*1.064/2.0/np.pi/nm, max(coordY)*1.064/2.0/np.pi/nm, npts)
+    scale_x = np.linspace(min(coordX), max(coordX), npts)
+    scale_y = np.linspace(min(coordY), max(coordY), npts)
 
     # Define scale ticks
     min_tick = min(min_tick, np.amin(edata))
@@ -110,8 +108,8 @@ try:
     pos = list(cbar.ax.get_position().bounds)
     fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
-    plt.xlabel('X ( $\mu$m )')
-    plt.ylabel('Y ( $\mu$m )')
+    plt.xlabel('X')
+    plt.ylabel('Y')
 
     # This part draws the nanoshell
 #    from matplotlib import patches
@@ -132,7 +130,7 @@ try:
     plt.clf()
     plt.close()
 finally:
-    np.savetxt("field.txt", result, fmt = "%.5f")
+    np.savetxt("test04_field.txt", result, fmt = "%.5f")
     print result
 
 
