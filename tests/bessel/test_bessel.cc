@@ -33,6 +33,48 @@
 #include "../../bessel.h"
 #include "../../nmie.h"
 
+int nmax_ = -1;
+//Temporary variables
+std::vector<std::complex<double> > PsiZeta_;
+
+void calcD1D3(const std::complex<double> z, std::vector<std::complex<double> >& D1, std::vector<std::complex<double> >& D3) {
+    D1[nmax_] = std::complex<double>(0.0, 0.0);
+    const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
+    for (int n = nmax_; n > 0; n--) {
+      D1[n - 1] = static_cast<double>(n)*zinv - 1.0/(D1[n] + static_cast<double>(n)*zinv);
+    }
+    if (std::abs(D1[0]) > 100000.0)
+      throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
+
+    PsiZeta_.resize(nmax_ + 1);
+
+    // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
+    PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(std::cos(2.0*z.real()), std::sin(2.0*z.real()))
+                      *std::exp(-2.0*z.imag()));
+    D3[0] = std::complex<double>(0.0, 1.0);
+    for (int n = 1; n <= nmax_; n++) {
+      PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)*zinv - D1[n - 1])
+                                   *(static_cast<double>(n)*zinv - D3[n - 1]);
+      D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
+    }
+  }
+
+  void calcPsiZeta(std::complex<double> z, std::vector<std::complex<double> >& Psi, std::vector<std::complex<double> >& Zeta) {
+    std::complex<double> c_i(0.0, 1.0);
+    std::vector<std::complex<double> > D1(nmax_ + 1), D3(nmax_ + 1);
+    calcD1D3(z, D1, D3);
+    Psi.resize(nmax_+1);
+    Zeta.resize(nmax_+1);
+
+    Psi[0] = std::sin(z);
+    Zeta[0] = std::sin(z) - c_i*std::cos(z);
+    for (int n = 1; n <= nmax_; n++) {
+      Psi[n]  =  Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
+      Zeta[n] = Zeta[n - 1]*(static_cast<double>(n)/z - D3[n - 1]);
+    }
+  }
+
+
 int main(int argc, char *argv[]) {
   
   int n_small = 1, n_big = 15;
@@ -43,6 +85,8 @@ int main(int argc, char *argv[]) {
   std::complex<double> z_big_real(81.0, 0.0);
   std::complex<double> z_big_imag(0.0, 13.0);
   std::complex<double> z;
+
+  std::vector<std::complex<double> > D1, D3;
 
   int nm;
   // csj and cdj - complex argument spherical bessel first kind and derivative
@@ -82,16 +126,16 @@ int main(int argc, char *argv[]) {
   // 	 csh[n_print].real(), csh[n_print].imag());
   // printf("WA csj  =         e   r        e   i;\n");
     
-  // n_print = n_small;
-  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
-  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
-  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
-  // printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
-  // n_print = n_big;
-  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
-  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
-  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
-  // printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
+  n_print = n_small;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  n_print = n_big;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
 
   n_print = n_small;
   printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
@@ -103,6 +147,21 @@ int main(int argc, char *argv[]) {
 	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
 	 dZeta[n_print].real(), dZeta[n_print].imag());
   printf(" WA dPsi = +1.75388e-53r-6.94429e-54i;   WA dZeta = +8.58553e+55r+7.47397e+55i\n");
+
+  nmax_ = nm;
+  printf("----- Scattnlay (nmax_=%d)-----\n",nmax_);
+  calcPsiZeta(z, Psi, Zeta);
+
+  n_print = n_small;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  n_print = n_big;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
 
 
 
@@ -137,16 +196,16 @@ int main(int argc, char *argv[]) {
   // 	 csh[n_print].real(), csh[n_print].imag());
   // printf("WA csj  =         e   r        e   i;\n");
     
-  // n_print = n_small;
-  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
-  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
-  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
-  // printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
-  // n_print = n_big;
-  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
-  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
-  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
-  // printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
+  n_print = n_small;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  n_print = n_big;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
 
   n_print = n_small;
   printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
@@ -159,6 +218,20 @@ int main(int argc, char *argv[]) {
   	 dZeta[n_print].real(), dZeta[n_print].imag());
   printf(" WA dPsi = -1.03313e-11r-1.13267e-11i;   WA dZeta = -2.11402e+11r+8.34528e+10i\n");
 
+  nmax_ = nm;
+  printf("----- Scattnlay (nmax_=%d)-----\n",nmax_);
+  calcPsiZeta(z, Psi, Zeta);
+
+  n_print = n_small;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  n_print = n_big;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
 
   printf("===== Big ========\n");
   z = z_big;
@@ -190,16 +263,16 @@ int main(int argc, char *argv[]) {
   // 	 csh[n_print].real(), csh[n_print].imag());
   // printf("WA csj  =         e   r        e   i;\n");
     
-  // n_print = n_small;
-  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
-  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
-  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
-  // printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
-  // n_print = n_big;
-  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
-  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
-  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
-  // printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
+  n_print = n_small;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  n_print = n_big;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
 
   n_print = n_small;
   printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
@@ -211,6 +284,21 @@ int main(int argc, char *argv[]) {
   	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
   	 dZeta[n_print].real(), dZeta[n_print].imag());
   printf(" WA dPsi = -2.47740e+05r+3.05899e+05i;   WA dZeta = -6.13497e-07r-1.14967e-06i\n");
+
+  nmax_ = 100;
+  printf("----- Scattnlay (nmax_=%d)-----\n",nmax_);
+  calcPsiZeta(z, Psi, Zeta);
+
+  n_print = n_small;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  n_print = n_big;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
 
 
   printf("===== Big real========\n");
@@ -243,27 +331,46 @@ int main(int argc, char *argv[]) {
   // 	 csh[n_print].real(), csh[n_print].imag());
   // printf("WA csj  =         e   r        e   i;\n");
     
+  n_print = n_small;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  //
+  //SphericalHankelH1(1,81)*81
+  printf("WA Psi =-0.784462377 e        e   i;  WA Zeta = -0.784462377r+0.620299278i\n");
+  n_print = n_big;
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf(" WA Psi = 0.699946236744       e   i;   WA Zeta = 0.69994623  r+0.727239996i\n");
+
   // n_print = n_small;
-  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
-  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
-  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
-  // printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
+  // printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  // 	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+  // 	 dZeta[n_print].real(), dZeta[n_print].imag());
+  // printf("WA dPsi =         e   r        e   i;  WA dZeta = -6.20203e-01r-7.84344e-01i\n");
   // n_print = n_big;
-  // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
-  // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
-  // 	 Zeta[n_print].real(), Zeta[n_print].imag());
-  // printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
+  // printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  // 	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
+  // 	 dZeta[n_print].real(), dZeta[n_print].imag());
+  // printf(" WA dPsi =         e   r        e   i;   WA dZeta = -7.13982e-01r+6.86858e-01i\n");
+
+  nmax_ = 100 ;
+  printf("----- Scattnlay (nmax_=%d)-----\n",nmax_);
+  calcPsiZeta(z, Psi, Zeta);
 
   n_print = n_small;
-  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_print,
-  	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
-  	 dZeta[n_print].real(), dZeta[n_print].imag());
-  printf("WA dPsi =         e   r        e   i;  WA dZeta = -6.20203e-01r-7.84344e-01i\n");
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf("WA Psi =         e   r        e   i;  WA Zeta =         e   r        e   i\n");
   n_print = n_big;
-  printf("dPsi[%i] = %+10.5er%+10.5ei;  dZeta[%i] = %+10.5er%+10.5ei\n", n_big,
-  	 dPsi[n_print].real(), dPsi[n_print].imag(), n_print,
-  	 dZeta[n_print].real(), dZeta[n_print].imag());
-  printf(" WA dPsi =         e   r        e   i;   WA dZeta = -7.13982e-01r+6.86858e-01i\n");
+  printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_big,
+  	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
+  	 Zeta[n_print].real(), Zeta[n_print].imag());
+  printf(" WA Psi =         e   r        e   i;   WA Zeta =         e   r        e   i\n");
+
+
 
   printf("===== Big imag========\n");
   z = z_big_imag;

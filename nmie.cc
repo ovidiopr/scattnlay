@@ -37,7 +37,6 @@
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
-#include "bessel.h"
 #include "nmie.h"
 #include <array>
 #include <algorithm>
