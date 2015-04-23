@@ -97,7 +97,7 @@ try:
     scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
-    cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.afmhot,
+    cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.jet,
                     origin = 'lower', vmin = min_tick, vmax = max_tick,
                     extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y)),
                     norm = LogNorm())

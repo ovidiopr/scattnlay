@@ -1073,9 +1073,17 @@ namespace nmie {
     // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
     for (int n = 0; n < nmax_; ++n) {
       if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
-      else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
+      else {
+        //throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
+        printf("Warning: Potentially unstable calculation of aln (aln[0][%i] = %g, %gi)\n", n, aln_[0][n].real(), aln_[0][n].imag());
+        aln_[0][n] = 0.0;
+      }
       if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
-      else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
+      else {
+        //throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
+        printf("Warning: Potentially unstable calculation of bln (bln[0][%i] = %g, %gi)\n", n, bln_[0][n].real(), bln_[0][n].imag());
+        bln_[0][n] = 0.0;
+      }
     }
 
     isExpCoeffsCalc_ = true;
