@@ -118,7 +118,7 @@ print "m =", m
 
 npts = 241
 
-factor=2.5
+factor=2.2
 scan = np.linspace(-factor*x[0, 2], factor*x[0, 2], npts)
 
 coordX, coordZ = np.meshgrid(scan, scan)
@@ -209,7 +209,7 @@ try:
     from matplotlib.path import Path
     #import matplotlib.patches as patches
 
-    flow_total = 41
+    flow_total = 21
     for flow in range(0,flow_total):
         flow_x, flow_z = GetFlow(scale_x, scale_z, Ec, Hc,
                                  min(scale_x)+flow*(scale_x[-1]-scale_x[0])/(flow_total-1),

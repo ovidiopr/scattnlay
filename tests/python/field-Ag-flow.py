@@ -186,7 +186,7 @@ try:
     scale_ticks = np.linspace(min_tick, max_tick, 11)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
-    #ax.set_title('Eabs')
+    ax.set_title(r'$Re(E \times H)$')
     cax = ax.imshow(Eabs_data, interpolation = 'nearest', cmap = cm.jet,
                         origin = 'lower'
                         #, vmin = min_tick, vmax = max_tick
@@ -241,7 +241,7 @@ try:
     #     patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='white')
     #     ax.add_patch(patch)
  
-    # plt.savefig("SiAgSi.png")
+    plt.savefig("Ag-flow.png")
     plt.draw()
 
     plt.show()

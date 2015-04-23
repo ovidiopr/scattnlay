@@ -1,5 +1,6 @@
-![output example](/doc/SiAgSi.png)
+![output example](/doc/OutputExample.png)
 **Output example:** Field distribution inside layered Si\Ag\Si sphere
+and Poynting vector distribution in Ag sphere with poweflow lines
 calculated with Scattnlay.
 
 How to use scattnlay
