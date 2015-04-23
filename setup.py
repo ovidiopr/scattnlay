@@ -53,7 +53,7 @@ O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
       license = 'GPL',
       platforms = 'any',
       ext_modules = [Extension("scattnlay",
-                               ["nmie.cc", "bessel.cc", "py_nmie.cc", "scattnlay.cpp"],
+                               ["nmie.cc", "py_nmie.cc", "scattnlay.cpp"],
                                language = "c++",
                                include_dirs = [np.get_include()])], 
       extra_compile_args=['-std=c++11']
