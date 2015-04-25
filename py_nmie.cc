@@ -31,6 +31,29 @@
 #include "nmie.h"
 #include "py_nmie.h"
 
+// Same as ScattCoeffs in 'nmie.h' but uses double arrays to return the results (useful for python).
+// This is a workaround because I have not been able to return the results using 
+// std::vector<std::complex<double> >
+int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+                const int nmax, double anr[], double ani[], double bnr[], double bni[]) {
+
+  int i, result;
+  std::vector<std::complex<double> > an, bn;
+  an.resize(nmax);
+  bn.resize(nmax);
+
+  result = nmie::ScattCoeffs(L, pl, x, m, nmax, an, bn);
+
+  for (i = 0; i < result; i++) {
+    anr[i] = an[i].real();
+    ani[i] = an[i].imag();
+    bnr[i] = bn[i].real();
+    bni[i] = bn[i].imag();
+  }
+
+  return result;
+}
+
 // Same as nMie in 'nmie.h' but uses double arrays to return the results (useful for python).
 // This is a workaround because I have not been able to return the results using 
 // std::vector<std::complex<double> >

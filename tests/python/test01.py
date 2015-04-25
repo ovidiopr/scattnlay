@@ -50,23 +50,20 @@
 import scattnlay
 
 import os
-path = os.path.dirname(scattnlay.__file__)
-print(scattnlay.__file__)
 
 from scattnlay import scattnlay
 import numpy as np
-# import os
-# import inspect
-# inspect.getfile(scattnlay)
 
-x = np.ones((400, 5), dtype = np.float64)
-x[:, 4] = np.arange(0.25, 100.25, 0.25)
-x[:, 0] = 0.1**(1.0/3.0)*x[:, 4]
-x[:, 1] = 0.36**(1.0/3.0)*x[:, 4]
-x[:, 2] = 0.404**(1.0/3.0)*x[:, 4]
-x[:, 3] = 0.7706**(1.0/3.0)*x[:, 4]
+size = np.arange(0.25, 100.25, 0.25)
 
-m = np.ones((400, 5), dtype = np.complex128)
+x = np.ones((len(size), 5), dtype = np.float64)
+x[:, 0] = 0.1**(1.0/3.0)*size
+x[:, 1] = 0.36**(1.0/3.0)*size
+x[:, 2] = 0.404**(1.0/3.0)*size
+x[:, 3] = 0.7706**(1.0/3.0)*size
+x[:, 4] = size
+
+m = np.ones((len(size), 5), dtype = np.complex128)
 m[:, 0] *= 1.8 + 1.7j
 m[:, 1] *= 0.8 + 0.7j
 m[:, 2] *= 1.2 + 0.09j
@@ -95,7 +92,7 @@ try:
 
     plt.xlabel('X')
     
-    #plt.show()
+    plt.show()
 finally:
     np.savetxt("test01.txt", result, fmt = "%.5f")
     print result

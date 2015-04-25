@@ -54,6 +54,51 @@ namespace nmie {
 
 
   //**********************************************************************************//
+  // This function emulates a C call to calculate the scattering coefficients         //
+  // required to calculate both the near- and far-field parameters.                   //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   L: Number of layers                                                            //
+  //   pl: Index of PEC layer. If there is none just send -1                          //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
+  //         calculations. Only use it if you know what you are doing, otherwise      //
+  //         set this parameter to -1 and the function will calculate it.             //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   an, bn: Complex scattering amplitudes                                          //
+  //                                                                                  //
+  // Return value:                                                                    //
+  //   Number of multipolar expansion terms used for the calculations                 //
+  //**********************************************************************************//
+  int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
+
+    if (x.size() != L || m.size() != L)
+        throw std::invalid_argument("Declared number of layers do not fit x and m!");
+    try {
+      MultiLayerMie ml_mie;
+      ml_mie.SetLayersSize(x);
+      ml_mie.SetLayersIndex(m);
+      ml_mie.SetPECLayer(pl);
+      ml_mie.SetMaxTerms(nmax);
+
+      ml_mie.calcScattCoeffs();
+
+      an = ml_mie.GetAn();
+      bn = ml_mie.GetBn();
+
+      return ml_mie.GetMaxTerms();
+    } catch(const std::invalid_argument& ia) {
+      // Will catch if  ml_mie fails or other errors.
+      std::cerr << "Invalid argument: " << ia.what() << std::endl;
+      throw std::invalid_argument(ia);
+      return -1;
+    }
+    return 0;
+  }
+
+  //**********************************************************************************//
   // This function emulates a C call to calculate the actual scattering parameters    //
   // and amplitudes.                                                                  //
   //                                                                                  //
@@ -89,26 +134,28 @@ namespace nmie {
     if (Theta.size() != nTheta)
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
-      MultiLayerMie multi_layer_mie;
-      multi_layer_mie.SetLayersSize(x);
-      multi_layer_mie.SetLayersIndex(m);
-      multi_layer_mie.SetAngles(Theta);
-      multi_layer_mie.SetPECLayer(pl);
-      multi_layer_mie.SetMaxTerms(nmax);
+      MultiLayerMie ml_mie;
+      ml_mie.SetLayersSize(x);
+      ml_mie.SetLayersIndex(m);
+      ml_mie.SetAngles(Theta);
+      ml_mie.SetPECLayer(pl);
+      ml_mie.SetMaxTerms(nmax);
 
-      multi_layer_mie.RunMieCalculation();
+      ml_mie.RunMieCalculation();
 
-      *Qext = multi_layer_mie.GetQext();
-      *Qsca = multi_layer_mie.GetQsca();
-      *Qabs = multi_layer_mie.GetQabs();
-      *Qbk = multi_layer_mie.GetQbk();
-      *Qpr = multi_layer_mie.GetQpr();
-      *g = multi_layer_mie.GetAsymmetryFactor();
-      *Albedo = multi_layer_mie.GetAlbedo();
-      S1 = multi_layer_mie.GetS1();
-      S2 = multi_layer_mie.GetS2();
+      *Qext = ml_mie.GetQext();
+      *Qsca = ml_mie.GetQsca();
+      *Qabs = ml_mie.GetQabs();
+      *Qbk = ml_mie.GetQbk();
+      *Qpr = ml_mie.GetQpr();
+      *g = ml_mie.GetAsymmetryFactor();
+      *Albedo = ml_mie.GetAlbedo();
+      S1 = ml_mie.GetS1();
+      S2 = ml_mie.GetS2();
+
+      return ml_mie.GetMaxTerms();
     } catch(const std::invalid_argument& ia) {
-      // Will catch if  multi_layer_mie fails or other errors.
+      // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
       return -1;
@@ -250,16 +297,18 @@ namespace nmie {
       if (f.size() != 3)
         throw std::invalid_argument("Field H is not 3D!");
     try {
-      MultiLayerMie multi_layer_mie;
-      //multi_layer_mie.SetPECLayer(pl); // TODO add PEC layer to field plotting
-      multi_layer_mie.SetLayersSize(x);
-      multi_layer_mie.SetLayersIndex(m);
-      multi_layer_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
-      multi_layer_mie.RunFieldCalculation();
-      E = multi_layer_mie.GetFieldE();
-      H = multi_layer_mie.GetFieldH();
+      MultiLayerMie ml_mie;
+      //ml_mie.SetPECLayer(pl); // TODO add PEC layer to field plotting
+      ml_mie.SetLayersSize(x);
+      ml_mie.SetLayersIndex(m);
+      ml_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
+      ml_mie.RunFieldCalculation();
+      E = ml_mie.GetFieldE();
+      H = ml_mie.GetFieldH();
+
+      return ml_mie.GetMaxTerms();
     } catch(const std::invalid_argument& ia) {
-      // Will catch if  multi_layer_mie fails or other errors.
+      // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
       return - 1;
@@ -723,7 +772,7 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  void MultiLayerMie::ScattCoeffs() {
+  void MultiLayerMie::calcScattCoeffs() {
 
     isScaCoeffsCalc_ = false;
 
@@ -873,7 +922,7 @@ namespace nmie {
       }
     }  // end of for an and bn terms
     isScaCoeffsCalc_ = true;
-  }  // end of MultiLayerMie::ScattCoeffs(...)
+  }  // end of MultiLayerMie::calcScattCoeffs()
 
 
   //**********************************************************************************//
@@ -917,7 +966,7 @@ namespace nmie {
     isMieCalculated_ = false;
 
     // Calculate scattering coefficients
-    ScattCoeffs();
+    calcScattCoeffs();
 
     if (!isScaCoeffsCalc_) // TODO seems to be unreachable
       throw std::invalid_argument("Calculation of scattering coefficients failed!");
@@ -996,7 +1045,7 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  void MultiLayerMie::ExpanCoeffs() {
+  void MultiLayerMie::calcExpanCoeffs() {
     if (!isScaCoeffsCalc_)
       throw std::invalid_argument("(ExpanCoeffs) You should calculate external coefficients first!");
 
@@ -1086,7 +1135,7 @@ namespace nmie {
     }
 
     isExpCoeffsCalc_ = true;
-  }  // end of   void MultiLayerMie::ExpanCoeffs()
+  }  // end of   void MultiLayerMie::calcExpanCoeffs()
 
 
   //**********************************************************************************//
@@ -1194,10 +1243,10 @@ namespace nmie {
     double Rho, Theta, Phi;
 
     // Calculate scattering coefficients an_ and bn_
-    ScattCoeffs();
+    calcScattCoeffs();
 
     // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
-    ExpanCoeffs();
+    calcExpanCoeffs();
 
     long total_points = coords_[0].size();
     E_.resize(total_points);

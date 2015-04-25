@@ -33,7 +33,7 @@
 #include <vector>
 
 namespace nmie {
-  int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> > &an, std::vector<std::complex<double> > &bn);
+  int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn);
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
@@ -45,6 +45,7 @@ namespace nmie {
     // Run calculation
     void RunMieCalculation();
     void RunFieldCalculation();
+    void calcScattCoeffs();
 
     // Return calculation results
     double GetQext();
@@ -122,8 +123,7 @@ namespace nmie {
                        const double& Pi, const double& Tau, const double& n,
                        std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
                        std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
-    void ScattCoeffs();
-    void ExpanCoeffs();
+    void calcExpanCoeffs();
 
     void calcField(const double Rho, const double Theta, const double Phi,
                    std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);

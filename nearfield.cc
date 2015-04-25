@@ -64,18 +64,20 @@ int main(int argc, char *argv[]) {
     args.assign(argv, argv + argc);
     std::string error_msg(std::string("Insufficient parameters.\nUsage: ") + args[0]
                           + " -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] "
-                          + "[-t ti tf nt] [-c comment]\n");
-    enum mode_states {read_L, read_x, read_mr, read_mi, read_ti, read_tf, read_nt, read_comment};
+                          + "[-p xi xf nx yi yf ny zi zf nz] [-c comment]\n");
+    enum mode_states {read_L, read_x, read_mr, read_mi, read_xi, read_xf, read_nx, read_yi, read_yf, read_ny, read_zi, read_zf, read_nz, read_comment};
     // for (auto arg : args) std::cout<< arg <<std::endl;
     std::string comment;
     int has_comment = 0;
     unsigned int L = 0;
-    std::vector<double> x, Theta;
-    std::vector<std::complex<double> > m, S1, S2;
-    double Qext, Qabs, Qsca, Qbk, Qpr, g, Albedo;
+    std::vector<double> x, Xp, Yp, Zp;
+    std::vector<std::complex<double> > m;
+    std::vector<std::vector<std::complex<double> > > E, H;
 
-    double ti = 0.0, tf = 90.0;
-    int nt = 0;
+    double xi = 0.0, xf = 0.0, yi = 0.0, yf = 0.0, zi = 0.0, zf = 0.0;
+    double dx = 0.0, dy = 0.0, dz = 0.0;
+    int nx = 0, ny = 0, nz = 0;
+    long total_points = 0;
     if (argc < 5) throw std::invalid_argument(error_msg);
 
     int mode = -1;
@@ -91,15 +93,15 @@ int main(int argc, char *argv[]) {
         continue;
       }
 
-      if (arg == "-t") {
+      if (arg == "-p") {
         if ((mode != read_x) && (mode != read_comment))
           throw std::invalid_argument(std::string("Unfinished layer!\n") + error_msg);
-        mode = read_ti;
+        mode = read_xi;
         continue;
       }
 
       if (arg == "-c") {
-        if ((mode != read_x) && (mode != read_nt))
+        if ((mode != read_x) && (mode != read_nz))
           throw std::invalid_argument(std::string("Unfinished layer or theta!\n") + error_msg);
         mode = read_comment;
         continue;
@@ -131,23 +133,70 @@ int main(int argc, char *argv[]) {
         continue;
       }
 
-      if (mode == read_ti) {
-        ti = std::stod(arg);
-        mode = read_tf;
+      if (mode == read_xi) {
+        xi = std::stod(arg);
+        mode = read_xf;
         continue;
       }
 
-      if (mode == read_tf) {
-        tf = std::stod(arg);
-        mode = read_nt;
+      if (mode == read_xf) {
+        xf = std::stod(arg);
+        mode = read_nx;
         continue;
       }
 
-      if (mode == read_nt) {
-        nt = std::stoi(arg);
-        Theta.resize(nt);
-        S1.resize(nt);
-        S2.resize(nt);
+      if (mode == read_nx) {
+        nx = std::stoi(arg);
+        mode = read_yi;
+        continue;
+      }
+
+      if (mode == read_yi) {
+        yi = std::stod(arg);
+        mode = read_yf;
+        continue;
+      }
+
+      if (mode == read_yf) {
+        yf = std::stod(arg);
+        mode = read_ny;
+        continue;
+      }
+
+      if (mode == read_ny) {
+        ny = std::stoi(arg);
+        mode = read_zi;
+        continue;
+      }
+
+      if (mode == read_zi) {
+        zi = std::stod(arg);
+        mode = read_zf;
+        continue;
+      }
+
+      if (mode == read_zf) {
+        zf = std::stod(arg);
+        mode = read_nz;
+        continue;
+      }
+
+      if (mode == read_nz) {
+        nz = std::stoi(arg);
+        total_points = nx*ny*nz;
+        if (total_points <= 0)
+          throw std::invalid_argument(std::string("Nothing to do! You must define the grid to calculate the fields.\n") + error_msg);
+
+        Xp.resize(total_points);
+        Yp.resize(total_points);
+        Zp.resize(total_points);
+
+        E.resize(total_points);
+        H.resize(total_points);
+        for (long i = 0; i < total_points; i++) {
+          E[i].resize(3);
+          H[i].resize(3);
+        }
         continue;
       }
 
@@ -163,30 +212,44 @@ int main(int argc, char *argv[]) {
     if ( (0 == m.size()) || ( 0 == x.size()) )
       throw std::invalid_argument(std::string("Empty structure!\n") + error_msg);
 
-    if (nt < 0) {
-      printf("Error reading Theta.\n");
-      return -1;
-    } else if (nt == 1) {
-      Theta[0] = ti*PI/180.0;
-    } else {
-      for (int i = 0; i < nt; i++) {
-        Theta[i] = (ti + (double)i*(tf - ti)/(nt - 1))*PI/180.0;
+    if (nx == 1)
+      dx = 0.0;
+    else
+      dx = (xf - xi)/(nx - 1);
+
+    if (ny == 1)
+      dy = 0.0;
+    else
+      dy = (yf - yi)/(ny - 1);
+
+    if (nz == 1)
+      dz = 0.0;
+    else
+      dz = (zf - zi)/(nz - 1);
+
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        for (int k = 0; k < nz; k++) {
+          Xp[i*ny + j*nz + k] = xi + (double)i*dx;
+          Yp[i*ny + j*nz + k] = yi + (double)j*dy;
+          Zp[i*ny + j*nz + k] = zi + (double)k*dz;
+        }
       }
     }
 
-    nmie::nMie(L, -1, x, m, nt, Theta, -1, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+    nmie::nField(L, -1, x, m, -1, total_points, Xp, Yp, Zp, E, H);
 
-    if (has_comment) {
-      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-    } else {
-      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-    }
+    if (has_comment)
+      printf("%6s\n", comment.c_str());
 
-    if (nt > 0) {
-      printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i\n");
+    if (total_points > 0) {
+      printf("         X,          Y,          Z,         Ex.r,         Ex.i,         Ey.r,         Ey.i,         Ez.r,         Ez.i,         Hx.r,         Hx.i,         Hy.r,         Hy.i,         Hz.r,         Hz.i\n");
 
-      for (int i = 0; i < nt; i++) {
-        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
+      for (long i = 0; i < total_points; i++) {
+        printf("%10.7f, %10.7f, %10.7f, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n",
+               Xp[i], Yp[i], Zp[i],
+               E[i][0].real(), E[i][0].imag(), E[i][1].real(), E[i][1].imag(), E[i][2].real(), E[i][2].imag(),
+               H[i][0].real(), H[i][0].imag(), H[i][1].real(), H[i][1].imag(), H[i][2].real(), H[i][2].imag());
       }
     }
 

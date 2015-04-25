@@ -2,8 +2,9 @@
 # -*- coding: UTF-8 -*-
 #
 #    Copyright (C) 2009-2015 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
+#    Copyright (C) 2013-2015 Konstantin Ladutenko <kostyfisik@gmail.com>
 #
-#    This file is part of python-scattnlay
+#    This file is part of scattnlay
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -26,18 +27,11 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # This test case calculates the electric field in the 
-# XY plane, for an spherical silver nanoparticle
-# embedded in glass.
+# XY plane, for a silver nanoshell embedded in water.
 
-# Refractive index values correspond to a wavelength of
-# 400 nm. Maximum of the surface plasmon resonance (and,
-# hence, of electric field) is expected under those
-# conditions.
-import scattnlay
-
-#import os
-#path = os.path.dirname(scattnlay.__file__)
-#print(scattnlay.__file__)
+# Refractive index values correspond to the wavelength
+# where maximum of the surface plasmon resonance (and,
+# hence, of electric field) is expected.
 
 from scattnlay import fieldnlay
 import numpy as np
@@ -132,7 +126,7 @@ try:
     plt.clf()
     plt.close()
 finally:
-    np.savetxt("field.txt", result, fmt = "%.5f")
+    np.savetxt("field-nanoshell.txt", result, fmt = "%.5f")
     print result
 
 

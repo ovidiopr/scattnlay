@@ -28,6 +28,9 @@
 #include <complex>
 #include <vector>
 
+int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+                const int nmax, double anr[], double ani[], double bnr[], double bni[]);
+
 int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
          const int nTheta, std::vector<double>& Theta, const int nmax,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,

@@ -42,10 +42,37 @@ cdef inline double *npy2c(np.ndarray a):
     return <double *>(a.data)
 
 cdef extern from "py_nmie.h":
+    cdef int ScattCoeffs(int L, int pl, vector[double] x, vector[complex] m, int nmax, double anr[], double ani[], double bnr[], double bni[])
     cdef int nMie(int L, int pl, vector[double] x, vector[complex] m, int nTheta, vector[double] Theta, int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, double S1r[], double S1i[], double S2r[], double S2i[])
     cdef int nField(int L, int pl, vector[double] x, vector[complex] m, int nmax, int nCoords, vector[double] Xp, vector[double] Yp, vector[double] Zp, double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[], double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[])
 
-def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t pl = -1, np.int_t nmax = -1):
+def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.int_t nmax, np.int_t pl = -1):
+    cdef Py_ssize_t i
+
+    cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
+
+    cdef np.ndarray[np.complex128_t, ndim = 2] an = np.zeros((x.shape[0], nmax), dtype = np.complex128)
+    cdef np.ndarray[np.complex128_t, ndim = 2] bn = np.zeros((x.shape[0], nmax), dtype = np.complex128)
+
+    cdef np.ndarray[np.float64_t, ndim = 1] anr
+    cdef np.ndarray[np.float64_t, ndim = 1] ani
+    cdef np.ndarray[np.float64_t, ndim = 1] bnr
+    cdef np.ndarray[np.float64_t, ndim = 1] bni
+
+    for i in range(x.shape[0]):
+        anr = np.zeros(nmax, dtype = np.float64)
+        ani = np.zeros(nmax, dtype = np.float64)
+        bnr = np.zeros(nmax, dtype = np.float64)
+        bni = np.zeros(nmax, dtype = np.float64)
+
+        terms[i] = ScattCoeffs(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, npy2c(anr), npy2c(ani), npy2c(bnr), npy2c(bni))
+
+        an[i] = anr.copy('C') + 1.0j*ani.copy('C')
+        bn[i] = bnr.copy('C') + 1.0j*bni.copy('C')
+
+    return terms, an, bn
+
+def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t pl = -1):
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
@@ -79,8 +106,7 @@ def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, 
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 
-#def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords = np.zeros((0, 3), dtype = np.float64), np.int_t pl = 0, np.int_t nmax = 0):
-def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords, np.int_t pl = 0, np.int_t nmax = 0):
+def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords, np.int_t nmax = -1, np.int_t pl = -1):
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
