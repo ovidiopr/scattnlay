@@ -421,7 +421,7 @@ namespace nmie {
   // ********************************************************************** //
   // Modify size of all layers                                             //
   // ********************************************************************** //
-  void MultiLayerMie::SetLayersSize(const std::vector<double>& layer_size) {
+  void MultiLayerMie::SetaAllLayersSize(const std::vector<double>& layer_size) {
     isExpCoeffsCalc_ = false;
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
@@ -442,7 +442,7 @@ namespace nmie {
   // ********************************************************************** //
   // Modify refractive index of all layers                                  //
   // ********************************************************************** //
-  void MultiLayerMie::SetLayersIndex(const std::vector< std::complex<double> >& index) {
+  void MultiLayerMie::SetAllLayersIndex(const std::vector< std::complex<double> >& index) {
     isExpCoeffsCalc_ = false;
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;

@@ -69,9 +69,9 @@ namespace nmie {
     // Modify refractive index of the layer
     void SetLayerIndex(std::vector< std::complex<double> > layer_index, int layer_position = 0);
     // Modify size of all layers
-    void SetLayersSize(const std::vector<double>& layer_size);
+    void SetAllLayersSize(const std::vector<double>& layer_size);
     // Modify refractive index of all layers
-    void SetLayersIndex(const std::vector< std::complex<double> >& index);
+    void SetAllLayersIndex(const std::vector< std::complex<double> >& index);
     // Modify scattering (theta) angles
     void SetAngles(const std::vector<double>& angles);
     // Modify coordinates for field calculation
