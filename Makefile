@@ -43,7 +43,7 @@ builddeb:
 	# build the package
 	export CFLAGS='-std=c++11' && dpkg-buildpackage -i -I -rfakeroot
 
-standalone: standalone.cc nmie.cc
+standalone: farfield.cc nearfield.cc nmie.cc
 	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 farfield.cc nmie.cc  -lm -o scattnlay
 	mv scattnlay ../
 	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 nearfield.cc nmie.cc  -lm -o fieldnlay
