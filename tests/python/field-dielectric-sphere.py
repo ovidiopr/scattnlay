@@ -26,112 +26,69 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # This test case calculates the electric field in the 
-# XY plane, for an spherical silver nanoparticle
-# embedded in glass.
-
-# Refractive index values correspond to a wavelength of
-# 400 nm. Maximum of the surface plasmon resonance (and,
-# hence, of electric field) is expected under those
-# conditions.
+# small dielectric sphere.
 import scattnlay
-
 import os
-path = os.path.dirname(scattnlay.__file__)
-print(scattnlay.__file__)
-
 from scattnlay import fieldnlay
 import numpy as np
 
-x = np.ones((1, 1), dtype = np.float64)
-x[0, 0] = 0.001
-#x[0, 1] = 2.0*np.pi*0.06/1.064
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
-m = np.ones((1, 1), dtype = np.complex128)
-m[0, 0] = 2.0
-#m[0, 1] = (0.565838 + 7.23262j)/1.3205
+def is_test_coord_passed(x,m,coord):
+    terms, E, H = fieldnlay(x, m, coord)
+    Er = np.absolute(E)
+    Eabs = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
+    analytic_E = (3/(m[0,0]**2+2)).real
+    for value in Eabs:
+        #print(value, value-analytic_E)
+        if ( value-analytic_E > 10e-7 ):
+            print(bcolors.FAIL+"Test failed: value="+str(value)+" for m="+str(m[0,0])
+                   +" instead of analytic Eabs="+str(analytic_E))
+            print("Coords",coord)
+            return False
+    return True
 
-npts = 501
+def is_test_all_coord_passed(x,m):
+    npts = 5
+    scan = np.linspace(0.999*x[0, 0], -0.999*x[0, 0], npts)
+    zero = np.zeros(npts, dtype = np.float64)
+    coordZ = np.vstack((zero, zero, scan)).transpose()
+    coordY = np.vstack((zero, scan, zero)).transpose()
+    coordX = np.vstack((scan, zero, zero)).transpose()
+    if (is_test_coord_passed(x,m,coordX)
+        and is_test_coord_passed(x,m,coordY)
+        and is_test_coord_passed(x,m,coordY)):
+        return True
+    return False
 
-scan = np.linspace(-1.5*x[0, 0], 1.5*x[0, 0], npts)
+def test_sphere():
+    path = os.path.dirname(scattnlay.__file__)
+    print(bcolors.HEADER+"===== Small dielectric sphere test ====="+bcolors.ENDC)
+    print("Test for python module of Scattnlay: "+scattnlay.__file__)
+    #Set the sphere
+    x = np.ones((1, 1), dtype = np.float64)
+    x[0, 0] = 0.0001
+    m = np.ones((1, 1), dtype = np.complex128)
+    m[0, 0] = 1.0
+    delta_m = 0.712
+    for n in xrange(0,15):
+        m[0,0] = 1.0 + delta_m*n
+        print("Testing index m="+str(m[0,0]))
+        if not is_test_all_coord_passed(x,m):
+            print(bcolors.FAIL+"Test for dielectric sphere failed!"+bcolors.ENDC)
+            return False
+    print(bcolors.OKGREEN+"All tests for dielectric sphere passed!"+bcolors.ENDC)
+    return True
 
-coordX, coordY = np.meshgrid(scan, scan)
-coordX.resize(npts*npts)
-coordY.resize(npts*npts)
-coordZ = np.zeros(npts*npts, dtype = np.float64)
+test_sphere()
 
-coord = np.vstack((coordX, coordY, coordZ)).transpose()
-
-terms, E, H = fieldnlay(x, m, coord)
-
-Er = E
-
-# |E|/|Eo|
-#Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
-Eh = np.absolute(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
-
-print("max: "+str(Eh)+" min: "+str(min(E)))
-result = np.vstack((coordX, coordY, coordZ, Eh)).transpose()
-
-try:
-    import matplotlib.pyplot as plt
-    from matplotlib import cm
-    from matplotlib.colors import LogNorm
-
-    min_tick = 0.25
-    max_tick = 1.0
-
-    edata = np.resize(Eh, (npts, npts))
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    # Rescale to better show the axes
-    scale_x = np.linspace(min(coordX), max(coordX), npts)
-    scale_y = np.linspace(min(coordY), max(coordY), npts)
-
-    # Define scale ticks
-    min_tick = max(0.1, min(min_tick, np.amin(edata)))
-    max_tick = max(max_tick, np.amax(edata))
-    #scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
-    scale_ticks = np.linspace(min_tick,max_tick, 5)
-    #scale_ticks = np.linspace(0, 2, 11)
-
-    # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
-    cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.jet,
-                    origin = 'lower', vmin = min_tick, vmax = max_tick,
-                    #origin = 'lower', vmin = 0.16, vmax = 0.18,
-                    extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y))
-                    #,norm = LogNorm()
-                    )
-
-    # Add colorbar
-    cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
-    cbar.ax.set_yticklabels(['%3.1e' % (a) for a in scale_ticks]) # vertically oriented colorbar
-    pos = list(cbar.ax.get_position().bounds)
-    fig.text(pos[0] - 0.02, 0.925, 'E$^2$/E$_0$$^2$', fontsize = 14)
-
-    plt.xlabel('X')
-    plt.ylabel('Y')
-
-    # # This part draws the nanoshell
-    # from matplotlib import patches
-
-    # s1 = patches.Arc((0, 0), 2.0*x[0, 0], 2.0*x[0, 0], angle=0.0, zorder=2,
-    #                   theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
-    # ax.add_patch(s1)
-
-    # s2 = patches.Arc((0, 0), 2.0*x[0, 0], 2.0*x[0, 0], angle=0.0, zorder=2,
-    #                   theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
-    # ax.add_patch(s2)
-    # # End of drawing
-
-    plt.draw()
-
-    plt.show()
-
-    plt.clf()
-    plt.close()
-finally:
-    np.savetxt("field.txt", result, fmt = "%.5f")
-    print result
 
 
