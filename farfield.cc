@@ -1,5 +1,6 @@
 //**********************************************************************************//
-//    Copyright (C) 2009-2013  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2009-2015  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2013-2015  Konstantin Ladutenko <kostyfisik@gmail.com>          //
 //                                                                                  //
 //    This file is part of scattnlay                                                //
 //                                                                                  //
@@ -95,19 +96,21 @@ int main(int argc, char *argv[]) {
         mode = read_L;
         continue;
       }
+
       if (arg == "-t") {
         if ((mode != read_x) && (mode != read_comment))
-          throw std::invalid_argument(std::string("Unfinished layer!\n")
-                                                         +error_msg);
+          throw std::invalid_argument(std::string("Unfinished layer!\n") + error_msg);
         mode = read_ti;
         continue;
       }
+
       if (arg == "-c") {
         if ((mode != read_x) && (mode != read_nt))
           throw std::invalid_argument(std::string("Unfinished layer or theta!\n") + error_msg);
         mode = read_comment;
         continue;
       }
+
       // Reading data. For invalid date the exception will be thrown
       // with the std:: and catched in the end.
       if (mode == read_L) {
@@ -115,47 +118,37 @@ int main(int argc, char *argv[]) {
         mode = read_x;
         continue;
       }
+
       if (mode == read_x) {
         x.push_back(std::stod(arg));
         mode = read_mr;
         continue;
       }
+
       if (mode == read_mr) {
         tmp_mr = std::stod(arg);
         mode = read_mi;
         continue;
       }
+
       if (mode == read_mi) {
         m.push_back(std::complex<double>( tmp_mr,std::stod(arg) ));
         mode = read_x;
         continue;
       }
-      // if (strcmp(argv[i], "-l") == 0) {
-      //   i++;
-      //   L = atoi(argv[i]);
-      //   x.resize(L);
-      //   m.resize(L);
-      //   if (argc < 3*(L + 1)) {
-      //           throw std::invalid_argument(error_msg);
-      //   } else {
-      //     for (l = 0; l < L; l++) {
-      //       i++;
-      //       x[l] = atof(argv[i]);
-      //       i++;
-      //       m[l] = std::complex<double>(atof(argv[i]), atof(argv[i + 1]));
-      //       i++;
-      //     }
-      //   }
+
       if (mode == read_ti) {
         ti = std::stod(arg);
         mode = read_tf;
         continue;
       }
+
       if (mode == read_tf) {
         tf = std::stod(arg);
         mode = read_nt;
         continue;
       }
+
       if (mode == read_nt) {
         nt = std::stoi(arg);
         Theta.resize(nt);
@@ -165,35 +158,18 @@ int main(int argc, char *argv[]) {
         S2w.resize(nt);
         continue;
       }
-      //} else if (strcmp(argv[i], "-t") == 0) {
-        // i++;
-        // ti = atof(argv[i]);
-        // i++;
-        // tf = atof(argv[i]);
-        // i++;
-        // nt = atoi(argv[i]);
 
-        // Theta.resize(nt);
-        // S1.resize(nt);
-        // S2.resize(nt);
       if (mode ==  read_comment) {
         comment = arg;
         has_comment = 1;
         continue;
       }
-      // } else if (strcmp(argv[i], "-c") == 0) {
-      //   i++;
-      //         comment = args[i];
-      //   //strcpy(comment, argv[i]);
-      //   has_comment = 1;
-      // } else { i++; }
     }
+
     if ( (x.size() != m.size()) || (L != x.size()) ) 
-      throw std::invalid_argument(std::string("Broken structure!\n")
-                                                         +error_msg);
+      throw std::invalid_argument(std::string("Broken structure!\n") + error_msg);
     if ( (0 == m.size()) || ( 0 == x.size()) ) 
-      throw std::invalid_argument(std::string("Empty structure!\n")
-                                                         +error_msg);
+      throw std::invalid_argument(std::string("Empty structure!\n") + error_msg);
     
     if (nt < 0) {
       printf("Error reading Theta.\n");
@@ -206,20 +182,13 @@ int main(int argc, char *argv[]) {
       }
     }
 
-
-
-
-
-    //nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
-    nmie::nMie(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
+    nmie::nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
    
 
     if (has_comment) {
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     } else {
       printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
-      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     }
     
     if (nt > 0) {
@@ -227,7 +196,6 @@ int main(int argc, char *argv[]) {
       
       for (i = 0; i < nt; i++) {
         printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
-        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  wrapper\n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
       }
     }
 

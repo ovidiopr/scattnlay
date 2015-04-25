@@ -5,14 +5,14 @@ PROJECT=python-scattnlay
 VERSION=0.3.1
 
 all:
-	@echo "make source - Create source package"
+	@echo "make source - Create source package for Python extension"
 	@echo "make cython - Convert Cython code to c++"
 	@echo "make python_ext - Create Python extension using C++ code"
 	@echo "make cython_ext - Create Python extension using Cython code"
-	@echo "make install - Install on local system"
-	@echo "make buildrpm - Generate a rpm package"
-	@echo "make builddeb - Generate a deb package"
-	@echo "make standalone - Create a standalone program"
+	@echo "make install - Install Python extension on local system"
+	@echo "make buildrpm - Generate a rpm package for Python extension"
+	@echo "make builddeb - Generate a deb package for Python extension"
+	@echo "make standalone - Create a standalone programs (scattnlay and fieldnlay)"
 	@echo "make clean - Delete temporal files"
 #	make standalone
 
@@ -44,8 +44,10 @@ builddeb:
 	export CFLAGS='-std=c++11' && dpkg-buildpackage -i -I -rfakeroot
 
 standalone: standalone.cc nmie.cc
-	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 standalone.cc nmie.cc  -lm -o scattnlay
+	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 farfield.cc nmie.cc  -lm -o scattnlay
 	mv scattnlay ../
+	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 nearfield.cc nmie.cc  -lm -o fieldnlay
+	mv fieldnlay ../
 
 clean:
 	$(PYTHON) setup.py clean

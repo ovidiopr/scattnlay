@@ -6,17 +6,16 @@ include MANIFEST.in
 include setup.py
 include nmie.h
 include py_nmie.h
-include standalone.cc
+include farfield.cc
+include nearfield.cc
 include Makefile
 include tests/python/*
 include tests/shell/*
 include debian/*
 
-include compare.cc
 include go.sh
 include nmie-wrapper.cc
 include nmie-wrapper.h
 include push-to-github.sh
 include scattnlay.pyx
 include setup_cython.py
-include test-negative-epsilon.cc
