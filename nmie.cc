@@ -78,8 +78,8 @@ namespace nmie {
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
     try {
       MultiLayerMie ml_mie;
-      ml_mie.SetLayersSize(x);
-      ml_mie.SetLayersIndex(m);
+      ml_mie.SetAllLayersSize(x);
+      ml_mie.SetAllLayersIndex(m);
       ml_mie.SetPECLayer(pl);
       ml_mie.SetMaxTerms(nmax);
 
@@ -135,8 +135,8 @@ namespace nmie {
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
       MultiLayerMie ml_mie;
-      ml_mie.SetLayersSize(x);
-      ml_mie.SetLayersIndex(m);
+      ml_mie.SetAllLayersSize(x);
+      ml_mie.SetAllLayersIndex(m);
       ml_mie.SetAngles(Theta);
       ml_mie.SetPECLayer(pl);
       ml_mie.SetMaxTerms(nmax);
@@ -299,8 +299,8 @@ namespace nmie {
     try {
       MultiLayerMie ml_mie;
       //ml_mie.SetPECLayer(pl); // TODO add PEC layer to field plotting
-      ml_mie.SetLayersSize(x);
-      ml_mie.SetLayersIndex(m);
+      ml_mie.SetAllLayersSize(x);
+      ml_mie.SetAllLayersIndex(m);
       ml_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
       ml_mie.RunFieldCalculation();
       E = ml_mie.GetFieldE();
@@ -421,7 +421,7 @@ namespace nmie {
   // ********************************************************************** //
   // Modify size of all layers                                             //
   // ********************************************************************** //
-  void MultiLayerMie::SetaAllLayersSize(const std::vector<double>& layer_size) {
+  void MultiLayerMie::SetAllLayersSize(const std::vector<double>& layer_size) {
     isExpCoeffsCalc_ = false;
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
@@ -629,8 +629,9 @@ namespace nmie {
       D1[n - 1] = static_cast<double>(n)*zinv - 1.0/(D1[n] + static_cast<double>(n)*zinv);
     }
 
-    if (std::abs(D1[0]) > 100000.0)
-      throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
+    if (std::abs(D1[0]) > 1.0e8)
+//      throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
+      printf("Warning: Potentially unstable D1! Please, try to change input parameters!\n");
 
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(std::cos(2.0*z.real()), std::sin(2.0*z.real()))
