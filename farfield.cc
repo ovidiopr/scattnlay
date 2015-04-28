@@ -38,6 +38,8 @@
 #include <string.h>
 #include "nmie.h"
 
+using namespace std;
+
 const double PI=3.14159265358979323846;
 
 //***********************************************************************************//
@@ -60,23 +62,23 @@ const double PI=3.14159265358979323846;
 //***********************************************************************************//
 int main(int argc, char *argv[]) {
   try {
-    std::vector<std::string> args;
+    vector<string> args;
     args.assign(argv, argv + argc);
-    std::string error_msg(std::string("Insufficient parameters.\nUsage: ") + args[0]
+    string error_msg(string("Insufficient parameters.\nUsage: ") + args[0]
                           + " -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] "
                           + "[-t ti tf nt] [-c comment]\n");
     enum mode_states {read_L, read_x, read_mr, read_mi, read_ti, read_tf, read_nt, read_comment};
-    // for (auto arg : args) std::cout<< arg <<std::endl;
-    std::string comment;
+    // for (auto arg : args) cout<< arg <<endl;
+    string comment;
     int has_comment = 0;
     unsigned int L = 0;
-    std::vector<double> x, Theta;
-    std::vector<std::complex<double> > m, S1, S2;
+    vector<double> x, Theta;
+    vector<complex<double> > m, S1, S2;
     double Qext, Qabs, Qsca, Qbk, Qpr, g, Albedo;
 
     double ti = 0.0, tf = 90.0;
     int nt = 0;
-    if (argc < 5) throw std::invalid_argument(error_msg);
+    if (argc < 5) throw invalid_argument(error_msg);
 
     int mode = -1;
     double tmp_mr;
@@ -93,58 +95,58 @@ int main(int argc, char *argv[]) {
 
       if (arg == "-t") {
         if ((mode != read_x) && (mode != read_comment))
-          throw std::invalid_argument(std::string("Unfinished layer!\n") + error_msg);
+          throw invalid_argument(string("Unfinished layer!\n") + error_msg);
         mode = read_ti;
         continue;
       }
 
       if (arg == "-c") {
         if ((mode != read_x) && (mode != read_nt))
-          throw std::invalid_argument(std::string("Unfinished layer or theta!\n") + error_msg);
+          throw invalid_argument(string("Unfinished layer or theta!\n") + error_msg);
         mode = read_comment;
         continue;
       }
 
       // Reading data. For invalid date the exception will be thrown
-      // with the std:: and catched in the end.
+      // with the  and catched in the end.
       if (mode == read_L) {
-        L = std::stoi(arg);
+        L = stoi(arg);
         mode = read_x;
         continue;
       }
 
       if (mode == read_x) {
-        x.push_back(std::stod(arg));
+        x.push_back(stod(arg));
         mode = read_mr;
         continue;
       }
 
       if (mode == read_mr) {
-        tmp_mr = std::stod(arg);
+        tmp_mr = stod(arg);
         mode = read_mi;
         continue;
       }
 
       if (mode == read_mi) {
-        m.push_back(std::complex<double>( tmp_mr,std::stod(arg) ));
+        m.push_back(complex<double>( tmp_mr,stod(arg) ));
         mode = read_x;
         continue;
       }
 
       if (mode == read_ti) {
-        ti = std::stod(arg);
+        ti = stod(arg);
         mode = read_tf;
         continue;
       }
 
       if (mode == read_tf) {
-        tf = std::stod(arg);
+        tf = stod(arg);
         mode = read_nt;
         continue;
       }
 
       if (mode == read_nt) {
-        nt = std::stoi(arg);
+        nt = stoi(arg);
         Theta.resize(nt);
         S1.resize(nt);
         S2.resize(nt);
@@ -159,9 +161,9 @@ int main(int argc, char *argv[]) {
     }
 
     if ( (x.size() != m.size()) || (L != x.size()) )
-      throw std::invalid_argument(std::string("Broken structure!\n") + error_msg);
+      throw invalid_argument(string("Broken structure!\n") + error_msg);
     if ( (0 == m.size()) || ( 0 == x.size()) )
-      throw std::invalid_argument(std::string("Empty structure!\n") + error_msg);
+      throw invalid_argument(string("Empty structure!\n") + error_msg);
 
     if (nt < 0) {
       printf("Error reading Theta.\n");
@@ -191,9 +193,9 @@ int main(int argc, char *argv[]) {
     }
 
 
-  } catch( const std::invalid_argument& ia ) {
+  } catch( const invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
-    std::cerr << "Invalid argument: " << ia.what() << std::endl;
+    cerr << "Invalid argument: " << ia.what() << endl;
     return -1;
   }
     return 0;

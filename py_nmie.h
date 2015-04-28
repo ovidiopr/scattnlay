@@ -28,16 +28,18 @@
 #include <complex>
 #include <vector>
 
-int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+using namespace std;
+
+int ScattCoeffs(const unsigned int L, const int pl, vector<double>& x, vector<complex<double> >& m,
                 const int nmax, double anr[], double ani[], double bnr[], double bni[]);
 
-int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
-         const int nTheta, std::vector<double>& Theta, const int nmax,
+int nMie(const int L, const int pl, vector<double>& x, vector<complex<double> >& m,
+         const int nTheta, vector<double>& Theta, const int nmax,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
 		 double S1r[], double S1i[], double S2r[], double S2i[]);
 
-int nField(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
-           const int nCoords, std::vector<double>& Xp, std::vector<double>& Yp, std::vector<double>& Zp,
+int nField(const int L, const int pl, vector<double>& x, vector<complex<double> >& m, const int nmax,
+           const int nCoords, vector<double>& Xp, vector<double>& Yp, vector<double>& Zp,
            double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[],
            double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[]);
 

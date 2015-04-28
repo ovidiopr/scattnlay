@@ -32,13 +32,15 @@
 #include <iostream>
 #include <vector>
 
+using namespace std;
+
 namespace nmie {
-  int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn);
-  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const unsigned int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
+  int ScattCoeffs(const unsigned int L, const int pl, vector<double>& x, vector<complex<double> >& m, const int nmax, vector<complex<double> >& an, vector<complex<double> >& bn);
+  int nMie(const unsigned int L, const int pl, vector<double>& x, vector<complex<double> >& m, const unsigned int nTheta, vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, vector<complex<double> >& S1, vector<complex<double> >& S2);
+  int nMie(const unsigned int L, vector<double>& x, vector<complex<double> >& m, const unsigned int nTheta, vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, vector<complex<double> >& S1, vector<complex<double> >& S2);
+  int nMie(const unsigned int L, const int pl, vector<double>& x, vector<complex<double> >& m, const unsigned int nTheta, vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, vector<complex<double> >& S1, vector<complex<double> >& S2);
+  int nMie(const unsigned int L, vector<double>& x, vector<complex<double> >& m, const unsigned int nTheta, vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, vector<complex<double> >& S1, vector<complex<double> >& S2);
+  int nField(const unsigned int L, const int pl, const vector<double>& x, const vector<complex<double> >& m, const int nmax, const unsigned int ncoord, const vector<double>& Xp, const vector<double>& Yp, const vector<double>& Zp, vector<vector<complex<double> > >& E, vector<vector<complex<double> > >& H);
 
   class MultiLayerMie {
    public:
@@ -55,27 +57,27 @@ namespace nmie {
     double GetQpr();
     double GetAsymmetryFactor();
     double GetAlbedo();
-    std::vector<std::complex<double> > GetS1();
-    std::vector<std::complex<double> > GetS2();
+    vector<complex<double> > GetS1();
+    vector<complex<double> > GetS2();
 
-    std::vector<std::complex<double> > GetAn(){return an_;};
-    std::vector<std::complex<double> > GetBn(){return bn_;};
+    vector<complex<double> > GetAn(){return an_;};
+    vector<complex<double> > GetBn(){return bn_;};
 
     // Problem definition
     // Add new layer
-    void AddNewLayer(double layer_size, std::complex<double> layer_index);
+    void AddNewLayer(double layer_size, complex<double> layer_index);
     // Modify width of the layer
-    void SetLayerSize(std::vector<double> layer_size, int layer_position = 0);
+    void SetLayerSize(vector<double> layer_size, int layer_position = 0);
     // Modify refractive index of the layer
-    void SetLayerIndex(std::vector< std::complex<double> > layer_index, int layer_position = 0);
+    void SetLayerIndex(vector< complex<double> > layer_index, int layer_position = 0);
     // Modify size of all layers
-    void SetAllLayersSize(const std::vector<double>& layer_size);
+    void SetAllLayersSize(const vector<double>& layer_size);
     // Modify refractive index of all layers
-    void SetAllLayersIndex(const std::vector< std::complex<double> >& index);
+    void SetAllLayersIndex(const vector< complex<double> >& index);
     // Modify scattering (theta) angles
-    void SetAngles(const std::vector<double>& angles);
+    void SetAngles(const vector<double>& angles);
     // Modify coordinates for field calculation
-    void SetFieldCoords(const std::vector< std::vector<double> >& coords);
+    void SetFieldCoords(const vector< vector<double> >& coords);
     // Modify PEC layer
     void SetPECLayer(int layer_position = 0);
 
@@ -90,54 +92,54 @@ namespace nmie {
     // Applied units requests
     double GetSizeParameter();
     double GetLayerWidth(int layer_position = 0);
-    std::vector<double> GetLayersSize();
-    std::vector<std::complex<double> > GetLayersIndex();
-    std::vector<std::array<double, 3> > GetFieldCoords();
+    vector<double> GetLayersSize();
+    vector<complex<double> > GetLayersIndex();
+    vector<array<double, 3> > GetFieldCoords();
 
-    std::vector<std::vector< std::complex<double> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
-    std::vector<std::vector< std::complex<double> > > GetFieldH(){return H_;};
+    vector<vector< complex<double> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
+    vector<vector< complex<double> > > GetFieldH(){return H_;};
   private:
     void calcNstop();
     void calcNmax(unsigned int first_layer);
 
-    std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
-                                 std::complex<double> PsiXL, std::complex<double> ZetaXL,
-                                 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
-    std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
-                                 std::complex<double> PsiXL, std::complex<double> ZetaXL,
-                                 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
-    std::complex<double> calc_S1(int n, std::complex<double> an, std::complex<double> bn,
-                                 double Pi, double Tau);
-    std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
-                                 double Pi, double Tau);
-    void calcD1D3(std::complex<double> z,
-                  std::vector<std::complex<double> >& D1,
-                  std::vector<std::complex<double> >& D3);
-    void calcPsiZeta(std::complex<double> x,
-                     std::vector<std::complex<double> >& Psi,
-                     std::vector<std::complex<double> >& Zeta);
+    complex<double> calc_an(int n, double XL, complex<double> Ha, complex<double> mL,
+                            complex<double> PsiXL, complex<double> ZetaXL,
+                            complex<double> PsiXLM1, complex<double> ZetaXLM1);
+    complex<double> calc_bn(int n, double XL, complex<double> Hb, complex<double> mL,
+                            complex<double> PsiXL, complex<double> ZetaXL,
+                            complex<double> PsiXLM1, complex<double> ZetaXLM1);
+    complex<double> calc_S1(int n, complex<double> an, complex<double> bn,
+                            double Pi, double Tau);
+    complex<double> calc_S2(int n, complex<double> an, complex<double> bn,
+                            double Pi, double Tau);
+    void calcD1D3(complex<double> z,
+                  vector<complex<double> >& D1,
+                  vector<complex<double> >& D3);
+    void calcPsiZeta(complex<double> x,
+                     vector<complex<double> >& Psi,
+                     vector<complex<double> >& Zeta);
     void calcPiTau(const double& costheta,
-                   std::vector<double>& Pi, std::vector<double>& Tau);
-    void calcSpherHarm(const std::complex<double> Rho, const double Theta, const double Phi,
-                       const std::complex<double>& rn, const std::complex<double>& Dn,
+                   vector<double>& Pi, vector<double>& Tau);
+    void calcSpherHarm(const complex<double> Rho, const double Theta, const double Phi,
+                       const complex<double>& rn, const complex<double>& Dn,
                        const double& Pi, const double& Tau, const double& n,
-                       std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
-                       std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
+                       vector<complex<double> >& Mo1n, vector<complex<double> >& Me1n, 
+                       vector<complex<double> >& No1n, vector<complex<double> >& Ne1n);
     void calcExpanCoeffs();
 
     void calcField(const double Rho, const double Theta, const double Phi,
-                   std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
+                   vector<complex<double> >& E, vector<complex<double> >& H);
 
     bool isExpCoeffsCalc_ = false;
     bool isScaCoeffsCalc_ = false;
     bool isMieCalculated_ = false;
 
     // Size parameter for all layers
-    std::vector<double> size_param_;
+    vector<double> size_param_;
     // Refractive index for all layers
-    std::vector< std::complex<double> > refractive_index_;
+    vector< complex<double> > refractive_index_;
     // Scattering angles for scattering pattern in radians
-    std::vector<double> theta_;
+    vector<double> theta_;
     // Should be -1 if there is no PEC.
     int PEC_layer_position_ = -1;
 
@@ -145,17 +147,17 @@ namespace nmie {
     int nmax_ = -1;
     int nmax_preset_ = -1;
     // Scattering coefficients
-    std::vector<std::complex<double> > an_, bn_;
-    std::vector< std::vector<double> > coords_;
+    vector<complex<double> > an_, bn_;
+    vector< vector<double> > coords_;
     // TODO: check if l index is reversed will lead to performance
     // boost, if $a^(L+1)_n$ stored in aln_[n][0], $a^(L)_n$ in
     // aln_[n][1] and so on...
     // at the moment order is forward!
-    std::vector< std::vector<std::complex<double> > > aln_, bln_, cln_, dln_;
+    vector< vector<complex<double> > > aln_, bln_, cln_, dln_;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
-    std::vector<std::vector< std::complex<double> > > E_, H_;  // {X[], Y[], Z[]}
-    std::vector<std::complex<double> > S1_, S2_;
+    vector<vector< complex<double> > > E_, H_;  // {X[], Y[], Z[]}
+    vector<complex<double> > S1_, S2_;
 
     //Used constants
     const double PI_=3.14159265358979323846;
@@ -165,7 +167,7 @@ namespace nmie {
     double const mu_ = 4.0*PI_*1.0e-7;
 
     //Temporary variables
-    std::vector<std::complex<double> > PsiZeta_;
+    vector<complex<double> > PsiZeta_;
 
 
   };  // end of class MultiLayerMie

@@ -38,6 +38,8 @@
 #include <string.h>
 #include "nmie.h"
 
+using namespace std;
+
 const double PI=3.14159265358979323846;
 
 //***********************************************************************************//
@@ -60,25 +62,25 @@ const double PI=3.14159265358979323846;
 //***********************************************************************************//
 int main(int argc, char *argv[]) {
   try {
-    std::vector<std::string> args;
+    vector<string> args;
     args.assign(argv, argv + argc);
-    std::string error_msg(std::string("Insufficient parameters.\nUsage: ") + args[0]
+    string error_msg(string("Insufficient parameters.\nUsage: ") + args[0]
                           + " -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] "
                           + "[-p xi xf nx yi yf ny zi zf nz] [-c comment]\n");
     enum mode_states {read_L, read_x, read_mr, read_mi, read_xi, read_xf, read_nx, read_yi, read_yf, read_ny, read_zi, read_zf, read_nz, read_comment};
-    // for (auto arg : args) std::cout<< arg <<std::endl;
-    std::string comment;
+    // for (auto arg : args) cout<< arg <<endl;
+    string comment;
     int has_comment = 0;
     unsigned int L = 0;
-    std::vector<double> x, Xp, Yp, Zp;
-    std::vector<std::complex<double> > m;
-    std::vector<std::vector<std::complex<double> > > E, H;
+    vector<double> x, Xp, Yp, Zp;
+    vector<complex<double> > m;
+    vector<vector<complex<double> > > E, H;
 
     double xi = 0.0, xf = 0.0, yi = 0.0, yf = 0.0, zi = 0.0, zf = 0.0;
     double dx = 0.0, dy = 0.0, dz = 0.0;
     int nx = 0, ny = 0, nz = 0;
     long total_points = 0;
-    if (argc < 5) throw std::invalid_argument(error_msg);
+    if (argc < 5) throw invalid_argument(error_msg);
 
     int mode = -1;
     double tmp_mr;
@@ -95,97 +97,97 @@ int main(int argc, char *argv[]) {
 
       if (arg == "-p") {
         if ((mode != read_x) && (mode != read_comment))
-          throw std::invalid_argument(std::string("Unfinished layer!\n") + error_msg);
+          throw invalid_argument(string("Unfinished layer!\n") + error_msg);
         mode = read_xi;
         continue;
       }
 
       if (arg == "-c") {
         if ((mode != read_x) && (mode != read_nz))
-          throw std::invalid_argument(std::string("Unfinished layer or theta!\n") + error_msg);
+          throw invalid_argument(string("Unfinished layer or theta!\n") + error_msg);
         mode = read_comment;
         continue;
       }
 
       // Reading data. For invalid date the exception will be thrown
-      // with the std:: and catched in the end.
+      // with the  and catched in the end.
       if (mode == read_L) {
-        L = std::stoi(arg);
+        L = stoi(arg);
         mode = read_x;
         continue;
       }
 
       if (mode == read_x) {
-        x.push_back(std::stod(arg));
+        x.push_back(stod(arg));
         mode = read_mr;
         continue;
       }
 
       if (mode == read_mr) {
-        tmp_mr = std::stod(arg);
+        tmp_mr = stod(arg);
         mode = read_mi;
         continue;
       }
 
       if (mode == read_mi) {
-        m.push_back(std::complex<double>( tmp_mr,std::stod(arg) ));
+        m.push_back(complex<double>( tmp_mr,stod(arg) ));
         mode = read_x;
         continue;
       }
 
       if (mode == read_xi) {
-        xi = std::stod(arg);
+        xi = stod(arg);
         mode = read_xf;
         continue;
       }
 
       if (mode == read_xf) {
-        xf = std::stod(arg);
+        xf = stod(arg);
         mode = read_nx;
         continue;
       }
 
       if (mode == read_nx) {
-        nx = std::stoi(arg);
+        nx = stoi(arg);
         mode = read_yi;
         continue;
       }
 
       if (mode == read_yi) {
-        yi = std::stod(arg);
+        yi = stod(arg);
         mode = read_yf;
         continue;
       }
 
       if (mode == read_yf) {
-        yf = std::stod(arg);
+        yf = stod(arg);
         mode = read_ny;
         continue;
       }
 
       if (mode == read_ny) {
-        ny = std::stoi(arg);
+        ny = stoi(arg);
         mode = read_zi;
         continue;
       }
 
       if (mode == read_zi) {
-        zi = std::stod(arg);
+        zi = stod(arg);
         mode = read_zf;
         continue;
       }
 
       if (mode == read_zf) {
-        zf = std::stod(arg);
+        zf = stod(arg);
         mode = read_nz;
         continue;
       }
 
       if (mode == read_nz) {
-        nz = std::stoi(arg);
+        nz = stoi(arg);
         total_points = nx*ny*nz;
         if (total_points <= 0)
-          throw std::invalid_argument(std::string("Nothing to do! You must define the grid to calculate the fields.\n") + error_msg);
+          throw invalid_argument(string("Nothing to do! You must define the grid to calculate the fields.\n") + error_msg);
 
         Xp.resize(total_points);
         Yp.resize(total_points);
@@ -208,9 +210,9 @@ int main(int argc, char *argv[]) {
     }
 
     if ( (x.size() != m.size()) || (L != x.size()) )
-      throw std::invalid_argument(std::string("Broken structure!\n") + error_msg);
+      throw invalid_argument(string("Broken structure!\n") + error_msg);
     if ( (0 == m.size()) || ( 0 == x.size()) )
-      throw std::invalid_argument(std::string("Empty structure!\n") + error_msg);
+      throw invalid_argument(string("Empty structure!\n") + error_msg);
 
     if (nx == 1)
       dx = 0.0;
@@ -254,9 +256,9 @@ int main(int argc, char *argv[]) {
     }
 
 
-  } catch( const std::invalid_argument& ia ) {
+  } catch( const invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
-    std::cerr << "Invalid argument: " << ia.what() << std::endl;
+    cerr << "Invalid argument: " << ia.what() << endl;
     return -1;
   }
     return 0;

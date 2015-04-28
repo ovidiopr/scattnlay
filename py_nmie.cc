@@ -31,14 +31,16 @@
 #include "nmie.h"
 #include "py_nmie.h"
 
+using namespace std;
+
 // Same as ScattCoeffs in 'nmie.h' but uses double arrays to return the results (useful for python).
 // This is a workaround because I have not been able to return the results using 
-// std::vector<std::complex<double> >
-int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+// vector<complex<double> >
+int ScattCoeffs(const unsigned int L, const int pl, vector<double>& x, vector<complex<double> >& m,
                 const int nmax, double anr[], double ani[], double bnr[], double bni[]) {
 
   int i, result;
-  std::vector<std::complex<double> > an, bn;
+  vector<complex<double> > an, bn;
   an.resize(nmax);
   bn.resize(nmax);
 
@@ -56,14 +58,14 @@ int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std:
 
 // Same as nMie in 'nmie.h' but uses double arrays to return the results (useful for python).
 // This is a workaround because I have not been able to return the results using 
-// std::vector<std::complex<double> >
-int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
-         const int nTheta, std::vector<double>& Theta, const int nmax,
+// vector<complex<double> >
+int nMie(const int L, const int pl, vector<double>& x, vector<complex<double> >& m,
+         const int nTheta, vector<double>& Theta, const int nmax,
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
 		 double S1r[], double S1i[], double S2r[], double S2i[]) {
 
   int i, result;
-  std::vector<std::complex<double> > S1, S2;
+  vector<complex<double> > S1, S2;
   S1.resize(nTheta);
   S2.resize(nTheta);
 
@@ -81,14 +83,14 @@ int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::com
 
 // Same as nField in 'nmie.h' but uses double arrays to return the results (useful for python).
 // This is a workaround because I have not been able to return the results using 
-// std::vector<std::complex<double> >
-int nField(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
-           const int nCoords, std::vector<double>& Xp, std::vector<double>& Yp, std::vector<double>& Zp,
+// vector<complex<double> >
+int nField(const int L, const int pl, vector<double>& x, vector<complex<double> >& m, const int nmax,
+           const int nCoords, vector<double>& Xp, vector<double>& Yp, vector<double>& Zp,
            double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[],
            double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[]) {
 
   int i, result;
-  std::vector<std::vector<std::complex<double> > > E, H;
+  vector<vector<complex<double> > > E, H;
   E.resize(nCoords);
   H.resize(nCoords);
   for (i = 0; i < nCoords; i++) {
