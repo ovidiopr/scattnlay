@@ -635,10 +635,16 @@ namespace nmie {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (abs(D1[0]) > 1.0e15) {
       throw invalid_argument("Unstable D1! Please, try to change input parameters!\n");
     //printf("Warning: Potentially unstable D1! Please, try to change input parameters!\n");
     }
+=======
+    if (std::abs(D1[0]) > 1.0e8)
+//      throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
+      printf("Warning: Potentially unstable D1! Please, try to change input parameters!\n");
+>>>>>>> parent of b4f83e4... Throw if D1 seems to be unstable
 =======
     if (std::abs(D1[0]) > 1.0e8)
 //      throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
