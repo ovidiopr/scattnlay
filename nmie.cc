@@ -633,10 +633,16 @@ namespace nmie {
       D1[n - 1] = static_cast<double>(n)*zinv - 1.0/(D1[n] + static_cast<double>(n)*zinv);
     }
 
+<<<<<<< HEAD
     if (abs(D1[0]) > 1.0e15) {
       throw invalid_argument("Unstable D1! Please, try to change input parameters!\n");
     //printf("Warning: Potentially unstable D1! Please, try to change input parameters!\n");
     }
+=======
+    if (std::abs(D1[0]) > 1.0e8)
+//      throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
+      printf("Warning: Potentially unstable D1! Please, try to change input parameters!\n");
+>>>>>>> parent of b4f83e4... Throw if D1 seems to be unstable
 
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta_[0] = 0.5*(1.0 - complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))
