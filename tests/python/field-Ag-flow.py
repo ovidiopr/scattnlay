@@ -187,6 +187,7 @@ try:
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
     ax.set_title(r'$Re(E \times H)$')
+
     cax = ax.imshow(Eabs_data, interpolation = 'nearest', cmap = cm.jet,
                         origin = 'lower'
                         #, vmin = min_tick, vmax = max_tick
