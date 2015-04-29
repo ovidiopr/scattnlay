@@ -264,7 +264,7 @@ namespace nmie {
 
   //**********************************************************************************//
   // This function emulates a C call to calculate complex electric and magnetic field //
-  // in the surroundings and inside (TODO) the particle.                              //
+  // in the surroundings and inside the particle.                                     //
   //                                                                                  //
   // Input parameters:                                                                //
   //   L: Number of layers                                                            //
@@ -298,7 +298,7 @@ namespace nmie {
         throw std::invalid_argument("Field H is not 3D!");
     try {
       MultiLayerMie ml_mie;
-      //ml_mie.SetPECLayer(pl); // TODO add PEC layer to field plotting
+      ml_mie.SetPECLayer(pl);
       ml_mie.SetAllLayersSize(x);
       ml_mie.SetAllLayersIndex(m);
       ml_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
@@ -1089,35 +1089,48 @@ namespace nmie {
 
     std::complex<double> z, z1;
     for (int l = L - 1; l >= 0; l--) {
-      z = size_param_[l]*m[l];
-      z1 = size_param_[l]*m1[l];
+      if (l <= PEC_layer_position_) { // We are inside a PEC. All coefficients must be zero!!!
+        for (int n = 0; n < nmax_; n++) {
+          // aln
+          aln_[l][n] = c_zero;
+          // bln
+          bln_[l][n] = c_zero;
+          // cln
+          cln_[l][n] = c_zero;
+          // dln
+          dln_[l][n] = c_zero;
+        }
+      } else { // Regular material, just do the calculation
+        z = size_param_[l]*m[l];
+        z1 = size_param_[l]*m1[l];
 
-      calcD1D3(z, D1z, D3z);
-      calcD1D3(z1, D1z1, D3z1);
-      calcPsiZeta(z, Psiz, Zetaz);
-      calcPsiZeta(z1, Psiz1, Zetaz1);
+        calcD1D3(z, D1z, D3z);
+        calcD1D3(z1, D1z1, D3z1);
+        calcPsiZeta(z, Psiz, Zetaz);
+        calcPsiZeta(z1, Psiz1, Zetaz1);
 
-      for (int n = 0; n < nmax_; n++) {
-        int n1 = n + 1;
+        for (int n = 0; n < nmax_; n++) {
+          int n1 = n + 1;
 
-        denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
-        denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
+          denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
+          denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
 
-        T1 =  aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
-        T2 = (bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1])*m[l]/m1[l];
+          T1 =  aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
+          T2 = (bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1])*m[l]/m1[l];
 
-        T3 = (dln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - aln_[l + 1][n]*D3z1[n1]*Zetaz1[n1])*m[l]/m1[l];
-        T4 =  cln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - bln_[l + 1][n]*D3z1[n1]*Zetaz1[n1];
+          T3 = (dln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - aln_[l + 1][n]*D3z1[n1]*Zetaz1[n1])*m[l]/m1[l];
+          T4 =  cln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - bln_[l + 1][n]*D3z1[n1]*Zetaz1[n1];
 
-        // aln
-        aln_[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
-        // bln
-        bln_[l][n] = (D1z[n1]*T2 + T4)/denomZeta;
-        // cln
-        cln_[l][n] = (D3z[n1]*T2 + T4)/denomPsi;
-        // dln
-        dln_[l][n] = (D3z[n1]*T1 + T3)/denomPsi;
-      }  // end of all n
+          // aln
+          aln_[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
+          // bln
+          bln_[l][n] = (D1z[n1]*T2 + T4)/denomZeta;
+          // cln
+          cln_[l][n] = (D3z[n1]*T2 + T4)/denomPsi;
+          // dln
+          dln_[l][n] = (D3z[n1]*T1 + T3)/denomPsi;
+        }  // end of all n
+      }  // end PEC condition
     }  // end of all l
 
     // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero

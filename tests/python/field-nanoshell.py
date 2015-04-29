@@ -76,36 +76,36 @@ try:
     from matplotlib import cm
     from matplotlib.colors import LogNorm
 
-    min_tick = 0.1
-    max_tick = 1.0
+    min_tick = 0.0
+    max_tick = 5.0
 
     edata = np.resize(Eh, (npts, npts))
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
     # Rescale to better show the axes
-    scale_x = np.linspace(min(coordX)*1.064/2.0/np.pi/nm, max(coordX)*1.064/2.0/np.pi/nm, npts)
-    scale_y = np.linspace(min(coordY)*1.064/2.0/np.pi/nm, max(coordY)*1.064/2.0/np.pi/nm, npts)
+    scale_x = 1000.0*np.linspace(min(coordX)*1.064/2.0/np.pi/nm, max(coordX)*1.064/2.0/np.pi/nm, npts)
+    scale_y = 1000.0*np.linspace(min(coordY)*1.064/2.0/np.pi/nm, max(coordY)*1.064/2.0/np.pi/nm, npts)
 
     # Define scale ticks
     min_tick = min(min_tick, np.amin(edata))
     max_tick = max(max_tick, np.amax(edata))
-    scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
+    #scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
+    scale_ticks = np.linspace(min_tick, max_tick, 6)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
-    cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.afmhot,
+    cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.jet,
                     origin = 'lower', vmin = min_tick, vmax = max_tick,
-                    extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y)),
-                    norm = LogNorm())
+                    extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y)))
 
     # Add colorbar
     cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
-    cbar.ax.set_yticklabels(['%3.1e' % (a) for a in scale_ticks]) # vertically oriented colorbar
+    cbar.ax.set_yticklabels(['%4.2g' % (a) for a in scale_ticks]) # vertically oriented colorbar
     pos = list(cbar.ax.get_position().bounds)
     fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
 
-    plt.xlabel('X ( $\mu$m )')
-    plt.ylabel('Y ( $\mu$m )')
+    plt.xlabel('X ( nm )')
+    plt.ylabel('Y ( nm )')
 
     # This part draws the nanoshell
 #    from matplotlib import patches
