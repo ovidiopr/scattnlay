@@ -99,12 +99,10 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m):
                     Hc[i] = 0+0j
             S = np.cross(Ec, Hc.conjugate()).real
             Snorm = S/np.linalg.norm(S)
-            #Snorm = Snorm.real
-            #Snorm = np.absolute(Snorm)
-            diff = Snorm-Snorm_prev
-            if np.linalg.norm(diff)<0.05:
-            # angle = angle_between(Snorm, Snorm_prev)
-            # if abs(angle) < max_angle:
+            # diff = Snorm-Snorm_prev
+            # if np.linalg.norm(diff)<0.05:
+            angle = angle_between(Snorm, Snorm_prev)
+            if abs(angle) < max_angle:
                 break
             step = step/2.0
         #3. Save result
