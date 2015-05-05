@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 #
 #    Copyright (C) 2009-2015 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
+#    Copyright (C) 2013-2015  Konstantin Ladutenko <kostyfisik@gmail.com>
 #
 #    This file is part of python-scattnlay
 #
@@ -137,7 +138,7 @@ coord = np.vstack((coordX, coordY, coordZ)).transpose()
 
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 terms, E, H = fieldnlay(x, m, coord)
-
+print(E)
 P = np.array(map(lambda n: np.linalg.norm(np.cross(E[0][n], H[0][n])).real, range(0, len(E[0]))))
 
 Ec = E[0, :, :]
