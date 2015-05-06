@@ -52,7 +52,7 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
     z_pos = flow_z[-1]
     x_idx = get_index(scale_x, x_pos)
     z_idx = get_index(scale_z, z_pos)
-    S=np.cross(Ec[npts*z_idx+x_idx], Hc[npts*z_idx+x_idx]).real
+    S=np.cross(Ec[npts*z_idx+x_idx], Hc[npts*z_idx+x_idx].conjugate()).real
     #if (np.linalg.norm(S)> 1e-4):
     Snorm_prev=S/np.linalg.norm(S)
     Snorm_prev=Snorm_prev.real
@@ -93,15 +93,12 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
 # c)
 WL=354 #nm
 core_r = WL/20.0
-epsilon_Ag = -2.0 + 0.28j   #original
-#epsilon_ag = -1.59 + 0.01j  # strange
-#epsilon_Ag = 1.09 + 1.1j  # good
-#epsilon_Ag = -1.3 + 0.1j  # 
+epsilon_Ag = -2.0 + 0.28j
 
-# # d)
-# WL=367 #nm
-# core_r = WL/20.0
-# epsilon_Ag = -2.71 + 0.25j
+# d)
+#WL=367 #nm
+#core_r = WL/20.0
+#epsilon_Ag = -2.71 + 0.25j
 
 
 index_Ag = np.sqrt(epsilon_Ag)
@@ -138,7 +135,7 @@ coord = np.vstack((coordX, coordY, coordZ)).transpose()
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 terms, E, H = fieldnlay(x, m, coord)
 
-P = np.array(map(lambda n: np.linalg.norm(np.cross(E[0][n], H[0][n])).real, range(0, len(E[0]))))
+P = np.array(map(lambda n: np.linalg.norm(np.cross(E[0][n], H[0][n].conjugate())).real, range(0, len(E[0]))))
 
 Ec = E[0, :, :]
 Hc = H[0, :, :]
@@ -186,7 +183,7 @@ try:
     scale_ticks = np.linspace(min_tick, max_tick, 11)
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
-    ax.set_title(r'$Re(E \times H)$')
+    ax.set_title(r'$Re(E \times H^*)$')
     cax = ax.imshow(Eabs_data, interpolation = 'nearest', cmap = cm.jet,
                         origin = 'lower'
                         #, vmin = min_tick, vmax = max_tick
