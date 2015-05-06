@@ -59,7 +59,7 @@ def angle_between(v1, v2):
             return np.pi
     return angle
 ###############################################################################
-def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m):
+def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
     # Initial position
     flow_x = [x0]
     flow_y = [y0]
@@ -71,7 +71,7 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m):
     if max_step < min_step:
         max_step = min_step
     coord = np.vstack(([flow_x[-1]], [flow_y[-1]], [flow_z[-1]])).transpose()
-    terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord)
+    terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord,pl=pl)
     Ec, Hc = E[0, 0, :], H[0, 0, :]
     S = np.cross(Ec, Hc.conjugate()).real
     Snorm_prev = S/np.linalg.norm(S)
@@ -94,7 +94,7 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m):
             dz = dpos*Snorm_prev[2];
             #Test the next position not to turn\chang size for more than max_angle
             coord = np.vstack(([flow_x[-1]+dx], [flow_y[-1]+dy], [flow_z[-1]+dz])).transpose()
-            terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord)
+            terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord,pl=pl)
             Ec, Hc = E[0, 0, :], H[0, 0, :]
             Eth = max(np.absolute(Ec))/1e10
             Hth = max(np.absolute(Hc))/1e10
@@ -104,6 +104,8 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m):
                 if abs(Hc[i]) < Hth:
                     Hc[i] = 0+0j
             S = np.cross(Ec, Hc.conjugate()).real
+            if not np.isfinite(S).all():
+                break
             Snorm = S/np.linalg.norm(S)
             diff = (S-Sprev)/max(np.linalg.norm(S), np.linalg.norm(Sprev))
             if np.linalg.norm(diff)<max_angle:
@@ -125,7 +127,7 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m):
 
 
 ###############################################################################
-def GetField(crossplane, npts, factor, x, m):
+def GetField(crossplane, npts, factor, x, m, pl):
     """
     crossplane: XZ, YZ, XY
     npts: number of point in each direction
@@ -159,7 +161,7 @@ def GetField(crossplane, npts, factor, x, m):
         coordPlot2 = coordX
         
     coord = np.vstack((coordX, coordY, coordZ)).transpose()
-    terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord)
+    terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord, pl=pl)
     Ec = E[0, :, :]
     Hc = H[0, :, :]
     P=[]
@@ -169,8 +171,8 @@ def GetField(crossplane, npts, factor, x, m):
     #     P.append(np.linalg.norm( np.cross(Ec[n], np.conjugate(Hc[n]) ).real/2 ))
     return Ec, Hc, P, coordPlot1, coordPlot2
 ###############################################################################
-def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot='Pabs',npts=101, factor=2.1, flow_total=11, is_flow_extend=True):
-    Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m)
+def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot='Pabs',npts=101, factor=2.1, flow_total=11, is_flow_extend=True, pl=-1, outline_width=1):
+    Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m, pl)
     Er = np.absolute(Ec)
     Hr = np.absolute(Hc)
     try:
@@ -239,7 +241,7 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
         for xx in x:
             r= xx*WL/2.0/np.pi
             s1 = patches.Arc((0, 0), 2.0*r, 2.0*r,  angle=0.0, zorder=1.8,
-                             theta1=0.0, theta2=360.0, linewidth=1, color='black')
+                             theta1=0.0, theta2=360.0, linewidth=outline_width, color='black')
             ax.add_patch(s1)
         # 
         # for flow in range(0,flow_total):
@@ -284,7 +286,7 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
                         y0 = min_SP + flow*step_SP
                     z0 = min_SP
                     #x0 = x[-1]/20
-                flow_xSP, flow_ySP, flow_zSP = GetFlow3D(x0, y0, z0, max_length, max_angle, x, m)
+                flow_xSP, flow_ySP, flow_zSP = GetFlow3D(x0, y0, z0, max_length, max_angle, x, m,pl)
                 if crossplane=='XZ':
                     flow_z_plot = flow_zSP*WL/2.0/np.pi
                     flow_f_plot = flow_xSP*WL/2.0/np.pi

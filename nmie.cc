@@ -1144,7 +1144,7 @@ namespace nmie {
       if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
       else {
         //throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
-        printf("Warning: Potentially unstable calculation of bln (bln[0][%i] = %g, %gi)\n", n, bln_[0][n].real(), bln_[0][n].imag());
+        printf("Warning: Potentially unstable calculation of bln (bln[0][%i] = %g, %gi) pl=%d\n", n, bln_[0][n].real(), bln_[0][n].imag(), PEC_layer_position_);
         bln_[0][n] = 0.0;
       }
     }
