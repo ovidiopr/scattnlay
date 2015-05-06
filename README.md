@@ -53,22 +53,19 @@ terms, E, H = fieldnlay(x, m, coords)
   ```
   
 2. Standalone program
-  * Execute scattnlay directly
-          Usage:
+  * Execute scattnlay directly:
 		  
   ```bash
 scattnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-c comment]
   ```
 
-  * Execute fieldnlay directly
-          Usage:
+  * Execute fieldnlay directly:
 		  
   ```bash
 fieldnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-p xi xf nx yi yf ny zi zf nz] [-c comment]
   ```
 
-  * Execute some of the test scripts (located in the folder 'tests/shell')
-      Example:
+  * Execute some of the test scripts (located in the folder 'tests/shell'):
 
   ```bash
 ./test01.sh > test01.csv
