@@ -18,12 +18,15 @@ Compile Code:
 
 Compilation options
 
- - **make source** - Create source package (python library)
- - **make install** - Install on local system (python library)
- - **make buildrpm** - Generate a rpm package (python library)
- - **make builddeb** - Generate a deb package (python library)
- - **make standalone** - Create a standalone program
- - **make clean** - Delete temporal files
+ - **make source** - Create source package for Python extension
+ - **make cython** - Convert Cython code to C++
+ - **make python_ext** - Create Python extension using C++ code
+ - **make cython_ext** - Create Python extension using Cython code
+ - **make install** - Install Python extension on local system
+ - **make buildrpm** - Generate a rpm package for Python extension
+ - **make builddeb** - Generate a deb package for Python extension
+ - **make standalone** - Create standalone programs (scattnlay and fieldnlay)
+ - **make clean* - Delete temporal files
 
 Use:
 ----
@@ -32,11 +35,13 @@ Use:
   * Use scattnlay directly
   
   ```python
-from scattnlay import scattnlay
+from scattnlay import scattnlay, fieldnlay
 ...
 x = ...
 m = ...
+coords = ...
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
+terms, E, H = fieldnlay(x, m, coords)
 ...
   ```
   
@@ -53,6 +58,13 @@ terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 		  
   ```bash
 scattnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-c comment]
+  ```
+
+  * Execute fieldnlay directly
+          Usage:
+		  
+  ```bash
+fieldnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-p xi xf nx yi yf ny zi zf nz] [-c comment]
   ```
 
   * Execute some of the test scripts (located in the folder 'tests/shell')

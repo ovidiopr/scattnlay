@@ -8,13 +8,13 @@ SRCDIR=$(CURDIR)/src
 
 all:
 	@echo "make source - Create source package for Python extension"
-	@echo "make cython - Convert Cython code to c++"
+	@echo "make cython - Convert Cython code to C++"
 	@echo "make python_ext - Create Python extension using C++ code"
 	@echo "make cython_ext - Create Python extension using Cython code"
 	@echo "make install - Install Python extension on local system"
 	@echo "make buildrpm - Generate a rpm package for Python extension"
 	@echo "make builddeb - Generate a deb package for Python extension"
-	@echo "make standalone - Create a standalone programs (scattnlay and fieldnlay)"
+	@echo "make standalone - Create standalone programs (scattnlay and fieldnlay)"
 	@echo "make clean - Delete temporal files"
 #	make standalone
 
