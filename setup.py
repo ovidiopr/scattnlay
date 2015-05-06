@@ -26,7 +26,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = '0.3.1'
+__version__ = '2.0.0'
 __title__ = 'Calculation of the scattering of EM radiation by a multilayered sphere'
 __mod__ = 'python-scattnlay'
 __author__ = 'Ovidio Peña Rodríguez'
@@ -54,7 +54,7 @@ O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
       license = 'GPL',
       platforms = 'any',
       ext_modules = [Extension("scattnlay",
-                               ["nmie.cc", "py_nmie.cc", "scattnlay.cpp"],
+                               ["src/nmie.cc", "src/py_nmie.cc", "src/scattnlay.cpp"],
                                language = "c++",
                                include_dirs = [np.get_include()])], 
       extra_compile_args=['-std=c++11']

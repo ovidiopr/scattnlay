@@ -3,19 +3,16 @@ include LICENSE
 include README
 include CHANGES
 include MANIFEST.in
-include setup.py
-include nmie.h
-include py_nmie.h
-include farfield.cc
-include nearfield.cc
 include Makefile
+include setup.py
+include setup_cython.py
+include src/scattnlay.pyx
+include src/*
+include examples/*
 include tests/python/*
 include tests/shell/*
 include debian/*
 
 include go.sh
-include nmie-wrapper.cc
-include nmie-wrapper.h
 include push-to-github.sh
-include scattnlay.pyx
-include setup_cython.py
+

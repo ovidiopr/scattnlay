@@ -1,8 +1,10 @@
 PYTHON=`which python`
+CYTHON=`which cython`
 DESTDIR=/
-BUILDIR=$(CURDIR)/debian/python-scattnlay
 PROJECT=python-scattnlay
-VERSION=0.3.1
+VERSION=2.0.0
+BUILDIR=$(CURDIR)/debian/$(PROJECT)
+SRCDIR=$(CURDIR)/src
 
 all:
 	@echo "make source - Create source package for Python extension"
@@ -20,13 +22,14 @@ source:
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 
 cython: scattnlay.pyx
-	cython --cplus scattnlay.pyx
+	$(CYTHON) --cplus scattnlay.pyx
+	mv scattnlay.cpp $(SRCDIR)/
 
-python_ext: nmie.cc  py_nmie.cc scattnlay.cpp
-	export CFLAGS='-std=c++11' && python setup.py build_ext --inplace
+python_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc $(SRCDIR)/scattnlay.cpp
+	export CFLAGS='-std=c++11' && $(PYTHON) setup.py build_ext --inplace
 
-cython_ext: nmie.cc  py_nmie.cc scattnlay.pyx
-	export CFLAGS='-std=c++11' && python setup_cython.py build_ext --inplace
+cython_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc scattnlay.pyx
+	export CFLAGS='-std=c++11' && $(PYTHON) setup.py build_ext --inplace
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
@@ -43,10 +46,10 @@ builddeb:
 	# build the package
 	export CFLAGS='-std=c++11' && dpkg-buildpackage -i -I -rfakeroot
 
-standalone: farfield.cc nearfield.cc nmie.cc
-	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 farfield.cc nmie.cc  -lm -o scattnlay
+standalone: $(SRCDIR)/farfield.cc $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc
+	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o scattnlay
 	mv scattnlay ../
-	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 nearfield.cc nmie.cc  -lm -o fieldnlay
+	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o fieldnlay
 	mv fieldnlay ../
 
 clean:
