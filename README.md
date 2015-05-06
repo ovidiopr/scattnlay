@@ -56,7 +56,7 @@ terms, E, H = fieldnlay(x, m, coords)
   * Execute scattnlay directly:
 
   ```bash
-scattnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-c comment]
+scattnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-t ti tf nt] [-c comment]
   ```
 
   * Execute fieldnlay directly:
