@@ -33,8 +33,9 @@ from scattnlay import fieldnlay
 from scattnlay import scattnlay
 import numpy as np
 import cmath
-from fieldplot import GetFlow3D
-from fieldplot import GetField
+# from fieldplot import GetFlow3D
+# from fieldplot import GetField
+from fieldplot import fieldplot
 
 ###############################################################################
 def SetXM(design):
@@ -121,157 +122,31 @@ def SetXM(design):
 
 ###############################################################################
 #design = 1 #AgSi
-#design = 2
+design = 2
 #design = 3
 #design = 4   # WL=800
-design = 5   # Bulk Ag
+comment='SiAgSi-flow'
+#design = 5   # Bulk Ag
+# comment='bulk-Ag-flow'
 x, m, WL = SetXM(design)
 
-
 WL_units='nm'
-comment='P-SiAgSi-flow'
-comment='bulk-P-Ag-flow'
 print "x =", x
 print "m =", m
-npts = 101
-factor=2.2
-flow_total = 3
+npts = 501
+factor=2.1
+flow_total = 39
+#flow_total = 21
 #flow_total = 0
 crossplane='XZ'
 #crossplane='YZ'
 #crossplane='XY'
 
+# Options to plot: Eabs, Habs, Pabs, angleEx, angleHy
+field_to_plot='Pabs'
+#field_to_plot='angleEx'
 
+fieldplot(x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total)
 
-Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m)
-
-Er = np.absolute(Ec)
-Hr = np.absolute(Hc)
-# |E|/|Eo|
-Eabs = np.sqrt(Er[ :, 0]**2 + Er[ :, 1]**2 + Er[ :, 2]**2)
-Eangle = np.angle(Ec[ :, 0])/np.pi*180
-Habs= np.sqrt(Hr[ :, 0]**2 + Hr[ :, 1]**2 + Hr[ :, 2]**2)
-Hangle = np.angle(Hc[ :, 1])/np.pi*180
-
-try:
-    import matplotlib.pyplot as plt
-    from matplotlib import cm
-    from matplotlib.colors import LogNorm
-
-    Eabs_data = np.resize(P, (npts, npts)).T
-    #Eabs_data = np.resize(Pabs, (npts, npts)).T
-    # Eangle_data = np.resize(Eangle, (npts, npts)).T
-    # Habs_data = np.resize(Habs, (npts, npts)).T
-    # Hangle_data = np.resize(Hangle, (npts, npts)).T
-
-    fig, ax = plt.subplots(1,1)
-    # Rescale to better show the axes
-    scale_x = np.linspace(min(coordX)*WL/2.0/np.pi, max(coordX)*WL/2.0/np.pi, npts)
-    scale_z = np.linspace(min(coordZ)*WL/2.0/np.pi, max(coordZ)*WL/2.0/np.pi, npts)
-
-    # Define scale ticks
-    min_tick = np.amin(Eabs_data[~np.isnan(Eabs_data)])
-    max_tick = np.amax(Eabs_data[~np.isnan(Eabs_data)])
-    scale_ticks = np.linspace(min_tick, max_tick, 6)
-
-    # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
-    ax.set_title('Pabs')
-    cax = ax.imshow(Eabs_data, interpolation = 'nearest', cmap = cm.jet,
-                    origin = 'lower'
-                    , vmin = min_tick, vmax = max_tick
-                    , extent = (min(scale_x), max(scale_x), min(scale_z), max(scale_z))
-                    #,norm = LogNorm()
-                    )
-    ax.axis("image")
-
-    # Add colorbar
-    cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
-    cbar.ax.set_yticklabels(['%5.3g' % (a) for a in scale_ticks]) # vertically oriented colorbar
-    pos = list(cbar.ax.get_position().bounds)
-    #fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
-    if crossplane=='XZ':
-        plt.xlabel('Z, '+WL_units)
-        plt.ylabel('X, '+WL_units)
-    elif crossplane=='YZ':
-        plt.xlabel('Z, '+WL_units)
-        plt.ylabel('Y, '+WL_units)
-    elif crossplane=='XY':
-        plt.xlabel('Y, '+WL_units)
-        plt.ylabel('X, '+WL_units)
-    
-
-    # # This part draws the nanoshell
-    from matplotlib import patches
-    from matplotlib.path import Path
-    for xx in x:
-        r= xx*WL/2.0/np.pi
-        s1 = patches.Arc((0, 0), 2.0*r, 2.0*r,  angle=0.0, zorder=1.8,
-                         theta1=0.0, theta2=360.0, linewidth=1, color='black')
-        ax.add_patch(s1)
-    # 
-    # for flow in range(0,flow_total):
-    #     flow_x, flow_z = GetFlow(scale_x, scale_z, Ec, Hc,
-    #                              min(scale_x)+flow*(scale_x[-1]-scale_x[0])/(flow_total-1),
-    #                              min(scale_z),
-    #                              #0.0,
-    #                              npts*16)
-    #     verts = np.vstack((flow_z, flow_x)).transpose().tolist()
-    #     #codes = [Path.CURVE4]*len(verts)
-    #     codes = [Path.LINETO]*len(verts)
-    #     codes[0] = Path.MOVETO
-    #     path = Path(verts, codes)
-    #     patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='yellow')
-    #     ax.add_patch(patch)
-    if (crossplane=='XZ' or crossplane=='YZ') and flow_total>0:
-
-        from matplotlib.path import Path
-        scanSP = np.linspace(-factor*x[-1], factor*x[-1], npts)
-        min_SP = -factor*x[-1]
-        step_SP = 2.0*factor*x[-1]/(flow_total-1)
-        x0, y0, z0 = 0, 0, 0
-        max_length=factor*x[-1]*15
-        #max_length=factor*x[-1]*5
-        max_angle = np.pi/200
-        #for flow in range(0,flow_total*2+1):
-        for flow in range(0,flow_total):
-            if crossplane=='XZ':
-                #x0 = min_SP*2 + flow*step_SP
-                x0 = min_SP + flow*step_SP
-                z0 = min_SP
-                #y0 = x[-1]/20 
-            elif crossplane=='YZ':
-                #y0 = min_SP*2 + flow*step_SP
-                y0 = min_SP + flow*step_SP
-                z0 = min_SP
-                #x0 = x[-1]/20
-            flow_xSP, flow_ySP, flow_zSP = GetFlow3D(x0, y0, z0, max_length, max_angle, x, m)
-            if crossplane=='XZ':
-                flow_z_plot = flow_zSP*WL/2.0/np.pi
-                flow_f_plot = flow_xSP*WL/2.0/np.pi
-            elif crossplane=='YZ':
-                flow_z_plot = flow_zSP*WL/2.0/np.pi
-                flow_f_plot = flow_ySP*WL/2.0/np.pi
-
-            verts = np.vstack((flow_z_plot, flow_f_plot)).transpose().tolist()
-            codes = [Path.LINETO]*len(verts)
-            codes[0] = Path.MOVETO
-            path = Path(verts, codes)
-            #patch = patches.PathPatch(path, facecolor='none', lw=0.2, edgecolor='white',zorder = 2.7)
-            patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='white',zorder = 1.9)
-            ax.add_patch(patch)
-            ax.plot(flow_z_plot, flow_f_plot, 'x',ms=2, mew=0.1, linewidth=0.5, color='k', fillstyle='none')
-
-    plt.savefig(comment+"-R"+str(int(round(x[-1]*WL/2.0/np.pi)))+"-"+crossplane+".svg")
-    plt.draw()
-
-#    plt.show()
-
-    plt.clf()
-    plt.close()
-finally:
-    terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(np.array([x]),
-                                                                     np.array([m]))
-    print("Qabs = "+str(Qabs));
-#
 
 
