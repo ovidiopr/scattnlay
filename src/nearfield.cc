@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
     args.assign(argv, argv + argc);
     std::string error_msg(std::string("Insufficient parameters.\nUsage: ") + args[0]
                           + " -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] "
-                          + "[-p xi xf nx yi yf ny zi zf nz] [-c comment]\n");
+                          + " -p xi xf nx yi yf ny zi zf nz [-c comment]\n");
     enum mode_states {read_L, read_x, read_mr, read_mi, read_xi, read_xf, read_nx, read_yi, read_yf, read_ny, read_zi, read_zf, read_nz, read_comment};
     // for (auto arg : args) std::cout<< arg <<std::endl;
     std::string comment;
