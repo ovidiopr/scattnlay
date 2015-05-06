@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 #
 #    Copyright (C) 2009-2015 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
+#    Copyright (C) 2013-2015  Konstantin Ladutenko <kostyfisik@gmail.com>
 #
 #    This file is part of python-scattnlay
 #
@@ -168,7 +169,7 @@ def GetField(crossplane, npts, factor, x, m):
     #     P.append(np.linalg.norm( np.cross(Ec[n], np.conjugate(Hc[n]) ).real/2 ))
     return Ec, Hc, P, coordPlot1, coordPlot2
 ###############################################################################
-def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot='Pabs',npts=101, factor=2.1, flow_total=11):
+def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot='Pabs',npts=101, factor=2.1, flow_total=11, is_flow_extend=True):
     Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m)
     Er = np.absolute(Ec)
     Hr = np.absolute(Hc)
@@ -264,16 +265,23 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
             max_length=factor*x[-1]*8
             #max_length=factor*x[-1]*5
             max_angle = np.pi/160
-            for flow in range(0,flow_total*2+1):
-            #for flow in range(0,flow_total):
+            if is_flow_extend:
+                rg = range(0,flow_total*2+1)
+            else:
+                rg = range(0,flow_total)
+            for flow in rg:
                 if crossplane=='XZ':
-                    x0 = min_SP*2 + flow*step_SP
-                    #x0 = min_SP + flow*step_SP
+                    if is_flow_extend:
+                        x0 = min_SP*2 + flow*step_SP
+                    else:
+                        x0 = min_SP + flow*step_SP
                     z0 = min_SP
                     #y0 = x[-1]/20 
                 elif crossplane=='YZ':
-                    y0 = min_SP*2 + flow*step_SP
-                    #y0 = min_SP + flow*step_SP
+                    if is_flow_extend:
+                        y0 = min_SP*2 + flow*step_SP
+                    else:
+                        y0 = min_SP + flow*step_SP
                     z0 = min_SP
                     #x0 = x[-1]/20
                 flow_xSP, flow_ySP, flow_zSP = GetFlow3D(x0, y0, z0, max_length, max_angle, x, m)
