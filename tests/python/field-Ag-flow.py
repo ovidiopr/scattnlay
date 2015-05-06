@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 #
 #    Copyright (C) 2009-2015 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
+#    Copyright (C) 2013-2015  Konstantin Ladutenko <kostyfisik@gmail.com>
 #
 #    This file is part of python-scattnlay
 #
@@ -26,16 +27,17 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # This test case calculates the electric field in the 
-# E-k plane, for an spherical Si-Ag-Si nanoparticle. Core radius is 17.74 nm,
-# inner layer 23.31nm, outer layer 22.95nm. Working wavelength is 800nm, we use
-# silicon epsilon=13.64+i0.047, silver epsilon= -28.05+i1.525
+# E-k plane, for an spherical Ag nanoparticle.
 
 import scattnlay
 from scattnlay import fieldnlay
 from scattnlay import scattnlay
+from fieldplot import fieldplot
+
 import numpy as np
 import cmath
 
+<<<<<<< HEAD
 
 def get_index(array,value):
     idx = (np.abs(array-value)).argmin()
@@ -80,6 +82,8 @@ def GetFlow(scale_x, scale_z, Ec, Hc, a, b, nmax):
         flow_z.append(z_pos)
     return flow_x, flow_z
 
+=======
+>>>>>>> feb3ad9a4b3aa424f2e1087b4bc7b9bc52598810
 # # a)
 #WL=400 #nm
 #core_r = WL/20.0
@@ -100,25 +104,23 @@ epsilon_Ag = -2.0 + 0.28j
 #core_r = WL/20.0
 #epsilon_Ag = -2.71 + 0.25j
 
-
 index_Ag = np.sqrt(epsilon_Ag)
-
-
 # n1 = 1.53413
 # n2 = 0.565838 + 7.23262j
 nm = 1.0
 
-x = np.ones((1, 2), dtype = np.float64)
-x[0, 0] = 2.0*np.pi*core_r/WL/4.0*3.0
-x[0, 1] = 2.0*np.pi*core_r/WL
+x = np.ones((2), dtype = np.float64)
+x[0] = 2.0*np.pi*core_r/WL/4.0*3.0
+x[1] = 2.0*np.pi*core_r/WL
 
-m = np.ones((1, 2), dtype = np.complex128)
-m[0, 0] = index_Ag/nm
-m[0, 1] = index_Ag/nm
+m = np.ones((2), dtype = np.complex128)
+m[0] = index_Ag/nm
+m[1] = index_Ag/nm
 
 print "x =", x
 print "m =", m
 
+<<<<<<< HEAD
 npts = 281
 
 factor=3
@@ -248,5 +250,24 @@ try:
 finally:
     print("Qabs = "+str(Qabs));
 #
+=======
+comment='bulk-Ag-flow'
+WL_units='nm'
+npts = 501
+factor=2.1
+flow_total = 39
+#flow_total = 21
+#flow_total = 0
+crossplane='XZ'
+#crossplane='YZ'
+#crossplane='XY'
+
+# Options to plot: Eabs, Habs, Pabs, angleEx, angleHy
+field_to_plot='Pabs'
+#field_to_plot='angleEx'
+
+fieldplot(x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total, is_flow_extend=False)
+
+>>>>>>> feb3ad9a4b3aa424f2e1087b4bc7b9bc52598810
 
 
