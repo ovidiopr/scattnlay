@@ -970,9 +970,6 @@ namespace nmie {
     // Calculate scattering coefficients
     calcScattCoeffs();
 
-    if (!isScaCoeffsCalc_) // TODO seems to be unreachable
-      throw std::invalid_argument("Calculation of scattering coefficients failed!");
-
     // Initialize the scattering parameters
     Qext_ = 0.0;
     Qsca_ = 0.0;

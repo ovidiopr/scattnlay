@@ -118,11 +118,7 @@ namespace nmie {
     /* std::vector<std::vector<std::complex<double> > >  GetFieldESP(); */
     /* std::vector<std::vector<std::complex<double> > >  GetFieldHSP(); */
     std::vector< std::array<double,5> > GetSpectraSP(double from_SP, double to_SP, int samples);  // WL,ext, sca, abs, bk
-    double GetQext();
-    double GetQsca();
-    double GetQabs();
-    double GetQbk();
-    double GetQpr();
+
     std::vector<double> GetQsca_channel();
     std::vector<double> GetQabs_channel();
     std::vector<double> GetQsca_channel_normalized();
@@ -138,9 +134,6 @@ namespace nmie {
     std::vector<double> GetPatternHkSP();
     std::vector<double> GetPatternUnpolarizedSP();
     
-    // Run calculation
-    void RunMieCalculations();
-    void RunFieldCalculations();
 
     // Output results (data file + python script to plot it with matplotlib)
     void PlotSpectra();
@@ -156,81 +149,28 @@ namespace nmie {
     void GenerateIndex();
     void InitMieCalculations();
 
-    void Nstop();
-    void Nmax(int first_layer);
     void sbesjh(std::complex<double> z, std::vector<std::complex<double> >& jn,
 	            std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n,
 	            std::vector<std::complex<double> >& h1np);
     void sphericalBessel(std::complex<double> z, std::vector<std::complex<double> >& bj,
 			             std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd);
-    std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
-	                             std::complex<double> PsiXL, std::complex<double> ZetaXL,
-				                 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
-    std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
-	                             std::complex<double> PsiXL, std::complex<double> ZetaXL,
-				                 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
     std::complex<double> calcD1confra(int N, const std::complex<double> z);
-    void calcD1D3(std::complex<double> z,
-		          std::vector<std::complex<double> >& D1,
-		          std::vector<std::complex<double> >& D3);
-    void calcSinglePiTau(const double& costheta, std::vector<double>& Pi,
-			             std::vector<double>& Tau);
-    void calcAllPiTau(std::vector< std::vector<double> >& Pi,
-		              std::vector< std::vector<double> >& Tau);
-    void ExtScattCoeffs(std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn); 
-    void IntScattCoeffs();
-    void IntScattCoeffsInit();
-
-    void fieldExt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
-
-    void fieldInt(const double Rho, const double Phi, const double Theta, const  std::vector<double>& Pi, const std::vector<double>& Tau, std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
     
-    bool areIntCoeffsCalc_ = false;
-    bool areExtCoeffsCalc_ = false;
-    bool isMieCalculated_ = false;
     double wavelength_ = 1.0;
     double total_radius_ = 0.0;
     /// Width and index for each layer of the structure
     std::vector<double> target_width_, coating_width_;
     std::vector< std::complex<double> > target_index_, coating_index_;
-    /// Size parameters for all layers
-    std::vector<double> size_parameter_;
-    /// Complex index values for each layers.
-    std::vector< std::complex<double> > index_;
-    /// Scattering angles for RCS pattern in radians
-    std::vector<double> theta_;
-    // Should be -1 if there is no PEC.
-    int PEC_layer_position_ = -1;
-    // Set nmax_ manualy with SetMaxTermsNumber(int nmax) or in ExtScattCoeffs(..)
-    // with Nmax(int first_layer);
-    int nmax_ = -1;
-    int nmax_used_ = -1;
-    int nmax_preset_ = -1;
+
     // Scattering coefficients
     std::vector<std::complex<double> > an_, bn_;
     std::vector< std::vector<double> > coords_sp_;
-    // TODO: check if l index is reversed will lead to performance
-    // boost, if $a^(L+1)_n$ stored in al_n_[n][0], $a^(L)_n$ in
-    // al_n_[n][1] and so on...
-    // at the moment order is forward!
-    std::vector< std::vector<std::complex<double> > > al_n_, bl_n_, cl_n_, dl_n_;
     /// Store result
-    double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
-    std::vector<std::vector< std::complex<double> > > E_field_, H_field_;  // {X[], Y[], Z[]}
     // Mie efficinecy from each multipole channel.
     std::vector<double> Qsca_ch_, Qext_ch_, Qabs_ch_, Qbk_ch_, Qpr_ch_;
     std::vector<double> Qsca_ch_norm_, Qext_ch_norm_, Qabs_ch_norm_, Qbk_ch_norm_, Qpr_ch_norm_;
-    std::vector<std::complex<double> > S1_, S2_;
 
-    //Used constants
-    const double PI_=3.14159265358979323846;  
-    // light speed [m s-1]
-    double const cc_ = 2.99792458e8;
-    // assume non-magnetic (MU=MU0=const) [N A-2]
-    double const mu_ = 4.0*PI_*1.0e-7;
 
-    //Temporary variables
-    std::vector<std::complex<double> > PsiZeta_;
 
 
   };  // end of class MultiLayerMie

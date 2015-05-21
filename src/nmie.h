@@ -149,10 +149,6 @@ namespace nmie {
     // Scattering coefficients
     std::vector<std::complex<double> > an_, bn_;
     std::vector< std::vector<double> > coords_;
-    // TODO: check if l index is reversed will lead to performance
-    // boost, if $a^(L+1)_n$ stored in aln_[n][0], $a^(L)_n$ in
-    // aln_[n][1] and so on...
-    // at the moment order is forward!
     std::vector< std::vector<std::complex<double> > > aln_, bln_, cln_, dln_;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
