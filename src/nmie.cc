@@ -1007,9 +1007,14 @@ namespace nmie {
       // Equation (33)
       Qbktmp += (double)(n + n + 1)*(1 - 2*(n % 2))*(an_[i]- bn_[i]);
       // Calculate the scattering amplitudes (S1 and S2)    //
+      // Precalculate cos(theta) - gives about 5% speed up.
+      std::vector<double> costheta(theta_.size(), 0.0);
+      for (int t = 0; t < theta_.size(); t++) {
+	costheta[t] = std::cos(theta_[t]);
+      }
       // Equations (25a) - (25b)                            //
       for (unsigned int t = 0; t < theta_.size(); t++) {
-        calcPiTau(std::cos(theta_[t]), Pi, Tau);
+        calcPiTau(costheta[t], Pi, Tau);
 
         S1_[t] += calc_S1(n, an_[i], bn_[i], Pi[i], Tau[i]);
         S2_[t] += calc_S2(n, an_[i], bn_[i], Pi[i], Tau[i]);
