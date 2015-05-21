@@ -119,12 +119,6 @@ namespace nmie {
     /* std::vector<std::vector<std::complex<double> > >  GetFieldHSP(); */
     std::vector< std::array<double,5> > GetSpectraSP(double from_SP, double to_SP, int samples);  // WL,ext, sca, abs, bk
 
-    std::vector<double> GetQsca_channel();
-    std::vector<double> GetQabs_channel();
-    std::vector<double> GetQsca_channel_normalized();
-    std::vector<double> GetQabs_channel_normalized();
-    std::vector<std::complex<double> > GetAn(){return an_;};
-    std::vector<std::complex<double> > GetBn(){return bn_;}; 
 
     double GetAsymmetryFactor();
     double GetAlbedo();
@@ -162,13 +156,7 @@ namespace nmie {
     std::vector<double> target_width_, coating_width_;
     std::vector< std::complex<double> > target_index_, coating_index_;
 
-    // Scattering coefficients
-    std::vector<std::complex<double> > an_, bn_;
     std::vector< std::vector<double> > coords_sp_;
-    /// Store result
-    // Mie efficinecy from each multipole channel.
-    std::vector<double> Qsca_ch_, Qext_ch_, Qabs_ch_, Qbk_ch_, Qpr_ch_;
-    std::vector<double> Qsca_ch_norm_, Qext_ch_norm_, Qabs_ch_norm_, Qbk_ch_norm_, Qpr_ch_norm_;
 
 
 
