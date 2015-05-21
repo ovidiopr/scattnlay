@@ -123,9 +123,9 @@ def SetXM(design):
 
 ###############################################################################
 #design = 1 #AgSi
-design = 2
+#design = 2
 #design = 3
-#design = 4   # WL=800
+design = 4   # WL=800
 comment='SiAgSi-flow'
 #design = 5   # Bulk Ag
 # comment='bulk-Ag-flow'
@@ -134,7 +134,7 @@ x, m, WL = SetXM(design)
 WL_units='nm'
 print "x =", x
 print "m =", m
-npts = 501
+npts = 101
 factor=2.1
 flow_total = 39
 #flow_total = 21

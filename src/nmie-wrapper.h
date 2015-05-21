@@ -1,61 +1,41 @@
-#ifndef SRC_NMIE_NMIE_H_
-#define SRC_NMIE_NMIE_H_
-///
-/// @file   nmie-wrapper.h
-/// @author Ladutenko Konstantin <kostyfisik at gmail (.) com>
-/// @date   Tue Sep  3 00:40:47 2013
-/// @copyright 2013 Ladutenko Konstantin
-///
-/// nmie-wrapper is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
-///
-/// nmie-wrapper is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-/// GNU General Public License for more details.
-///
-/// You should have received a copy of the GNU General Public License
-/// along with nmie-wrapper.  If not, see <http://www.gnu.org/licenses/>.
-///
-/// nmie-wrapper uses nmie.c from scattnlay by Ovidio Pena
-/// <ovidio@bytesfall.com> as a linked library. He has an additional condition to 
-/// his library:
-//    The only additional condition is that we expect that all publications         //
-//    describing  work using this software , or all commercial products             //
+#ifndef SRC_NMIE_WRAPPER_H_
+#define SRC_NMIE_WRAPPER_H_
+//**********************************************************************************//
+//    Copyright (C) 2009-2015  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2013-2015  Konstantin Ladutenko <kostyfisik@gmail.com>          //
+//                                                                                  //
+//    This file is part of scattnlay                                                //
+//                                                                                  //
+//    This program is free software: you can redistribute it and/or modify          //
+//    it under the terms of the GNU General Public License as published by          //
+//    the Free Software Foundation, either version 3 of the License, or             //
+//    (at your option) any later version.                                           //
+//                                                                                  //
+//    This program is distributed in the hope that it will be useful,               //
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of                //
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                 //
+//    GNU General Public License for more details.                                  //
+//                                                                                  //
+//    The only additional remark is that we expect that all publications            //
+//    describing work using this software, or all commercial products               //
 //    using it, cite the following reference:                                       //
 //    [1] O. Pena and U. Pal, "Scattering of electromagnetic radiation by           //
 //        a multilayered sphere," Computer Physics Communications,                  //
 //        vol. 180, Nov. 2009, pp. 2348-2354.                                       //
-///
-/// @brief  Wrapper class around nMie function for ease of use
-/// 
-///
+//                                                                                  //
+//    You should have received a copy of the GNU General Public License             //
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
+//**********************************************************************************//
+
 #include <array>
 #include <complex>
 #include <cstdlib>
 #include <iostream>
 #include <vector>
 
-#ifndef NDEBUG
-#   define ASSERT(condition, message) \
-    do { \
-        if (! (condition)) { \
-            std::cerr << "Assertion `" #condition "` failed in " << __FILE__ \
-                      << " line " << __LINE__ << ": " << message << std::endl; \
-            std::exit(EXIT_FAILURE); \
-        } \
-    } while (false)
-#else
-#   define ASSERT(condition, message) do { } while (false)
-#endif
 
 
 namespace nmie {
-
-  int nMie_wrapper(int L,  std::vector<double>& x,  std::vector<std::complex<double> >& m, int nTheta,  std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nField(const int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp,  std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
 
 
   class MultiLayerMie {
@@ -189,15 +169,6 @@ namespace nmie {
     std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
 	                             std::complex<double> PsiXL, std::complex<double> ZetaXL,
 				                 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
-    std::complex<double> calc_S1(int n, std::complex<double> an, std::complex<double> bn,
-				                 double Pi, double Tau);
-    std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
-				                 double Pi, double Tau);
-    void calcPsiZeta(std::complex<double> x, 
-		             std::vector<std::complex<double> > D1,
-		             std::vector<std::complex<double> > D3,
-		             std::vector<std::complex<double> >& Psi,
-		             std::vector<std::complex<double> >& Zeta);
     std::complex<double> calcD1confra(int N, const std::complex<double> z);
     void calcD1D3(std::complex<double> z,
 		          std::vector<std::complex<double> >& D1,
@@ -265,4 +236,4 @@ namespace nmie {
   };  // end of class MultiLayerMie
 
 }  // end of namespace nmie
-#endif  // SRC_NMIE_NMIE_H_
+#endif  // SRC_NMIE_WRAPPER_H

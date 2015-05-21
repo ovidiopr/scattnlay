@@ -10,12 +10,12 @@ rm -f ../scattnlay
 
 #google profiler  ######## FAST!!!
 echo Uncomment next line to compile compare.cc
-# g++ -Ofast -std=c++11 $file nmie.cc  nmie-old.cc -lm -lrt -o scattnlay.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
+g++ -Ofast -std=c++11 $file nmie.cc  nmie-old.cc -lm -lrt -o scattnlay.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 
 #  g++ -Ofast -std=c++11 compare.cc nmie.cc  nmie-wrapper.cc -lm -lrt -o scattnlay-g.bin -ltcmalloc -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -g
 
 #DEBUG!
-clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 compare.cc nmie.cc  nmie-old.cc -lm -lrt -o scattnlay.bin
+#clang++ -g -O1 -fsanitize=address  -fno-optimize-sibling-calls -fno-omit-frame-pointer -std=c++11 compare.cc nmie.cc  nmie-old.cc -lm -lrt -o scattnlay.bin
 
 cp scattnlay.bin ../scattnlay
 # cp scattnlay-g.bin ../scattnlay-g
@@ -94,11 +94,11 @@ time  ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-3.4  $PROGRAM -l 5 0.4642 1.
 # ./$file.bin
 
 ### Cython
-rm scattnlay.so
-export CFLAGS='-std=c++11'
-python setup.py build_ext --inplace
-cp scattnlay.so tests/python/
-cd tests/python/
+# rm scattnlay.so
+# export CFLAGS='-std=c++11'
+# python setup.py build_ext --inplace
+# cp scattnlay.so tests/python/
+# cd tests/python/
 #./field-Ag-flow.py
 # ./lfield.py
 # ./field-dielectric-sphere.py
