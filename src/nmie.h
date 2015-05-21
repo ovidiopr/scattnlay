@@ -98,7 +98,8 @@ namespace nmie {
 
     std::vector<std::vector< std::complex<double> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<double> > > GetFieldH(){return H_;};
-  private:
+//  private:
+  protected:
     void calcNstop();
     void calcNmax(unsigned int first_layer);
 

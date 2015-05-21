@@ -1,5 +1,5 @@
-#ifndef SRC_NMIE_WRAPPER_H_
-#define SRC_NMIE_WRAPPER_H_
+#ifndef SRC_NMIE_APPLIED_H_
+#define SRC_NMIE_APPLIED_H_
 //**********************************************************************************//
 //    Copyright (C) 2009-2015  Ovidio Pena <ovidio@bytesfall.com>                   //
 //    Copyright (C) 2013-2015  Konstantin Ladutenko <kostyfisik@gmail.com>          //
@@ -32,15 +32,20 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-
+#include "nmie.h"
 
 
 namespace nmie {
 
+  int nMieApplied(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+  int nMieApplied(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+  int nMieApplied(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+  int nMieApplied(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
 
-  class MultiLayerMie {
+
+
+  class MultiLayerMieApplied : public MultiLayerMie {
     // Will throw for any error!
-    // SP stands for size parameter units.
    public:
     void GetFailed();
     long iformat = 0;
@@ -79,8 +84,6 @@ namespace nmie {
     std::vector<double> GetAngles();
     void SetPEC(int layer_position = 0);  // By default set PEC layer to be the first one
     
-    void SetMaxTermsNumber(int nmax);
-    int GetMaxTermsUsed() {return nmax_used_;};
     
     void ClearTarget();
     void ClearCoating();
@@ -96,10 +99,6 @@ namespace nmie {
     std::vector<double>                  GetCoatingLayersWidth();
     std::vector< std::complex<double> >  GetCoatingLayersIndex();
     std::vector< std::vector<double> >   GetFieldPoints();
-    std::vector<std::vector< std::complex<double> > >
-      GetFieldE(){return E_field_;};   // {X[], Y[], Z[]}
-    std::vector<std::vector< std::complex<double> > >
-      GetFieldH(){return H_field_;};
     std::vector< std::vector<double> > GetSpectra(double from_WL, double to_WL, int samples);  // ext, sca, abs, bk
     double GetRCSext();
     double GetRCSsca();
@@ -120,10 +119,6 @@ namespace nmie {
     std::vector< std::array<double,5> > GetSpectraSP(double from_SP, double to_SP, int samples);  // WL,ext, sca, abs, bk
 
 
-    double GetAsymmetryFactor();
-    double GetAlbedo();
-    std::vector<std::complex<double> > GetS1();
-    std::vector<std::complex<double> > GetS2();
     std::vector<double> GetPatternEkSP();
     std::vector<double> GetPatternHkSP();
     std::vector<double> GetPatternUnpolarizedSP();
@@ -164,4 +159,4 @@ namespace nmie {
   };  // end of class MultiLayerMie
 
 }  // end of namespace nmie
-#endif  // SRC_NMIE_WRAPPER_H
+#endif  // SRC_NMIE_APPLIED_H
