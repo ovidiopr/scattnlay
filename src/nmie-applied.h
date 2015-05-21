@@ -80,10 +80,7 @@ namespace nmie {
 
     // Set common parameters
     void SetAnglesForPattern(double from_angle, double to_angle, int samples);
-    void SetAngles(const std::vector<double>& angles);
     std::vector<double> GetAngles();
-    void SetPEC(int layer_position = 0);  // By default set PEC layer to be the first one
-    
     
     void ClearTarget();
     void ClearCoating();

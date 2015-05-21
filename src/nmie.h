@@ -35,6 +35,12 @@
 #include <vector>
 
 namespace nmie {
+  //Used constants
+  const double PI_=3.14159265358979323846;
+  // light speed [m s-1]
+  const double cc_ = 2.99792458e8;
+  // assume non-magnetic (MU=MU0=const) [N A-2]
+  const double mu_ = 4.0*PI_*1.0e-7;
   int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn);
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
@@ -86,8 +92,10 @@ namespace nmie {
     // Get maximun number of terms
     int GetMaxTerms() {return nmax_;};
 
+    bool isMieCalculated(){return isMieCalculated_;};
     // Clear layer information
     void ClearLayers();
+    void MarkUncalculated();
 
     // Applied units requests
     double GetSizeParameter();
@@ -98,8 +106,15 @@ namespace nmie {
 
     std::vector<std::vector< std::complex<double> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<double> > > GetFieldH(){return H_;};
-//  private:
+
   protected:
+    // Size parameter for all layers
+    std::vector<double> size_param_;
+    // Refractive index for all layers
+    std::vector< std::complex<double> > refractive_index_;
+    // Scattering angles for scattering pattern in radians
+
+  private:
     void calcNstop();
     void calcNmax(unsigned int first_layer);
 
@@ -135,11 +150,6 @@ namespace nmie {
     bool isScaCoeffsCalc_ = false;
     bool isMieCalculated_ = false;
 
-    // Size parameter for all layers
-    std::vector<double> size_param_;
-    // Refractive index for all layers
-    std::vector< std::complex<double> > refractive_index_;
-    // Scattering angles for scattering pattern in radians
     std::vector<double> theta_;
     // Should be -1 if there is no PEC.
     int PEC_layer_position_ = -1;
@@ -156,12 +166,6 @@ namespace nmie {
     std::vector<std::vector< std::complex<double> > > E_, H_;  // {X[], Y[], Z[]}
     std::vector<std::complex<double> > S1_, S2_;
 
-    //Used constants
-    const double PI_=3.14159265358979323846;
-    // light speed [m s-1]
-    double const cc_ = 2.99792458e8;
-    // assume non-magnetic (MU=MU0=const) [N A-2]
-    double const mu_ = 4.0*PI_*1.0e-7;
 
     //Temporary variables
     std::vector<std::complex<double> > PsiZeta_;

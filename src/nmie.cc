@@ -411,9 +411,7 @@ namespace nmie {
   // Modify scattering (theta) angles                                       //
   // ********************************************************************** //
   void MultiLayerMie::SetAngles(const std::vector<double>& angles) {
-    isExpCoeffsCalc_ = false;
-    isScaCoeffsCalc_ = false;
-    isMieCalculated_ = false;
+    MarkUncalculated();
     theta_ = angles;
   }
 
@@ -422,9 +420,7 @@ namespace nmie {
   // Modify size of all layers                                             //
   // ********************************************************************** //
   void MultiLayerMie::SetAllLayersSize(const std::vector<double>& layer_size) {
-    isExpCoeffsCalc_ = false;
-    isScaCoeffsCalc_ = false;
-    isMieCalculated_ = false;
+    MarkUncalculated();
     size_param_.clear();
     double prev_layer_size = 0.0;
     for (auto curr_layer_size : layer_size) {
@@ -443,9 +439,7 @@ namespace nmie {
   // Modify refractive index of all layers                                  //
   // ********************************************************************** //
   void MultiLayerMie::SetAllLayersIndex(const std::vector< std::complex<double> >& index) {
-    isExpCoeffsCalc_ = false;
-    isScaCoeffsCalc_ = false;
-    isMieCalculated_ = false;
+    MarkUncalculated();
     refractive_index_ = index;
   }
 
@@ -466,9 +460,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMie::SetPECLayer(int layer_position) {
-    isExpCoeffsCalc_ = false;
-    isScaCoeffsCalc_ = false;
-    isMieCalculated_ = false;
+    MarkUncalculated();
     if (layer_position < 0 && layer_position != -1)
       throw std::invalid_argument("Error! Layers are numbered from 0!");
     PEC_layer_position_ = layer_position;
@@ -479,9 +471,7 @@ namespace nmie {
   // Set maximun number of terms to be used                                 //
   // ********************************************************************** //
   void MultiLayerMie::SetMaxTerms(int nmax) {
-    isExpCoeffsCalc_ = false;
-    isScaCoeffsCalc_ = false;
-    isMieCalculated_ = false;
+    MarkUncalculated();
     nmax_preset_ = nmax;
   }
 
@@ -496,14 +486,20 @@ namespace nmie {
       return 0;
   }
 
+  // ********************************************************************** //
+  // Mark uncalculated                                                      //
+  // ********************************************************************** //
+  void MultiLayerMie::MarkUncalculated() {
+    isExpCoeffsCalc_ = false;
+    isScaCoeffsCalc_ = false;
 
+    isMieCalculated_ = false;
+  }
   // ********************************************************************** //
   // Clear layer information                                                //
   // ********************************************************************** //
   void MultiLayerMie::ClearLayers() {
-    isExpCoeffsCalc_ = false;
-    isScaCoeffsCalc_ = false;
-    isMieCalculated_ = false;
+    MarkUncalculated();
     size_param_.clear();
     refractive_index_.clear();
   }
@@ -963,9 +959,7 @@ namespace nmie {
 
     const std::vector<double>& x = size_param_;
 
-    isExpCoeffsCalc_ = false;
-    isScaCoeffsCalc_ = false;
-    isMieCalculated_ = false;
+    MarkUncalculated();
 
     // Calculate scattering coefficients
     calcScattCoeffs();

@@ -140,7 +140,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMieApplied::AddTargetLayer(double width, std::complex<double> layer_index) {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     if (width <= 0)
       throw std::invalid_argument("Layer width should be positive!");
     target_width_.push_back(width);
@@ -150,36 +150,27 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMieApplied::SetTargetPEC(double radius) {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     if (target_width_.size() != 0 || target_index_.size() != 0)
       throw std::invalid_argument("Error! Define PEC target radius before any other layers!");
     // Add layer of any index...
     AddTargetLayer(radius, std::complex<double>(0.0, 0.0));
     // ... and mark it as PEC
-    SetPEC(0.0);
+    SetPECLayer(0);
   }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMieApplied::SetCoatingIndex(std::vector<std::complex<double> > index) {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     coating_index_.clear();
     for (auto value : index) coating_index_.push_back(value);
   }  // end of void MultiLayerMieApplied::SetCoatingIndex(std::vector<complex> index);  
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMieApplied::SetAngles(const std::vector<double>& angles) {
-    isMieCalculated_ = false;
-    theta_ = angles;
-    // theta_.clear();
-    // for (auto value : angles) theta_.push_back(value);
-  }  // end of SetAngles()
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
   void MultiLayerMieApplied::SetCoatingWidth(std::vector<double> width) {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     coating_width_.clear();
     for (auto w : width)
       if (w <= 0)
@@ -191,7 +182,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMieApplied::SetWidthSP(const std::vector<double>& size_parameter) {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     size_param_.clear();
     double prev_size_parameter = 0.0;
     for (auto layer_size_parameter : size_parameter) {
@@ -209,7 +200,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMieApplied::SetIndexSP(const std::vector< std::complex<double> >& index) {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     //refractive_index_.clear();
     refractive_index_ = index;
     // for (auto value : index) refractive_index_.push_back(value);
@@ -230,17 +221,8 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void MultiLayerMieApplied::SetPEC(int layer_position) {
-    isMieCalculated_ = false;
-    if (layer_position < 0)
-      throw std::invalid_argument("Error! Layers are numbered from 0!");
-    PEC_layer_position_ = layer_position;
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
   void MultiLayerMieApplied::GenerateSizeParameter() {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     size_param_.clear();
     double radius = 0.0;
     for (auto width : target_width_) {
@@ -257,7 +239,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMieApplied::GenerateIndex() {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     refractive_index_.clear();
     for (auto index : target_index_) refractive_index_.push_back(index);
     for (auto index : coating_index_) refractive_index_.push_back(index);
@@ -266,9 +248,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   double MultiLayerMieApplied::GetTotalRadius() {
-    if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
-    if (total_radius_ == 0) GenerateSizeParameter();
+    if (!isMieCalculated())  GenerateSizeParameter();
     return total_radius_;      
   }  // end of double MultiLayerMieApplied::GetTotalRadius();
   // ********************************************************************** //
@@ -276,7 +256,7 @@ namespace nmie {
   // ********************************************************************** //
   std::vector< std::vector<double> >
   MultiLayerMieApplied::GetSpectra(double from_WL, double to_WL, int samples) {
-    if (!isMieCalculated_)
+    if (!isMieCalculated())
       throw std::invalid_argument("You should run calculations before result request!");
     std::vector< std::vector<double> > spectra;
     double step_WL = (to_WL - from_WL)/static_cast<double>(samples);
@@ -291,7 +271,8 @@ namespace nmie {
         continue;
       }
       //printf("%3.1f ",WL);
-      spectra.push_back(std::vector<double>({wavelength_, Qext_, Qsca_, Qabs_, Qbk_}));
+      spectra.push_back(std::vector<double>({wavelength_, GetQext(),
+	      GetQsca(), GetQabs(), GetQbk()}));
     }  // end of for each WL in spectra
     printf("Spectrum has %li fails\n",fails);
     wavelength_ = wavelength_backup;
@@ -301,7 +282,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMieApplied::ClearTarget() {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     target_width_.clear();
     target_index_.clear();
   }
@@ -309,7 +290,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMieApplied::ClearCoating() {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     coating_width_.clear();
     coating_index_.clear();
   }
@@ -317,7 +298,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMieApplied::ClearLayers() {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     ClearTarget();
     ClearCoating();
   }
@@ -325,7 +306,7 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMieApplied::ClearAllDesign() {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     ClearLayers();
     size_param_.clear();
     refractive_index_.clear();
@@ -445,7 +426,7 @@ c    MM + 1  and - 1, alternately
   // ********************************************************************** //
   // ********************************************************************** //
   void MultiLayerMieApplied::ConvertToSP() {
-    isMieCalculated_ = false;
+    MarkUncalculated();
     if (target_width_.size() + coating_width_.size() == 0)
       return;  // Nothing to convert, we suppose that SP was set directly
     GenerateSizeParameter();
