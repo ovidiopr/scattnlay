@@ -27,7 +27,7 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 
-#define VERSION "2.0.0"
+#define VERSION "2.0"
 #include <array>
 #include <complex>
 #include <cstdlib>
