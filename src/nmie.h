@@ -70,16 +70,10 @@ namespace nmie {
     std::vector<std::complex<double> > GetBn(){return bn_;};
 
     // Problem definition
-    // Add new layer
-    void AddNewLayer(double layer_size, std::complex<double> layer_index);
-    // Modify width of the layer
-    void SetLayerSize(std::vector<double> layer_size, int layer_position = 0);
-    // Modify refractive index of the layer
-    void SetLayerIndex(std::vector< std::complex<double> > layer_index, int layer_position = 0);
     // Modify size of all layers
-    void SetAllLayersSize(const std::vector<double>& layer_size);
+    void SetLayersSize(const std::vector<double>& layer_size);
     // Modify refractive index of all layers
-    void SetAllLayersIndex(const std::vector< std::complex<double> >& index);
+    void SetLayersIndex(const std::vector< std::complex<double> >& index);
     // Modify scattering (theta) angles
     void SetAngles(const std::vector<double>& angles);
     // Modify coordinates for field calculation
@@ -97,12 +91,11 @@ namespace nmie {
     void ClearLayers();
     void MarkUncalculated();
 
-    // Applied units requests
+    // Read parameters
     double GetSizeParameter();
-    double GetLayerWidth(int layer_position = 0);
-    std::vector<double> GetLayersSize();
-    std::vector<std::complex<double> > GetLayersIndex();
-    std::vector<std::array<double, 3> > GetFieldCoords();
+    std::vector<double> GetLayersSize(){return size_param_;};
+    std::vector<std::complex<double> > GetLayersIndex(){return refractive_index_;};
+    std::vector<std::array<double, 3> > GetFieldCoords(){return coords_;};
 
     std::vector<std::vector< std::complex<double> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<double> > > GetFieldH(){return H_;};
