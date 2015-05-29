@@ -78,7 +78,7 @@ namespace nmie {
     void SetAngles(const std::vector<double>& angles);
     // Modify coordinates for field calculation
     void SetFieldCoords(const std::vector< std::vector<double> >& coords);
-    // Modify PEC layer
+    // Modify index of PEC layer
     void SetPECLayer(int layer_position = 0);
 
     // Set a fixed value for the maximun number of terms
@@ -92,10 +92,18 @@ namespace nmie {
     void MarkUncalculated();
 
     // Read parameters
+    // Get total size parameter of particle
     double GetSizeParameter();
+    // Returns size of all layers
     std::vector<double> GetLayersSize(){return size_param_;};
+    // Returns refractive index of all layers
     std::vector<std::complex<double> > GetLayersIndex(){return refractive_index_;};
+    // Returns scattering (theta) angles
+    std::vector<double> GetAngles(){return theta_;};
+    // Returns coordinates used for field calculation
     std::vector<std::vector<double> > GetFieldCoords(){return coords_;};
+    // Returns index of PEC layer
+    int GetPECLayer(){return PEC_layer_position_;};
 
     std::vector<std::vector< std::complex<double> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<double> > > GetFieldH(){return H_;};
