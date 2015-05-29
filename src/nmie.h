@@ -95,7 +95,7 @@ namespace nmie {
     double GetSizeParameter();
     std::vector<double> GetLayersSize(){return size_param_;};
     std::vector<std::complex<double> > GetLayersIndex(){return refractive_index_;};
-    std::vector<std::array<double, 3> > GetFieldCoords(){return coords_;};
+    std::vector<std::vector<double> > GetFieldCoords(){return coords_;};
 
     std::vector<std::vector< std::complex<double> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<double> > > GetFieldH(){return H_;};
