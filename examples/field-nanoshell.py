@@ -35,6 +35,7 @@
 
 from scattnlay import fieldnlay
 import numpy as np
+import time
 
 n1 = 1.53413
 n2 = 0.565838 + 7.23262j
@@ -62,7 +63,12 @@ coordZ = np.zeros(npts*npts, dtype = np.float64)
 
 coord = np.vstack((coordX, coordY, coordZ)).transpose()
 
+start_time = time.time()
+
 terms, E, H = fieldnlay(x, m, coord)
+
+elapsed_time = time.time() - start_time
+print "Time: ", elapsed_time
 
 Er = np.absolute(E)
 

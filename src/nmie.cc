@@ -78,8 +78,8 @@ namespace nmie {
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
     try {
       MultiLayerMie ml_mie;
-      ml_mie.SetAllLayersSize(x);
-      ml_mie.SetAllLayersIndex(m);
+      ml_mie.SetLayersSize(x);
+      ml_mie.SetLayersIndex(m);
       ml_mie.SetPECLayer(pl);
       ml_mie.SetMaxTerms(nmax);
 
@@ -135,8 +135,8 @@ namespace nmie {
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
       MultiLayerMie ml_mie;
-      ml_mie.SetAllLayersSize(x);
-      ml_mie.SetAllLayersIndex(m);
+      ml_mie.SetLayersSize(x);
+      ml_mie.SetLayersIndex(m);
       ml_mie.SetAngles(Theta);
       ml_mie.SetPECLayer(pl);
       ml_mie.SetMaxTerms(nmax);
@@ -299,8 +299,8 @@ namespace nmie {
     try {
       MultiLayerMie ml_mie;
       ml_mie.SetPECLayer(pl);
-      ml_mie.SetAllLayersSize(x);
-      ml_mie.SetAllLayersIndex(m);
+      ml_mie.SetLayersSize(x);
+      ml_mie.SetLayersIndex(m);
       ml_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
       ml_mie.RunFieldCalculation();
       E = ml_mie.GetFieldE();
@@ -419,7 +419,7 @@ namespace nmie {
   // ********************************************************************** //
   // Modify size of all layers                                             //
   // ********************************************************************** //
-  void MultiLayerMie::SetAllLayersSize(const std::vector<double>& layer_size) {
+  void MultiLayerMie::SetLayersSize(const std::vector<double>& layer_size) {
     MarkUncalculated();
     size_param_.clear();
     double prev_layer_size = 0.0;
@@ -438,7 +438,7 @@ namespace nmie {
   // ********************************************************************** //
   // Modify refractive index of all layers                                  //
   // ********************************************************************** //
-  void MultiLayerMie::SetAllLayersIndex(const std::vector< std::complex<double> >& index) {
+  void MultiLayerMie::SetLayersIndex(const std::vector< std::complex<double> >& index) {
     MarkUncalculated();
     refractive_index_ = index;
   }
@@ -457,7 +457,7 @@ namespace nmie {
 
 
   // ********************************************************************** //
-  // ********************************************************************** //
+  // Modify index of PEC layer                                              //
   // ********************************************************************** //
   void MultiLayerMie::SetPECLayer(int layer_position) {
     MarkUncalculated();
@@ -477,7 +477,7 @@ namespace nmie {
 
 
   // ********************************************************************** //
-  // ********************************************************************** //
+  // Get total size parameter of particle                                   //
   // ********************************************************************** //
   double MultiLayerMie::GetSizeParameter() {
     if (size_param_.size() > 0)

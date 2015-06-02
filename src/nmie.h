@@ -27,7 +27,7 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 
-#define VERSION "2.0.0"
+#define VERSION "2.0"
 #include <array>
 #include <complex>
 #include <cstdlib>
@@ -70,21 +70,15 @@ namespace nmie {
     std::vector<std::complex<double> > GetBn(){return bn_;};
 
     // Problem definition
-    // Add new layer
-    void AddNewLayer(double layer_size, std::complex<double> layer_index);
-    // Modify width of the layer
-    void SetLayerSize(std::vector<double> layer_size, int layer_position = 0);
-    // Modify refractive index of the layer
-    void SetLayerIndex(std::vector< std::complex<double> > layer_index, int layer_position = 0);
     // Modify size of all layers
-    void SetAllLayersSize(const std::vector<double>& layer_size);
+    void SetLayersSize(const std::vector<double>& layer_size);
     // Modify refractive index of all layers
-    void SetAllLayersIndex(const std::vector< std::complex<double> >& index);
+    void SetLayersIndex(const std::vector< std::complex<double> >& index);
     // Modify scattering (theta) angles
     void SetAngles(const std::vector<double>& angles);
     // Modify coordinates for field calculation
     void SetFieldCoords(const std::vector< std::vector<double> >& coords);
-    // Modify PEC layer
+    // Modify index of PEC layer
     void SetPECLayer(int layer_position = 0);
 
     // Set a fixed value for the maximun number of terms
@@ -97,12 +91,19 @@ namespace nmie {
     void ClearLayers();
     void MarkUncalculated();
 
-    // Applied units requests
+    // Read parameters
+    // Get total size parameter of particle
     double GetSizeParameter();
-    double GetLayerWidth(int layer_position = 0);
-    std::vector<double> GetLayersSize();
-    std::vector<std::complex<double> > GetLayersIndex();
-    std::vector<std::array<double, 3> > GetFieldCoords();
+    // Returns size of all layers
+    std::vector<double> GetLayersSize(){return size_param_;};
+    // Returns refractive index of all layers
+    std::vector<std::complex<double> > GetLayersIndex(){return refractive_index_;};
+    // Returns scattering (theta) angles
+    std::vector<double> GetAngles(){return theta_;};
+    // Returns coordinates used for field calculation
+    std::vector<std::vector<double> > GetFieldCoords(){return coords_;};
+    // Returns index of PEC layer
+    int GetPECLayer(){return PEC_layer_position_;};
 
     std::vector<std::vector< std::complex<double> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<double> > > GetFieldH(){return H_;};
