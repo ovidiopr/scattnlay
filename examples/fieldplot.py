@@ -211,9 +211,11 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
 
         # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
         ax.set_title(label)
-        cax = ax.imshow(Eabs_data, interpolation = 'nearest', cmap = cm.jet,
+        my_cmap = cm.jet
+        my_cmap.set_under('w')
+        cax = ax.imshow(Eabs_data, interpolation = 'nearest', cmap = my_cmap,
                         origin = 'lower'
-                        , vmin = min_tick, vmax = max_tick
+                        , vmin = min_tick+max_tick*1e-15, vmax = max_tick
                         , extent = (min(scale_x), max(scale_x), min(scale_z), max(scale_z))
                         #,norm = LogNorm()
                         )
@@ -238,25 +240,12 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
         # # This part draws the nanoshell
         from matplotlib import patches
         from matplotlib.path import Path
-        for xx in x:
+        x_edge = (x[-1], x[0])
+        for xx in x_edge:
             r= xx*WL/2.0/np.pi
             s1 = patches.Arc((0, 0), 2.0*r, 2.0*r,  angle=0.0, zorder=1.8,
                              theta1=0.0, theta2=360.0, linewidth=outline_width, color='black')
             ax.add_patch(s1)
-        # 
-        # for flow in range(0,flow_total):
-        #     flow_x, flow_z = GetFlow(scale_x, scale_z, Ec, Hc,
-        #                              min(scale_x)+flow*(scale_x[-1]-scale_x[0])/(flow_total-1),
-        #                              min(scale_z),
-        #                              #0.0,
-        #                              npts*16)
-        #     verts = np.vstack((flow_z, flow_x)).transpose().tolist()
-        #     #codes = [Path.CURVE4]*len(verts)
-        #     codes = [Path.LINETO]*len(verts)
-        #     codes[0] = Path.MOVETO
-        #     path = Path(verts, codes)
-        #     patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='yellow')
-        #     ax.add_patch(patch)
         if (crossplane=='XZ' or crossplane=='YZ') and flow_total>0:
 
             from matplotlib.path import Path
@@ -265,7 +254,7 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
             step_SP = 2.0*factor*x[-1]/(flow_total-1)
             x0, y0, z0 = 0, 0, 0
             max_length=factor*x[-1]*8
-            #max_length=factor*x[-1]*5
+            #max_length=factor*x[-1]*4
             max_angle = np.pi/160
             if is_flow_extend:
                 rg = range(0,flow_total*2+1)
@@ -299,12 +288,12 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
                 codes[0] = Path.MOVETO
                 path = Path(verts, codes)
                 #patch = patches.PathPatch(path, facecolor='none', lw=0.2, edgecolor='white',zorder = 2.7)
-                patch = patches.PathPatch(path, facecolor='none', lw=0.7, edgecolor='white',zorder = 1.9)
+                patch = patches.PathPatch(path, facecolor='none', lw=1.5, edgecolor='white',zorder = 1.9)
                 ax.add_patch(patch)
                 #ax.plot(flow_z_plot, flow_f_plot, 'x',ms=2, mew=0.1, linewidth=0.5, color='k', fillstyle='none')
 
         plt.savefig(comment+"-R"+str(int(round(x[-1]*WL/2.0/np.pi)))+"-"+crossplane+"-"
-                    +field_to_plot+".pdf")
+                    +field_to_plot+".png")
         plt.draw()
 
     #    plt.show()

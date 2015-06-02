@@ -104,7 +104,7 @@ if __name__ == '__main__':
             comment='PEC-'+basename
             WL_units='cm'
             flow_total = 39
-            #flow_total = 0
+            #flow_total = 5
             #crossplane='XZ'
             crossplane='YZ'
             #crossplane='XY'
@@ -114,7 +114,7 @@ if __name__ == '__main__':
             #field_to_plot='Eabs'
             #field_to_plot='angleEx'
             fieldplot(x[0],m[0], wl, comment, WL_units, crossplane, field_to_plot, npts,
-                      factor, flow_total, pl=0, outline_width=0.1)
+                      factor, flow_total, pl=0, outline_width=2.0)
 
 
         print "Done!!"
