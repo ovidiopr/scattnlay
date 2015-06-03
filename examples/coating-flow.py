@@ -99,14 +99,15 @@ if __name__ == '__main__':
 
             x[0] = 2.0*np.pi*np.array(r, dtype = np.float64)/wl
             m[0] = np.array([ms] + nvalues[:, 1].tolist(), dtype = np.complex128)
+            print(x,m)
 
             factor = 2
             comment='PEC-'+basename
             WL_units='cm'
-            flow_total = 39
-            #flow_total = 5
-            #crossplane='XZ'
-            crossplane='YZ'
+            #flow_total = 39
+            flow_total = 25
+            crossplane='XZ'
+            #crossplane='YZ'
             #crossplane='XY'
 
             # Options to plot: Eabs, Habs, Pabs, angleEx, angleHy

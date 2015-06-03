@@ -165,7 +165,7 @@ def GetField(crossplane, npts, factor, x, m, pl):
     Ec = E[0, :, :]
     Hc = H[0, :, :]
     P=[]
-    P = np.array(map(lambda n: np.linalg.norm(np.cross(Ec[n], Hc[n])).real, range(0, len(E[0]))))
+    P = np.array(map(lambda n: np.linalg.norm(np.cross(Ec[n], np.conjugate(Hc[n]))).real, range(0, len(E[0]))))
 
     # for n in range(0, len(E[0])):
     #     P.append(np.linalg.norm( np.cross(Ec[n], np.conjugate(Hc[n]) ).real/2 ))
@@ -181,7 +181,7 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
         from matplotlib.colors import LogNorm
         if field_to_plot == 'Pabs':
             Eabs_data = np.resize(P, (npts, npts)).T 
-            label = r'$\operatorname{Re}(E \times H)$'
+            label = r'$\operatorname{Re}(E \times H^*)$'
         elif field_to_plot == 'Eabs':
             Eabs = np.sqrt(Er[ :, 0]**2 + Er[ :, 1]**2 + Er[ :, 2]**2)
             Eabs_data = np.resize(Eabs, (npts, npts)).T 
@@ -212,7 +212,8 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
         # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
         ax.set_title(label)
         my_cmap = cm.jet
-        my_cmap.set_under('w')
+        if not (field_to_plot == 'angleEx' or field_to_plot == 'angleHy'):
+            my_cmap.set_under('w')
         cax = ax.imshow(Eabs_data, interpolation = 'nearest', cmap = my_cmap,
                         origin = 'lower'
                         , vmin = min_tick+max_tick*1e-15, vmax = max_tick
@@ -293,7 +294,8 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
                 #ax.plot(flow_z_plot, flow_f_plot, 'x',ms=2, mew=0.1, linewidth=0.5, color='k', fillstyle='none')
 
         plt.savefig(comment+"-R"+str(int(round(x[-1]*WL/2.0/np.pi)))+"-"+crossplane+"-"
-                    +field_to_plot+".png")
+#                    +field_to_plot+".png")
+                    +field_to_plot+".pdf")
         plt.draw()
 
     #    plt.show()
