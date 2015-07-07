@@ -129,7 +129,7 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
 ###############################################################################
 def GetField(crossplane, npts, factor, x, m, pl):
     """
-    crossplane: XZ, YZ, XY
+    crossplane: XZ, YZ, XY, or XYZ (half is XZ, half is YZ)
     npts: number of point in each direction
     factor: ratio of plotting size to outer size of the particle
     x: size parameters for particle layers
@@ -143,45 +143,55 @@ def GetField(crossplane, npts, factor, x, m, pl):
         coordX.resize(npts*npts)
         coordZ.resize(npts*npts)
         coordY = zero
-        coordPlot1 = coordX
-        coordPlot2 = coordZ
     elif crossplane=='YZ':
         coordY, coordZ = np.meshgrid(scan, scan)
         coordY.resize(npts*npts)
         coordZ.resize(npts*npts)
         coordX = zero
-        coordPlot1 = coordY
-        coordPlot2 = coordZ
     elif crossplane=='XY':
         coordX, coordY = np.meshgrid(scan, scan)
         coordX.resize(npts*npts)
         coordY.resize(npts*npts)
         coordZ = zero
-        coordPlot1 = coordY
-        coordPlot2 = coordX
+    elif crossplane=='XYZ':
+        coordX, coordZ = np.meshgrid(scan, scan)
+        coordY, coordZ = np.meshgrid(scan, scan)
+        half=npts//2
+        # coordX = np.copy(coordX)
+        # coordY = np.copy(coordY)
+        coordX[:,:half]=0
+        coordY[:,half:]=0
+        coordX.resize(npts*npts)
+        coordY.resize(npts*npts)
+        coordZ.resize(npts*npts)
         
     coord = np.vstack((coordX, coordY, coordZ)).transpose()
     terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord, pl=pl)
     Ec = E[0, :, :]
     Hc = H[0, :, :]
     P=[]
-    P = np.array(map(lambda n: np.linalg.norm(np.cross(Ec[n], np.conjugate(Hc[n]))).real, range(0, len(E[0]))))
+    P = np.array(map(lambda n: np.linalg.norm(np.cross(Ec[n], Hc[n])), range(0, len(E[0]))))
 
     # for n in range(0, len(E[0])):
     #     P.append(np.linalg.norm( np.cross(Ec[n], np.conjugate(Hc[n]) ).real/2 ))
-    return Ec, Hc, P, coordPlot1, coordPlot2
+    return Ec, Hc, P
 ###############################################################################
 def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot='Pabs',npts=101, factor=2.1, flow_total=11, is_flow_extend=True, pl=-1, outline_width=1):
-    Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m, pl)
+    Ec, Hc, P = GetField(crossplane, npts, factor, x, m, pl)
+    scan = np.linspace(-factor*x[-1], factor*x[-1], npts)
+    coordX1, coordZ1 = np.meshgrid(scan, scan)
+
     Er = np.absolute(Ec)
     Hr = np.absolute(Hc)
+
     try:
         import matplotlib.pyplot as plt
         from matplotlib import cm
         from matplotlib.colors import LogNorm
         if field_to_plot == 'Pabs':
             Eabs_data = np.resize(P, (npts, npts)).T 
-            label = r'$\operatorname{Re}(E \times H^*)$'
+            #label = r'$\operatorname{Re}(E \times H^*)$'
+            label = r'$\left |E \times H\right|$'
         elif field_to_plot == 'Eabs':
             Eabs = np.sqrt(Er[ :, 0]**2 + Er[ :, 1]**2 + Er[ :, 2]**2)
             Eabs_data = np.resize(Eabs, (npts, npts)).T 
@@ -201,8 +211,10 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
 
         fig, ax = plt.subplots(1,1)
         # Rescale to better show the axes
-        scale_x = np.linspace(min(coordX)*WL/2.0/np.pi, max(coordX)*WL/2.0/np.pi, npts)
-        scale_z = np.linspace(min(coordZ)*WL/2.0/np.pi, max(coordZ)*WL/2.0/np.pi, npts)
+        # scale_x = np.linspace(min(coordX1)*WL/2.0/np.pi, max(coordX1)*WL/2.0/np.pi, npts)
+        # scale_z = np.linspace(min(coordZ1)*WL/2.0/np.pi, max(coordZ1)*WL/2.0/np.pi, npts)
+        scale_x = np.linspace(-factor*x[-1]*WL/2.0/np.pi, factor*x[-1]*WL/2.0/np.pi, npts)
+        scale_z = np.linspace(-factor*x[-1]*WL/2.0/np.pi, factor*x[-1]*WL/2.0/np.pi, npts)
 
         # Define scale ticks
         min_tick = np.amin(Eabs_data[~np.isnan(Eabs_data)])
@@ -233,6 +245,9 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
         elif crossplane=='YZ':
             plt.xlabel('Z, '+WL_units)
             plt.ylabel('Y, '+WL_units)
+        elif crossplane=='XYZ':
+            plt.xlabel('Z, '+WL_units)
+            plt.ylabel('Y:X, '+WL_units)
         elif crossplane=='XY':
             plt.xlabel('Y, '+WL_units)
             plt.ylabel('X, '+WL_units)
@@ -247,13 +262,12 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
             s1 = patches.Arc((0, 0), 2.0*r, 2.0*r,  angle=0.0, zorder=1.8,
                              theta1=0.0, theta2=360.0, linewidth=outline_width, color='black')
             ax.add_patch(s1)
-        if (crossplane=='XZ' or crossplane=='YZ') and flow_total>0:
-
+        if (not crossplane=='XY') and flow_total>0:
             from matplotlib.path import Path
             scanSP = np.linspace(-factor*x[-1], factor*x[-1], npts)
             min_SP = -factor*x[-1]
             step_SP = 2.0*factor*x[-1]/(flow_total-1)
-            x0, y0, z0 = 0, 0, 0
+            x0, y0, z0, f = 0, 0, 0, 0
             max_length=factor*x[-1]*8
             #max_length=factor*x[-1]*4
             max_angle = np.pi/160
@@ -262,20 +276,23 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
             else:
                 rg = range(0,flow_total)
             for flow in rg:
+                if is_flow_extend:
+                    f = min_SP*2 + flow*step_SP
+                else:
+                    f = min_SP + flow*step_SP
                 if crossplane=='XZ':
-                    if is_flow_extend:
-                        x0 = min_SP*2 + flow*step_SP
-                    else:
-                        x0 = min_SP + flow*step_SP
-                    z0 = min_SP
-                    #y0 = x[-1]/20 
+                    x0 = f
                 elif crossplane=='YZ':
-                    if is_flow_extend:
-                        y0 = min_SP*2 + flow*step_SP
+                    y0 = f
+                elif crossplane=='XYZ':
+                    x0 = 0
+                    y0 = 0
+                    if f > 0:
+                        x0 = f
                     else:
-                        y0 = min_SP + flow*step_SP
-                    z0 = min_SP
-                    #x0 = x[-1]/20
+                        y0 = f
+                z0 = min_SP
+
                 flow_xSP, flow_ySP, flow_zSP = GetFlow3D(x0, y0, z0, max_length, max_angle, x, m,pl)
                 if crossplane=='XZ':
                     flow_z_plot = flow_zSP*WL/2.0/np.pi
@@ -283,15 +300,31 @@ def fieldplot(x,m, WL, comment='', WL_units=' ', crossplane='XZ', field_to_plot=
                 elif crossplane=='YZ':
                     flow_z_plot = flow_zSP*WL/2.0/np.pi
                     flow_f_plot = flow_ySP*WL/2.0/np.pi
+                elif crossplane=='XYZ':
+                    if f > 0:
+                        flow_z_plot = flow_zSP*WL/2.0/np.pi
+                        flow_f_plot = flow_xSP*WL/2.0/np.pi
+                    else:
+                        flow_z_plot = flow_zSP*WL/2.0/np.pi
+                        flow_f_plot = flow_ySP*WL/2.0/np.pi
 
                 verts = np.vstack((flow_z_plot, flow_f_plot)).transpose().tolist()
                 codes = [Path.LINETO]*len(verts)
                 codes[0] = Path.MOVETO
                 path = Path(verts, codes)
                 #patch = patches.PathPatch(path, facecolor='none', lw=0.2, edgecolor='white',zorder = 2.7)
-                patch = patches.PathPatch(path, facecolor='none', lw=1.5, edgecolor='white',zorder = 1.9)
+                patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='white',zorder = 1.9)
                 ax.add_patch(patch)
                 #ax.plot(flow_z_plot, flow_f_plot, 'x',ms=2, mew=0.1, linewidth=0.5, color='k', fillstyle='none')
+        bbox_props = dict(boxstyle="round,pad=0.3", fc="w", ec="w", lw=2)
+        if crossplane=='XYZ':
+            ax.annotate('E-k', xy=(0.96, 0.96), xycoords='axes fraction', fontsize=16,
+                horizontalalignment='right', verticalalignment='top',
+                bbox=bbox_props)
+            ax.annotate('H-k', xy=(0.96, 0.04), xycoords='axes fraction', fontsize=16,
+                horizontalalignment='right', verticalalignment='bottom',
+                bbox=bbox_props)
+            ax.axhline(y=0.0, ls='--', dashes=[5,3], color='gray', lw=1.5)
 
         plt.savefig(comment+"-R"+str(int(round(x[-1]*WL/2.0/np.pi)))+"-"+crossplane+"-"
 #                    +field_to_plot+".png")

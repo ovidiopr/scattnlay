@@ -106,14 +106,17 @@ if __name__ == '__main__':
             WL_units='cm'
             #flow_total = 39
             flow_total = 25
-            crossplane='XZ'
+            #crossplane='XZ'
+            crossplane='XYZ'
             #crossplane='YZ'
             #crossplane='XY'
 
             # Options to plot: Eabs, Habs, Pabs, angleEx, angleHy
-            field_to_plot='Pabs'
+            #field_to_plot='Pabs'
             #field_to_plot='Eabs'
+            
             #field_to_plot='angleEx'
+            field_to_plot='angleHy'
             fieldplot(x[0],m[0], wl, comment, WL_units, crossplane, field_to_plot, npts,
                       factor, flow_total, pl=0, outline_width=2.0)
 

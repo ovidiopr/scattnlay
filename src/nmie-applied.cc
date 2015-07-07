@@ -75,8 +75,8 @@ namespace nmie {
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
       MultiLayerMieApplied ml_mie;
-      ml_mie.SetAllLayersSize(x);
-      ml_mie.SetAllLayersIndex(m);
+      ml_mie.SetLayersSize(x);
+      ml_mie.SetLayersIndex(m);
       ml_mie.SetAngles(Theta);
       ml_mie.SetPECLayer(pl);
       ml_mie.SetMaxTerms(nmax);
