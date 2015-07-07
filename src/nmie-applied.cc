@@ -444,4 +444,20 @@ c    MM + 1  and - 1, alternately
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
+  void MultiLayerMieApplied::GetExpanCoeffs( std::vector< std::vector<std::complex<double> > >& aln, std::vector< std::vector<std::complex<double> > >& bln, std::vector< std::vector<std::complex<double> > >& cln, std::vector< std::vector<std::complex<double> > >& dln) {
+    ConvertToSP();  // Case of call before running full Mie calculation.
+    // Calculate scattering coefficients an_ and bn_
+    calcScattCoeffs();
+    // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
+    calcExpanCoeffs();
+    aln = aln_;
+    bln = bln_;
+    cln = cln_;
+    dln = dln_;
+    
+  }  // end of void MultiLayerMieApplied::GetExpanCoeffs( ...)
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+
 }  // end of namespace nmie

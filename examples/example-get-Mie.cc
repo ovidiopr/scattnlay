@@ -30,7 +30,7 @@
 #include "../src/nmie-applied.h"
 int main(int argc, char *argv[]) {
   try {
-    nmie::MultiLayerMieApplied multi_layer_mie_;  
+    nmie::MultiLayerMieApplied multi_layer_mie;  
     const std::complex<double> epsilon_Si(18.4631066585, 0.6259727805);
     const std::complex<double> epsilon_Ag(-8.5014154589, 0.7585845411);
     const std::complex<double> index_Si = std::sqrt(epsilon_Si);
@@ -42,19 +42,29 @@ int main(int argc, char *argv[]) {
     //bool isSiAgSi = true;
     bool isSiAgSi = false;
     if (isSiAgSi) {
-      multi_layer_mie_.AddTargetLayer(core_width, index_Si);
-      multi_layer_mie_.AddTargetLayer(inner_width, index_Ag);
-      multi_layer_mie_.AddTargetLayer(outer_width, index_Si);
+      multi_layer_mie.AddTargetLayer(core_width, index_Si);
+      multi_layer_mie.AddTargetLayer(inner_width, index_Ag);
+      multi_layer_mie.AddTargetLayer(outer_width, index_Si);
     } else {
       inner_width = 31.93; //nm Ag
       outer_width = 4.06; //nm  Si
-      multi_layer_mie_.AddTargetLayer(inner_width, index_Ag);
-      multi_layer_mie_.AddTargetLayer(outer_width, index_Si);
+      multi_layer_mie.AddTargetLayer(inner_width, index_Ag);
+      multi_layer_mie.AddTargetLayer(outer_width, index_Si);
     }
-    multi_layer_mie_.SetWavelength(WL);
-    multi_layer_mie_.RunMieCalculation();
-    double Qabs = multi_layer_mie_.GetQabs();
-    printf("Qabs = %g", Qabs);
+    multi_layer_mie.SetWavelength(WL);
+    multi_layer_mie.RunMieCalculation();
+    double Qabs = multi_layer_mie.GetQabs();
+    printf("Qabs = %g\n", Qabs);
+    std::vector< std::vector<std::complex<double> > > aln, bln, cln, dln;
+    multi_layer_mie.GetExpanCoeffs(aln, bln, cln, dln);
+    for (int l = 0; l<aln.size(); ++l) {
+    int n = 0;
+    printf("aln[%i][%i] = %g, %gi)\n", l, n, aln[l][n].real(), aln[l][n].imag());
+    printf("bln[%i][%i] = %g, %gi)\n", l, n, bln[l][n].real(), bln[l][n].imag());
+    printf("cln[%i][%i] = %g, %gi)\n", l, n, cln[l][n].real(), cln[l][n].imag());
+    printf("dln[%i][%i] = %g, %gi)\n", l, n, dln[l][n].real(), dln[l][n].imag());
+  }
+
 
 
   } catch( const std::invalid_argument& ia ) {

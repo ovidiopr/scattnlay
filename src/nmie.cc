@@ -1045,7 +1045,7 @@ namespace nmie {
   //**********************************************************************************//
   void MultiLayerMie::calcExpanCoeffs() {
     if (!isScaCoeffsCalc_)
-      throw std::invalid_argument("(ExpanCoeffs) You should calculate external coefficients first!");
+      throw std::invalid_argument("(calcExpanCoeffs) You should calculate external coefficients first!");
 
     isExpCoeffsCalc_ = false;
 
