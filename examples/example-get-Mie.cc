@@ -25,12 +25,36 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 //   This program returns expansion coefficents of Mie series
-#include "../../src/nmie-applied.h"
+#include <complex>
+#include <cstdio>
+#include "../src/nmie-applied.h"
 int main(int argc, char *argv[]) {
   try {
-    nmie::MultiLayerMie multi_layer_mie_;  
-    const std::complex<double> epsilon_Si(13.64, 0.047);
-    const std::complex<double> epsilon_Ag(-28.05, 1.525);
+    nmie::MultiLayerMieApplied multi_layer_mie_;  
+    const std::complex<double> epsilon_Si(18.4631066585, 0.6259727805);
+    const std::complex<double> epsilon_Ag(-8.5014154589, 0.7585845411);
+    const std::complex<double> index_Si = std::sqrt(epsilon_Si);
+    const std::complex<double> index_Ag = std::sqrt(epsilon_Ag);
+    const double WL=500; //nm
+    double core_width = 5.27; //nm Si
+    double inner_width = 8.22; //nm Ag
+    double outer_width = 67.91; //nm  Si
+    //bool isSiAgSi = true;
+    bool isSiAgSi = false;
+    if (isSiAgSi) {
+      multi_layer_mie_.AddTargetLayer(core_width, index_Si);
+      multi_layer_mie_.AddTargetLayer(inner_width, index_Ag);
+      multi_layer_mie_.AddTargetLayer(outer_width, index_Si);
+    } else {
+      inner_width = 31.93; //nm Ag
+      outer_width = 4.06; //nm  Si
+      multi_layer_mie_.AddTargetLayer(inner_width, index_Ag);
+      multi_layer_mie_.AddTargetLayer(outer_width, index_Si);
+    }
+    multi_layer_mie_.SetWavelength(WL);
+    multi_layer_mie_.RunMieCalculation();
+    double Qabs = multi_layer_mie_.GetQabs();
+    printf("Qabs = %g", Qabs);
 
 
   } catch( const std::invalid_argument& ia ) {

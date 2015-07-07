@@ -47,6 +47,7 @@ namespace nmie {
   class MultiLayerMieApplied : public MultiLayerMie {
     // Will throw for any error!
    public:
+    void RunMieCalculation();
     void GetFailed();
     long iformat = 0;
     bool output = true;
