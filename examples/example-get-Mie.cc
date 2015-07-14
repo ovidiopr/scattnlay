@@ -27,7 +27,9 @@
 //   This program returns expansion coefficents of Mie series
 #include <complex>
 #include <cstdio>
+#include <string>
 #include "../src/nmie-applied.h"
+template<class T> inline T pow2(const T value) {return value*value;}
 int main(int argc, char *argv[]) {
   try {
     nmie::MultiLayerMieApplied multi_layer_mie;  
@@ -35,12 +37,12 @@ int main(int argc, char *argv[]) {
     const std::complex<double> epsilon_Ag(-8.5014154589, 0.7585845411);
     const std::complex<double> index_Si = std::sqrt(epsilon_Si);
     const std::complex<double> index_Ag = std::sqrt(epsilon_Ag);
-    const double WL=500; //nm
+    double WL=500; //nm
     double core_width = 5.27; //nm Si
     double inner_width = 8.22; //nm Ag
     double outer_width = 67.91; //nm  Si
-    //bool isSiAgSi = true;
-    bool isSiAgSi = false;
+    bool isSiAgSi = true;
+    //bool isSiAgSi = false;
     if (isSiAgSi) {
       multi_layer_mie.AddTargetLayer(core_width, index_Si);
       multi_layer_mie.AddTargetLayer(inner_width, index_Ag);
@@ -51,20 +53,101 @@ int main(int argc, char *argv[]) {
       multi_layer_mie.AddTargetLayer(inner_width, index_Ag);
       multi_layer_mie.AddTargetLayer(outer_width, index_Si);
     }
+
+    FILE *fp;
+    std::string fname = "sum-abs-spectra.dat";
+    fp = fopen(fname.c_str(), "w");
+
     multi_layer_mie.SetWavelength(WL);
     multi_layer_mie.RunMieCalculation();
     double Qabs = multi_layer_mie.GetQabs();
     printf("Qabs = %g\n", Qabs);
     std::vector< std::vector<std::complex<double> > > aln, bln, cln, dln;
     multi_layer_mie.GetExpanCoeffs(aln, bln, cln, dln);
+    std::string str = std::string("#WL ");
     for (int l = 0; l<aln.size(); ++l) {
-    int n = 0;
-    printf("aln[%i][%i] = %g, %gi)\n", l, n, aln[l][n].real(), aln[l][n].imag());
-    printf("bln[%i][%i] = %g, %gi)\n", l, n, bln[l][n].real(), bln[l][n].imag());
-    printf("cln[%i][%i] = %g, %gi)\n", l, n, cln[l][n].real(), cln[l][n].imag());
-    printf("dln[%i][%i] = %g, %gi)\n", l, n, dln[l][n].real(), dln[l][n].imag());
-  }
+      for (int n = 0; n<3; ++n) {
+	str+="|a|+|d|_ln"+std::to_string(l)+std::to_string(n)+" "
+	  + "|b|+|c|_ln"+std::to_string(l)+std::to_string(n)+" ";
+      }
+    }
+    str+="\n";
+    fprintf(fp, "%s", str.c_str());
+    fprintf(fp, "# |a|+|d|");
+    str.clear();
 
+    double from_WL = 400;
+    double to_WL = 600;
+    int total_points = 401;
+    double delta_WL = std::abs(to_WL - from_WL)/(total_points-1.0);
+    for (int i = 0; i<total_points; ++i) {
+      WL = from_WL + i*delta_WL;
+      str+=std::to_string(WL);
+      
+      multi_layer_mie.SetWavelength(WL);
+      multi_layer_mie.RunMieCalculation();
+      multi_layer_mie.GetQabs();
+      multi_layer_mie.GetExpanCoeffs(aln, bln, cln, dln);
+      for (int l = 0; l<aln.size(); ++l) {
+	for (int n = 0; n<3; ++n) {
+	  str+=" "+std::to_string(std::abs(aln[l][n])
+			      + std::abs(dln[l][n]) )
+	    + " "
+	    + std::to_string(std::abs(bln[l][n])
+			      + std::abs(cln[l][n]) );
+	}
+      }
+      str+="\n";
+      fprintf(fp, "%s", str.c_str());
+      str.clear();
+    }
+
+    fclose(fp);
+    
+    WL = 500;
+    multi_layer_mie.SetWavelength(WL);
+    multi_layer_mie.RunMieCalculation();
+    multi_layer_mie.GetQabs();
+    multi_layer_mie.GetExpanCoeffs(aln, bln, cln, dln);
+
+    printf("\n Scattering");
+    for (int l = 0; l<aln.size(); ++l) {
+      int n = 0;
+      printf("aln[%i][%i] = %g, %gi\n", l, n+1, aln[l][n].real(), aln[l][n].imag());
+      printf("bln[%i][%i] = %g, %gi\n", l, n+1, bln[l][n].real(), bln[l][n].imag());
+      printf("cln[%i][%i] = %g, %gi\n", l, n+1, cln[l][n].real(), cln[l][n].imag());
+      printf("dln[%i][%i] = %g, %gi\n", l, n+1, dln[l][n].real(), dln[l][n].imag());
+      n = 1;
+      printf("aln[%i][%i] = %g, %gi\n", l, n+1, aln[l][n].real(), aln[l][n].imag());
+      printf("bln[%i][%i] = %g, %gi\n", l, n+1, bln[l][n].real(), bln[l][n].imag());
+      printf("cln[%i][%i] = %g, %gi\n", l, n+1, cln[l][n].real(), cln[l][n].imag());
+      printf("dln[%i][%i] = %g, %gi\n", l, n+1, dln[l][n].real(), dln[l][n].imag());
+      // n = 2;
+      // printf("aln[%i][%i] = %g, %gi\n", l, n+1, aln[l][n].real(), aln[l][n].imag());
+      // printf("bln[%i][%i] = %g, %gi\n", l, n+1, bln[l][n].real(), bln[l][n].imag());
+      // printf("cln[%i][%i] = %g, %gi\n", l, n+1, cln[l][n].real(), cln[l][n].imag());
+      // printf("dln[%i][%i] = %g, %gi\n", l, n+1, dln[l][n].real(), dln[l][n].imag());
+    }
+    printf("\n Absorbtion\n");
+    for (int l = 0; l<aln.size(); ++l) {
+      if (l == aln.size()-1) printf(" Total ");
+      printf("===== l=%i   =====\n", l);
+      int n = 0;
+      printf("aln[%i][%i] = %g\n", l, n+1, aln[l][n].real() - pow2(std::abs(aln[l][n])));
+      printf("bln[%i][%i] = %g\n", l, n+1, bln[l][n].real() - pow2(std::abs(bln[l][n])));
+      printf("cln[%i][%i] = %g\n", l, n+1, cln[l][n].real() - pow2(std::abs(cln[l][n])));
+      printf("dln[%i][%i] = %g\n", l, n+1, dln[l][n].real() - pow2(std::abs(dln[l][n])));
+      n = 1;
+      printf("aln[%i][%i] = %g\n", l, n+1, aln[l][n].real() - pow2(std::abs(aln[l][n])));
+      printf("bln[%i][%i] = %g\n", l, n+1, bln[l][n].real() - pow2(std::abs(bln[l][n])));
+      printf("cln[%i][%i] = %g\n", l, n+1, cln[l][n].real() - pow2(std::abs(cln[l][n])));
+      printf("dln[%i][%i] = %g\n", l, n+1, dln[l][n].real() - pow2(std::abs(dln[l][n])));
+      // n = 2;
+      // printf("aln[%i][%i] = %g\n", l, n+1, aln[l][n].real() - pow2(std::abs(aln[l][n])));
+      // printf("bln[%i][%i] = %g\n", l, n+1, bln[l][n].real() - pow2(std::abs(bln[l][n])));
+      // printf("cln[%i][%i] = %g\n", l, n+1, cln[l][n].real() - pow2(std::abs(cln[l][n])));
+      // printf("dln[%i][%i] = %g\n", l, n+1, dln[l][n].real() - pow2(std::abs(dln[l][n])));
+    }
 
 
   } catch( const std::invalid_argument& ia ) {
