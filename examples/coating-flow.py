@@ -101,11 +101,14 @@ if __name__ == '__main__':
             m[0] = np.array([ms] + nvalues[:, 1].tolist(), dtype = np.complex128)
             print(x,m)
 
-            factor = 2
+            factor = 2.91*x[0][0]/x[0][-1]
+            print factor
             comment='PEC-'+basename
-            WL_units='cm'
+            WL_units=''
             #flow_total = 39
-            flow_total = 25
+            # flow_total = 23 #SV False
+            flow_total = 24
+            #flow_total = 4
             #crossplane='XZ'
             crossplane='XYZ'
             #crossplane='YZ'
@@ -115,10 +118,23 @@ if __name__ == '__main__':
             #field_to_plot='Pabs'
             #field_to_plot='Eabs'
             
-            #field_to_plot='angleEx'
-            field_to_plot='angleHy'
-            fieldplot(x[0],m[0], wl, comment, WL_units, crossplane, field_to_plot, npts,
-                      factor, flow_total, pl=0, outline_width=2.0)
+            field_to_plot='angleEx'
+            #field_to_plot='angleHy'
+
+            import matplotlib.pyplot as plt
+            fig, axs = plt.subplots(1,1)#, sharey=True, sharex=True)
+            fig.tight_layout()
+            fieldplot(fig, axs, x[0],m[0], wl, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
+                      subplot_label=' ' ,is_flow_extend=False
+                      , outline_width=1.5
+                      , pl=0 #PEC layer starts the design
+                      )
+            fig.subplots_adjust(hspace=0.3, wspace=-0.1)
+            plt.savefig(comment+"-R"+str(int(round(x[-1]*wl/2.0/np.pi)))+"-"+crossplane+"-"
+                        +field_to_plot+".pdf",pad_inches=0.02, bbox_inches='tight')
+            plt.draw()
+            plt.clf()
+            plt.close()
 
 
         print "Done!!"
