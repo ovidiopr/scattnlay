@@ -2,7 +2,9 @@
 **Output example:** Field distribution inside layered Si\Ag\Si sphere
 and Poynting vector distribution in Ag sphere with poweflow lines
 calculated with Scattnlay (scripts  field-SiAgSi-flow.py and
-field-Ag-flow.py from example section after [commit](57c7261705a5776f78420c1f486e929517d5f584)).
+field-Ag-flow.py from example section after
+ovidiopr/scattnlay@57c7261705a5776f78420c1f486e929517d5f584
+).
 
 How to use scattnlay
 ====================
