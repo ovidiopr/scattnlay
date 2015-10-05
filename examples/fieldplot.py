@@ -134,15 +134,16 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
 ###############################################################################
 def GetField(crossplane, npts, factor, x, m, pl):
     """
-    crossplane: XZ, YZ, XY
+    crossplane: XZ, YZ, XY, or XYZ (half is XZ, half is YZ)
     npts: number of point in each direction
     factor: ratio of plotting size to outer size of the particle
     x: size parameters for particle layers
     m: relative index values for particle layers
     """
-    scan = np.linspace(-factor * x[-1], factor * x[-1], npts)
-    zero = np.zeros(npts * npts, dtype=np.float64)
-    if crossplane == 'XZ':
+    scan = np.linspace(-factor*x[-1], factor*x[-1], npts)
+    zero = np.zeros(npts*npts, dtype = np.float64)
+
+    if crossplane=='XZ':
         coordX, coordZ = np.meshgrid(scan, scan)
         coordX.resize(npts * npts)
         coordZ.resize(npts * npts)
@@ -163,6 +164,24 @@ def GetField(crossplane, npts, factor, x, m, pl):
         coordZ = zero
         coordPlot1 = coordY
         coordPlot2 = coordX
+    elif crossplane=='XYZ':
+        coordX, coordZ = np.meshgrid(scan, scan)
+        coordY, coordZ = np.meshgrid(scan, scan)
+        coordPlot1, coordPlot2 = np.meshgrid(scan, scan)
+        coordPlot1.resize(npts * npts)
+        coordPlot2.resize(npts * npts)
+        half=npts//2
+        # coordX = np.copy(coordX)
+        # coordY = np.copy(coordY)
+        coordX[:,:half]=0
+        coordY[:,half:]=0
+        coordX.resize(npts*npts)
+        coordY.resize(npts*npts)
+        coordZ.resize(npts*npts)
+    else:
+        print("Unknown crossplane")
+        import sys
+        sys.exit()
 
     coord = np.vstack((coordX, coordY, coordZ)).transpose()
     terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord, pl=pl)
@@ -187,6 +206,7 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
     try:
         from matplotlib import cm
         from matplotlib.colors import LogNorm
+
         if field_to_plot == 'Pabs':
             Eabs_data = np.resize(P, (npts, npts)).T
             label = r'$\operatorname{Re}(E \times H)$'
@@ -239,7 +259,10 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         # Add colorbar
         cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax)
         # vertically oriented colorbar
-        cbar.ax.set_yticklabels(['%3.2f' % (a) for a in scale_ticks])
+        if 'angle' in field_to_plot:
+            cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])
+        else:
+            cbar.ax.set_yticklabels(['%3.2f' % (a) for a in scale_ticks])
         # pos = list(cbar.ax.get_position().bounds)
         #fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
         lp2 = -10.0
@@ -250,6 +273,9 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         elif crossplane == 'YZ':
             ax.set_xlabel('Z, ' + WL_units, labelpad=lp1)
             ax.set_ylabel('Y, ' + WL_units, labelpad=lp2)
+        elif crossplane=='XYZ':
+            ax.set_xlabel(r'$Z,\lambda$'+WL_units)
+            ax.set_ylabel(r'$Y:X,\lambda$'+WL_units)
         elif crossplane == 'XY':
             ax.set_xlabel('Y, ' + WL_units, labelpad=lp1)
             ax.set_ylabel('X, ' + WL_units, labelpad=lp2)
@@ -275,7 +301,7 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         #     path = Path(verts, codes)
         #     patch = patches.PathPatch(path, facecolor='none', lw=1, edgecolor='yellow')
         #     ax.add_patch(patch)
-        if (crossplane == 'XZ' or crossplane == 'YZ') and flow_total > 0:
+        if (not crossplane == 'XY') and flow_total > 0:
 
             from matplotlib.path import Path
             scanSP = np.linspace(-factor * x[-1], factor * x[-1], npts)
@@ -290,19 +316,22 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
             else:
                 rg = range(0, flow_total)
             for flow in rg:
-                if crossplane == 'XZ':
-                    if is_flow_extend:
-                        x0 = min_SP * 2 + flow * step_SP
+                if is_flow_extend:
+                    f = min_SP*2 + flow*step_SP
+                else:
+                    f = min_SP + flow*step_SP
+                if crossplane=='XZ':
+                    x0 = f
+                elif crossplane=='YZ':
+                    y0 = f
+                elif crossplane=='XYZ':
+                    x0 = 0
+                    y0 = 0
+                    if f > 0:
+                        x0 = f
                     else:
-                        x0 = min_SP + flow * step_SP
-                    z0 = min_SP
-                    # y0 = x[-1]/20
-                elif crossplane == 'YZ':
-                    if is_flow_extend:
-                        y0 = min_SP * 2 + flow * step_SP
-                    else:
-                        y0 = min_SP + flow * step_SP
-                    z0 = min_SP
+                        y0 = f
+                z0 = min_SP
                     # x0 = x[-1]/20
                 flow_xSP, flow_ySP, flow_zSP = GetFlow3D(
                     x0, y0, z0, max_length, max_angle, x, m, pl)
@@ -312,6 +341,13 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
                 elif crossplane == 'YZ':
                     flow_z_plot = flow_zSP * WL / 2.0 / np.pi
                     flow_f_plot = flow_ySP * WL / 2.0 / np.pi
+                elif crossplane=='XYZ':
+                    if f > 0:
+                        flow_z_plot = flow_zSP*WL/2.0/np.pi
+                        flow_f_plot = flow_xSP*WL/2.0/np.pi
+                    else:
+                        flow_z_plot = flow_zSP*WL/2.0/np.pi
+                        flow_f_plot = flow_ySP*WL/2.0/np.pi
 
                 verts = np.vstack(
                     (flow_z_plot, flow_f_plot)).transpose().tolist()

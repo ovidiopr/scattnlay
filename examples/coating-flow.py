@@ -94,14 +94,14 @@ if __name__ == '__main__':
             for i in range(len(nvalues)):
                 r += [r[i] + tl]
 
-            x = np.ones((1, len(nvalues) + 1), dtype = np.float64)
-            m = np.ones((1, len(nvalues) + 1), dtype = np.complex128)
+            x = np.ones((len(nvalues) + 1), dtype = np.float64)
+            m = np.ones((len(nvalues) + 1), dtype = np.complex128)
 
-            x[0] = 2.0*np.pi*np.array(r, dtype = np.float64)/wl
-            m[0] = np.array([ms] + nvalues[:, 1].tolist(), dtype = np.complex128)
+            x = 2.0*np.pi*np.array(r, dtype = np.float64)/wl
+            m = np.array([ms] + nvalues[:, 1].tolist(), dtype = np.complex128)
             print(x,m)
 
-            factor = 2.91*x[0][0]/x[0][-1]
+            factor = 2.91*x[0]/x[-1]
             print factor
             comment='PEC-'+basename
             WL_units=''
@@ -120,15 +120,23 @@ if __name__ == '__main__':
             
             field_to_plot='angleEx'
             #field_to_plot='angleHy'
+            print "x =", x
+            print "m =", m
 
             import matplotlib.pyplot as plt
+            plt.rcParams.update({'font.size': 16})
             fig, axs = plt.subplots(1,1)#, sharey=True, sharex=True)
             fig.tight_layout()
-            fieldplot(fig, axs, x[0],m[0], wl, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
-                      subplot_label=' ' ,is_flow_extend=False
+            fieldplot(fig, axs, x,m, wl, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
+                      subplot_label=' ',is_flow_extend=False
                       , outline_width=1.5
                       , pl=0 #PEC layer starts the design
                       )
+            # fieldplot(fig, axs, x[0],m[0], wl, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
+            #           subplot_label=' ' ,is_flow_extend=False
+            #           , outline_width=1.5
+            #           , pl=0 #PEC layer starts the design
+            #           )
             fig.subplots_adjust(hspace=0.3, wspace=-0.1)
             plt.savefig(comment+"-R"+str(int(round(x[-1]*wl/2.0/np.pi)))+"-"+crossplane+"-"
                         +field_to_plot+".pdf",pad_inches=0.02, bbox_inches='tight')
