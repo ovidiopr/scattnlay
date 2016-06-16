@@ -786,7 +786,7 @@ namespace nmie {
     // ***********************************************************************//
     int fl = (pl > 0) ? pl : 0;
     if (nmax_preset_ <= 0) calcNmax(fl);
-    else nmax_ = nmax_preset_;
+    else nmax_ = nmax_preset_ + 1; // The last term is forced to be zero due to the backwards recurrence
 
     std::complex<double> z1, z2;
     //**************************************************************************//
@@ -1001,7 +1001,7 @@ namespace nmie {
       // Precalculate cos(theta) - gives about 5% speed up.
       std::vector<double> costheta(theta_.size(), 0.0);
       for (int t = 0; t < theta_.size(); t++) {
-	costheta[t] = std::cos(theta_[t]);
+        costheta[t] = std::cos(theta_[t]);
       }
       // Equations (25a) - (25b)                            //
       for (unsigned int t = 0; t < theta_.size(); t++) {
