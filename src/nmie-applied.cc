@@ -75,8 +75,8 @@ namespace nmie {
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
       MultiLayerMieApplied ml_mie;
-      ml_mie.SetAllLayersSize(x);
-      ml_mie.SetAllLayersIndex(m);
+      ml_mie.SetLayersSize(x);
+      ml_mie.SetLayersIndex(m);
       ml_mie.SetAngles(Theta);
       ml_mie.SetPECLayer(pl);
       ml_mie.SetMaxTerms(nmax);
@@ -434,6 +434,28 @@ c    MM + 1  and - 1, alternately
     if (size_param_.size() != refractive_index_.size())
       throw std::invalid_argument("Ivalid conversion of width to size parameter units!/n");
   }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void MultiLayerMieApplied::RunMieCalculation() {
+    ConvertToSP();
+    MultiLayerMie::RunMieCalculation(); 
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void MultiLayerMieApplied::GetExpanCoeffs( std::vector< std::vector<std::complex<double> > >& aln, std::vector< std::vector<std::complex<double> > >& bln, std::vector< std::vector<std::complex<double> > >& cln, std::vector< std::vector<std::complex<double> > >& dln) {
+    ConvertToSP();  // Case of call before running full Mie calculation.
+    // Calculate scattering coefficients an_ and bn_
+    calcScattCoeffs();
+    // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
+    calcExpanCoeffs();
+    aln = aln_;
+    bln = bln_;
+    cln = cln_;
+    dln = dln_;
+    
+  }  // end of void MultiLayerMieApplied::GetExpanCoeffs( ...)
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //

@@ -47,6 +47,7 @@ namespace nmie {
   class MultiLayerMieApplied : public MultiLayerMie {
     // Will throw for any error!
    public:
+    void RunMieCalculation();
     void GetFailed();
     long iformat = 0;
     bool output = true;
@@ -119,7 +120,13 @@ namespace nmie {
     std::vector<double> GetPatternEkSP();
     std::vector<double> GetPatternHkSP();
     std::vector<double> GetPatternUnpolarizedSP();
-    
+
+    void GetExpanCoeffs
+      (std::vector< std::vector<std::complex<double> > >& aln,
+       std::vector< std::vector<std::complex<double> > >& bln,
+       std::vector< std::vector<std::complex<double> > >& cln,
+       std::vector< std::vector<std::complex<double> > >& dln);
+
 
     // Output results (data file + python script to plot it with matplotlib)
     void PlotSpectra();

@@ -1,7 +1,8 @@
 ![output example](/doc/OutputExample.png)
 **Output example:** Field distribution inside layered Si\Ag\Si sphere
 and Poynting vector distribution in Ag sphere with poweflow lines
-calculated with Scattnlay.
+calculated with Scattnlay (scripts  field-SiAgSi-flow.py and
+field-Ag-flow.py from example section as [revision](https://github.com/ovidiopr/scattnlay/commit/57c7261705a5776f78420c1f486e929517d5f584) ).
 
 How to use scattnlay
 ====================
@@ -101,7 +102,12 @@ Papers
 2. "Reduction of scattering using thin all-dielectric shells designed by stochastic optimizer"
    Konstantin Ladutenko, Ovidio Peña-Rodríguez, Irina Melchakova, Ilya
    Yagupov, and Pavel Belov  J. Appl. Phys., vol. 116, pp. 184508,
-   2014 http://dx.doi.org/10.1063/1.4900529 
+   2014 http://dx.doi.org/10.1063/1.4900529
+
+3. "Superabsorption of light by nanoparticles" Konstantin Ladutenko,
+   Pavel Belov, Ovidio Peña-Rodríguez, Ali Mirzaei, Andrey
+   E. Miroshnichenko and Ilya V. Shadrivov  Nanoscale, 2015,7,
+   18897-18901 http://dx.doi.org/10.1039/C5NR05468K
 
 Acknowledgment
 --------------

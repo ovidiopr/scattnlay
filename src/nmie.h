@@ -113,7 +113,10 @@ namespace nmie {
     std::vector<double> size_param_;
     // Refractive index for all layers
     std::vector< std::complex<double> > refractive_index_;
-    // Scattering angles for scattering pattern in radians
+    // Scattering coefficients
+    std::vector<std::complex<double> > an_, bn_;
+    std::vector< std::vector<std::complex<double> > > aln_, bln_, cln_, dln_;
+    void calcExpanCoeffs();
 
   private:
     void calcNstop();
@@ -142,7 +145,6 @@ namespace nmie {
                        const double& Pi, const double& Tau, const double& n,
                        std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
                        std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
-    void calcExpanCoeffs();
 
     void calcField(const double Rho, const double Theta, const double Phi,
                    std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
@@ -151,6 +153,7 @@ namespace nmie {
     bool isScaCoeffsCalc_ = false;
     bool isMieCalculated_ = false;
 
+    // Scattering angles for scattering pattern in radians
     std::vector<double> theta_;
     // Should be -1 if there is no PEC.
     int PEC_layer_position_ = -1;
@@ -158,10 +161,7 @@ namespace nmie {
     // with calcNmax(int first_layer);
     int nmax_ = -1;
     int nmax_preset_ = -1;
-    // Scattering coefficients
-    std::vector<std::complex<double> > an_, bn_;
     std::vector< std::vector<double> > coords_;
-    std::vector< std::vector<std::complex<double> > > aln_, bln_, cln_, dln_;
     /// Store result
     double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::vector< std::complex<double> > > E_, H_;  // {X[], Y[], Z[]}
