@@ -33,14 +33,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-
+#include <boost/math/constants/constants.hpp>
 namespace nmie {
-  //Used constants TODO! Change to boost PI
-  const double PI_=3.14159265358979323846;
-  // light speed [m s-1]
-  const double cc_ = 2.99792458e8;
-  // assume non-magnetic (MU=MU0=const) [N A-2]
-  const double mu_ = 4.0*PI_*1.0e-7;
   int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn);
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
@@ -49,8 +43,14 @@ namespace nmie {
   int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const unsigned int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
 
   template <typename FloatType = double>
-  class MultiLayerMie {
+  class MultiLayerMie {    
    public:
+    //Used constants TODO! Change to boost PI
+    const double PI_=3.14159265358979323846;
+    // light speed [m s-1]
+    const double cc_ = 2.99792458e8;
+    // assume non-magnetic (MU=MU0=const) [N A-2]
+    const double mu_ = 4.0*PI_*1.0e-7;
     // Run calculation
     void RunMieCalculation();
     void RunFieldCalculation();

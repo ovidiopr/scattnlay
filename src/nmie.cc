@@ -45,8 +45,14 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <vector>
+#include <boost/multiprecision/cpp_bin_float.hpp>
+//#include <boost/math/special_functions/gamma.hpp>
 
 namespace nmie {
+  //typedef float FloatType;
+  //typedef double FloatType;
+  typedef boost::multiprecision::cpp_bin_float_100 FloatType;
+  
   //**********************************************************************************//
   // This function emulates a C call to calculate the scattering coefficients         //
   // required to calculate both the near- and far-field parameters.                   //
@@ -71,16 +77,16 @@ namespace nmie {
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
     try {
-      MultiLayerMie<double> ml_mie;
-      ml_mie.SetLayersSize(x);
-      ml_mie.SetLayersIndex(m);
+      MultiLayerMie<FloatType> ml_mie;
+      ml_mie.SetLayersSize(ConvertVector<FloatType>(x));
+      ml_mie.SetLayersIndex(ConvertComplexVector<FloatType>(m));
       ml_mie.SetPECLayer(pl);
       ml_mie.SetMaxTerms(nmax);
 
       ml_mie.calcScattCoeffs();
 
-      an = ml_mie.GetAn();
-      bn = ml_mie.GetBn();
+      an = ConvertComplexVector<double>(ml_mie.GetAn());
+      bn = ConvertComplexVector<double>(ml_mie.GetBn());
 
       return ml_mie.GetMaxTerms();
     } catch(const std::invalid_argument& ia) {
@@ -128,25 +134,24 @@ namespace nmie {
     if (Theta.size() != nTheta)
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
-      typedef double FloatType;
-      MultiLayerMie<double> ml_mie;
-      ml_mie.SetLayersSize(x);
-      ml_mie.SetLayersIndex(m);
-      ml_mie.SetAngles(Theta);
+      MultiLayerMie<FloatType> ml_mie;
+      ml_mie.SetLayersSize(ConvertVector<FloatType>(x));
+      ml_mie.SetLayersIndex(ConvertComplexVector<FloatType>(m));
+      ml_mie.SetAngles(ConvertVector<FloatType>(Theta));
       ml_mie.SetPECLayer(pl);
       ml_mie.SetMaxTerms(nmax);
 
       ml_mie.RunMieCalculation();
 
-      *Qext = ml_mie.GetQext();
-      *Qsca = ml_mie.GetQsca();
-      *Qabs = ml_mie.GetQabs();
-      *Qbk = ml_mie.GetQbk();
-      *Qpr = ml_mie.GetQpr();
-      *g = ml_mie.GetAsymmetryFactor();
-      *Albedo = ml_mie.GetAlbedo();
-      S1 = ml_mie.GetS1();
-      S2 = ml_mie.GetS2();
+      *Qext = static_cast<double>(ml_mie.GetQext());
+      *Qsca = static_cast<double>(ml_mie.GetQsca());
+      *Qabs = static_cast<double>(ml_mie.GetQabs());
+      *Qbk = static_cast<double>(ml_mie.GetQbk());
+      *Qpr = static_cast<double>(ml_mie.GetQpr());
+      *g = static_cast<double>(ml_mie.GetAsymmetryFactor());
+      *Albedo = static_cast<double>(ml_mie.GetAlbedo());
+      S1 = ConvertComplexVector<double>(ml_mie.GetS1());
+      S2 = ConvertComplexVector<double>(ml_mie.GetS2());
 
       return ml_mie.GetMaxTerms();
     } catch(const std::invalid_argument& ia) {
@@ -292,14 +297,16 @@ namespace nmie {
       if (f.size() != 3)
         throw std::invalid_argument("Field H is not 3D!");
     try {
-      MultiLayerMie<double> ml_mie;
+      MultiLayerMie<FloatType> ml_mie;
+      ml_mie.SetLayersSize(ConvertVector<FloatType>(x));
+      ml_mie.SetLayersIndex(ConvertComplexVector<FloatType>(m));
       ml_mie.SetPECLayer(pl);
-      ml_mie.SetLayersSize(x);
-      ml_mie.SetLayersIndex(m);
-      ml_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
+      ml_mie.SetFieldCoords({ConvertVector<FloatType>(Xp_vec),
+	    ConvertVector<FloatType>(Yp_vec),
+	    ConvertVector<FloatType>(Zp_vec) });
       ml_mie.RunFieldCalculation();
-      E = ml_mie.GetFieldE();
-      H = ml_mie.GetFieldH();
+      E = ConvertComplexVectorVector<double>(ml_mie.GetFieldE());
+      H = ConvertComplexVectorVector<double>(ml_mie.GetFieldH());
 
       return ml_mie.GetMaxTerms();
     } catch(const std::invalid_argument& ia) {
