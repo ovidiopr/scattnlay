@@ -43,14 +43,14 @@ import matplotlib.pylab as plt
 n1 = 1.335
 # refractive index of the surrounding medium (water)
 nm = 1.333
-# radius of the sphere in wavelengths
+# radius of the sphere in vacuum wavelengths
 radius = 0.3
-# extent of the simulation size in wavelengths
+# extent of the simulation size in vacuum wavelengths
 extent = 2.0
 # distance where we want to have the measured field behind the sphere
-# in wavelengths measured from the center of the sphere
+# in vacuum wavelengths measured from the center of the sphere
 distance = 0.5
-# pixels per wavelength in the output image
+# pixels per vacuum wavelength in the output image
 resolution = 20.0 
 
 # size parameters need to be multiplied by (2 PI nm) for the computation
