@@ -1,8 +1,8 @@
 #ifndef SRC_NMIE_APPLIED_H_
 #define SRC_NMIE_APPLIED_H_
 //**********************************************************************************//
-//    Copyright (C) 2009-2015  Ovidio Pena <ovidio@bytesfall.com>                   //
-//    Copyright (C) 2013-2015  Konstantin Ladutenko <kostyfisik@gmail.com>          //
+//    Copyright (C) 2009-2016  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2013-2016  Konstantin Ladutenko <kostyfisik@gmail.com>          //
 //                                                                                  //
 //    This file is part of scattnlay                                                //
 //                                                                                  //
@@ -43,7 +43,7 @@ namespace nmie {
   int nMieApplied(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
 
 
-
+  template <typename FloatType = double>
   class MultiLayerMieApplied : public MultiLayerMie {
     // Will throw for any error!
    public:

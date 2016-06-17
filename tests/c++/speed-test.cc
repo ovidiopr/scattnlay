@@ -1,6 +1,6 @@
 //**********************************************************************************//
-//    Copyright (C) 2009-2015  Ovidio Pena <ovidio@bytesfall.com>                   //
-//    Copyright (C) 2013-2015  Konstantin Ladutenko <kostyfisik@gmail.com>          //
+//    Copyright (C) 2009-2016  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2013-2016  Konstantin Ladutenko <kostyfisik@gmail.com>          //
 //                                                                                  //
 //    This file is part of scattnlay                                                //
 //                                                                                  //
@@ -38,7 +38,8 @@
 #include <string.h>
 //sudo aptitude install libgoogle-perftools-dev
 //#include <google/heap-profiler.h>
-#include "../../src/nmie.h"
+#include "../../src/nmie.hpp"
+#include "../../src/nmie-impl.hpp"
 
 timespec diff(timespec start, timespec end);
 const double PI=3.14159265358979323846;
