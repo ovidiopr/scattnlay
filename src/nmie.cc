@@ -53,7 +53,7 @@
 namespace nmie {
   //typedef float FloatType;
   //typedef double FloatType;
-  typedef boost::multiprecision::cpp_bin_float_50 FloatType;
+  typedef boost::multiprecision::cpp_bin_float_100 FloatType;
   
   //**********************************************************************************//
   // This function emulates a C call to calculate the scattering coefficients         //
@@ -146,10 +146,10 @@ namespace nmie {
       ml_mie.RunMieCalculation();
 
       std::cout
-	<< std::setprecision(std::numeric_limits<FloatType>::digits10)
-	<< "Qext = "
-	<< ml_mie.GetQext()
-	<< std::endl;
+      	<< std::setprecision(std::numeric_limits<FloatType>::digits10)
+      	<< "Qext = "
+      	<< ml_mie.GetQext()
+      	<< std::endl;
       
       *Qext = static_cast<double>(ml_mie.GetQext());
       *Qsca = static_cast<double>(ml_mie.GetQsca());
