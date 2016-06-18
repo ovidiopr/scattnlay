@@ -53,7 +53,7 @@
 namespace nmie {
   //typedef float FloatType;
   //typedef double FloatType;
-  typedef boost::multiprecision::cpp_bin_float_100 FloatType;
+  typedef boost::multiprecision::cpp_bin_float_50 FloatType;
   
   //**********************************************************************************//
   // This function emulates a C call to calculate the scattering coefficients         //

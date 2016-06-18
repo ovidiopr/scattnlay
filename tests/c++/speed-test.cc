@@ -189,6 +189,7 @@ int main(int argc, char *argv[]) {
       for (int i = 0; i<repeats; ++i) {
     	nmie::nMie(L, x, m, nt, Theta, &Qextw, &Qscaw,
     			   &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
+	break;
       }
       clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
       cpptime_nsec = diff(time1,time2).tv_nsec;
@@ -196,6 +197,7 @@ int main(int argc, char *argv[]) {
 
       printf("-- C++ time consumed %lg sec\n", (cpptime_nsec/1e9));
       repeats *= 10;
+      break;
     } while (cpptime_nsec < 1e8 && ctime_nsec < 1e8);
 
         printf("\n");
