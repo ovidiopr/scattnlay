@@ -47,6 +47,24 @@ cdef extern from "py_nmie.h":
     cdef int nField(int L, int pl, vector[double] x, vector[complex] m, int nmax, int nCoords, vector[double] Xp, vector[double] Yp, vector[double] Zp, double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[], double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[])
 
 def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.int_t nmax, np.int_t pl = -1):
+    """
+    scattcoeffs(x, m, nmax, pl)
+
+    Calculate the scattering coefficients required to calculate both the
+    near- and far-field parameters.
+
+        x: size parameters (2D ndarray)
+        m: relative refractive indices (2D ndarray)
+        nmax: Maximum number of multipolar expansion terms to be used for the
+              calculations. Only use it if you know what you are doing, otherwise
+              set this parameter to -1 and the function will calculate it.
+        pl: Index of PEC layer. If there is none just send -1
+
+    Returns: (terms, an, bn)
+    with
+        terms: Number of multipolar expansion terms used for the calculations
+        an, bn: complex scattering amplitudes
+    """
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
@@ -73,6 +91,31 @@ def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t
     return terms, an, bn
 
 def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t pl = -1):
+    """
+    scattnlay(x, m, [theta, nmax, pl])
+
+    Calculate the actual scattering parameters and amplitudes.
+
+        x: size parameters (2D ndarray)
+        m: relative refractive indices (2D ndarray)
+        theta: scattering angles where the scattering amplitudes will be
+               calculated (optional, 1D ndarray)
+        nmax: Maximum number of multipolar expansion terms to be used for the
+              calculations. Only use it if you know what you are doing.
+        pl: Index of PEC layer.
+
+    Returns: (terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2)
+    with
+        terms: Number of multipolar expansion terms used for the calculations
+        Qext: Efficiency factor for extinction
+        Qsca: Efficiency factor for scattering
+        Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)
+        Qbk: Efficiency factor for backscattering
+        Qpr: Efficiency factor for the radiation pressure
+        g: Asymmetry factor (g = (Qext-Qpr)/Qsca)
+        Albedo: Single scattering albedo (Albedo = Qsca/Qext)
+        S1, S2: Complex scattering amplitudes
+    """
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
