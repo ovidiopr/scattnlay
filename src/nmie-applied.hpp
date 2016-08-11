@@ -32,7 +32,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-#include "nmie.h"
+#include "nmie.hpp"
 
 
 namespace nmie {
