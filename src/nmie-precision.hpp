@@ -39,16 +39,20 @@
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
+#ifdef MULTI_PRECISION
 #include <boost/multiprecision/number.hpp>
 #include <boost/multiprecision/cpp_bin_float.hpp>
+#endif  // MULTI_PRECISION
 
 namespace nmie {
-	typedef boost::multiprecision::cpp_bin_float_100 FloatType;
+    #ifdef MULTI_PRECISION
 	namespace nmm = boost::multiprecision;
-
-	// namespace nmm = std;
-	// typedef double FloatType;
+	typedef nmm::number<nmm::cpp_bin_float<MULTI_PRECISION> > FloatType;
+    #else
+	namespace nmm = std;
+	typedef double FloatType;
 	//typedef float FloatType;
+    #endif  // MULTI_PRECISION
 
 }  // end of namespace nmie
-#endif  // SRC_NMIE_IMPL_H_
+#endif  // SRC_NMIE_PRECISION_H_
