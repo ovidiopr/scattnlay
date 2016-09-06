@@ -40,6 +40,7 @@
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
 #include "nmie.hpp"
+#include "nmie-precision.hpp"
 #include <array>
 #include <algorithm>
 #include <cstdio>
@@ -48,16 +49,10 @@
 #include <iomanip>
 #include <stdexcept>
 #include <vector>
-// #include <boost/multiprecision/cpp_int.hpp>
-// #include <boost/multiprecision/cpp_bin_float.hpp>
-// #include <boost/multiprecision/cpp_dec_float.hpp>
-#include <boost/multiprecision/number.hpp>
 
 namespace nmie {  
   //helpers
 
-  //namespace nmm = std;
-  namespace nmm = boost::multiprecision;
   
   
   template<class T> inline T pow2(const T value) {return value*value;}

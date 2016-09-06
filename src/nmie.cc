@@ -39,6 +39,7 @@
 //**********************************************************************************//
 #include "nmie.hpp"
 #include "nmie-impl.hpp"
+#include "nmie-precision.hpp"
 #include <array>
 #include <algorithm>
 #include <cstdio>
@@ -47,13 +48,8 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-#include <boost/multiprecision/cpp_bin_float.hpp>
-//#include <boost/math/special_functions/gamma.hpp>
 
 namespace nmie {
-  //typedef float FloatType;
-  //typedef double FloatType;
-  typedef boost::multiprecision::cpp_bin_float_100 FloatType;
   
   //**********************************************************************************//
   // This function emulates a C call to calculate the scattering coefficients         //
