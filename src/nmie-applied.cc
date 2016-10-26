@@ -76,24 +76,24 @@ namespace nmie {
     if (Theta.size() != nTheta)
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
-      MultiLayerMieApplied<> ml_mie;
-      ml_mie.SetLayersSize(x);
-      ml_mie.SetLayersIndex(m);
-      ml_mie.SetAngles(Theta);
+      MultiLayerMieApplied<FloatType> ml_mie;
+      ml_mie.SetLayersSize(ConvertVector<FloatType>(x));
+      ml_mie.SetLayersIndex(ConvertComplexVector<FloatType>(m));
+      ml_mie.SetAngles(ConvertVector<FloatType>(Theta));
       ml_mie.SetPECLayer(pl);
       ml_mie.SetMaxTerms(nmax);
 
       ml_mie.RunMieCalculation();
 
-      *Qext = ml_mie.GetQext();
-      *Qsca = ml_mie.GetQsca();
-      *Qabs = ml_mie.GetQabs();
-      *Qbk = ml_mie.GetQbk();
-      *Qpr = ml_mie.GetQpr();
-      *g = ml_mie.GetAsymmetryFactor();
-      *Albedo = ml_mie.GetAlbedo();
-      S1 = ml_mie.GetS1();
-      S2 = ml_mie.GetS2();
+      *Qext = static_cast<double>(ml_mie.GetQext());
+      *Qsca = static_cast<double>(ml_mie.GetQsca());
+      *Qabs = static_cast<double>(ml_mie.GetQabs());
+      *Qbk = static_cast<double>(ml_mie.GetQbk());
+      *Qpr = static_cast<double>(ml_mie.GetQpr());
+      *g = static_cast<double>(ml_mie.GetAsymmetryFactor());
+      *Albedo = static_cast<double>(ml_mie.GetAlbedo());
+      S1 = ConvertComplexVector<double>(ml_mie.GetS1());
+      S2 = ConvertComplexVector<double>(ml_mie.GetS2());
 
       return ml_mie.GetMaxTerms();
     } catch(const std::invalid_argument& ia) {
