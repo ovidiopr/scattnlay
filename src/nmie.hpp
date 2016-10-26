@@ -1,5 +1,5 @@
-#ifndef SRC_NMIE_H_
-#define SRC_NMIE_H_
+#ifndef SRC_NMIE_HPP_
+#define SRC_NMIE_HPP_
 //**********************************************************************************//
 //    Copyright (C) 2009-2016  Ovidio Pena <ovidio@bytesfall.com>                   //
 //    Copyright (C) 2013-2016  Konstantin Ladutenko <kostyfisik@gmail.com>          //
@@ -176,4 +176,4 @@ namespace nmie {
   };  // end of class MultiLayerMie
 
 }  // end of namespace nmie
-#endif  // SRC_NMIE_H_
+#endif  // SRC_NMIE_HPP_

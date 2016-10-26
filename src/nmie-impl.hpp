@@ -1,5 +1,5 @@
-#ifndef SRC_NMIE_IMPL_H_
-#define SRC_NMIE_IMPL_H_
+#ifndef SRC_NMIE_IMPL_HPP_
+#define SRC_NMIE_IMPL_HPP_
 //**********************************************************************************//
 //    Copyright (C) 2009-2016  Ovidio Pena <ovidio@bytesfall.com>                   //
 //    Copyright (C) 2013-2016  Konstantin Ladutenko <kostyfisik@gmail.com>          //
@@ -73,7 +73,7 @@ namespace nmie {
   }  
 
   template <typename ToFloatType, typename FromFloatType>
-  std::vector<ToFloatType> ConvertVector(std::vector<FromFloatType> x) {
+  std::vector<ToFloatType> ConvertVector(const std::vector<FromFloatType> x) {
     std::vector<ToFloatType> new_x;
     for (auto element : x) {
       new_x.push_back(static_cast<ToFloatType>(element));
@@ -1157,4 +1157,4 @@ namespace nmie {
     }  // end of for all field coordinates
   }  //  end of MultiLayerMie::RunFieldCalculation()
 }  // end of namespace nmie
-#endif  // SRC_NMIE_IMPL_H_
+#endif  // SRC_NMIE_IMPL_HPP_

@@ -28,7 +28,7 @@
 #include <complex>
 #include <cstdio>
 #include <string>
-#include "../src/nmie-applied.h"
+#include "../src/nmie-applied.hpp"
 #include "./read-spectra.h"
 template<class T> inline T pow2(const T value) {return value*value;}
 int main(int argc, char *argv[]) {
