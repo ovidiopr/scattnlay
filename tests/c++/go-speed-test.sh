@@ -10,7 +10,7 @@ rm -f $PROGRAM
 # g++ -Ofast -std=c++11 $file ../../src/nmie.cc  -lm -lrt -o $PROGRAM /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 
 file=speed-test.cc
-#g++ -Ofast -std=c++11 $file ../../src/nmie.cc -DMULTI_PRECISION=20  -lm -lrt -o $PROGRAM /usr/lib/libtcmalloc_minimal.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
+# g++ -Ofast -std=c++11 $file ../../src/nmie.cc -DMULTI_PRECISION=200  -lm -lrt -o $PROGRAM /usr/lib/libtcmalloc_minimal.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 g++ -Ofast -std=c++11 $file ../../src/nmie.cc  -lm -lrt -o $PROGRAM /usr/lib/libtcmalloc_minimal.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 
 #file=speed-test-applied.cc
