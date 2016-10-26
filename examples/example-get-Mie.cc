@@ -30,9 +30,12 @@
 #include <string>
 #include "../src/nmie-applied.hpp"
 #include "../src/nmie-applied-impl.hpp"
+#include "../src/nmie-precision.hpp"
 #include "./read-spectra.h"
-template<class T> inline T pow2(const T value) {return value*value;}
+
+// template<class T> inline T pow2(const T value) {return value*value;}
 int main(int argc, char *argv[]) {
+  using namespace nmie ;
   try {
     read_spectra::ReadSpectra Si_index, Ag_index;
     read_spectra::ReadSpectra plot_core_index_, plot_TiN_;
@@ -80,12 +83,12 @@ int main(int argc, char *argv[]) {
     
     double Qabs = static_cast<double>(multi_layer_mie.GetQabs());
     printf("Qabs = %g\n", Qabs);
-    std::vector< std::vector<std::complex<nmie::FloatType> > > f_aln, bln, cln, dln;
-    multi_layer_mie.GetExpanCoeffs(f_aln, bln, cln, dln);
-    std::vector< std::vector<std::complex<double> > > aln =
-      nmie::ConvertComplexVectorVector<double>(f_aln);
+    std::vector< std::vector<std::complex<nmie::FloatType> > > aln, bln, cln, dln;
+    multi_layer_mie.GetExpanCoeffs(aln, bln, cln, dln);
+    std::vector< std::vector<std::complex<double> > > d_aln =
+      nmie::ConvertComplexVectorVector<double>(aln);
     std::string str = std::string("#WL ");
-    for (int l = 0; l<aln.size(); ++l) {
+    for (int l = 0; l<d_aln.size(); ++l) {
       for (int n = 0; n<3; ++n) {
 	str+="|a|^2+|d|^2_ln"+std::to_string(l)+std::to_string(n)+" "
 	  + "|b|^2+|c|^2_ln"+std::to_string(l)+std::to_string(n)+" ";
@@ -128,11 +131,11 @@ int main(int argc, char *argv[]) {
       multi_layer_mie.GetExpanCoeffs(aln, bln, cln, dln);
       for (int l = 0; l<aln.size(); ++l) {
 	for (int n = 0; n<3; ++n) {
-	  str+=" "+std::to_string(pow2(std::abs(aln[l][n]))+
-				   pow2(std::abs(dln[l][n])))
+	  str+=" "+std::to_string(static_cast<double>(pow2(std::abs(aln[l][n]))+
+                                                      pow2(std::abs(dln[l][n]))))
 	    + " "
-	    + std::to_string(pow2(std::abs(bln[l][n]))
-				 + pow2(std::abs(cln[l][n])) );
+	    + std::to_string(static_cast<double>(pow2(std::abs(bln[l][n]))
+                                                 + pow2(std::abs(cln[l][n])) ));
 
 	  // str+=" "+std::to_string(aln[l][n].real() - pow2(std::abs(aln[l][n]))
 	  // 			  +dln[l][n].real() - pow2(std::abs(dln[l][n])))
