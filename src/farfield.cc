@@ -36,7 +36,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
-#include "nmie.h"
+#include "nmie.hpp"
 
 const double PI=3.14159265358979323846;
 

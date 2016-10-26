@@ -200,6 +200,7 @@ def GetField(crossplane, npts, factor, x, m, pl):
 def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
               field_to_plot='Pabs', npts=101, factor=2.1, flow_total=11,
               is_flow_extend=True, pl=-1, outline_width=1, subplot_label=' '):
+    print (x,m)
     Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m, pl)
     Er = np.absolute(Ec)
     Hr = np.absolute(Hc)

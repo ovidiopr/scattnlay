@@ -1,8 +1,8 @@
 #ifndef SRC_NMIE_H_
 #define SRC_NMIE_H_
 //**********************************************************************************//
-//    Copyright (C) 2009-2015  Ovidio Pena <ovidio@bytesfall.com>                   //
-//    Copyright (C) 2013-2015  Konstantin Ladutenko <kostyfisik@gmail.com>          //
+//    Copyright (C) 2009-2016  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2013-2016  Konstantin Ladutenko <kostyfisik@gmail.com>          //
 //                                                                                  //
 //    This file is part of scattnlay                                                //
 //                                                                                  //
@@ -33,14 +33,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-
+#include <boost/math/constants/constants.hpp>
 namespace nmie {
-  //Used constants
-  const double PI_=3.14159265358979323846;
-  // light speed [m s-1]
-  const double cc_ = 2.99792458e8;
-  // assume non-magnetic (MU=MU0=const) [N A-2]
-  const double mu_ = 4.0*PI_*1.0e-7;
   int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn);
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
@@ -48,36 +42,43 @@ namespace nmie {
   int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const unsigned int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
 
-  class MultiLayerMie {
+  template <typename FloatType = double>
+  class MultiLayerMie {    
    public:
+    //Used constants TODO! Change to boost PI
+    const double PI_=3.14159265358979323846;
+    // light speed [m s-1]
+    const double cc_ = 2.99792458e8;
+    // assume non-magnetic (MU=MU0=const) [N A-2]
+    const double mu_ = 4.0*PI_*1.0e-7;
     // Run calculation
     void RunMieCalculation();
     void RunFieldCalculation();
     void calcScattCoeffs();
 
     // Return calculation results
-    double GetQext();
-    double GetQsca();
-    double GetQabs();
-    double GetQbk();
-    double GetQpr();
-    double GetAsymmetryFactor();
-    double GetAlbedo();
-    std::vector<std::complex<double> > GetS1();
-    std::vector<std::complex<double> > GetS2();
+    FloatType GetQext();
+    FloatType GetQsca();
+    FloatType GetQabs();
+    FloatType GetQbk();
+    FloatType GetQpr();
+    FloatType GetAsymmetryFactor();
+    FloatType GetAlbedo();
+    std::vector<std::complex<FloatType> > GetS1();
+    std::vector<std::complex<FloatType> > GetS2();
 
-    std::vector<std::complex<double> > GetAn(){return an_;};
-    std::vector<std::complex<double> > GetBn(){return bn_;};
+    std::vector<std::complex<FloatType> > GetAn(){return an_;};
+    std::vector<std::complex<FloatType> > GetBn(){return bn_;};
 
     // Problem definition
     // Modify size of all layers
-    void SetLayersSize(const std::vector<double>& layer_size);
+    void SetLayersSize(const std::vector<FloatType>& layer_size);
     // Modify refractive index of all layers
-    void SetLayersIndex(const std::vector< std::complex<double> >& index);
+    void SetLayersIndex(const std::vector< std::complex<FloatType> >& index);
     // Modify scattering (theta) angles
-    void SetAngles(const std::vector<double>& angles);
+    void SetAngles(const std::vector<FloatType>& angles);
     // Modify coordinates for field calculation
-    void SetFieldCoords(const std::vector< std::vector<double> >& coords);
+    void SetFieldCoords(const std::vector< std::vector<FloatType> >& coords);
     // Modify index of PEC layer
     void SetPECLayer(int layer_position = 0);
 
@@ -93,83 +94,83 @@ namespace nmie {
 
     // Read parameters
     // Get total size parameter of particle
-    double GetSizeParameter();
+    FloatType GetSizeParameter();
     // Returns size of all layers
-    std::vector<double> GetLayersSize(){return size_param_;};
+    std::vector<FloatType> GetLayersSize(){return size_param_;};
     // Returns refractive index of all layers
-    std::vector<std::complex<double> > GetLayersIndex(){return refractive_index_;};
+    std::vector<std::complex<FloatType> > GetLayersIndex(){return refractive_index_;};
     // Returns scattering (theta) angles
-    std::vector<double> GetAngles(){return theta_;};
+    std::vector<FloatType> GetAngles(){return theta_;};
     // Returns coordinates used for field calculation
-    std::vector<std::vector<double> > GetFieldCoords(){return coords_;};
+    std::vector<std::vector<FloatType> > GetFieldCoords(){return coords_;};
     // Returns index of PEC layer
     int GetPECLayer(){return PEC_layer_position_;};
 
-    std::vector<std::vector< std::complex<double> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
-    std::vector<std::vector< std::complex<double> > > GetFieldH(){return H_;};
+    std::vector<std::vector< std::complex<FloatType> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
+    std::vector<std::vector< std::complex<FloatType> > > GetFieldH(){return H_;};
 
   protected:
     // Size parameter for all layers
-    std::vector<double> size_param_;
+    std::vector<FloatType> size_param_;
     // Refractive index for all layers
-    std::vector< std::complex<double> > refractive_index_;
+    std::vector< std::complex<FloatType> > refractive_index_;
     // Scattering coefficients
-    std::vector<std::complex<double> > an_, bn_;
-    std::vector< std::vector<std::complex<double> > > aln_, bln_, cln_, dln_;
+    std::vector<std::complex<FloatType> > an_, bn_;
+    std::vector< std::vector<std::complex<FloatType> > > aln_, bln_, cln_, dln_;
     void calcExpanCoeffs();
 
   private:
     void calcNstop();
     void calcNmax(unsigned int first_layer);
 
-    std::complex<double> calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
-                                 std::complex<double> PsiXL, std::complex<double> ZetaXL,
-                                 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
-    std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
-                                 std::complex<double> PsiXL, std::complex<double> ZetaXL,
-                                 std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
-    std::complex<double> calc_S1(int n, std::complex<double> an, std::complex<double> bn,
-                                 double Pi, double Tau);
-    std::complex<double> calc_S2(int n, std::complex<double> an, std::complex<double> bn,
-                                 double Pi, double Tau);
-    void calcD1D3(std::complex<double> z,
-                  std::vector<std::complex<double> >& D1,
-                  std::vector<std::complex<double> >& D3);
-    void calcPsiZeta(std::complex<double> x,
-                     std::vector<std::complex<double> >& Psi,
-                     std::vector<std::complex<double> >& Zeta);
-    void calcPiTau(const double& costheta,
-                   std::vector<double>& Pi, std::vector<double>& Tau);
-    void calcSpherHarm(const std::complex<double> Rho, const double Theta, const double Phi,
-                       const std::complex<double>& rn, const std::complex<double>& Dn,
-                       const double& Pi, const double& Tau, const double& n,
-                       std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
-                       std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
+    std::complex<FloatType> calc_an(int n, FloatType XL, std::complex<FloatType> Ha, std::complex<FloatType> mL,
+                                 std::complex<FloatType> PsiXL, std::complex<FloatType> ZetaXL,
+                                 std::complex<FloatType> PsiXLM1, std::complex<FloatType> ZetaXLM1);
+    std::complex<FloatType> calc_bn(int n, FloatType XL, std::complex<FloatType> Hb, std::complex<FloatType> mL,
+                                 std::complex<FloatType> PsiXL, std::complex<FloatType> ZetaXL,
+                                 std::complex<FloatType> PsiXLM1, std::complex<FloatType> ZetaXLM1);
+    std::complex<FloatType> calc_S1(int n, std::complex<FloatType> an, std::complex<FloatType> bn,
+                                 FloatType Pi, FloatType Tau);
+    std::complex<FloatType> calc_S2(int n, std::complex<FloatType> an, std::complex<FloatType> bn,
+                                 FloatType Pi, FloatType Tau);
+    void calcD1D3(std::complex<FloatType> z,
+                  std::vector<std::complex<FloatType> >& D1,
+                  std::vector<std::complex<FloatType> >& D3);
+    void calcPsiZeta(std::complex<FloatType> x,
+                     std::vector<std::complex<FloatType> >& Psi,
+                     std::vector<std::complex<FloatType> >& Zeta);
+    void calcPiTau(const FloatType& costheta,
+                   std::vector<FloatType>& Pi, std::vector<FloatType>& Tau);
+    void calcSpherHarm(const std::complex<FloatType> Rho, const FloatType Theta, const FloatType Phi,
+                       const std::complex<FloatType>& rn, const std::complex<FloatType>& Dn,
+                       const FloatType& Pi, const FloatType& Tau, const FloatType& n,
+                       std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n, 
+                       std::vector<std::complex<FloatType> >& No1n, std::vector<std::complex<FloatType> >& Ne1n);
 
-    void calcField(const double Rho, const double Theta, const double Phi,
-                   std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
+    void calcField(const FloatType Rho, const FloatType Theta, const FloatType Phi,
+                   std::vector<std::complex<FloatType> >& E, std::vector<std::complex<FloatType> >& H);
 
     bool isExpCoeffsCalc_ = false;
     bool isScaCoeffsCalc_ = false;
     bool isMieCalculated_ = false;
 
     // Scattering angles for scattering pattern in radians
-    std::vector<double> theta_;
+    std::vector<FloatType> theta_;
     // Should be -1 if there is no PEC.
     int PEC_layer_position_ = -1;
 
     // with calcNmax(int first_layer);
     int nmax_ = -1;
     int nmax_preset_ = -1;
-    std::vector< std::vector<double> > coords_;
+    std::vector< std::vector<FloatType> > coords_;
     /// Store result
-    double Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
-    std::vector<std::vector< std::complex<double> > > E_, H_;  // {X[], Y[], Z[]}
-    std::vector<std::complex<double> > S1_, S2_;
+    FloatType Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
+    std::vector<std::vector< std::complex<FloatType> > > E_, H_;  // {X[], Y[], Z[]}
+    std::vector<std::complex<FloatType> > S1_, S2_;
 
 
     //Temporary variables
-    std::vector<std::complex<double> > PsiZeta_;
+    std::vector<std::complex<FloatType> > PsiZeta_;
 
 
   };  // end of class MultiLayerMie

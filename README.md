@@ -16,6 +16,10 @@ How to use scattnlay
 
 Compile Code:
 -------------
+To compile the source you will need C++11 capable compiler. To use
+MultiPrecision feature you need to install Boost.Multiprecision
+library (at least 1.58 ver).
+
 
 Compilation options
 

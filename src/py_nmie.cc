@@ -28,7 +28,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "nmie.h"
+#include "nmie.hpp"
 #include "py_nmie.h"
 
 // Same as ScattCoeffs in 'nmie.h' but uses double arrays to return the results (useful for python).

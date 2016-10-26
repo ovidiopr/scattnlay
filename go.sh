@@ -5,11 +5,14 @@ file=compare.cc
 echo Compile with gcc
 rm -f *.bin
 rm -f ../scattnlay
+
 #g++ -Ofast -std=c++11 compare.cc nmie.cc  nmie-wrapper.cc -lm -lrt -o scattnlay.bin -static
 # g++ -Ofast -std=c++11 compare.cc nmie.cc  nmie-wrapper.cc -lm -lrt -o scattnlay-pg.bin -static -pg
 
 #google profiler  ######## FAST!!!
 echo Uncomment next line to compile compare.cc
+# g++ -Ofast -std=c++11 $file ../../src/nmie.cc  -lm -lrt -o $PROGRAM /usr/lib/libtcmalloc_minimal.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
+
 g++ -Ofast -std=c++11 $file nmie.cc  nmie-old.cc -lm -lrt -o scattnlay.bin /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 
 #  g++ -Ofast -std=c++11 compare.cc nmie.cc  nmie-wrapper.cc -lm -lrt -o scattnlay-g.bin -ltcmalloc -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -g
