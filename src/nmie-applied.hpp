@@ -33,6 +33,7 @@
 #include <iostream>
 #include <vector>
 #include "nmie.hpp"
+#include "nmie-impl.hpp"
 
 
 namespace nmie {
@@ -51,7 +52,7 @@ namespace nmie {
     void GetFailed();
     long iformat = 0;
     bool output = true;
-    void prn(double var) {
+    void prn(FloatType var) {
       do {
 	if (!output) break;
 	++iformat;
@@ -60,28 +61,28 @@ namespace nmie {
       } while (false);
     }
     // Set parameters in applied units 
-    void SetWavelength(double wavelength) {wavelength_ = wavelength;};
+    void SetWavelength(FloatType wavelength) {wavelength_ = wavelength;};
     // It is possible to set only a multilayer target to run calculaitons.
     // For many runs it can be convenient to separate target and coating layers.
     // Per layer
-    void AddTargetLayer(double layer_width, std::complex<double> layer_index);
-    void AddCoatingLayer(double layer_width, std::complex<double> layer_index);
+    void AddTargetLayer(FloatType layer_width, std::complex<FloatType> layer_index);
+    void AddCoatingLayer(FloatType layer_width, std::complex<FloatType> layer_index);
     // For all layers
-    void SetTargetWidth(std::vector<double> width);
-    void SetTargetIndex(std::vector< std::complex<double> > index);
-    void SetTargetPEC(double radius);
-    void SetCoatingWidth(std::vector<double> width);
-    void SetCoatingIndex(std::vector< std::complex<double> > index);
-    void SetFieldPoints(std::vector< std::array<double,3> > coords);
+    void SetTargetWidth(std::vector<FloatType> width);
+    void SetTargetIndex(std::vector< std::complex<FloatType> > index);
+    void SetTargetPEC(FloatType radius);
+    void SetCoatingWidth(std::vector<FloatType> width);
+    void SetCoatingIndex(std::vector< std::complex<FloatType> > index);
+    void SetFieldPoints(std::vector< std::array<FloatType,3> > coords);
 
     //Set parameters in size parameter units
-    void SetWidthSP(const std::vector<double>& width);
-    void SetIndexSP(const std::vector< std::complex<double> >& index);
-    void SetFieldPointsSP(const std::vector< std::vector<double> >& coords_sp);
+    void SetWidthSP(const std::vector<FloatType>& width);
+    void SetIndexSP(const std::vector< std::complex<FloatType> >& index);
+    void SetFieldPointsSP(const std::vector< std::vector<FloatType> >& coords_sp);
 
     // Set common parameters
-    void SetAnglesForPattern(double from_angle, double to_angle, int samples);
-    std::vector<double> GetAngles();
+    void SetAnglesForPattern(FloatType from_angle, FloatType to_angle, int samples);
+    std::vector<FloatType> GetAngles();
     
     void ClearTarget();
     void ClearCoating();
@@ -89,43 +90,43 @@ namespace nmie {
     void ClearAllDesign(); //Layers + SP + index_
 
     // Applied units requests
-    double GetTotalRadius();
-    double GetTargetRadius();
-    double GetCoatingWidth();
-    std::vector<double>                  GetTargetLayersWidth();
-    std::vector< std::complex<double> >  GetTargetLayersIndex();
-    std::vector<double>                  GetCoatingLayersWidth();
-    std::vector< std::complex<double> >  GetCoatingLayersIndex();
-    std::vector< std::vector<double> >   GetFieldPoints();
-    std::vector< std::vector<double> > GetSpectra(double from_WL, double to_WL, int samples);  // ext, sca, abs, bk
-    double GetRCSext();
-    double GetRCSsca();
-    double GetRCSabs();
-    double GetRCSbk();
-    std::vector<double> GetPatternEk();
-    std::vector<double> GetPatternHk();
-    std::vector<double> GetPatternUnpolarized();
+    FloatType GetTotalRadius();
+    FloatType GetTargetRadius();
+    FloatType GetCoatingWidth();
+    std::vector<FloatType>                  GetTargetLayersWidth();
+    std::vector< std::complex<FloatType> >  GetTargetLayersIndex();
+    std::vector<FloatType>                  GetCoatingLayersWidth();
+    std::vector< std::complex<FloatType> >  GetCoatingLayersIndex();
+    std::vector< std::vector<FloatType> >   GetFieldPoints();
+    std::vector< std::vector<FloatType> > GetSpectra(FloatType from_WL, FloatType to_WL, int samples);  // ext, sca, abs, bk
+    FloatType GetRCSext();
+    FloatType GetRCSsca();
+    FloatType GetRCSabs();
+    FloatType GetRCSbk();
+    std::vector<FloatType> GetPatternEk();
+    std::vector<FloatType> GetPatternHk();
+    std::vector<FloatType> GetPatternUnpolarized();
 
     // Size parameter units
-    std::vector<double> GetLayerWidthSP();
+    std::vector<FloatType> GetLayerWidthSP();
     // Same as to get target and coating index
-    std::vector< std::complex<double> > GetLayerIndex();  
-    std::vector< std::array<double,3> > GetFieldPointsSP();
+    std::vector< std::complex<FloatType> > GetLayerIndex();  
+    std::vector< std::array<FloatType,3> > GetFieldPointsSP();
     // Do we need normalize field to size parameter?
-    /* std::vector<std::vector<std::complex<double> > >  GetFieldESP(); */
-    /* std::vector<std::vector<std::complex<double> > >  GetFieldHSP(); */
-    std::vector< std::array<double,5> > GetSpectraSP(double from_SP, double to_SP, int samples);  // WL,ext, sca, abs, bk
+    /* std::vector<std::vector<std::complex<FloatType> > >  GetFieldESP(); */
+    /* std::vector<std::vector<std::complex<FloatType> > >  GetFieldHSP(); */
+    std::vector< std::array<FloatType,5> > GetSpectraSP(FloatType from_SP, FloatType to_SP, int samples);  // WL,ext, sca, abs, bk
 
 
-    std::vector<double> GetPatternEkSP();
-    std::vector<double> GetPatternHkSP();
-    std::vector<double> GetPatternUnpolarizedSP();
+    std::vector<FloatType> GetPatternEkSP();
+    std::vector<FloatType> GetPatternHkSP();
+    std::vector<FloatType> GetPatternUnpolarizedSP();
 
     void GetExpanCoeffs
-      (std::vector< std::vector<std::complex<double> > >& aln,
-       std::vector< std::vector<std::complex<double> > >& bln,
-       std::vector< std::vector<std::complex<double> > >& cln,
-       std::vector< std::vector<std::complex<double> > >& dln);
+      (std::vector< std::vector<std::complex<FloatType> > >& aln,
+       std::vector< std::vector<std::complex<FloatType> > >& bln,
+       std::vector< std::vector<std::complex<FloatType> > >& cln,
+       std::vector< std::vector<std::complex<FloatType> > >& dln);
 
 
     // Output results (data file + python script to plot it with matplotlib)
@@ -142,20 +143,20 @@ namespace nmie {
     void GenerateIndex();
     void InitMieCalculations();
 
-    void sbesjh(std::complex<double> z, std::vector<std::complex<double> >& jn,
-	            std::vector<std::complex<double> >& jnp, std::vector<std::complex<double> >& h1n,
-	            std::vector<std::complex<double> >& h1np);
-    void sphericalBessel(std::complex<double> z, std::vector<std::complex<double> >& bj,
-			             std::vector<std::complex<double> >& by, std::vector<std::complex<double> >& bd);
-    std::complex<double> calcD1confra(int N, const std::complex<double> z);
+    void sbesjh(std::complex<FloatType> z, std::vector<std::complex<FloatType> >& jn,
+	            std::vector<std::complex<FloatType> >& jnp, std::vector<std::complex<FloatType> >& h1n,
+	            std::vector<std::complex<FloatType> >& h1np);
+    void sphericalBessel(std::complex<FloatType> z, std::vector<std::complex<FloatType> >& bj,
+			             std::vector<std::complex<FloatType> >& by, std::vector<std::complex<FloatType> >& bd);
+    std::complex<FloatType> calcD1confra(int N, const std::complex<FloatType> z);
     
-    double wavelength_ = 1.0;
-    double total_radius_ = 0.0;
+    FloatType wavelength_ = 1.0;
+    FloatType total_radius_ = 0.0;
     /// Width and index for each layer of the structure
-    std::vector<double> target_width_, coating_width_;
-    std::vector< std::complex<double> > target_index_, coating_index_;
+    std::vector<FloatType> target_width_, coating_width_;
+    std::vector< std::complex<FloatType> > target_index_, coating_index_;
 
-    std::vector< std::vector<double> > coords_sp_;
+    std::vector< std::vector<FloatType> > coords_sp_;
 
 
 
