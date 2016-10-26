@@ -29,6 +29,7 @@
 #include <cstdio>
 #include <string>
 #include "../src/nmie-applied.hpp"
+#include "../src/nmie-applied-impl.hpp"
 #include "./read-spectra.h"
 template<class T> inline T pow2(const T value) {return value*value;}
 int main(int argc, char *argv[]) {
@@ -42,7 +43,7 @@ int main(int argc, char *argv[]) {
     //std::string TiN_filename("Si.txt");
     std::string shell_filename(core_filename);
 
-    nmie::MultiLayerMieApplied multi_layer_mie;  
+    nmie::MultiLayerMieApplied<nmie::FloatType> multi_layer_mie;  
     const std::complex<double> epsilon_Si(18.4631066585, 0.6259727805);
     const std::complex<double> epsilon_Ag(-8.5014154589, 0.7585845411);
     const std::complex<double> index_Si = std::sqrt(epsilon_Si);
@@ -76,10 +77,13 @@ int main(int argc, char *argv[]) {
 
     multi_layer_mie.SetWavelength(WL);
     multi_layer_mie.RunMieCalculation();
-    double Qabs = multi_layer_mie.GetQabs();
+    
+    double Qabs = static_cast<double>(multi_layer_mie.GetQabs());
     printf("Qabs = %g\n", Qabs);
-    std::vector< std::vector<std::complex<double> > > aln, bln, cln, dln;
-    multi_layer_mie.GetExpanCoeffs(aln, bln, cln, dln);
+    std::vector< std::vector<std::complex<nmie::FloatType> > > f_aln, bln, cln, dln;
+    multi_layer_mie.GetExpanCoeffs(f_aln, bln, cln, dln);
+    std::vector< std::vector<std::complex<double> > > aln =
+      nmie::ConvertComplexVectorVector<double>(f_aln);
     std::string str = std::string("#WL ");
     for (int l = 0; l<aln.size(); ++l) {
       for (int n = 0; n<3; ++n) {
