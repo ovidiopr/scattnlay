@@ -78,23 +78,32 @@ fieldnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] -p xi xf nx yi yf ny zi zf n
   
 3. C++ library
 
+Scattnlay "Hello world!" example:
+
 ```C++
     try {
-      MultiLayerMie multi_layer_mie;
-      multi_layer_mie.SetLayersSize(x);
-      multi_layer_mie.SetLayersIndex(m);
-
+      nmie::MultiLayerMieApplied<double> multi_layer_mie;  
+      multi_layer_mie.AddTargetLayer(core_width, index_Si);
+      multi_layer_mie.AddTargetLayer(inner_width, index_Ag);
+      multi_layer_mie.AddTargetLayer(outer_width, index_Si);
+      multi_layer_mie.SetWavelength(WL);
       multi_layer_mie.RunMieCalculation();
-
-      *Qsca = multi_layer_mie.GetQsca();
-      *Qabs = multi_layer_mie.GetQabs();
-    } catch(const std::invalid_argument& ia) {
+      double Qabs = multi_layer_mie.GetQabs();
+      printf("Qabs = %g\n", Qabs);
+    } catch( const std::invalid_argument& ia ) {
       // Will catch if  multi_layer_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
-      throw std::invalid_argument(ia);
       return -1;
     }
 ```
+
+The complete `example-minimal.cc` and a bit more complicated
+`example-get-Mie.cc` can be found in example directory along with
+`go-cc-examples.sh` script with build commands.
+
+`example-get-Mie.cc` can be compiled using double precision or
+multiple precision (just include `-DMULTI_PRECISION=200` to use 200
+digits for calculations). 
 
 Papers
 ------
