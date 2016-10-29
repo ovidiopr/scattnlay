@@ -1,5 +1,3 @@
-#ifndef SRC_SHELL_GENERATOR_H_
-#define SRC_SHELL_GENERATOR_H_
 //**********************************************************************************//
 //    Copyright (C) 2009-2016  Ovidio Pena <ovidio@bytesfall.com>                   //
 //    Copyright (C) 2013-2016  Konstantin Ladutenko <kostyfisik@gmail.com>          //
@@ -26,47 +24,33 @@
 //    You should have received a copy of the GNU General Public License             //
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
-//   @brief  Generates points for integration on sphere surface
+//   This program evaluates forces acting on the nanoparticle under irradiaton.
 #include <complex>
+#include <cstdio>
 #include <string>
-#include <utility>
-#include <vector>
-namespace shell_generator {
-  class ShellGenerator {  // will throw for any error
-   public:
-    /* ShellGenerator& ReadFromFile(std::string filename); */
-    /* ShellGenerator& ResizeToComplex(double from_wl, double to_wl, int samples); */
-    /* ShellGenerator& ToIndex(); */
-    double dist(std::vector<double> a, std::vector<double> b);
-    double norm(std::vector<double> a);
-    std::vector< std::vector<double> > GetVertices(){return vertices_;};
-    std::vector< std::vector<double> > GetVerticesT();
-    std::vector< std::vector<long int> > GetEdges(){return edges_;};
-    std::vector< std::vector<long int> > GetFaces(){return faces_;};
-    void EvalEdgeLength();
-    void GenerateEdges();
-    void GenerateFaces();
-    void Init();
-    double Integrate();
-    double IntegrateGauss(double charge, double dist);
-    double IntegrateGaussSimple(double charge, double dist);
-    void PrintVerts();
-    void Refine();
-    void Rescale(double scale);
-    void SetField(std::vector<std::vector< std::complex<double> > > &E,
-                  std::vector<std::vector< std::complex<double> > > &H) {E_ = E; H_=H;};
-    void SetInitialVertices();
-  private:
-    std::vector<std::vector< std::complex<double> > > E_, H_;
-    double edge_length_ = 0.0;
-    double face_area_ = 0.0;
-    double per_vertice_area_ = 0.0;
-    std::vector< std::vector<double> > vertices_;
-    std::vector< std::vector<long int> > edges_;
-    std::vector< std::vector<long int> > faces_;
-    // std::vector< std::pair< double, std::complex<double> > > data_complex_;
-    // std::vector< std::pair< double, std::complex<double> > > data_complex_index_;
-    // void PermittivityToIndex();
-  };  // end of class ShellGenerator
-}  // end of namespase read_spectra
-#endif  // SRC_SHELL_GENERATOR_H_
+#include <iostream>
+#include "../src/shell-generator.hpp"
+int main(int argc, char *argv[]) {
+  try {
+    shell_generator::ShellGenerator shell;
+    shell.Init();
+    shell.Refine();
+    //shell.Refine();
+    //shell.Refine();
+    double scale = 1.9;  //Integration sphere radius.
+    double shift = 1.1;  //Shift of the charge relative to the sphere center.
+    double charge = 11.0; //Coulomb charge.
+    shell.Rescale(scale);
+    shell.PrintVerts();
+    auto points = shell.GetVertices();
+    double charge_s = shell.IntegrateGaussSimple(charge, shift);
+    std::cout << "Accuracy ( 1==ideal ): " << charge_s/charge << std::endl; 
+  } catch( const std::invalid_argument& ia ) {
+    // Will catch if  multi_layer_mie fails or other errors.
+    std::cerr << "Invalid argument: " << ia.what() << std::endl;
+    return -1;
+  }  
+    return 0;
+}
+
+

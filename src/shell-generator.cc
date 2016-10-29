@@ -40,19 +40,43 @@
 #include "shell-generator.hpp"
 namespace shell_generator {
   template<class T> inline T pow2(const T value) {return value*value;}
-
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  double ShellGenerator::IntegrateGaussSimple(double charge, double shift) {
+    double integral = 0.0;
+    // return field at point p from the charge, located at (shift, 0,0)
+    auto field = [](double charge, double shift, std::vector<double> p){
+      double r = std::sqrt(pow2(p[0]-shift) + pow2(p[1]) + pow2(p[2]) );
+      const double pi = 3.1415926535897932384626433832795;
+      double ampl = charge/(4.0*pi*pow2(r));      
+      std::vector<double> field = {ampl*(p[0]-shift)/r, ampl*(p[1])/r, ampl*(p[2])/r};
+      return field;
+    };
+    //simple 
+    for (auto vert :vertices_) {
+      auto E0 = field(charge, shift, vert);
+      // Vector to unit product
+      double r = norm(vert);
+      std::vector<double> unit = { vert[0]/r, vert[1]/r, vert[2]/r};
+      // std::cout << norm(unit) << std::endl;
+      for (int i =0; i < 3; ++i) 
+        integral += per_vertice_area_*unit[i]*E0[i];
+    }
+    return integral;
+  }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
   double ShellGenerator::IntegrateGauss(double charge, double shift) {
+    if (faces_.size() == 0)
+      throw std::invalid_argument("Error! Faces were not initialized!\n");
     double integral = 0.0;
-    auto E = E_[0];
-    auto H = H_[0];
-
     // return field at point p from the charge, located at (shift, 0,0)
     auto field = [](double charge, double shift, std::vector<double> p){
       double r = std::sqrt(pow2(p[0]-shift) + pow2(p[1]) + pow2(p[2]) );
-      double ampl = charge/pow2(r);
+      const double pi = 3.1415926535897932384626433832795;
+      double ampl = charge/(4.0*pi*pow2(r));      
       std::vector<double> field = {ampl*(p[0]-shift)/r, ampl*(p[1])/r, ampl*(p[2])/r};
       return field;
     };
@@ -71,9 +95,10 @@ namespace shell_generator {
       // Vector to unit product
       double r = norm(mean_point);
       std::vector<double> unit = { mean_point[0]/r, mean_point[1]/r, mean_point[2]/r};
-      std::cout << norm(unit) << std::endl;
+      // std::cout << norm(unit) << std::endl;
       for (int i =0; i < 3; ++i) 
-        integral += face_area_*unit[i]*mean_vector[i];
+        integral += face_area_*
+          unit[i]*mean_vector[i];
     }
     return integral;
   }
@@ -131,7 +156,9 @@ namespace shell_generator {
        }
      }
      const double pi = 3.1415926535897932384626433832795;
-     face_area_ = 4.0*pi*pow2(scale)/faces_.size();
+     double area = 4.0*pi*pow2(scale); 
+     face_area_ = area/faces_.size();
+     per_vertice_area_ = area/vertices_.size(); 
    }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -159,7 +186,7 @@ namespace shell_generator {
       vertices_.push_back(new_point);      
     }
     GenerateEdges();
-    GenerateFaces();
+    // GenerateFaces();
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -262,121 +289,13 @@ namespace shell_generator {
     //     std::cout<< p<<std::endl;
     // }
   }
-
-
-
-  // ShellGenerator& ShellGenerator::ReadFromFile(std::string fname) {
-  //   //std::cout<<"Reading file: "<< fname << std::endl;
-  //   std::ifstream infile(fname.c_str());
-  //   data_.clear();
-  //   std::string line;
-  //   while (std::getline(infile, line))
-  //     {
-  //       if (line.front() == '#') continue; //do not read comments
-  //       if (line.find('#') != std::string::npos) 
-  //         throw std::invalid_argument("Error! Comments should be marked with # in the begining of the line!\n");
-  //       std::istringstream iss(line);	
-  //       double wl, re, im;
-  //       if (!(iss >> wl >> re >> im)) throw std::invalid_argument("Error! Unexpected format of the line!\n");
-  //       data_.push_back(std::vector<double>({wl,re,im}));
-  //       //std::cout<<wl<<' '<<re<<' '<<im<<std::endl;
-  //     }  // end of wile reading file 
-  //   std::sort(data_.begin(), data_.end(),
-  //             [](const std::vector<double>& a, const std::vector<double>& b) {
-  //       	return a.front() < b.front();
-  //             });
-  //   return *this;
-  // }  // end of void ShellGenerator::ReadFromFile(std::string fname)
-  // // ********************************************************************** //
-  // // ********************************************************************** //
-  // // ********************************************************************** //
-  // /// Cut the spectra to the range and convert it to std::complex<double>
-  // ShellGenerator& ShellGenerator::ResizeToComplex(double from_wl, double to_wl, int samples) {
-  //   if (data_.size() < 2) throw std::invalid_argument("Nothing to resize!/n");
-  //   if (data_.front()[0] > from_wl || data_.front()[0] > to_wl ||
-  //       data_.back()[0] < from_wl || data_.back()[0] < to_wl ||
-  //       from_wl > to_wl)
-  //     throw std::invalid_argument("Invalid range to resize spectra!/n");
-  //   if (samples < 1) throw std::invalid_argument("Not enough samples!/n");
-  //   std::vector<double> wl_sampled(samples, 0.0);
-  //   if (samples == 1) {
-  //     wl_sampled[0] = (from_wl + to_wl)/2.0;
-  //   } else {
-  //     for (int i =0; i<samples; ++i)
-  //       wl_sampled[i] = from_wl
-  //         + (to_wl-from_wl)*static_cast<double>(i)/static_cast<double>(samples-1);
-  //   }  // end of setting wl_sampled
-  //   data_complex_.clear();
-  //   int j = 0;
-  //   for (int i = 0; i < data_.size(); ++i) {
-  //     const double& wl_i = data_[i][0];
-  //     const double& wl_s = wl_sampled[j];
-  //     if (wl_i < wl_s) continue;
-  //     else {
-  //       const double& wl_prev = data_[i-1][0];	
-  //       const double& re_prev = data_[i-1][1];
-  //       const double& im_prev = data_[i-1][2];
-  //       const double& re_i = data_[i][1];
-  //       const double& im_i = data_[i][2];
-  //       // Linear approximation
-  //       double re_s = re_i - (re_i-re_prev)*(wl_i-wl_s)/(wl_i-wl_prev);
-  //       double im_s = im_i - (im_i-im_prev)*(wl_i-wl_s)/(wl_i-wl_prev);
-
-  //       auto tmp = std::make_pair(wl_s, std::complex<double>(re_s,im_s));
-  //       data_complex_.push_back(tmp);	
-	       
-  //       ++j;
-  //       --i; // Next sampled point(j) can be in the same i .. i-1 region
-  //       // All sampled wavelengths has a value
-  //       if (j >= wl_sampled.size()) break;  
-  //     }
-  //   }
-  //   if (data_complex_.size() == 0)
-  //     throw std::invalid_argument("No points in spectra for the defined range!/n");
-  //   if (data_complex_.size() != samples)
-  //     throw std::invalid_argument("Was not able to get all samples!/n");
-  //   return *this;
-  // }
-  // // ********************************************************************** //
-  // // ********************************************************************** //
-  // // ********************************************************************** //
-  // /// from relative permittivity to refractive index
-  // ShellGenerator& ShellGenerator::ToIndex() {
-  //   data_complex_index_.clear();
-  //   for (auto row : data_complex_) {
-  //     const double wl = row.first;
-  //     const double e1 = row.second.real();
-  //     const double e2 = row.second.imag();
-  //     const double n = std::sqrt( (std::sqrt(pow2(e1)+pow2(e2)) + e1) /2.0 );
-  //     const double k = std::sqrt( (std::sqrt(pow2(e1)+pow2(e2)) - e1) /2.0 );
-  //     auto tmp = std::make_pair(wl, std::complex<double>(n,k));
-  //     data_complex_index_.push_back(tmp);	
-  //   }
-  //   return *this;
-  // }
-
-  // // ********************************************************************** //
-  // // ********************************************************************** //
-  // // ********************************************************************** //
-  // void ShellGenerator::PrintData() {
-  //   if (data_complex_.size() == 0) 
-  //     throw std::invalid_argument("Nothing to print!");
-  //   for (auto row : data_complex_) {
-  //     printf("wl:%g\tre:%g\tim:%g\n", row.first, row.second.real(),
-  //            row.second.imag());
-  //   }  // end of for each row
-  // }
-  // // ********************************************************************** //
-  // // ********************************************************************** //
-  // // ********************************************************************** //
-
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
   void ShellGenerator::Init() {
     SetInitialVertices();
     GenerateEdges();
-    GenerateFaces();
+    //GenerateFaces();
   }
 
 }  // end of namespace read_spectra
