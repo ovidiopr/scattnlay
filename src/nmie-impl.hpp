@@ -838,7 +838,7 @@ namespace nmie {
       // Calculate the scattering amplitudes (S1 and S2)    //
       // Precalculate cos(theta) - gives about 5% speed up.
       std::vector<FloatType> costheta(theta_.size(), 0.0);
-      for (int t = 0; t < theta_.size(); t++) {
+      for (unsigned int t = 0; t < theta_.size(); t++) {
 	costheta[t] = nmm::cos(theta_[t]);
       }
       // Equations (25a) - (25b)                            //

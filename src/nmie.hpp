@@ -118,6 +118,8 @@ namespace nmie {
     std::vector<std::complex<FloatType> > an_, bn_;
     std::vector< std::vector<std::complex<FloatType> > > aln_, bln_, cln_, dln_;
     void calcExpanCoeffs();
+    // Points for field evaluation
+    std::vector< std::vector<FloatType> > coords_;
 
   private:
     void calcNstop();
@@ -162,7 +164,6 @@ namespace nmie {
     // with calcNmax(int first_layer);
     int nmax_ = -1;
     int nmax_preset_ = -1;
-    std::vector< std::vector<FloatType> > coords_;
     /// Store result
     FloatType Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::vector< std::complex<FloatType> > > E_, H_;  // {X[], Y[], Z[]}

@@ -47,12 +47,15 @@ namespace shell_generator {
     void GenerateEdges();
     void GenerateFaces();
     void Init();
-    double Integrate();
+    std::vector<double> Integrate();
     double IntegrateGauss(double charge, double dist);
     double IntegrateGaussSimple(double charge, double dist);
     void PrintVerts();
     void Refine();
     void Rescale(double scale);
+    void RotateX(double angle);
+    void RotateY(double angle);
+    void RotateZ(double angle);
     void SetField(std::vector<std::vector< std::complex<double> > > &E,
                   std::vector<std::vector< std::complex<double> > > &H) {E_ = E; H_=H;};
     void SetInitialVertices();

@@ -43,6 +43,144 @@ namespace shell_generator {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
+  template<typename T, typename A> inline
+  T dot(std::vector<T,A> const& a,
+        std::vector<T,A> const& b) {
+    return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+    // return std::inner_product(begin(a), end(a), begin(b),
+    //                           static_cast<T>(0.0));
+  }  
+  // template<typename T, typename A> inline
+  // std::vector<T> cross(std::vector<T,A> const& a,
+  //       std::vector<T,A> const& b) {
+  //   std::vector<T> c = {
+  //     a[1]*b[2]-a[2]*b[1],
+  //     a[2]*b[0]-a[0]*b[2],
+  //     a[0]*b[1]-a[1]*b[0]
+  //   };
+  //   return c;
+  // }  
+  // template<typename T, typename A> inline
+  // std::vector<std::vector<T> > dyadic(std::vector<T,A> const& a,
+  //       std::vector<T,A> const& b) {
+  //   std::vector<std::vector<T> > c = {
+  //     {a[0]*b[0], a[0]*b[1], a[0]*b[2]},
+  //     {a[1]*b[0], a[1]*b[1], a[1]*b[2]},
+  //     {a[2]*b[0], a[2]*b[1], a[2]*b[2]}
+  //   };
+  //   return c;
+  // }  
+  // template<typename T, typename A> inline
+  // std::vector<std::vector<T>,A >
+  // operator+(std::vector<std::vector<T>,A > const& a,
+  //           std::vector<std::vector<T>,A > const& b) {
+  //   std::vector<std::vector<T>,A > c = {
+  //     {a[0][0]+b[0][0], a[0][1]+b[0][1], a[0][2]+b[0][2]},
+  //     {a[1][0]+b[1][0], a[1][1]+b[1][1], a[1][2]+b[1][2]},
+  //     {a[2][0]+b[2][0], a[2][1]+b[2][1], a[2][2]+b[2][2]}
+  //   };
+  //   return c;
+  // }  
+  template<typename T, typename A> inline
+  std::vector<T,A >
+  operator+(std::vector<T,A > const& a,
+            std::vector<T,A > const& b) {
+    std::vector<T,A > c = {a[0]+b[0],
+                           a[1]+b[1],
+                           a[2]+b[2]};
+    return c;
+  }  
+  // template<typename T, typename A> inline
+  // std::vector<std::vector<T>,A >
+  // operator-(std::vector<std::vector<T>,A > const& a,
+  //           std::vector<std::vector<T>,A > const& b) {
+  //   std::vector<std::vector<T>,A > c = {
+  //     {a[0][0]-b[0][0], a[0][1]-b[0][1], a[0][2]-b[0][2]},
+  //     {a[1][0]-b[1][0], a[1][1]-b[1][1], a[1][2]-b[1][2]},
+  //     {a[2][0]-b[2][0], a[2][1]-b[2][1], a[2][2]-b[2][2]}
+  //   };
+  //   return c;
+  // }  
+  // template<typename T, typename A> inline
+  // std::vector<std::vector<T>,A >
+  // real(std::vector<std::vector<T>,A > const& a) {
+  //   std::vector<std::vector<T>,A > c = {
+  //     {a[0][0].real(), a[0][1].real(), a[0][2].real()},
+  //     {a[1][0].real(), a[1][1].real(), a[1][2].real()},
+  //     {a[2][0].real(), a[2][1].real(), a[2][2].real()}
+  //   };
+  //   return c;
+  // }  
+  template<typename T, typename A> inline
+  std::vector<T>
+  real(std::vector<std::complex<T>,A > const& a) {
+    std::vector<T> c = {a[0].real(),
+                        a[1].real(),
+                        a[2].real()};
+    return c;
+  }  
+  template<typename T, typename A> 
+  std::vector< std::complex<T>,A > vconj(std::vector< std::complex<T>,A > const& a) {
+    std::vector< std::complex<T>,A > b = {std::conj(a[0]),
+                                          std::conj(a[1]),
+                                          std::conj(a[2]) };
+    // for (auto elem : a)
+    //   b.push_back(std::conj(elem));
+    return b;
+  }  
+  template<typename T1, typename T2, typename A> 
+  std::vector<T2,A> operator*(T1 const& a, std::vector< T2,A > const& b) {
+    std::vector<T2,A > c = {a*b[0],
+                            a*b[1],
+                            a*b[2]};
+    // for (auto elem : b)
+    //   c.push_back(a*elem);
+    return c;
+  }  
+
+  
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void ShellGenerator::RotateZ(double angle) {
+    for(auto& p : vertices_) {
+      double x,y;
+      x = std::cos(angle)*p[0]-std::sin(angle)*p[1];
+      y = std::sin(angle)*p[0]+std::cos(angle)*p[1];
+      p[0] = x;
+      p[1] = y;
+    }
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void ShellGenerator::RotateY(double angle) {
+    for(auto& p : vertices_) {
+      double x,z;
+      x = std::cos(angle)*p[0]+std::sin(angle)*p[2];
+      z = -std::sin(angle)*p[0]+std::cos(angle)*p[2];
+      p[0] = x;
+      p[2] = z;
+    }
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void ShellGenerator::RotateX(double angle) {
+    for(auto& p : vertices_) {
+      double y,z;
+      y = std::cos(angle)*p[1]-std::sin(angle)*p[2];
+      z = std::sin(angle)*p[1]+std::cos(angle)*p[2];
+      p[1] = y;
+      p[2] = z;
+    }
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
   double ShellGenerator::IntegrateGaussSimple(double charge, double shift) {
     double integral = 0.0;
     // return field at point p from the charge, located at (shift, 0,0)
@@ -106,19 +244,32 @@ namespace shell_generator {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  double ShellGenerator::Integrate() {
-    double integral = 0.0;
-    auto E = E_[0];
-    auto H = H_[0];
-    for(const auto face : faces_){
-      for (int i = 0; i<3; ++i) {
-        auto mean = (E_[face[0]][i]+E_[face[1]][i]+E_[face[2]][i])/3.0;
-        E[i] = mean;
-        mean = (H_[face[0]][i]+H_[face[1]][i]+H_[face[2]][i])/3.0;
-        H[i] = mean;
-      }
-      integral += // std::abs(E[0]*H[0])*
-        face_area_;
+  
+  std::vector<double> ShellGenerator::Integrate() {
+    std::vector<double> integral = {0.0, 0.0, 0.0};
+    //simple 
+    for (unsigned int i=0; i<E_.size(); ++i) {
+      auto E = E_[i];
+      //auto H = 377.0*H_[i];
+      auto H = H_[i];
+      auto vert = vertices_[i];
+      std::cout <<"E "<<E[0]<<", "<< E[1] <<", "<<E[2] << std::endl;
+      std::cout <<"H "<<H[0]<<", "<< H[1] <<", "<<H[2] << std::endl;
+      std::cout <<"vert "<<vert[0]<<", "<< vert[1] <<", "<<vert[2] << std::endl<<std::endl;
+      // Vector to unit product
+      double r = norm(vert);
+      std::vector<std::complex<double> > unit = { vert[0]/r, vert[1]/r, vert[2]/r};
+      // std::cout << norm(unit) << std::endl;
+      //const double pi = 3.1415926535897932384626433832795;
+      std::vector<double> P = (1/(2.0))
+        *real(
+              dot(unit,E)*vconj(E) +
+              dot(unit,H)*vconj(H) +
+              (-1.0/2.0)*(dot(E,vconj(E))
+                          +dot(H,vconj(H))
+                          )*unit
+              );
+      integral = integral + per_vertice_area_*P;
     }
     return integral;
   }
@@ -133,7 +284,7 @@ namespace shell_generator {
       vertices_t[1].push_back(vert[1]);
       vertices_t[2].push_back(vert[2]);
     }
-    
+    return vertices_t;
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -193,11 +344,11 @@ namespace shell_generator {
   // ********************************************************************** //
   void ShellGenerator::GenerateFaces() {
     faces_.clear();
-    for (int i = 0; i < edges_.size(); ++i) {
+    for (unsigned int i = 0; i < edges_.size(); ++i) {
       const auto ie = edges_[i];
-      for(int j = i + 1; j < edges_.size(); ++j) {
+      for(unsigned int j = i + 1; j < edges_.size(); ++j) {
         const auto je = edges_[j];
-        for(int k = j + 1; k < edges_.size(); ++k) {
+        for(unsigned int k = j + 1; k < edges_.size(); ++k) {
           const auto ke = edges_[k];
           std::set<long int> edges = {ie[0],ie[1],
                                  je[0],je[1],
@@ -222,8 +373,8 @@ namespace shell_generator {
     std::cout << "Vertices: "<< vertices_.size() <<std::endl;
     edges_.clear();
     EvalEdgeLength();
-    for (int i = 0; i < vertices_.size(); ++i)
-      for(int j = i + 1; j < vertices_.size(); ++j) {
+    for (unsigned int i = 0; i < vertices_.size(); ++i)
+      for(unsigned int j = i + 1; j < vertices_.size(); ++j) {
         if (dist(vertices_[i],vertices_[j]) > 1.001*edge_length_) continue;
         std::vector<long int> edge = {i,j};
         // std::cout << i<< " " << j<<std::endl;
@@ -254,7 +405,7 @@ namespace shell_generator {
     if (b.size() != len)
       throw std::invalid_argument("Error! Vector need to be the same size!\n");
     double distance = 0.0;
-    for (int i = 0; i<len; ++i) {
+    for (unsigned int i = 0; i<len; ++i) {
       distance += pow2(a[i]-b[i]);
     }
     return std::sqrt(distance);
@@ -284,6 +435,14 @@ namespace shell_generator {
       {-c,a,-b}
     };
     vertices_ = std::move(points);
+
+    //std::vector< std::vector<double> > points_debug = {{1,0,0},{-1,0,0}};
+    //std::vector< std::vector<double> > points_debug = {{0,1,0},{0,-1,0}};
+    std::vector< std::vector<double> > points_debug = {{1,1,0},{-1,-1,0},{-1,1,0},{1,-1,0}};
+    //std::vector< std::vector<double> > points_debug = {};
+    // std::vector< std::vector<double> > points_debug = {{0,0,1},{0,0,-1}};
+    vertices_ = std::move(points_debug);
+
     // for (auto v : vertices_) {
     //   for (auto p : v)
     //     std::cout<< p<<std::endl;

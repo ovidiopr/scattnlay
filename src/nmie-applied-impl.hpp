@@ -151,7 +151,7 @@ namespace nmie {
       throw std::invalid_argument("Error! Wrong dimension of field monitor points!");
     if (coords_sp[0].size() != coords_sp[1].size() || coords_sp[0].size() != coords_sp[2].size())
       throw std::invalid_argument("Error! Missing coordinates for field monitor points!");
-    coords_sp_ = coords_sp;
+    this->coords_ = coords_sp;
     // for (int i = 0; i < coords_sp_[0].size(); ++i) {
     //   printf("%g, %g, %g\n", coords_sp_[0][i], coords_sp_[1][i], coords_sp_[2][i]);
     // }
