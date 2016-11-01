@@ -212,9 +212,17 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
             Eabs_data = np.resize(P, (npts, npts)).T
             label = r'$\operatorname{Re}(E \times H)$'
         elif field_to_plot == 'Eabs':
-            Eabs = np.sqrt(Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
-            Eabs_data = np.resize(Eabs, (npts, npts)).T
-            label = r'$|E|$'
+            # Eabs = np.sqrt(Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
+            # label = r'$|E|$'
+            # Eabs = np.real(Hc[:, 0])
+            # label = r'$Re(H_x)$'
+            # Eabs = np.real(Hc[:, 1])
+            # label = r'$Re(H_y)$'
+            Eabs = np.real(Ec[:, 1])
+            label = r'$Re(E_y)$'
+            # Eabs = np.real(Ec[:, 0])
+            # label = r'$Re(E_x)$'
+            Eabs_data = np.resize(Eabs, (npts, npts))
         elif field_to_plot == 'Habs':
             Habs = np.sqrt(Hr[:, 0]**2 + Hr[:, 1]**2 + Hr[:, 2]**2)
             Eabs_data = np.resize(Habs, (npts, npts)).T
@@ -263,7 +271,7 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         if 'angle' in field_to_plot:
             cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])
         else:
-            cbar.ax.set_yticklabels(['%3.2f' % (a) for a in scale_ticks])
+            cbar.ax.set_yticklabels(['%g' % (a) for a in scale_ticks])
         # pos = list(cbar.ax.get_position().bounds)
         #fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
         lp2 = -10.0
@@ -278,8 +286,8 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
             ax.set_xlabel(r'$Z,\lambda$'+WL_units)
             ax.set_ylabel(r'$Y:X,\lambda$'+WL_units)
         elif crossplane == 'XY':
-            ax.set_xlabel('Y, ' + WL_units, labelpad=lp1)
-            ax.set_ylabel('X, ' + WL_units, labelpad=lp2)
+            ax.set_xlabel('X, ' + WL_units, labelpad=lp1)
+            ax.set_ylabel('Y, ' + WL_units, labelpad=lp2)
         # # This part draws the nanoshell
         from matplotlib import patches
         from matplotlib.path import Path
@@ -367,5 +375,5 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
     finally:
         terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
             np.array([x]), np.array([m]))
-        print("Qabs = " + str(Qabs))
+        print("Qsca = " + str(Qsca))
     #

@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     //shell.Refine();
 
     //double scale = 2.0*pi*(core_width + inner_width +  outer_width)/WL*8.0001;  //Integration sphere radius.
-    double scale = 2.0*pi*(outer_width)/WL*1.0001;  //Integration sphere radius.
+    double scale = 2.0*pi*(outer_width)/WL*1.4001;  //Integration sphere radius.
     //double scale = 1.0001;  //Integration sphere radius.
     
     shell.Rescale(scale);
@@ -80,10 +80,10 @@ int main(int argc, char *argv[]) {
     auto E = nmie::ConvertComplexVectorVector<double>(multi_layer_mie.GetFieldE());
     auto H = nmie::ConvertComplexVectorVector<double>(multi_layer_mie.GetFieldH());
     shell.SetField(E,H);
-    auto F = shell.Integrate();
-    std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl<< std::endl;
-    F = shell.IntegrateByComp();
-    std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl;
+    // auto F = shell.Integrate();
+    // std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl<< std::endl;
+    auto F = shell.IntegrateByComp();
+    //std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl;
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;

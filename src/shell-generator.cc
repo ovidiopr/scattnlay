@@ -259,10 +259,12 @@ namespace shell_generator {
       auto vert = vertices_[i];
       std::cout <<"E "<<E[0]<<", "<< E[1] <<", "<<E[2] << std::endl;
       std::cout <<"H "<<H[0]<<", "<< H[1] <<", "<<H[2] << std::endl;
-      std::cout <<"vert "<<vert[0]<<", "<< vert[1] <<", "<<vert[2] << std::endl<<std::endl;
+      std::cout <<"vert "<<vert[0]<<", "<< vert[1] <<", "<<vert[2] << std::endl;
       // Vector to unit product
       double r = norm(vert);
       std::vector<double> n = { vert[0]/r, vert[1]/r, vert[2]/r};
+      //std::cout<<"norm: " <<n[0]<<", "<< n[1] <<", "<<n[2] << std::endl;
+          
       // std::cout << norm(unit) << std::endl;
       //const double pi = 3.1415926535897932384626433832795;
       const std::vector< std::vector<double> > d = {{1.0, 0.0, 0.0},
@@ -272,18 +274,19 @@ namespace shell_generator {
       std::vector<double> F = {0.0, 0.0, 0.0};
       std::complex<double> S(0.0);
       for (int ii = 0; ii < 3; ++ii)
-        S += E[ii]*E[ii] + H[ii]*H[ii];
+        S += E[ii]*std::conj(E[ii]) + H[ii]*std::conj(H[ii]);
       std::vector< std::vector<double> >  T = {{0.0, 0.0, 0.0},
                                {0.0, 0.0, 0.0},
                                {0.0, 0.0, 0.0}};
       for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
           T[i][j] = (1/(2.0/* *4.0*pi */))
-            * real(E[i]*E[j] + H[i]*H[j]
+            * real(E[i]*std::conj(E[j]) + H[i]*std::conj(H[j])
                    -1.0/2.0*S*d[i][j]);
           F[i] += T[i][j]*n[j];
         }
       }
+      std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl<< std::endl;
       integral = integral + per_vertice_area_*F;
     }
     return integral;
@@ -485,7 +488,7 @@ namespace shell_generator {
 
     //std::vector< std::vector<double> > points_debug = {{1,0,0},{-1,0,0}};
     //std::vector< std::vector<double> > points_debug = {{0,1,0},{0,-1,0}};
-    std::vector< std::vector<double> > points_debug = {{1,1,0},{-1,-1,0},{-1,1,0},{1,-1,0}};
+    std::vector< std::vector<double> > points_debug = {{1,1,0},{1,-1,0},{-1,-1,0},{-1,1,0}};
     //std::vector< std::vector<double> > points_debug = {};
     // std::vector< std::vector<double> > points_debug = {{0,0,1},{0,0,-1}};
     vertices_ = std::move(points_debug);
