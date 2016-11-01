@@ -119,6 +119,10 @@ namespace shell_generator {
                         a[2].real()};
     return c;
   }  
+  template<typename T, typename A> inline
+  T  real(std::complex<T> const& a) {    
+    return a.real();
+  }  
   template<typename T, typename A> 
   std::vector< std::complex<T>,A > vconj(std::vector< std::complex<T>,A > const& a) {
     std::vector< std::complex<T>,A > b = {std::conj(a[0]),
@@ -241,6 +245,49 @@ namespace shell_generator {
     return integral;
   }
 
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  
+  std::vector<double> ShellGenerator::IntegrateByComp() {
+    std::vector<double> integral = {0.0, 0.0, 0.0};
+    //simple 
+    for (unsigned int i=0; i<E_.size(); ++i) {
+      auto E = E_[i];
+      //auto H = 377.0*H_[i];
+      auto H = H_[i];
+      auto vert = vertices_[i];
+      std::cout <<"E "<<E[0]<<", "<< E[1] <<", "<<E[2] << std::endl;
+      std::cout <<"H "<<H[0]<<", "<< H[1] <<", "<<H[2] << std::endl;
+      std::cout <<"vert "<<vert[0]<<", "<< vert[1] <<", "<<vert[2] << std::endl<<std::endl;
+      // Vector to unit product
+      double r = norm(vert);
+      std::vector<double> n = { vert[0]/r, vert[1]/r, vert[2]/r};
+      // std::cout << norm(unit) << std::endl;
+      //const double pi = 3.1415926535897932384626433832795;
+      const std::vector< std::vector<double> > d = {{1.0, 0.0, 0.0},
+                                                    {0.0, 1.0, 0.0},
+                                                    {0.0, 0.0, 1.0}};
+      
+      std::vector<double> F = {0.0, 0.0, 0.0};
+      std::complex<double> S(0.0);
+      for (int ii = 0; ii < 3; ++ii)
+        S += E[ii]*E[ii] + H[ii]*H[ii];
+      std::vector< std::vector<double> >  T = {{0.0, 0.0, 0.0},
+                               {0.0, 0.0, 0.0},
+                               {0.0, 0.0, 0.0}};
+      for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+          T[i][j] = (1/(2.0/* *4.0*pi */))
+            * real(E[i]*E[j] + H[i]*H[j]
+                   -1.0/2.0*S*d[i][j]);
+          F[i] += T[i][j]*n[j];
+        }
+      }
+      integral = integral + per_vertice_area_*F;
+    }
+    return integral;
+  }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //

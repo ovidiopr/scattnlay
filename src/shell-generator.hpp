@@ -48,6 +48,7 @@ namespace shell_generator {
     void GenerateFaces();
     void Init();
     std::vector<double> Integrate();
+    std::vector<double> IntegrateByComp();
     double IntegrateGauss(double charge, double dist);
     double IntegrateGaussSimple(double charge, double dist);
     void PrintVerts();
