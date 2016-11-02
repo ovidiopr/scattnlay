@@ -58,8 +58,8 @@ int main(int argc, char *argv[]) {
       multi_layer_mie.RunMieCalculation();
       double Qsca = multi_layer_mie.GetQsca();
       printf("Qsca = %g\n", Qsca);
-      double scale = 2.0*pi*(outer_width)/WL*1.001;  //Integration sphere radius.
-      //double scale = 2.0*pi*(110)/WL*2.001;  //Integration sphere radius.
+      //double scale = 2.0*pi*(outer_width)/WL*1.001;  //Integration sphere radius.
+      double scale = 2.0*pi*(110)/WL*2.001;  //Integration sphere radius.
       //double scale = 1.0001;  //Integration sphere radius.
       shell.Rescale(scale);
       // shell.RotateX(pi/2.0);
@@ -74,8 +74,8 @@ int main(int argc, char *argv[]) {
       shell.SetField(E,H);
       // auto F = shell.Integrate();
       // std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl<< std::endl;
-      auto F = shell.IntegrateByComp();
-      std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl;
+      auto F1 = shell.IntegrateByComp();
+      std::cout<<"F: " <<F1[0]<<", "<< F1[1] <<", "<<F1[2] << std::endl;
     }
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.

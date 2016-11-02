@@ -1130,8 +1130,7 @@ namespace nmie {
         Phi = (Yp != 0.0) ? nmm::asin(Yp/nmm::sqrt(pow2(Xp) + pow2(Yp))) : 0.0;
       else
         Phi = nmm::acos(Xp/nmm::sqrt(pow2(Xp) + pow2(Yp)));
-      if (Yp != 0.0)
-        Phi *= Yp/nmm::sqrt(pow2(Yp));
+      if (Yp < 0.0) Phi *= -1;
       // Avoid convergence problems due to Rho too small
       if (Rho < 1e-5) Rho = 1e-5;
       // std::cout << "Xp: "<<Xp<< "  Yp: "<<Yp<< "  Zp: "<<Zp<<std::endl;

@@ -303,9 +303,6 @@ namespace shell_generator {
       //auto H = 377.0*H_[i];
       auto H = H_[i];
       auto vert = vertices_[i];
-      std::cout <<"E "<<E[0]<<", "<< E[1] <<", "<<E[2] << std::endl;
-      std::cout <<"H "<<H[0]<<", "<< H[1] <<", "<<H[2] << std::endl;
-      std::cout <<"vert "<<vert[0]<<", "<< vert[1] <<", "<<vert[2] << std::endl<<std::endl;
       // Vector to unit product
       double r = norm(vert);
       std::vector<std::complex<double> > unit = { vert[0]/r, vert[1]/r, vert[2]/r};
@@ -319,6 +316,9 @@ namespace shell_generator {
                           +dot(H,vconj(H))
                           )*unit
               );
+      // auto    std::cout <<"E "<<E[0]<<", "<< E[1] <<", "<<E[2] << std::endl;
+      // std::cout <<"H "<<H[0]<<", "<< H[1] <<", "<<H[2] << std::endl;
+      // std::cout <<"vert "<<vert[0]<<", "<< vert[1] <<", "<<vert[2] << std::endl<<std::endl;
       integral = integral + per_vertice_area_*P;
     }
     return integral;
