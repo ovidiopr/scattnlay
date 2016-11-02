@@ -570,12 +570,15 @@ namespace nmie {
     Mo1n[0] = c_zero;
     Mo1n[1] = cos(Phi)*Pi*rn/Rho;
     Mo1n[2] = -sin(Phi)*Tau*rn/Rho;
+
     Me1n[0] = c_zero;
     Me1n[1] = -sin(Phi)*Pi*rn/Rho;
     Me1n[2] = -cos(Phi)*Tau*rn/Rho;
+
     No1n[0] = sin(Phi)*(n*n + n)*sin(Theta)*Pi*rn/Rho/Rho;
     No1n[1] = sin(Phi)*Tau*Dn*rn/Rho;
     No1n[2] = cos(Phi)*Pi*Dn*rn/Rho;
+
     Ne1n[0] = cos(Phi)*(n*n + n)*sin(Theta)*Pi*rn/Rho/Rho;
     Ne1n[1] = cos(Phi)*Tau*Dn*rn/Rho;
     Ne1n[2] = -sin(Phi)*Pi*Dn*rn/Rho;
@@ -1127,9 +1130,12 @@ namespace nmie {
         Phi = (Yp != 0.0) ? nmm::asin(Yp/nmm::sqrt(pow2(Xp) + pow2(Yp))) : 0.0;
       else
         Phi = nmm::acos(Xp/nmm::sqrt(pow2(Xp) + pow2(Yp)));
-
+      if (Yp != 0.0)
+        Phi *= Yp/nmm::sqrt(pow2(Yp));
       // Avoid convergence problems due to Rho too small
       if (Rho < 1e-5) Rho = 1e-5;
+      // std::cout << "Xp: "<<Xp<< "  Yp: "<<Yp<< "  Zp: "<<Zp<<std::endl;
+      // std::cout << "  Rho: "<<Rho<<" Theta: "<<Theta<<"  Phi:"<<Phi<<std::endl<<std::endl;
 
       //*******************************************************//
       // external scattering field = incident + scattered      //

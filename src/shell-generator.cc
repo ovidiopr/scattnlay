@@ -257,9 +257,6 @@ namespace shell_generator {
       //auto H = 377.0*H_[i];
       auto H = H_[i];
       auto vert = vertices_[i];
-      std::cout <<"E "<<E[0]<<", "<< E[1] <<", "<<E[2] << std::endl;
-      std::cout <<"H "<<H[0]<<", "<< H[1] <<", "<<H[2] << std::endl;
-      std::cout <<"vert "<<vert[0]<<", "<< vert[1] <<", "<<vert[2] << std::endl;
       // Vector to unit product
       double r = norm(vert);
       std::vector<double> n = { vert[0]/r, vert[1]/r, vert[2]/r};
@@ -286,7 +283,10 @@ namespace shell_generator {
           F[i] += T[i][j]*n[j];
         }
       }
-      std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl<< std::endl;
+      // std::cout <<"E "<<E[0]<<", "<< E[1] <<", "<<E[2] << std::endl;
+      // std::cout <<"H "<<H[0]<<", "<< H[1] <<", "<<H[2] << std::endl;
+      // std::cout <<"vert "<<vert[0]<<", "<< vert[1] <<", "<<vert[2] << std::endl;
+      // std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl<< std::endl;
       integral = integral + per_vertice_area_*F;
     }
     return integral;
@@ -488,10 +488,12 @@ namespace shell_generator {
 
     //std::vector< std::vector<double> > points_debug = {{1,0,0},{-1,0,0}};
     //std::vector< std::vector<double> > points_debug = {{0,1,0},{0,-1,0}};
-    std::vector< std::vector<double> > points_debug = {{1,1,0},{1,-1,0},{-1,-1,0},{-1,1,0}};
+    //std::vector< std::vector<double> > points_debug = {{1,1,0},{1,-1,0},{-1,-1,0},{-1,1,0}};
+    //std::vector< std::vector<double> > points_debug = {{0,1,1},{0,1,-1},{0,-1,-1},{0,-1,1}};
     //std::vector< std::vector<double> > points_debug = {};
     // std::vector< std::vector<double> > points_debug = {{0,0,1},{0,0,-1}};
-    vertices_ = std::move(points_debug);
+
+    //vertices_ = std::move(points_debug);
 
     // for (auto v : vertices_) {
     //   for (auto p : v)

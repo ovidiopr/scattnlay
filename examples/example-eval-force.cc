@@ -44,46 +44,39 @@ int main(int argc, char *argv[]) {
     const std::complex<double> index_Si(2.0);
     //    const std::complex<double> index_Ag = std::sqrt(epsilon_Ag);
     double WL=500; //nm
-    // double core_width = 5.27; //nm Si
-    // double inner_width = 8.22; //nm Ag
     double outer_width = 67.91; //nm  Si
-    // core_width = 5.27; //nm Si
-    // inner_width = 8.22; //nm Ag
-    //outer_width = WL/(2.0*pi); //nm  Si
-    outer_width = 50; //nm  Si
-    // multi_layer_mie.AddTargetLayer(core_width, index_Si);
-    // multi_layer_mie.AddTargetLayer(inner_width, index_Ag);
-    multi_layer_mie.AddTargetLayer(outer_width, index_Si);
-    multi_layer_mie.SetWavelength(WL);
-    multi_layer_mie.RunMieCalculation();
-    double Qsca = multi_layer_mie.GetQsca();
-    printf("Qsca = %g\n", Qsca);
-
     shell_generator::ShellGenerator shell;
     shell.Init();
-    // shell.Refine();
-    // shell.Refine();
-    //shell.Refine();
+    shell.Refine();
+    shell.Refine();
+    shell.Refine();
 
-    //double scale = 2.0*pi*(core_width + inner_width +  outer_width)/WL*8.0001;  //Integration sphere radius.
-    double scale = 2.0*pi*(outer_width)/WL*1.4001;  //Integration sphere radius.
-    //double scale = 1.0001;  //Integration sphere radius.
-    
-    shell.Rescale(scale);
-    // shell.RotateX(pi/2.0);
-    // shell.RotateY(pi/2.0);
-    // shell.RotateZ(pi/2.0);
-    //shell.PrintVerts();
-    auto points = shell.GetVerticesT();
-    multi_layer_mie.SetFieldPointsSP(points);
-    multi_layer_mie.RunFieldCalculation();
-    auto E = nmie::ConvertComplexVectorVector<double>(multi_layer_mie.GetFieldE());
-    auto H = nmie::ConvertComplexVectorVector<double>(multi_layer_mie.GetFieldH());
-    shell.SetField(E,H);
-    // auto F = shell.Integrate();
-    // std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl<< std::endl;
-    auto F = shell.IntegrateByComp();
-    //std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl;
+    for (int i=0; i<10; ++i) {
+      outer_width = 10+10*i; //nm  Si
+      multi_layer_mie.AddTargetLayer(outer_width, index_Si);
+      multi_layer_mie.SetWavelength(WL);
+      multi_layer_mie.RunMieCalculation();
+      double Qsca = multi_layer_mie.GetQsca();
+      printf("Qsca = %g\n", Qsca);
+      double scale = 2.0*pi*(outer_width)/WL*1.001;  //Integration sphere radius.
+      //double scale = 2.0*pi*(110)/WL*2.001;  //Integration sphere radius.
+      //double scale = 1.0001;  //Integration sphere radius.
+      shell.Rescale(scale);
+      // shell.RotateX(pi/2.0);
+      // shell.RotateY(pi/2.0);
+      // shell.RotateZ(pi/2.0);
+      //shell.PrintVerts();
+      auto points = shell.GetVerticesT();
+      multi_layer_mie.SetFieldPointsSP(points);
+      multi_layer_mie.RunFieldCalculation();
+      auto E = nmie::ConvertComplexVectorVector<double>(multi_layer_mie.GetFieldE());
+      auto H = nmie::ConvertComplexVectorVector<double>(multi_layer_mie.GetFieldH());
+      shell.SetField(E,H);
+      // auto F = shell.Integrate();
+      // std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl<< std::endl;
+      auto F = shell.IntegrateByComp();
+      std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl;
+    }
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
