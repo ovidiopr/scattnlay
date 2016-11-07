@@ -7,15 +7,13 @@ field-Ag-flow.py from example section as [revision](https://github.com/ovidiopr/
 Discuss:
 --------
 
-Try to join our Gitter chat: [![Join the chat at https://gitter.im/scattnlay/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/scattnlay/Lobby)
-
+Try to join our Gitter chat: [![Join the chat at https://gitter.im/scattnlay/Lobby](https://badges.gitter.im/scattnlay/Lobby.svg)](https://gitter.im/scattnlay/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+ 
 Fill the issue here: [Issues](https://github.com/ovidiopr/scattnlay/issues).
 
 
 How to use scattnlay
 ====================
-
-[![Join the chat at https://gitter.im/scattnlay/Lobby](https://badges.gitter.im/scattnlay/Lobby.svg)](https://gitter.im/scattnlay/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 **Table of contents:**
 - [Compile code](#compile-code)
