@@ -4,6 +4,14 @@ and Poynting vector distribution in Ag sphere with poweflow lines
 calculated with Scattnlay (scripts  field-SiAgSi-flow.py and
 field-Ag-flow.py from example section as [revision](https://github.com/ovidiopr/scattnlay/commit/57c7261705a5776f78420c1f486e929517d5f584) ).
 
+Discuss:
+--------
+
+Try to join our Gitter chat: [![Join the chat at https://gitter.im/scattnlay/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/scattnlay/Lobby)
+
+Fill the issue here: [Issues](https://github.com/ovidiopr/scattnlay/issues).
+
+
 How to use scattnlay
 ====================
 
