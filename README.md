@@ -7,6 +7,8 @@ field-Ag-flow.py from example section as [revision](https://github.com/ovidiopr/
 How to use scattnlay
 ====================
 
+[![Join the chat at https://gitter.im/scattnlay/Lobby](https://badges.gitter.im/scattnlay/Lobby.svg)](https://gitter.im/scattnlay/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 **Table of contents:**
 - [Compile code](#compile-code)
 - [Use](#use)
