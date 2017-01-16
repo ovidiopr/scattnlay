@@ -1,5 +1,5 @@
-python-scattnlay (2.0-1) trusty; urgency=low
+python-scattnlay (2.0.1-1) trusty; urgency=low
 
-  * Updated for Utopic Unicorn
+  * Updated for Trusty Tahr
 
  -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Thu, 06 May 2015 16:45:13 +0200

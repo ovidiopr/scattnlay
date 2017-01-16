@@ -46,20 +46,15 @@ import cmath
 #core_r = WL/20.0
 #epsilon_Ag = -2.0 + 1.0j
 
-# # c)
-# WL=354 #nm
-# core_r = WL/20.0
-# epsilon_Ag = -2.0 + 0.28j
+# c)
+WL=354 #nm
+core_r = WL/20.0
+epsilon_Ag = -2.0 + 0.28j
 
 # d)
 #WL=367 #nm
 #core_r = WL/20.0
 #epsilon_Ag = -2.71 + 0.25j
-
-WL=500 #nm
-core_r = 50.0
-epsilon_Ag = 4.0 
-
 
 index_Ag = np.sqrt(epsilon_Ag)
 # n1 = 1.53413
@@ -79,40 +74,18 @@ print "m =", m
 
 comment='bulk-Ag-flow'
 WL_units='nm'
-npts = 151
+npts = 501
 factor=2.1
-flow_total = 9
+flow_total = 39
 #flow_total = 21
 #flow_total = 0
-#crossplane='XZ'
+crossplane='XZ'
 #crossplane='YZ'
-crossplane='XY'
+#crossplane='XY'
 
 # Options to plot: Eabs, Habs, Pabs, angleEx, angleHy
-field_to_plot='Eabs'
+field_to_plot='Pabs'
 #field_to_plot='angleEx'
 
+fieldplot(x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total, is_flow_extend=False)
 
-import matplotlib.pyplot as plt
-fig, axs = plt.subplots(1,1)#, sharey=True, sharex=True)
-fig.tight_layout()
-fieldplot(fig, axs, x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
-          subplot_label=' ',is_flow_extend=False)
-
-#fieldplot(x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total, is_flow_extend=False)
-
-# for ax in axs:
-#     ax.locator_params(axis='x',nbins=5)
-#     ax.locator_params(axis='y',nbins=5)
-
-fig.subplots_adjust(hspace=0.3, wspace=-0.1)
-
-plt.savefig(comment+"-R"+str(int(round(x[-1]*WL/2.0/np.pi)))+"-"+crossplane+"-"
-                    +field_to_plot+".pdf",pad_inches=0.02, bbox_inches='tight')
-
-plt.draw()
-
-#    plt.show()
-
-plt.clf()
-plt.close()

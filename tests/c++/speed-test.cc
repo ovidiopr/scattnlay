@@ -1,6 +1,6 @@
 //**********************************************************************************//
-//    Copyright (C) 2009-2016  Ovidio Pena <ovidio@bytesfall.com>                   //
-//    Copyright (C) 2013-2016  Konstantin Ladutenko <kostyfisik@gmail.com>          //
+//    Copyright (C) 2009-2015  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2013-2015  Konstantin Ladutenko <kostyfisik@gmail.com>          //
 //                                                                                  //
 //    This file is part of scattnlay                                                //
 //                                                                                  //
@@ -38,9 +38,7 @@
 #include <string.h>
 //sudo aptitude install libgoogle-perftools-dev
 //#include <google/heap-profiler.h>
-#include "../../src/nmie.hpp"
-//#include "../../src/nmie-precision.hpp"
-//#include "../../src/nmie-impl.hpp"
+#include "../../src/nmie.h"
 
 timespec diff(timespec start, timespec end);
 const double PI=3.14159265358979323846;
@@ -185,38 +183,35 @@ int main(int argc, char *argv[]) {
     long cpptime_sec, ctime_sec;
     long repeats = 150;
     //HeapProfilerStart("heapprof");    
-    printf("Start\n");
     do {
       clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
       for (int i = 0; i<repeats; ++i) {
     	nmie::nMie(L, x, m, nt, Theta, &Qextw, &Qscaw,
     			   &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
-	// break;
       }
       clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
       cpptime_nsec = diff(time1,time2).tv_nsec;
       cpptime_sec = diff(time1,time2).tv_sec;
 
-      printf("-- C++ time consumed %lg sec\n", cpptime_sec+(cpptime_nsec/1e9));
+      printf("-- C++ time consumed %lg sec\n", (cpptime_nsec/1e9));
       repeats *= 10;
-      // break;
-    } while (cpptime_sec < 3 && ctime_sec < 3);
+    } while (cpptime_nsec < 1e8 && ctime_nsec < 1e8);
 
-        printf("Finish\n");
+        printf("\n");
     
-    // if (has_comment) {
-    //   printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
-    // } else {
-    //   printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
-    // }
+    if (has_comment) {
+      printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
+    } else {
+      printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
+    }
     
-    // if (nt > 0) {
-    //   printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i\n");
+    if (nt > 0) {
+      printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i\n");
       
-    //   for (i = 0; i < nt; i++) {
-    //     printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  \n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
-    //   }
-    // }
+      for (i = 0; i < nt; i++) {
+        printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  \n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
+      }
+    }
 
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.

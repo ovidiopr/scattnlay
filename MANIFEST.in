@@ -12,6 +12,8 @@ include examples/*
 include tests/python/*
 include tests/shell/*
 include debian/*
+include doc/*
+include utils/*
 
 include go.sh
 include push-to-github.sh

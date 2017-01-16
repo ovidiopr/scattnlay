@@ -9,13 +9,8 @@ rm -f $PROGRAM
 # file=speed-test.cc
 # g++ -Ofast -std=c++11 $file ../../src/nmie.cc  -lm -lrt -o $PROGRAM /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 
-# file=speed-test.cc
-# g++ -Ofast -std=c++11 $file ../../src/nmie.cc -DMULTI_PRECISION=200  -lm -lrt -o $PROGRAM /usr/lib/libtcmalloc_minimal.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
-#g++ -Ofast -std=c++11 $file ../../src/nmie.cc  -lm -lrt -o $PROGRAM /usr/lib/libtcmalloc_minimal.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
-
 file=speed-test-applied.cc
-# g++ -Ofast -std=c++11 $file ../../src/nmie.cc ../../src/nmie-applied.cc -DMULTI_PRECISION=200 -lm -lrt -o $PROGRAM /usr/lib/libtcmalloc_minimal.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
-g++ -Ofast -std=c++11 $file ../../src/nmie.cc ../../src/nmie-applied.cc -lm -lrt -o $PROGRAM /usr/lib/libtcmalloc_minimal.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
+g++ -Ofast -std=c++11 $file ../../src/nmie.cc ../../src/nmie-applied.cc -lm -lrt -o $PROGRAM /usr/lib/libtcmalloc.so.4 -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -march=native -mtune=native -msse4.2
 
 echo Should be:
 echo test01, +1.41154e+00, +4.17695e-01, +9.93844e-01, +1.59427e-01, +1.25809e+00, +3.67376e-01, +2.95915e-01
