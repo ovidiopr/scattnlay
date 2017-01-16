@@ -11,14 +11,11 @@ all:
 	@echo "make source - Create source package for Python extension"
 	@echo "make cython - Convert Cython code to C++"
 	@echo "make python_ext - Create Python extension using C++ code"
-	@echo "make python_ext_mp - Create miltiprecision Python extension using C++ code"
 	@echo "make cython_ext - Create Python extension using Cython code"
 	@echo "make install - Install Python extension on local system"
 	@echo "make buildrpm - Generate a rpm package for Python extension"
 	@echo "make builddeb - Generate a deb package for Python extension"
-	@echo "make builddebmp - Generate a deb package for Python extension with multiprecision"
 	@echo "make standalone - Create standalone programs (scattnlay and fieldnlay)"
-	@echo "make standalonemp - Create standalone programs (scattnlay and fieldnlay) with multiprecision"
 	@echo "make clean - Delete temporal files"
 #	make standalone
 
@@ -28,15 +25,15 @@ source:
 cython: scattnlay.pyx
 	$(CYTHON) --cplus scattnlay.pyx
 	mv scattnlay.cpp $(SRCDIR)/
+	cp scattnlay.pyx scattnlay_mp.pyx
+	$(CYTHON) --cplus scattnlay_mp.pyx
+	mv scattnlay_mp.cpp $(SRCDIR)/
+	rm scattnlay_mp.pyx
 
-python_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc $(SRCDIR)/scattnlay.cpp
-	export CFLAGS='-std=c++11' && $(PYTHON) setup.py build_ext --inplace
+python_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc $(SRCDIR)/scattnlay.cpp $(SRCDIR)/scattnlay_mp.cpp
+	$(PYTHON) setup.py build_ext --inplace
 
-python_ext_mp: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc $(SRCDIR)/scattnlay.cpp
-	export CFLAGS='-std=c++11 -DMULTI_PRECISION=$(MULTIPREC)' && $(PYTHON) setup-mp.py build_ext --inplace
-
-cython_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc scattnlay.pyx
-	export CFLAGS='-std=c++11' && $(PYTHON) setup.py build_ext --inplace
+cython_ext: cython python_ext
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
@@ -62,15 +59,13 @@ builddeb:
 #	export CFLAGS='-std=c++11 -DMULTI_PRECISION=$(MULTIPREC)' && dpkg-buildpackage -i -I -rfakeroot
 
 standalone: $(SRCDIR)/farfield.cc $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc
-	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o scattnlay
+	c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o scattnlay
 	mv scattnlay ../
-	export CFLAGS='-std=c++11' && c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o fieldnlay
+	c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o fieldnlay
 	mv fieldnlay ../
-
-standalonemp: $(SRCDIR)/farfield.cc $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc
-	export CFLAGS='-std=c++11' && c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o scattnlay-mp
+	c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o scattnlay-mp
 	mv scattnlay-mp ../
-	export CFLAGS='-std=c++11' && c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o fieldnlay-mp
+	c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o fieldnlay-mp
 	mv fieldnlay-mp ../
 
 clean:

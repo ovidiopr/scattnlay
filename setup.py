@@ -56,7 +56,12 @@ O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
       ext_modules = [Extension("scattnlay",
                                ["src/nmie.cc", "src/py_nmie.cc", "src/scattnlay.cpp"],
                                language = "c++",
-                               include_dirs = [np.get_include()])], 
-      extra_compile_args=['-std=c++11']
+                               include_dirs = [np.get_include()], 
+                               extra_compile_args=['-std=c++11']),
+                     Extension("scattnlay_mp",
+                               ["src/nmie.cc", "src/py_nmie.cc", "src/scattnlay_mp.cpp"],
+                               language = "c++",
+                               include_dirs = [np.get_include()], 
+                               extra_compile_args=['-std=c++11', '-DMULTI_PRECISION=100'])]
 )
 
