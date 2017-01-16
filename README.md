@@ -39,7 +39,6 @@ To compile the Debian package you also need the following packages:
  - **cdbs (>= 0.4.49)**
 
 Compilation options
-
  - **make source** - Create source package for Python extension
  - **make cython** - Convert Cython code to C++
  - **make python_ext** - Create Python extension using C++ code

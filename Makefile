@@ -51,7 +51,7 @@ builddeb:
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../ --prune
 	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
-	export CFLAGS='-std=c++11' && dpkg-buildpackage -i -I -rfakeroot
+	dpkg-buildpackage -i -I -rfakeroot
 
 #builddebmp:
 	# build the source package in the parent directory
