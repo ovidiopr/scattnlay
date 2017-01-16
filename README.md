@@ -17,6 +17,7 @@ How to use scattnlay
 
 **Table of contents:**
 - [Compile code](#compile-code)
+- [Binary install](#binary-install)
 - [Use](#use)
 - [Papers](#papers)
 - [Acknowledgment](#acknowledgment)
@@ -48,6 +49,23 @@ Compilation options
  - **make builddeb** - Generate a deb package for Python extension
  - **make standalone** - Create standalone programs (scattnlay and fieldnlay)
  - **make clean** - Delete temporal files
+ 
+Binary install:
+--------------
+
+Some releases for Ubuntu and Debian operating systems can be published at
+[Launchpad](https://launchpad.net/~ovidio/+archive/ubuntu/scattering/+packages)
+To install it please download *.deb file (e.g. it can be
+python-scattnlay_2.0.1-1_amd64.deb for 64-bit OS) and install it using 
+``` bash
+sudo dpkg -i python-scattnlay_2.0.1-1_amd64.deb
+```
+You may need to download and manually install
+[python-support](https://launchpad.net/ubuntu/+source/python-support)
+package beforehand (it depends on your OS) to satisfy the dependencies.
+``` bash
+sudo dpkg -i python-support_1.0.15_all.deb
+```
 
 Use:
 ----
