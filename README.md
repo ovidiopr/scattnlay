@@ -28,6 +28,15 @@ To compile the source you will need C++11 capable compiler. To use
 MultiPrecision feature you need to install Boost.Multiprecision
 library (at least 1.58 ver).
 
+To compile the Python extension you also need the following packages:
+ - **python-numpy (>= 1.0)**
+ - **python-support (>= 0.6)**
+ - **python-all-dev (any version)**
+ - **python-numpy-dev (any version)**
+
+To compile the Debian package you also need the following packages:
+ - **debhelper (>=7.0.0)**
+ - **cdbs (>= 0.4.49)**
 
 Compilation options
 
