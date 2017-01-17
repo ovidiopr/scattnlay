@@ -32,7 +32,7 @@ library (at least 1.58 ver).
 To compile the Python extension you also need the following packages:
 
  - **python-numpy (>= 1.0)**
- - **dh-python**
+ - **dh-python (any version)**
  - **python-all-dev (any version)**
  - **python-numpy-dev (any version)**
 
