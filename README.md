@@ -53,14 +53,22 @@ Compilation options
 Binary install:
 --------------
 
-Some releases for Ubuntu and Debian operating systems can be published at
+Binary files for Ubuntu 14.04 and derivative distributions can be found at
 [Launchpad](https://launchpad.net/~ovidio/+archive/ubuntu/scattering/+packages)
-To install it please download *.deb file (e.g. it can be
-python-scattnlay_2.0.1-1_amd64.deb for 64-bit OS) and install it using 
+To install it you must configure the repository:
+``` sudo add-apt-repository ppa:ovidio/scattering
+sudo apt-get update
+```
+and then you simply install the package:
+``` sudo apt-get install python-scattnlay
+```
+For other versions of Ubuntu you can download the *.deb file for your OS
+(e.g. it can be python-scattnlay_2.0.1-1_amd64.deb for 64-bit OS) and install
+it using:
 ``` bash
 sudo dpkg -i python-scattnlay_2.0.1-1_amd64.deb
 ```
-You may need to download and manually install
+In Ubuntu 16.04 you may need to download and manually install
 [python-support](https://launchpad.net/ubuntu/+source/python-support)
 package beforehand (it depends on your OS) to satisfy the dependencies.
 ``` bash
