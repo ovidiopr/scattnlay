@@ -30,16 +30,19 @@ MultiPrecision feature you need to install Boost.Multiprecision
 library (at least 1.58 ver).
 
 To compile the Python extension you also need the following packages:
+
  - **python-numpy (>= 1.0)**
- - **python-support (>= 0.6)**
+ - **dh-python**
  - **python-all-dev (any version)**
  - **python-numpy-dev (any version)**
 
 To compile the Debian package you also need the following packages:
+
  - **debhelper (>=7.0.0)**
  - **cdbs (>= 0.4.49)**
 
 Compilation options
+
  - **make source** - Create source package for Python extension
  - **make cython** - Convert Cython code to C++
  - **make python_ext** - Create Python extension using C++ code
@@ -56,11 +59,13 @@ Binary install:
 Binary files for Ubuntu 14.04 and derivative distributions can be found at
 [Launchpad](https://launchpad.net/~ovidio/+archive/ubuntu/scattering/+packages)
 To install it you must configure the repository:
-``` sudo add-apt-repository ppa:ovidio/scattering
+``` bash
+sudo add-apt-repository ppa:ovidio/scattering
 sudo apt-get update
 ```
 and then you simply install the package:
-``` sudo apt-get install python-scattnlay
+``` bash
+sudo apt-get install python-scattnlay
 ```
 For other versions of Ubuntu you can download the *.deb file for your OS
 (e.g. it can be python-scattnlay_2.0.1-1_amd64.deb for 64-bit OS) and install
