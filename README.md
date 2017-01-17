@@ -18,16 +18,19 @@ Compile Code:
 To compile the source you will need C++11 capable compiler.
 
 To compile the Python extension you also need the following packages:
+
  - **python-numpy (>= 1.0)**
  - **python-support (>= 0.6)**
  - **python-all-dev (any version)**
  - **python-numpy-dev (any version)**
 
 To compile the Debian package you also need the following packages:
+
  - **debhelper (>=7.0.0)**
  - **cdbs (>= 0.4.49)**
 
 Compilation options
+
  - **make source** - Create source package for Python extension
  - **make cython** - Convert Cython code to C++
  - **make python_ext** - Create Python extension using C++ code
@@ -37,6 +40,33 @@ Compilation options
  - **make builddeb** - Generate a deb package for Python extension
  - **make standalone** - Create standalone programs (scattnlay and fieldnlay)
  - **make clean** - Delete temporal files
+
+Binary install:
+--------------
+
+Binary files for Ubuntu 14.04 and derivative distributions can be found at
+[Launchpad](https://launchpad.net/~ovidio/+archive/ubuntu/scattering/+packages)
+To install it you must configure the repository:
+``` bash
+sudo add-apt-repository ppa:ovidio/scattering
+sudo apt-get update
+```
+and then you simply install the package:
+``` bash
+sudo apt-get install python-scattnlay
+```
+For other versions of Ubuntu you can download the *.deb file for your OS
+(e.g. it can be python-scattnlay_2.0.1-1_amd64.deb for 64-bit OS) and install
+it using:
+``` bash
+sudo dpkg -i python-scattnlay_2.0.1-1_amd64.deb
+```
+In Ubuntu 16.04 you may need to download and manually install
+[python-support](https://launchpad.net/ubuntu/+source/python-support)
+package beforehand (it depends on your OS) to satisfy the dependencies.
+``` bash
+sudo dpkg -i python-support_1.0.15_all.deb
+```
 
 Use:
 ----
