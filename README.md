@@ -52,7 +52,7 @@ Compilation options
  - **make builddeb** - Generate a deb package for Python extension
  - **make standalone** - Create standalone programs (scattnlay and fieldnlay)
  - **make clean** - Delete temporal files
- 
+
 Binary install:
 --------------
 
