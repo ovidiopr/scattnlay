@@ -1,5 +1,25 @@
-python-scattnlay (2.1-1) xenial; urgency=low
+python-scattnlay (2.1.0-1) xenial; urgency=low
 
-  * Updated for Xenial Xerus)
-
+  * Updated for Xenial Xerus (2.1.0-1)
  -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Thu, 19 Jan 2017 10:45:13 +0200
+
+  * Updated for Trusty Tahr (2.1.0-1)
+ -- Ovidio Peña Rodríguez <ovidio@bytesfall.com> Thu, 16 Jan 2017 16:45:13 +0200
+
+  * Updated for Utopic Unicorn (2.0.0-1)
+ -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Thu, 06 May 2015 16:45:13 +0200
+ 
+   * Updated for Utopic Unicorn (0.3.1-1)
+ -- Ovidio Peña Rodríguez <ovidio@bytesfall.com> Thu, 10 December 2014 16:45:13 +0200
+
+  * Updated for Utopic Unicorn (0.3.0-1)
+ -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Thu, 13 November 2014 16:45:13 +0200
+  
+  * Updated for Trusty Tahr (0.2.1-1)
+ -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Mon, 26 May 2014 16:45:13 +0200
+ 
+  * Updated for Raring Ringtail (0.1.0-1)
+ -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Wed, 02 Sep 2013 16:45:13 +0200
+ 
+  * Updated for Precise Pangolin (0.1.0-1)
+ -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Sun, 13 May 2012 16:45:13 +0200
