@@ -14,7 +14,9 @@ Fill the issue here: [Issues](https://github.com/ovidiopr/scattnlay/issues).
 Stable releases
 ===============
 
-- [Version 2.0.1 (January 17, 2017) ![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.248729.svg)](https://doi.org/10.5281/zenodo.248729)
+- Version 2.0.1 (Jan 17, 2017). [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.248729.svg)](https://doi.org/10.5281/zenodo.248729)
+- Version 2.0.0 (Apr 1, 2016).
+- Version 1.0.0 (Nov 22, 2014).
 
 How to use scattnlay
 ====================
