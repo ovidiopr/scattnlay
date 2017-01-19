@@ -11,9 +11,10 @@ Try to join our Gitter chat: [![Join the chat at https://gitter.im/scattnlay/Lob
  
 Fill the issue here: [Issues](https://github.com/ovidiopr/scattnlay/issues).
 
-Latest stable release (v2.0.1)
-==============================
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.248729.svg)](https://doi.org/10.5281/zenodo.248729)
+Stable releases
+===============
+
+- [Version 2.0.1 (January 17, 2017) ![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.248729.svg)](https://doi.org/10.5281/zenodo.248729)
 
 How to use scattnlay
 ====================
