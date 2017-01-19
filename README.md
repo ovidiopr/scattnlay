@@ -28,20 +28,22 @@ How to use scattnlay
 
 Compile Code:
 -------------
-To compile the source you will need C++11 capable compiler. To use
+To compile the source you will need a C++11 capable compiler. To use
 MultiPrecision feature you need to install Boost.Multiprecision
-library (at least 1.58 ver).
+library:
 
-To compile the Python extension you also need the following packages:
+ - **libboost-dev-all (>= 1.58.0)**
+
+To compile the Python extension you need [NumPy](http://www.numpy.org/):
 
  - **python-numpy (>= 1.0)**
- - **dh-python (any version)**
  - **python-all-dev (any version)**
  - **python-numpy-dev (any version)**
 
-To compile the Debian package you also need the following packages:
+And to compile the Debian package you need some tools:
 
  - **debhelper (>=7.0.0)**
+ - **dh-python (any version)**
  - **cdbs (>= 0.4.49)**
 
 Compilation options
@@ -59,7 +61,7 @@ Compilation options
 Binary install:
 --------------
 
-Binary files for Ubuntu 14.04 and derivative distributions can be found at
+Binary files for Ubuntu and derivative distributions can be found at
 [Launchpad](https://launchpad.net/~ovidio/+archive/ubuntu/scattering/+packages)
 To install it you must configure the repository:
 ``` bash
@@ -69,18 +71,6 @@ sudo apt-get update
 and then you simply install the package:
 ``` bash
 sudo apt-get install python-scattnlay
-```
-For other versions of Ubuntu you can download the *.deb file for your OS
-(e.g. it can be python-scattnlay_2.0.1-1_amd64.deb for 64-bit OS) and install
-it using:
-``` bash
-sudo dpkg -i python-scattnlay_2.0.1-1_amd64.deb
-```
-In Ubuntu 16.04 you may need to download and manually install
-[python-support](https://launchpad.net/ubuntu/+source/python-support)
-package beforehand (it depends on your OS) to satisfy the dependencies.
-``` bash
-sudo dpkg -i python-support_1.0.15_all.deb
 ```
 
 Use:

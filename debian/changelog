@@ -1,5 +1,5 @@
-python-scattnlay (2.1-1) trusty; urgency=low
+python-scattnlay (2.1-1) xenial; urgency=low
 
-  * Updated for Trusty Tahr
+  * Updated for Xenial Xerus)
 
- -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Thu, 16 Jan 2017 16:45:13 +0200
+ -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Thu, 19 Jan 2017 10:45:13 +0200
