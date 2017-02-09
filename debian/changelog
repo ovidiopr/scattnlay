@@ -23,3 +23,6 @@ python-scattnlay (2.1.0-1) xenial; urgency=low
  
   * Updated for Precise Pangolin (0.1.0-1)
  -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Sun, 13 May 2012 16:45:13 +0200
+ 
+  * Initial release for Lucid Lynx (0.1.0)
+ -- Ovidio Pena Rodriguez <ovidio@bytesfall.com>   Sun, 13 Dec 2009 15:24:08 +0100
