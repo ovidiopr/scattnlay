@@ -3,26 +3,43 @@ python-scattnlay (2.1.0-1) xenial; urgency=low
   * Updated for Xenial Xerus (2.1.0-1)
  -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Thu, 19 Jan 2017 10:45:13 +0200
 
+python-scattnlay (2.1.0-1) trusty; urgency=low
+
   * Updated for Trusty Tahr (2.1.0-1)
  -- Ovidio Peña Rodríguez <ovidio@bytesfall.com> Thu, 16 Jan 2017 16:45:13 +0200
+
+python-scattnlay (2.0.0-1) utopic; urgency=low
 
   * Updated for Utopic Unicorn (2.0.0-1)
  -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Thu, 06 May 2015 16:45:13 +0200
  
+python-scattnlay (0.3.1-1) utopic; urgency=low
+
    * Updated for Utopic Unicorn (0.3.1-1)
  -- Ovidio Peña Rodríguez <ovidio@bytesfall.com> Thu, 10 December 2014 16:45:13 +0200
+
+python-scattnlay (0.3.0-1) utopic; urgency=low
 
   * Updated for Utopic Unicorn (0.3.0-1)
  -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Thu, 13 November 2014 16:45:13 +0200
   
+python-scattnlay (0.2.1-1) trusty; urgency=low
+
   * Updated for Trusty Tahr (0.2.1-1)
  -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Mon, 26 May 2014 16:45:13 +0200
  
+python-scattnlay (0.1.0-1) raring; urgency=low
+
   * Updated for Raring Ringtail (0.1.0-1)
  -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Wed, 02 Sep 2013 16:45:13 +0200
  
+python-scattnlay (0.1.0-1) precise; urgency=low
+
   * Updated for Precise Pangolin (0.1.0-1)
  -- Ovidio Peña Rodríguez <ovidio@bytesfall.com>  Sun, 13 May 2012 16:45:13 +0200
  
+python-scattnlay (0.1.0-1) lucid; urgency=low
+
   * Initial release for Lucid Lynx (0.1.0)
  -- Ovidio Pena Rodriguez <ovidio@bytesfall.com>   Sun, 13 Dec 2009 15:24:08 +0100
+ 

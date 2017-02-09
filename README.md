@@ -35,7 +35,7 @@ To compile the source you will need a C++11 capable compiler. To use
 MultiPrecision feature you need to install Boost.Multiprecision
 library:
 
- - **libboost-dev-all (>= 1.58.0)**
+ - **libboost-all-dev (>= 1.58.0)**
 
 To compile the Python extension you need [NumPy](http://www.numpy.org/):
 
