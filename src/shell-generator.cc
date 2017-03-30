@@ -185,19 +185,47 @@ namespace shell_generator {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
+  void ShellGenerator::MoveX(double delta) {
+    for(auto& p : vertices_) {
+      p[0] += delta;
+    }
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void ShellGenerator::MoveY(double delta) {
+    for(auto& p : vertices_) {
+      p[1] += delta;
+    }
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  void ShellGenerator::MoveZ(double delta) {
+    for(auto& p : vertices_) {
+      p[2] += delta;
+    }
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
   double ShellGenerator::IntegrateGaussSimple(double charge, double shift) {
     double integral = 0.0;
     // return field at point p from the charge, located at (shift, 0,0)
     auto field = [](double charge, double shift, std::vector<double> p){
       double r = std::sqrt(pow2(p[0]-shift) + pow2(p[1]) + pow2(p[2]) );
+      //std::cout << "r: " << r << std::endl;
       const double pi = 3.1415926535897932384626433832795;
-      double ampl = charge/(4.0*pi*pow2(r));      
+      double ampl = charge/(4.0*pi*pow2(r));
       std::vector<double> field = {ampl*(p[0]-shift)/r, ampl*(p[1])/r, ampl*(p[2])/r};
       return field;
     };
     //simple 
     for (auto vert :vertices_) {
       auto E0 = field(charge, shift, vert);
+      // std::cout << "E0: ";
+      // for (auto component : E0) std::cout << component << " ";
+      // std::cout << std::endl;
       // Vector to unit product
       double r = norm(vert);
       std::vector<double> unit = { vert[0]/r, vert[1]/r, vert[2]/r};
@@ -212,7 +240,7 @@ namespace shell_generator {
   // ********************************************************************** //
   double ShellGenerator::IntegrateGauss(double charge, double shift) {
     if (faces_.size() == 0)
-      throw std::invalid_argument("Error! Faces were not initialized!\n");
+      throw std::invalid_argument("Error! Faces were not initialized!\nSee IntegrateGaussSimple for using vertices information only.");
     double integral = 0.0;
     // return field at point p from the charge, located at (shift, 0,0)
     auto field = [](double charge, double shift, std::vector<double> p){
@@ -355,11 +383,13 @@ namespace shell_generator {
        for (auto &coord:vert) {
          coord*=factor;
        }
+       //std::cout << " " << norm(vert) << " ";
      }
      const double pi = 3.1415926535897932384626433832795;
      double area = 4.0*pi*pow2(scale); 
-     face_area_ = area/faces_.size();
-     per_vertice_area_ = area/vertices_.size(); 
+     //face_area_ = area/faces_.size();
+     per_vertice_area_ = area/vertices_.size();
+     //std::cout << "Per verice area: " << per_vertice_area_ << std::endl;
    }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -377,22 +407,169 @@ namespace shell_generator {
   // ********************************************************************** //
   // ********************************************************************** //
   void ShellGenerator::Refine() {
-    for (auto edge : edges_) {
+    for (auto &edge : edges_) {
       auto p0 = vertices_[edge[0]];
       auto p1 = vertices_[edge[1]];
       std::vector<double> new_point = {
         (p0[0]+p1[0])/2.0,
         (p0[1]+p1[1])/2.0,
         (p0[2]+p1[2])/2.0};
-      vertices_.push_back(new_point);      
+      vertices_.push_back(new_point);
+      edge.push_back(vertices_.size()-1);  // the last index is for the new mid-point
     }
-    GenerateEdges();
+    std::cout << "new verts: " << vertices_.size() <<std::endl;
+    // std::cout << "extended edges:" <<std::endl;
+    // for (auto edge : edges_) {
+    //   std::cout<< "\t"<< edge[0]<< "\t"<< edge[1]<< "\t"<< edge[2]<<std::endl;
+    // }
+    refined_edges_.clear();
+    for (auto edge : edges_) {
+      // Important! New (refined) point goes the last!
+      std::vector<long unsigned int> edge_a = {edge[0],edge[2]};
+      std::vector<long unsigned int> edge_b = {edge[1],edge[2]};
+      refined_edges_.push_back(edge_a);
+      refined_edges_.push_back(edge_b);
+    }
+    // Now we need to count edges inside old faces.
+    refined_faces_.clear();
+    for (auto face : faces_) {
+      auto point_a = edges_[face[0]][2];
+      auto point_b = edges_[face[1]][2];
+      auto point_c = edges_[face[2]][2];
+      std::cout << "\tedges_old: " <<face[0]<<" "<<face[1]<<" "<<face[2]<<" "<<std::endl;
+      std::cout << "\tpoints_old_edge0: " <<edges_[face[0]][0]<<" "<<edges_[face[0]][1]<<" "<<edges_[face[0]][2]<<" "<<std::endl;
+      std::cout << "\tpoints_old_edge0: " <<edges_[face[1]][0]<<" "<<edges_[face[1]][1]<<" "<<edges_[face[1]][2]<<" "<<std::endl;
+      std::cout << "\tpoints_old_edge0: " <<edges_[face[2]][0]<<" "<<edges_[face[2]][1]<<" "<<edges_[face[2]][2]<<" "<<std::endl;
+      std::cout<<"\trefined points: "<<point_a<<" "<<point_b<<" "<<point_c<<std::endl;
+      std::vector<long unsigned int> edge_c = {point_a, point_b};
+      std::vector<long unsigned int> edge_a = {point_b, point_c};
+      std::vector<long unsigned int> edge_b = {point_c, point_a};
+      refined_edges_.push_back(edge_a);
+      auto edge_a_index = refined_edges_.size()-1;
+      refined_edges_.push_back(edge_b);
+      auto edge_b_index = refined_edges_.size()-1;
+      refined_edges_.push_back(edge_c);
+      auto edge_c_index = refined_edges_.size()-1;
+
+      /*
+      //                    /\      contrcloсkwise                         
+      //                   c  1                                    
+      //                  0    b                                   
+      //                 /__a___\   edge_a                         
+      //                /\      /\                                 
+      //               c  \    /  0                                
+      //              1    \  /    b                               
+      //    edge_0a  /__0a__\/__1a__\ edge_1a                      
+      //
+      // remember! In edge_0a the refined point is [1], etc.
+      */
+      auto edge_0a = refined_edges_[2*face[0]];
+      auto edge_1a = refined_edges_[2*face[0]+1];
+      auto edge_0b = refined_edges_[2*face[1]];
+      auto edge_1b = refined_edges_[2*face[1]+1];
+      auto edge_0c = refined_edges_[2*face[2]];
+      auto edge_1c = refined_edges_[2*face[2]+1];
+      auto edge_0a_index = 2*face[0];
+      auto edge_1a_index = 2*face[0]+1;
+      auto edge_0b_index = 2*face[1];
+      auto edge_1b_index = 2*face[1]+1;
+      auto edge_0c_index = 2*face[2];
+      auto edge_1c_index = 2*face[2]+1;
+      // Orient:
+      // Try contrcloсkwise:
+      bool isClockwise = false, is_b_swapped = false, is_c_swapped=false;
+      
+      if (edge_0a[0]!=edge_1c[0]) {
+        edge_1c.swap(edge_0c);
+        is_c_swapped = !is_c_swapped;
+      }
+      if (edge_1a[0]!=edge_0b[0]) {
+        edge_0b.swap(edge_1b);
+        is_b_swapped = !is_b_swapped;
+      }
+      if (edge_1b[0]!=edge_0c[0]) {
+        isClockwise = true;
+        //Try clockwise:
+        if (edge_0a[0]!=edge_1b[0]) {
+          edge_1b.swap(edge_0b);
+          is_b_swapped = !is_b_swapped;
+        }
+        if (edge_1a[0]!=edge_0c[0]) {
+          edge_0c.swap(edge_1c);
+          is_c_swapped = !is_c_swapped;
+        }
+        if (edge_1c[0]!=edge_0b[0])
+          throw std::invalid_argument("Error! Unable to orient edges of refined face!\n");
+      }
+      if (is_b_swapped) {
+       edge_1b_index = 2*face[1];
+       edge_0b_index = 2*face[1]+1;
+      }
+      if (is_c_swapped) {
+       edge_1c_index = 2*face[2];
+       edge_0c_index = 2*face[2]+1;
+      }
+
+      /*
+      //                    /\      clockwise                               
+      //                   b  1                                    
+      //                  0    c                                   
+      //                 /__a___\   edge_a                         
+      //                /\      /\                                 
+      //               b  \    /  0                                
+      //              1    \  /    c                               
+      //    edge_0a  /__0a__\/__1a__\ edge_1a                      
+      //
+      */
+      //Build new facets:
+      // if isClockwise 
+      std::vector<long unsigned int> face1({edge_0a_index, edge_1b_index, edge_c_index});
+      std::vector<long unsigned int> face2({edge_1a_index, edge_0c_index, edge_b_index});
+      std::vector<long unsigned int> face3({edge_0b_index, edge_1c_index, edge_a_index});
+      std::vector<long unsigned int> face4({edge_a_index, edge_b_index, edge_c_index});
+      if (!isClockwise) {
+        face1 = std::vector<long unsigned int>({edge_0a_index, edge_1c_index, edge_b_index});
+        face2 = std::vector<long unsigned int>({edge_1a_index, edge_0b_index, edge_c_index});
+        face3 = std::vector<long unsigned int>({edge_1b_index, edge_0c_index, edge_a_index});
+        face4 = std::vector<long unsigned int>({edge_a_index, edge_b_index, edge_c_index});
+      }
+      std::cout<< "\tface1\t"<< face1[0]<< "\t"<< face1[1]<< "\t"<< face1[2]<<std::endl;
+      std::cout<< "\tface2\t"<< face2[0]<< "\t"<< face2[1]<< "\t"<< face2[2]<<std::endl;
+      std::cout<< "\tface3\t"<< face3[0]<< "\t"<< face3[1]<< "\t"<< face3[2]<<std::endl;
+      std::cout<< "\tface4\t"<< face4[0]<< "\t"<< face4[1]<< "\t"<< face4[2]<<std::endl;
+      refined_faces_.push_back(face1);
+      refined_faces_.push_back(face2);
+      refined_faces_.push_back(face3);
+      refined_faces_.push_back(face4);
+      std::cout<<"ref edges size: " << refined_edges_.size()<< std::endl;
+      std::cout << "Face1 points: "<< refined_edges_[face1[0]][0]
+                << " " << refined_edges_[face1[0]][1] << "  --  "
+                << refined_edges_[face1[1]][0]
+                << " " << refined_edges_[face1[1]][1] << "  --  "
+      << refined_edges_[face1[2]][0]
+                     << " " << refined_edges_[face1[2]][1] << std::endl;
+
+    } // end for faces_
+    
+    std::cout << "new edges: " << refined_edges_.size() <<std::endl;
+    std::cout << "new faces: " << refined_faces_.size() <<std::endl;
+    edges_.clear();
+    edges_ = refined_edges_;
+    // std::cout << "edges:" <<std::endl;
+    // for (auto edge : edges_) {
+    //   std::cout<< " "<< edge[0]<< "\t"<< edge[1]<<std::endl;
+    // }
+    faces_.clear();
+    faces_ = refined_faces_;
+    
+    //Rescale(1.0);
+    //GenerateEdges();
     // GenerateFaces();
   }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void ShellGenerator::GenerateFaces() {
+  void ShellGenerator::GenerateFacesInit() {
     faces_.clear();
     for (unsigned int i = 0; i < edges_.size(); ++i) {
       const auto ie = edges_[i];
@@ -400,11 +577,11 @@ namespace shell_generator {
         const auto je = edges_[j];
         for(unsigned int k = j + 1; k < edges_.size(); ++k) {
           const auto ke = edges_[k];
-          std::set<long int> edges = {ie[0],ie[1],
+          std::set<long unsigned int> edges = {ie[0],ie[1],
                                  je[0],je[1],
                                  ke[0],ke[1]};
           if (edges.size() != 3) continue;
-          std::vector<long int> face(edges.begin(), edges.end());
+          std::vector<long unsigned int> face({i,j,k});
           // std::cout << ie[0]<<"-"<<ie[1] << ":"
           //             << je[0]<<"-"<<je[1] << ":"
           //             << ke[0]<<"-"<<ke[1] 
@@ -419,15 +596,20 @@ namespace shell_generator {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  void ShellGenerator::GenerateEdges() {
+  void ShellGenerator::GenerateEdgesInit() {
     std::cout << "Vertices: "<< vertices_.size() <<std::endl;
     edges_.clear();
     EvalEdgeLength();
     for (unsigned int i = 0; i < vertices_.size(); ++i)
       for(unsigned int j = i + 1; j < vertices_.size(); ++j) {
-        if (dist(vertices_[i],vertices_[j]) > 1.001*edge_length_) continue;
-        std::vector<long int> edge = {i,j};
-        // std::cout << i<< " " << j<<std::endl;
+        //std::cout << i<< " " << j<<  " == "<< dist(vertices_[i],vertices_[j]) <<std::endl;
+        if (dist(vertices_[i],vertices_[j]) > 1.000001*edge_length_) continue;
+        std::vector<long unsigned int> edge = {i,j};
+        // std::cout << i<< " " << j << " : i=(";
+        // for (auto v : vertices_[i]) std::cout << v <<",";
+        // std::cout<<")  j=(";
+        // for (auto v : vertices_[j]) std::cout << v <<",";
+        // std::cout<<")"<<std::endl;
         edges_.push_back(edge);
       }
     std::cout << "Edges: "<< edges_.size() <<std::endl;
@@ -444,7 +626,7 @@ namespace shell_generator {
       double new_dist = dist(p0, point);
       if (new_dist < min_dist) min_dist = new_dist;
     }
-    std::cout << "Edge length = " << min_dist << std::endl;
+    //std::cout << "Edge length = " << min_dist << std::endl;
     edge_length_ = min_dist;
   }
   // ********************************************************************** //
@@ -485,6 +667,7 @@ namespace shell_generator {
       {-c,a,-b}
     };
     vertices_ = std::move(points);
+    //Rescale(1.0);
 
     //std::vector< std::vector<double> > points_debug = {{1,0,0},{-1,0,0}};
     //std::vector< std::vector<double> > points_debug = {{0,1,0},{0,-1,0}};
@@ -505,8 +688,8 @@ namespace shell_generator {
   // ********************************************************************** //
   void ShellGenerator::Init() {
     SetInitialVertices();
-    GenerateEdges();
-    //GenerateFaces();
+    GenerateEdgesInit();
+    GenerateFacesInit();
   }
 
 }  // end of namespace read_spectra

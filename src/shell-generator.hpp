@@ -41,11 +41,11 @@ namespace shell_generator {
     double norm(std::vector<double> a);
     std::vector< std::vector<double> > GetVertices(){return vertices_;};
     std::vector< std::vector<double> > GetVerticesT();
-    std::vector< std::vector<long int> > GetEdges(){return edges_;};
-    std::vector< std::vector<long int> > GetFaces(){return faces_;};
+    std::vector< std::vector<long unsigned int> > GetEdges(){return edges_;};
+    std::vector< std::vector<long unsigned int> > GetFaces(){return faces_;};
     void EvalEdgeLength();
-    void GenerateEdges();
-    void GenerateFaces();
+    void GenerateEdgesInit();
+    void GenerateFacesInit();
     void Init();
     std::vector<double> Integrate();
     std::vector<double> IntegrateByComp();
@@ -57,6 +57,10 @@ namespace shell_generator {
     void RotateX(double angle);
     void RotateY(double angle);
     void RotateZ(double angle);
+    void MoveX(double delta_x);
+    void MoveY(double delta_y);
+    void MoveZ(double delta_z);
+
     void SetField(std::vector<std::vector< std::complex<double> > > &E,
                   std::vector<std::vector< std::complex<double> > > &H) {E_ = E; H_=H;};
     void SetInitialVertices();
@@ -66,8 +70,8 @@ namespace shell_generator {
     double face_area_ = 0.0;
     double per_vertice_area_ = 0.0;
     std::vector< std::vector<double> > vertices_;
-    std::vector< std::vector<long int> > edges_;
-    std::vector< std::vector<long int> > faces_;
+    std::vector< std::vector<long unsigned int> > edges_, refined_edges_;
+    std::vector< std::vector<long unsigned int> > faces_, refined_faces_;
     // std::vector< std::pair< double, std::complex<double> > > data_complex_;
     // std::vector< std::pair< double, std::complex<double> > > data_complex_index_;
     // void PermittivityToIndex();

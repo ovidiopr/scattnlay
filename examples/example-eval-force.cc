@@ -45,38 +45,65 @@ int main(int argc, char *argv[]) {
     //    const std::complex<double> index_Ag = std::sqrt(epsilon_Ag);
     double WL=500; //nm
     double outer_width = 67.91; //nm  Si
+    auto shift = 0.0;
     shell_generator::ShellGenerator shell;
     shell.Init();
-    shell.Refine();
-    shell.Refine();
-    shell.Refine();
-
-    for (int i=0; i<10; ++i) {
-      outer_width = 10+10*i; //nm  Si
+    // shell.Refine();
+    // shell.Refine();
+    // shell.Refine();
+    for (int refines=0; refines<2; ++refines) {
+    
+    for (int i=0; i<1; ++i) {
+      auto integration_radius = 10+20*i;
+      outer_width = 10; //+10*i; //nm  Si
+      multi_layer_mie.ClearAllDesign();
       multi_layer_mie.AddTargetLayer(outer_width, index_Si);
       multi_layer_mie.SetWavelength(WL);
       multi_layer_mie.RunMieCalculation();
-      double Qsca = multi_layer_mie.GetQsca();
-      printf("Qsca = %g\n", Qsca);
-      //double scale = 2.0*pi*(outer_width)/WL*1.001;  //Integration sphere radius.
-      double scale = 2.0*pi*(110)/WL*2.001;  //Integration sphere radius.
+      // double Qsca = multi_layer_mie.GetQsca();
+      // printf("Qsca = %g\n", Qsca);
+      double scale = 2.0*pi*(integration_radius)/WL*1.001;  //Integration sphere radius.
+      //double scale = 2.0*pi*(110)/WL*2.001;  //Integration sphere radius.
       //double scale = 1.0001;  //Integration sphere radius.
+      //shell.PrintVerts();
       shell.Rescale(scale);
+      shell.PrintVerts();
+      std::cout << "rescale with scale factor: " << scale << std::endl;
+
       // shell.RotateX(pi/2.0);
       // shell.RotateY(pi/2.0);
       // shell.RotateZ(pi/2.0);
       //shell.PrintVerts();
-      auto points = shell.GetVerticesT();
-      multi_layer_mie.SetFieldPointsSP(points);
-      multi_layer_mie.RunFieldCalculation();
-      auto E = nmie::ConvertComplexVectorVector<double>(multi_layer_mie.GetFieldE());
-      auto H = nmie::ConvertComplexVectorVector<double>(multi_layer_mie.GetFieldH());
-      shell.SetField(E,H);
+      // auto points = shell.GetVerticesT();
+      // multi_layer_mie.SetFieldPointsSP(points);
+      // multi_layer_mie.RunFieldCalculation();
+      // auto E = nmie::ConvertComplexVectorVector<double>(multi_layer_mie.GetFieldE());
+      // auto H = nmie::ConvertComplexVectorVector<double>(multi_layer_mie.GetFieldH());
+      // shell.SetField(E,H);
       // auto F = shell.Integrate();
       // std::cout<<"F: " <<F[0]<<", "<< F[1] <<", "<<F[2] << std::endl<< std::endl;
-      auto F1 = shell.IntegrateByComp();
-      std::cout<<"F: " <<F1[0]<<", "<< F1[1] <<", "<<F1[2] << std::endl;
+      // auto F1 = shell.IntegrateByComp();
+      // std::cout<<"F: " <<F1[0]<<", "<< F1[1] <<", "<<F1[2] << std::endl;
+      auto charge = 2.54;
+      {
+        shift = 0.0 * scale;
+        auto F1 = shell.IntegrateGaussSimple(charge, shift);
+        std::cout<<"charge: "<< charge << "   integral_R: " << scale << "   \tshift_centerX: " << shift << "  \tresult: " <<F1 << std::endl;
+      }
+      {
+        shift = 0.5 * scale;
+        auto F1 = shell.IntegrateGaussSimple(charge, shift);
+        std::cout<<"charge: "<< charge << "   integral_R: " << scale << "   \tshift_centerX: " << shift << "  \tresult: " <<F1 << std::endl;
+      }
+      {
+        shift = 0.9 * scale;
+        auto F1 = shell.IntegrateGaussSimple(charge, shift);
+        std::cout<<"charge: "<< charge << "   integral_R: " << scale << "   \tshift_centerX: " << shift << "  \tresult: " <<F1 << std::endl;
+      }
     }
+
+    shell.Refine();
+    }  // end for refines
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
