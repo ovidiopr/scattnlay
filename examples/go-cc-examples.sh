@@ -8,7 +8,7 @@ rm -f $PROGRAM
 g++ -Ofast -std=c++11 $file  ../src/shell-generator.cc -lm -lrt -o $PROGRAM -march=native -mtune=native -msse4.2 -Wall
 # g++ -Ofast -std=c++11 $file ../src/nmie.cc ../src/nmie-applied.cc ../src/shell-generator.cc -lm -lrt -o $PROGRAM -march=native -mtune=native -msse4.2
 echo Compilation done. Running...
-./$PROGRAM
+time ./$PROGRAM
 
 # file=test-surf-integral.cc
 # echo Compile $file with gcc

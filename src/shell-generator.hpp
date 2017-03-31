@@ -44,6 +44,7 @@ namespace shell_generator {
     std::vector< std::vector<long unsigned int> > GetEdges(){return edges_;};
     std::vector< std::vector<long unsigned int> > GetFaces(){return faces_;};
     void EvalEdgeLength();
+    void EvalFaces();
     void GenerateEdgesInit();
     void GenerateFacesInit();
     void Init();
@@ -63,13 +64,16 @@ namespace shell_generator {
 
     void SetField(std::vector<std::vector< std::complex<double> > > &E,
                   std::vector<std::vector< std::complex<double> > > &H) {E_ = E; H_=H;};
-    void SetInitialVertices();
+    void SetInitialVerticesIcosahedron();
+    void SetInitialVerticesTetrahedron();
   private:
     std::vector<std::vector< std::complex<double> > > E_, H_;
     double edge_length_ = 0.0;
     double face_area_ = 0.0;
+    std::vector<double> per_face_area_;
     double per_vertice_area_ = 0.0;
-    std::vector< std::vector<double> > vertices_;
+    std::vector< std::vector<double> > vertices_, face_centers_;
+    std::vector< double > face_surface_; 
     std::vector< std::vector<long unsigned int> > edges_, refined_edges_;
     std::vector< std::vector<long unsigned int> > faces_, refined_faces_;
     // std::vector< std::pair< double, std::complex<double> > > data_complex_;

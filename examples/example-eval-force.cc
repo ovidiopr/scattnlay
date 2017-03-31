@@ -48,12 +48,10 @@ int main(int argc, char *argv[]) {
     auto shift = 0.0;
     shell_generator::ShellGenerator shell;
     shell.Init();
-    // shell.Refine();
-    // shell.Refine();
-    // shell.Refine();
-    for (int refines=0; refines<2; ++refines) {
+    for (int refines=0; refines<7; ++refines) {
+      shell.Refine();
     
-    for (int i=0; i<1; ++i) {
+    for (int i=0; i<5; ++i) {
       auto integration_radius = 10+20*i;
       outer_width = 10; //+10*i; //nm  Si
       multi_layer_mie.ClearAllDesign();
@@ -67,7 +65,7 @@ int main(int argc, char *argv[]) {
       //double scale = 1.0001;  //Integration sphere radius.
       //shell.PrintVerts();
       shell.Rescale(scale);
-      shell.PrintVerts();
+      //shell.PrintVerts();
       std::cout << "rescale with scale factor: " << scale << std::endl;
 
       // shell.RotateX(pi/2.0);
@@ -88,7 +86,7 @@ int main(int argc, char *argv[]) {
       {
         shift = 0.0 * scale;
         auto F1 = shell.IntegrateGaussSimple(charge, shift);
-        std::cout<<"charge: "<< charge << "   integral_R: " << scale << "   \tshift_centerX: " << shift << "  \tresult: " <<F1 << std::endl;
+        std::cout<<"charge: "<< charge << "   integral_R: " << scale << "   \tshift_centerX: " << shift << "  \tcharge result: " <<F1 << std::endl;
       }
       {
         shift = 0.5 * scale;
@@ -102,7 +100,6 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    shell.Refine();
     }  // end for refines
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
