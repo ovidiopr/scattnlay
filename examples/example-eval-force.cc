@@ -48,10 +48,10 @@ int main(int argc, char *argv[]) {
     auto shift = 0.0;
     shell_generator::ShellGenerator shell;
     shell.Init();
-    for (int refines=0; refines<7; ++refines) {
+    for (int refines=0; refines<4; ++refines) {
       shell.Refine();
     
-    for (int i=0; i<5; ++i) {
+    for (int i=0; i<1; ++i) {
       auto integration_radius = 10+20*i;
       outer_width = 10; //+10*i; //nm  Si
       multi_layer_mie.ClearAllDesign();

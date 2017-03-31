@@ -452,10 +452,16 @@ namespace shell_generator {
       per_face_area_.push_back(area);
       //std::cout << "Area " <<area<<std::endl;
     }  // end for face in faces_
+    double total_flat_area = 0.0;
+    for (auto face:per_face_area_)
+      total_flat_area += face;
     auto scale = norm(vertices_[0]);
     const double pi = 3.1415926535897932384626433832795;
     double area = 4.0*pi*pow2(scale); 
     face_area_ = area/faces_.size();
+    double area_scale = area/total_flat_area;
+    for (auto& face:per_face_area_)
+      face *= area_scale;
     
     
     for(auto& vert : face_centers_){
