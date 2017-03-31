@@ -11,6 +11,12 @@ Try to join our Gitter chat: [![Join the chat at https://gitter.im/scattnlay/Lob
  
 Fill the issue here: [Issues](https://github.com/ovidiopr/scattnlay/issues).
 
+Stable releases
+===============
+
+- Version 2.0.1 (Jan 17, 2017). [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.248729.svg)](https://doi.org/10.5281/zenodo.248729)
+- Version 2.0.0 (Apr 1, 2016).
+- Version 1.0.0 (Nov 22, 2014).
 
 How to use scattnlay
 ====================
@@ -25,21 +31,26 @@ How to use scattnlay
 
 Compile Code:
 -------------
-To compile the source you will need C++11 capable compiler. To use
+To compile the source you will need a C++11 capable compiler. To use
 MultiPrecision feature you need to install Boost.Multiprecision
-library (at least 1.58 ver).
+library:
 
-To compile the Python extension you also need the following packages:
+ - **libboost-all-dev (>= 1.58.0)**
+
+To compile the Python extension you need [NumPy](http://www.numpy.org/):
+
  - **python-numpy (>= 1.0)**
- - **python-support (>= 0.6)**
  - **python-all-dev (any version)**
  - **python-numpy-dev (any version)**
 
-To compile the Debian package you also need the following packages:
+And to compile the Debian package you need some tools:
+
  - **debhelper (>=7.0.0)**
+ - **dh-python (any version)**
  - **cdbs (>= 0.4.49)**
 
 Compilation options
+
  - **make source** - Create source package for Python extension
  - **make cython** - Convert Cython code to C++
  - **make python_ext** - Create Python extension using C++ code
@@ -49,22 +60,20 @@ Compilation options
  - **make builddeb** - Generate a deb package for Python extension
  - **make standalone** - Create standalone programs (scattnlay and fieldnlay)
  - **make clean** - Delete temporal files
- 
+
 Binary install:
 --------------
 
-Some releases for Ubuntu and Debian operating systems can be published at
+Binary files for Ubuntu and derivative distributions can be found at
 [Launchpad](https://launchpad.net/~ovidio/+archive/ubuntu/scattering/+packages)
-To install it please download *.deb file (e.g. it can be
-python-scattnlay_2.0.1-1_amd64.deb for 64-bit OS) and install it using 
+To install it you must configure the repository:
 ``` bash
-sudo dpkg -i python-scattnlay_2.0.1-1_amd64.deb
+sudo add-apt-repository ppa:ovidio/scattering
+sudo apt-get update
 ```
-You may need to download and manually install
-[python-support](https://launchpad.net/ubuntu/+source/python-support)
-package beforehand (it depends on your OS) to satisfy the dependencies.
+and then you simply install the package:
 ``` bash
-sudo dpkg -i python-support_1.0.15_all.deb
+sudo apt-get install python-scattnlay
 ```
 
 Use:

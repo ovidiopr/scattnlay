@@ -834,15 +834,15 @@ namespace nmie {
       Qsca_ += (n + n + 1.0)*(an_[i].real()*an_[i].real() + an_[i].imag()*an_[i].imag()
                             + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
       // Equation (29)
-      Qpr_ += ((n*(n + 2)/(n + 1))*((an_[i]*std::conj(an_[n]) + bn_[i]*std::conj(bn_[n])).real())
-               + ((FloatType)(n + n + 1)/(n*(n + 1)))*(an_[i]*std::conj(bn_[i])).real());
+      Qpr_ += ((n*(n + 2.0)/(n + 1.0))*((an_[i]*std::conj(an_[n]) + bn_[i]*std::conj(bn_[n])).real())
+               + ((n + n + 1.0)/(n*(n + 1.0)))*(an_[i]*std::conj(bn_[i])).real());
       // Equation (33)
-      Qbktmp += (FloatType)(n + n + 1)*(1 - 2*(n % 2))*(an_[i]- bn_[i]);
+      Qbktmp += (FloatType)(n + n + 1.0)*(1.0 - 2.0*(n % 2))*(an_[i]- bn_[i]);
       // Calculate the scattering amplitudes (S1 and S2)    //
       // Precalculate cos(theta) - gives about 5% speed up.
       std::vector<FloatType> costheta(theta_.size(), 0.0);
       for (unsigned int t = 0; t < theta_.size(); t++) {
-	costheta[t] = nmm::cos(theta_[t]);
+        costheta[t] = nmm::cos(theta_[t]);
       }
       // Equations (25a) - (25b)                            //
       for (unsigned int t = 0; t < theta_.size(); t++) {

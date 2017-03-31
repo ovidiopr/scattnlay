@@ -23,11 +23,11 @@ source:
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 
 cython: scattnlay.pyx
-	$(CYTHON) --cplus scattnlay.pyx
-	mv scattnlay.cpp $(SRCDIR)/
-	cp scattnlay.pyx scattnlay_mp.pyx
-	$(CYTHON) --cplus scattnlay_mp.pyx
-	mv scattnlay_mp.cpp $(SRCDIR)/
+    # create c++ code for double precision module
+	$(CYTHON) --cplus scattnlay.pyx -o $(SRCDIR)/scattnlay.cpp
+	# create c++ code for MP module
+	ln -s scattnlay.pyx scattnlay_mp.pyx
+	$(CYTHON) --cplus scattnlay_mp.pyx -o $(SRCDIR)/scattnlay_mp.cpp
 	rm scattnlay_mp.pyx
 
 python_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc $(SRCDIR)/scattnlay.cpp $(SRCDIR)/scattnlay_mp.cpp
@@ -50,23 +50,13 @@ builddeb:
 	# build the package
 	dpkg-buildpackage -i -I -rfakeroot
 
-#builddebmp:
-	# build the source package in the parent directory
-	# then rename it to project_version.orig.tar.gz
-#	$(PYTHON) setup-mp.py sdist $(COMPILE) --dist-dir=../ --prune
-#	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
-	# build the package
-#	export CFLAGS='-std=c++11 -DMULTI_PRECISION=$(MULTIPREC)' && dpkg-buildpackage -i -I -rfakeroot
-
 standalone: $(SRCDIR)/farfield.cc $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc
-	c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o scattnlay
-	mv scattnlay ../
-	c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o fieldnlay
-	mv fieldnlay ../
-	c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o scattnlay-mp
-	mv scattnlay-mp ../
-	c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o fieldnlay-mp
-	mv fieldnlay-mp ../
+    # create standalone programs with DP
+	c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o ../scattnlay
+	c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o ../fieldnlay
+	# create standalone programs with MP
+	c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o ../scattnlay-mp
+	c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o ../fieldnlay-mp
 
 clean:
 	$(PYTHON) setup.py clean
