@@ -41,6 +41,7 @@ namespace shell_generator {
     double norm(std::vector<double> a);
     std::vector< std::vector<double> > GetVertices(){return vertices_;};
     std::vector< std::vector<double> > GetVerticesT();
+    std::vector< std::vector<double> > GetFaceCentersT();
     std::vector< std::vector<long unsigned int> > GetEdges(){return edges_;};
     std::vector< std::vector<long unsigned int> > GetFaces(){return faces_;};
     void EvalEdgeLength();
@@ -49,6 +50,7 @@ namespace shell_generator {
     void GenerateFacesInit();
     void Init();
     std::vector<double> Integrate();
+    std::vector<double> IntegrateByFaces();
     std::vector<double> IntegrateByComp();
     double IntegrateGauss(double charge, double dist);
     double IntegrateGaussSimple(double charge, double dist);
@@ -64,10 +66,12 @@ namespace shell_generator {
 
     void SetField(std::vector<std::vector< std::complex<double> > > &E,
                   std::vector<std::vector< std::complex<double> > > &H) {E_ = E; H_=H;};
+    void SetFieldSph(std::vector<std::vector< std::complex<double> > > &E,
+                  std::vector<std::vector< std::complex<double> > > &H) {Es_ = E; Hs_=H;};
     void SetInitialVerticesIcosahedron();
     void SetInitialVerticesTetrahedron();
   private:
-    std::vector<std::vector< std::complex<double> > > E_, H_;
+    std::vector<std::vector< std::complex<double> > > E_, H_, Es_, Hs_;
     double edge_length_ = 0.0;
     double face_area_ = 0.0;
     std::vector<double> per_face_area_;

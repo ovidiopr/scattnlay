@@ -1111,8 +1111,12 @@ namespace nmie {
     long total_points = coords_[0].size();
     E_.resize(total_points);
     H_.resize(total_points);
+    Es_.resize(total_points);
+    Hs_.resize(total_points);
     for (auto& f : E_) f.resize(3);
     for (auto& f : H_) f.resize(3);
+    for (auto& f : Es_) f.resize(3);
+    for (auto& f : Hs_) f.resize(3);
 
     for (int point = 0; point < total_points; point++) {
       const FloatType& Xp = coords_[0][point];
@@ -1147,7 +1151,10 @@ namespace nmie {
 
       // Do the actual calculation of electric and magnetic field
       calcField(Rho, Theta, Phi, Es, Hs);
-
+      for (int sph_coord = 0; sph_coord<3; ++sph_coord) {
+        Es_[point][sph_coord] = Es[sph_coord];
+        Hs_[point][sph_coord] = Hs[sph_coord];
+      }
       { //Now, convert the fields back to cartesian coordinates
         using nmm::sin;
         using nmm::cos;

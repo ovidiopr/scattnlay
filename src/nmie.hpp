@@ -108,6 +108,9 @@ namespace nmie {
 
     std::vector<std::vector< std::complex<FloatType> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<FloatType> > > GetFieldH(){return H_;};
+    // Get fields in spherical coordinates.
+    std::vector<std::vector< std::complex<FloatType> > > GetFieldEs(){return E_;};   // {rho[], teha[], phi[]}
+    std::vector<std::vector< std::complex<FloatType> > > GetFieldHs(){return H_;};
 
   protected:
     // Size parameter for all layers
@@ -167,6 +170,7 @@ namespace nmie {
     /// Store result
     FloatType Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::vector< std::complex<FloatType> > > E_, H_;  // {X[], Y[], Z[]}
+    std::vector<std::vector< std::complex<FloatType> > > Es_, Hs_;  // {X[], Y[], Z[]}
     std::vector<std::complex<FloatType> > S1_, S2_;
 
 
