@@ -41,12 +41,12 @@ int main(int argc, char *argv[]) {
     // const std::complex<double> epsilon_Si(18.4631066585, 0.6259727805);
     //    const std::complex<double> epsilon_Ag(-8.5014154589, 0.7585845411);
     // const std::complex<double> index_Si = std::sqrt(epsilon_Si);
-    const std::complex<double> index_Si(1.1);
+    const std::complex<double> index_Si(1.1,0.2);
     //    const std::complex<double> index_Ag = std::sqrt(epsilon_Ag);
     double WL=545; //nm
     //double WL=400; //nm
     //double outer_width = 67.91; //nm  Si
-    double outer_width = 4; //nm  Si
+    double outer_width = 4*2*2; //nm  Si
     auto shift = 0.0;
     shell_generator::ShellGenerator shell;
     shell.Init();
@@ -77,8 +77,8 @@ int main(int argc, char *argv[]) {
         shell.SetField(E,H);
         //shell.SetFieldSph(Es,Hs);
         // auto F = shell.Integrate();
-        //auto F = shell.IntegrateByFaces();
-        auto F = shell.IntegrateByComp();
+        auto F = shell.IntegrateByFaces();
+        //auto F = shell.IntegrateByComp();
         std::cout << "integrate_R:\t" << scale*WL/(2.0*pi);
         std::cout<<"\tforce:\t" <<F[0]<<"\t"<< F[1] <<"\t"<<F[2] << std::endl;
         // auto F1 = shell.IntegrateByComp();

@@ -355,23 +355,24 @@ namespace shell_generator {
       auto E = E_[i];
       //auto H = 377.0*H_[i];
       auto H = H_[i];
-      auto Es = Es_[i];
-      auto Hs = Hs_[i];
+      // auto Es = Es_[i];
+      // auto Hs = Hs_[i];
       
       auto vert = face_centers_[i];
       // Vector to unit product
       double r = norm(vert);
-      std::vector<std::complex<double> > unit = { vert[0]/r, vert[1]/r, vert[2]/r};
+      //std::vector<std::complex<double> > unit = { vert[0]/r, vert[1]/r, vert[2]/r};
       // std::cout << norm(unit) << std::endl;
       //const double pi = 3.1415926535897932384626433832795;
-      std::vector<double> P = (1/(2.0))
-        *real(
-              dot(unit,E)*vconj(E) +
-              dot(unit,H)*vconj(H) +
-              (-1.0/2.0)*(dot(E,vconj(E))
-                          +dot(H,vconj(H))
-                          )*unit
-              );
+      // std::vector<double> P = (1/(2.0))
+      //   *real(
+      //         dot(unit,E)*vconj(E) +
+      //         dot(unit,H)*vconj(H) +
+      //         (-1.0/2.0)*(dot(E,vconj(E))
+      //                     +dot(H,vconj(H))
+      //                     )*unit
+      //         );
+
       // std::vector<double> P = (1/(2.0))
       //   *real(
       //         Es[0]*vconj(E) +
@@ -393,7 +394,14 @@ namespace shell_generator {
       // std::cout <<"E "<<E[0]<<", "<< E[1] <<", "<<E[2] << std::endl;
       // std::cout <<"H "<<H[0]<<", "<< H[1] <<", "<<H[2] << std::endl;
       // std::cout <<"vert "<<vert[0]<<", "<< vert[1] <<", "<<vert[2] << std::endl<<std::endl;
-      integral = integral + per_face_area_[i]*P;
+      //integral = integral + per_face_area_[i]*P;
+
+      // Test Poynting vector integration
+      std::vector<double> unit = { vert[0]/r, vert[1]/r, vert[2]/r};
+      std::vector<double> P = (1/(2.0))
+        *real(cross(E,vconj(H)));
+      integral[0] = integral[0] + per_face_area_[i]*dot(P,unit);
+
     }
     return integral;
   }
