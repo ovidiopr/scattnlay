@@ -165,14 +165,24 @@ Papers
    E. Miroshnichenko and Ilya V. Shadrivov  Nanoscale, 2015,7,
    18897-18901 http://dx.doi.org/10.1039/C5NR05468K
 
+4. "Mie calculation of electromagnetic near-field for a multilayered sphere"
+   Konstantin Ladutenko, Umapada Pal, Antonio Rivera and Ovidio Peña-Rodríguez
+   Computer Physics Communications, vol. 214, May 2017, pp. 225-230
+   http://dx.doi.org/j.cpc.2017.01.017
+
 Acknowledgment
 --------------
 
 We expect that all publications describing work using this software,
-or all commercial products using it, cite the following reference:
+or all commercial products using it, cite the following references:
 > O. Pena and U. Pal, "Scattering of electromagnetic radiation
 > by a multilayered sphere," Computer Physics Communications,
 > vol. 180, Nov. 2009, pp. 2348-2354.
+
+> K. Ladutenko, U. Pal, A. Rivera, and O. Peña-Rodríguez,
+> "Mie calculation of electromagnetic near-field for a multilayered sphere,"
+> Computer Physics Communications, vol. 214, May 2017, pp. 225-230.
+
 
 License
 -------
