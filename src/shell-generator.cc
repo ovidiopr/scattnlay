@@ -334,6 +334,41 @@ namespace shell_generator {
   // ********************************************************************** //
   // ********************************************************************** //
   
+  std::vector<double> ShellGenerator::IntegrateByCompReal() {
+    std::vector<double> integral = {0.0, 0.0, 0.0};
+    for (unsigned int i=0; i<E_.size(); ++i) {
+      auto E = E_[i];
+      auto H = H_[i];
+      auto vert = face_centers_[i];
+      double r = norm(vert);
+      std::vector<double> n = { vert[0]/r, vert[1]/r, vert[2]/r};
+      const std::vector< std::vector<double> > d = {{1.0, 0.0, 0.0},
+                                                    {0.0, 1.0, 0.0},
+                                                    {0.0, 0.0, 1.0}};
+      
+      std::vector<double> F = {0.0, 0.0, 0.0};
+      std::complex<double> S(0.0);
+      for (int ii = 0; ii < 3; ++ii)
+        S += pow2(real(E[ii])) + pow2(real(H[ii]));
+      std::vector< std::vector<std::complex<double> > >
+        T = {{0.0, 0.0, 0.0},
+             {0.0, 0.0, 0.0},
+             {0.0, 0.0, 0.0}};
+      for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+          T[i][j] =  real(E[i])*real(E[j]) + real(H[i])*real(H[j])
+            -1.0/2.0*S*d[i][j];
+          F[i] += (1/(2.0/* *4.0*pi */))*real(T[i][j]*n[j]);
+        }
+      }
+      integral = integral + per_face_area_[i]*F;      
+    }
+    return integral;
+  }
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  
   std::vector<double> ShellGenerator::IntegrateByFaces() {
     std::vector<double> integral = {0.0, 0.0, 0.0};
     //simple 
@@ -383,11 +418,18 @@ namespace shell_generator {
       // std::cout <<"vert "<<vert[0]<<", "<< vert[1] <<", "<<vert[2] << std::endl<<std::endl;
       //integral = integral + per_face_area_[i]*P;
 
+      // // Test Poynting vector integration in real components -- WRONG
+      // std::vector<double> unit = { vert[0]/r, vert[1]/r, vert[2]/r};
+      // std::vector<double> P = (1/(2.0))
+      //   *(cross((real(E)),real(H)));
+      // integral[0] = integral[0] + per_face_area_[i]*dot(P,unit);
+
       // Test Poynting vector integration
       std::vector<double> unit = { vert[0]/r, vert[1]/r, vert[2]/r};
       std::vector<double> P = (1/(2.0))
         *real(cross(E,vconj(H)));
-      integral[0] = integral[0] + per_face_area_[i]*dot(P,unit);
+      //integral[0] = integral[0] + per_face_area_[i]*dot(P,unit);
+      integral = integral + per_face_area_[i]*P;
 
     }
     return integral;

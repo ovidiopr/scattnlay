@@ -54,7 +54,8 @@ int main(int argc, char *argv[]) {
     shell.Refine();
     for (int refines=0; refines<1; ++refines) {
       shell.Refine();
-      for (int i=0; i<170; ++i) {
+      std::cout<<"Refined"<<std::endl;
+      for (int i=0; i<7; ++i) {
         //outer_width = 40 + 5*i;
         auto integration_radius = outer_width  + 5*i ;
         //outer_width = 10; //+10*i; //nm  Si
@@ -78,9 +79,14 @@ int main(int argc, char *argv[]) {
         //shell.SetFieldSph(Es,Hs);
         // auto F = shell.Integrate();
         //auto F = shell.IntegrateByFaces();
-        auto F = shell.IntegrateByComp();
-        std::cout << "integrate_R:\t" << scale*WL/(2.0*pi);
-        std::cout<<"\tforce:\t" <<F[0]<<"\t"<< F[1] <<"\t"<<F[2] << std::endl;
+        //auto F = shell.IntegrateByComp();
+        //        auto F = shell.IntegrateByCompReal();
+        //std::cout << "integrate_R:\t" << scale*WL/(2.0*pi);
+        //std::cout<<"\tforce:\t" <<F[0]<<"\t"<< F[1] <<"\t"<<F[2] << std::endl;
+
+        auto F = shell.IntegrateGauss(2.54,12.03);
+        //std::cout<<"\tcharge:\t" <<F<< std::endl;
+        
         // auto F1 = shell.IntegrateByComp();
         // std::cout<<"F: " <<F1[0]<<", "<< F1[1] <<", "<<F1[2] << std::endl;        
       }
