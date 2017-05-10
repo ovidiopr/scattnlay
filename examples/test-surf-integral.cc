@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     double shift = 1.1;  //Shift of the charge relative to the sphere center.
     double charge = 11.0; //Coulomb charge.
     shell.Rescale(scale);
-    shell.PrintVerts();
+    //shell.PrintVerts();
     auto points = shell.GetVertices();
     double charge_s = shell.IntegrateGaussSimple(charge, shift);
     std::cout << "Accuracy ( 1==ideal ): " << charge_s/charge << std::endl; 

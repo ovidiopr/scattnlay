@@ -246,7 +246,7 @@ namespace shell_generator {
       auto vert = face_centers_[i];
       auto E0 = field(charge, shift, vert);
       // std::cout << "E0: ";
-      // for (auto component : E0) std::cout << component << " ";
+      for (auto component : E0) std::cout << component << " ";
       // std::cout << std::endl;
       // Vector to unit product
       double r = norm(vert);
@@ -430,14 +430,13 @@ namespace shell_generator {
         *real(cross(E,vconj(H)));
       //integral[0] = integral[0] + per_face_area_[i]*dot(P,unit);
       integral = integral + per_face_area_[i]*P;
-
     }
     return integral;
   }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
   
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
   std::vector<double> ShellGenerator::Integrate() {
     std::vector<double> integral = {0.0, 0.0, 0.0};
     //simple 
