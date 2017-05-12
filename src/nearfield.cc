@@ -230,9 +230,9 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < nx; i++) {
       for (int j = 0; j < ny; j++) {
         for (int k = 0; k < nz; k++) {
-          Xp[i*ny + j*nz + k] = xi + (double)i*dx;
-          Yp[i*ny + j*nz + k] = yi + (double)j*dy;
-          Zp[i*ny + j*nz + k] = zi + (double)k*dz;
+          Xp[i*ny*nz + j*nz + k] = xi + (double)i*dx;
+          Yp[i*ny*nz + j*nz + k] = yi + (double)j*dy;
+          Zp[i*ny*nz + j*nz + k] = zi + (double)k*dz;
         }
       }
     }
