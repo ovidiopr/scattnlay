@@ -52,13 +52,13 @@ cdef extern from "py_nmie.h":
 
 def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.int_t nmax, np.int_t pl = -1):
     """
-    scattcoeffs(x, m, nmax, pl)
+    scattcoeffs(x, m[, nmax, pl])
 
     Calculate the scattering coefficients required to calculate both the
     near- and far-field parameters.
 
-        x: size parameters (2D ndarray)
-        m: relative refractive indices (2D ndarray)
+        x: Size parameters (2D ndarray)
+        m: Relative refractive indices (2D ndarray)
         nmax: Maximum number of multipolar expansion terms to be used for the
               calculations. Only use it if you know what you are doing, otherwise
               set this parameter to -1 and the function will calculate it.
@@ -67,7 +67,7 @@ def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t
     Returns: (terms, an, bn)
     with
         terms: Number of multipolar expansion terms used for the calculations
-        an, bn: complex scattering amplitudes
+        an, bn: complex scattering coefficients
     """
     cdef Py_ssize_t i
 
@@ -96,13 +96,13 @@ def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t
 
 def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t pl = -1):
     """
-    scattnlay(x, m, [theta, nmax, pl])
+    scattnlay(x, m[, theta, nmax, pl])
 
     Calculate the actual scattering parameters and amplitudes.
 
-        x: size parameters (2D ndarray)
-        m: relative refractive indices (2D ndarray)
-        theta: scattering angles where the scattering amplitudes will be
+        x: Size parameters (2D ndarray)
+        m: Relative refractive indices (2D ndarray)
+        theta: Scattering angles where the scattering amplitudes will be
                calculated (optional, 1D ndarray)
         nmax: Maximum number of multipolar expansion terms to be used for the
               calculations. Only use it if you know what you are doing.
@@ -154,6 +154,24 @@ def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 
 def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords, np.int_t nmax = -1, np.int_t pl = -1):
+    """
+    fieldnlay(x, m, coords[, theta, nmax, pl])
+
+    Calculate the actual scattering parameters and amplitudes.
+
+        x: Size parameters (2D ndarray)
+        m: Relative refractive indices (2D ndarray)
+        coords: Array containing all coordinates where the complex electric
+                and magnetic fields will be calculated (2D ndarray)
+        nmax: Maximum number of multipolar expansion terms to be used for the
+              calculations. Only use it if you know what you are doing.
+        pl: Index of PEC layer.
+
+    Returns: (terms, E, H)
+    with
+        terms: Number of multipolar expansion terms used for the calculations
+        E, H: Complex electric and magnetic field at the provided coordinates
+    """
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
