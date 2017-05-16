@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 #
 #    Copyright (C) 2009-2017 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
-#    Copyright (C) 2013-2017  Konstantin Ladutenko <kostyfisik@gmail.com>
+#    Copyright (C) 2013-2017 Konstantin Ladutenko <kostyfisik@gmail.com>
 #
 #    This file is part of scattnlay
 #

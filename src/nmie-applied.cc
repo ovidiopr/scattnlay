@@ -22,10 +22,14 @@
 /// his library:
 //    The only additional condition is that we expect that all publications         //
 //    describing  work using this software , or all commercial products             //
-//    using it, cite the following reference:                                       //
+//    using it, cite at least one of the following references:                      //
 //    [1] O. Pena and U. Pal, "Scattering of electromagnetic radiation by           //
 //        a multilayered sphere," Computer Physics Communications,                  //
 //        vol. 180, Nov. 2009, pp. 2348-2354.                                       //
+//    [2] K. Ladutenko, U. Pal, A. Rivera, and O. Pena-Rodriguez, "Mie              //
+//        calculation of electromagnetic near-field for a multilayered              //
+//        sphere," Computer Physics Communications, vol. 214, May 2017,             //
+//        pp. 225-230.                                                              //
 ///
 /// @brief  Wrapper class around nMie function for ease of use
 ///
