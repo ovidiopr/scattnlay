@@ -67,7 +67,7 @@ def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t
     Returns: (terms, an, bn)
     with
         terms: Number of multipolar expansion terms used for the calculations
-        an, bn: complex scattering coefficients
+        an, bn: Complex scattering coefficients
     """
     cdef Py_ssize_t i
 
