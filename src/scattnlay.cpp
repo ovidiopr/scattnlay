@@ -485,7 +485,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "scattnlay.pyx",
+  "src/scattnlay.pyx",
   "__init__.pxd",
   "stringsource",
   "type.pxd",
@@ -1261,7 +1261,7 @@ static char __pyx_k_scattcoeffs[] = "scattcoeffs";
 static char __pyx_k_C_CONTIGUOUS[] = "C_CONTIGUOUS";
 static char __pyx_k_RuntimeError[] = "RuntimeError";
 static char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
-static char __pyx_k_home_ovidio_scattering_scattnla[] = "/home/ovidio/scattering/scattnlay/python-scattnlay-2.1/scattnlay.pyx";
+static char __pyx_k_home_ovidio_scattering_scattnla[] = "/home/ovidio/scattering/scattnlay/python-scattnlay-2.1/src/scattnlay.pyx";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static char __pyx_k_Format_string_allocated_too_shor[] = "Format string allocated too short, see comment in numpy.pxd";
 static char __pyx_k_Non_native_byte_order_not_suppor[] = "Non-native byte order not supported";
