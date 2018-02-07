@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/python
 # -*- coding: UTF-8 -*-
 #
 #    Copyright (C) 2009-2015 Ovidio Peña Rodríguez <ovidio@bytesfall.com>

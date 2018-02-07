@@ -1,4 +1,4 @@
-PYTHON=`which python`
+PYTHON=`which python3`
 CYTHON=`which cython`
 DESTDIR=/
 PROJECT=python-scattnlay

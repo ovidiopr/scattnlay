@@ -212,17 +212,17 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
             Eabs_data = np.resize(P, (npts, npts)).T
             label = r'$\operatorname{Re}(E \times H)$'
         elif field_to_plot == 'Eabs':
-            # Eabs = np.sqrt(Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
-            # label = r'$|E|$'
+            Eabs = np.sqrt(Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
+            label = r'$|E|$'
             # Eabs = np.real(Hc[:, 0])
             # label = r'$Re(H_x)$'
             # Eabs = np.real(Hc[:, 1])
             # label = r'$Re(H_y)$'
-            Eabs = np.real(Ec[:, 1])
-            label = r'$Re(E_y)$'
+            # Eabs = np.real(Ec[:, 1])
+            # label = r'$Re(E_y)$'
             # Eabs = np.real(Ec[:, 0])
             # label = r'$Re(E_x)$'
-            Eabs_data = np.resize(Eabs, (npts, npts))
+            Eabs_data = np.resize(Eabs, (npts, npts)).T
         elif field_to_plot == 'Habs':
             Habs = np.sqrt(Hr[:, 0]**2 + Hr[:, 1]**2 + Hr[:, 2]**2)
             Eabs_data = np.resize(Habs, (npts, npts)).T
