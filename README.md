@@ -75,6 +75,10 @@ and then you simply install the package:
 ``` bash
 sudo apt-get install python-scattnlay
 ```
+You can also install it from PyPi via
+```bash
+sudo pip install python-scattnlay
+```
 
 Use:
 ----
