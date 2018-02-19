@@ -1,8 +1,8 @@
 #ifndef SRC_SHELL_GENERATOR_H_
 #define SRC_SHELL_GENERATOR_H_
 //**********************************************************************************//
-//    Copyright (C) 2009-2017  Ovidio Pena <ovidio@bytesfall.com>                   //
-//    Copyright (C) 2013-2017  Konstantin Ladutenko <kostyfisik@gmail.com>          //
+//    Copyright (C) 2009-2018  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2013-2018  Konstantin Ladutenko <kostyfisik@gmail.com>          //
 //                                                                                  //
 //    This file is part of scattnlay                                                //
 //                                                                                  //

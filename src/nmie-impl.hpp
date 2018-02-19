@@ -1,8 +1,8 @@
 #ifndef SRC_NMIE_IMPL_HPP_
 #define SRC_NMIE_IMPL_HPP_
 //**********************************************************************************//
-//    Copyright (C) 2009-2017  Ovidio Pena <ovidio@bytesfall.com>                   //
-//    Copyright (C) 2013-2017  Konstantin Ladutenko <kostyfisik@gmail.com>          //
+//    Copyright (C) 2009-2018  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2013-2018  Konstantin Ladutenko <kostyfisik@gmail.com>          //
 //                                                                                  //
 //    This file is part of scattnlay                                                //
 //                                                                                  //
