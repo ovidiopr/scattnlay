@@ -27,7 +27,7 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 
-#define VERSION "2.0"
+#define VERSION "2.2"  //Compare with Makefile
 #include <array>
 #include <complex>
 #include <cstdlib>
@@ -40,7 +40,10 @@ namespace nmie {
   int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const unsigned int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
+  int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int mode_n, const int mode_type, const unsigned int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
+
+  // constants for field evaluation
+  enum Modes {kAll = -1, kElectric = 0, kMagnetic = 1};
 
   template <typename FloatType = double>
   class MultiLayerMie {    
@@ -53,7 +56,7 @@ namespace nmie {
     const double mu_ = 4.0*PI_*1.0e-7;
     // Run calculation
     void RunMieCalculation();
-    void RunFieldCalculation();
+    void RunFieldCalculation(const int mode_n=Modes::kAll, const int mode_type=Modes::kAll);
     void calcScattCoeffs();
 
     // Return calculation results
@@ -152,8 +155,9 @@ namespace nmie {
                        std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n, 
                        std::vector<std::complex<FloatType> >& No1n, std::vector<std::complex<FloatType> >& Ne1n);
 
-    void calcField(const FloatType Rho, const FloatType Theta, const FloatType Phi,
-                   std::vector<std::complex<FloatType> >& E, std::vector<std::complex<FloatType> >& H);
+    void calcFieldByComponents(const FloatType Rho, const FloatType Theta, const FloatType Phi,
+                               const int mode_n, const int mode_type,
+                               std::vector<std::complex<FloatType> >& E, std::vector<std::complex<FloatType> >& H);
 
     bool isExpCoeffsCalc_ = false;
     bool isScaCoeffsCalc_ = false;

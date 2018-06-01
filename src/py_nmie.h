@@ -36,7 +36,7 @@ int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::com
          double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
 		 double S1r[], double S1i[], double S2r[], double S2i[]);
 
-int nField(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
+int nField(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, const int mode_n, const int mode_type,
            const int nCoords, std::vector<double>& Xp, std::vector<double>& Yp, std::vector<double>& Zp,
            double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[],
            double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[]);

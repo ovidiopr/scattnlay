@@ -237,7 +237,8 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    nmie::nField(L, -1, x, m, -1, total_points, Xp, Yp, Zp, E, H);
+    nmie::nField(L, -1, x, m, -1, nmie::Modes::kAll, nmie::Modes::kAll,
+                 total_points, Xp, Yp, Zp, E, H);
 
     if (has_comment)
       printf("%6s\n", comment.c_str());

@@ -288,7 +288,7 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const unsigned int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
+  int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const int mode_n, const int mode_type, const unsigned int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
     if (x.size() != L || m.size() != L)
       throw std::invalid_argument("Declared number of layers do not fit x and m!");
     if (Xp_vec.size() != ncoord || Yp_vec.size() != ncoord || Zp_vec.size() != ncoord
@@ -308,7 +308,7 @@ namespace nmie {
       ml_mie.SetFieldCoords({ConvertVector<FloatType>(Xp_vec),
 	    ConvertVector<FloatType>(Yp_vec),
 	    ConvertVector<FloatType>(Zp_vec) });
-      ml_mie.RunFieldCalculation();
+      ml_mie.RunFieldCalculation(mode_n, mode_type);
       E = ConvertComplexVectorVector<double>(ml_mie.GetFieldE());
       H = ConvertComplexVectorVector<double>(ml_mie.GetFieldH());
 

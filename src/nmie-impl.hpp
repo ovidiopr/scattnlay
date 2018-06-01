@@ -1003,19 +1003,33 @@ namespace nmie {
   //   Rho: Radial distance                                                           //
   //   Phi: Azimuthal angle                                                           //
   //   Theta: Polar angle                                                             //
+  //   mode_n: mode order.                                                            //
+  //          -1 - use all modes (all_)                                               //
+  //           1 - use dipole mode only                                               //
+  //           2 - use quadrupole mode only                                           //
+  //           ...                                                                    //
+  //   mode_type: only used when mode_n != -1                                         //
+  //          0 - electric only                                                       //
+  //          1 - magnetic only                                                       //
+  //                                                                                  //
   //                                                                                  //
   // Output parameters:                                                               //
   //   E, H: Complex electric and magnetic fields                                     //
   //**********************************************************************************//
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcField(const FloatType Rho, const FloatType Theta, const FloatType Phi,
-                                std::vector<std::complex<FloatType> >& E, std::vector<std::complex<FloatType> >& H)  {
+  void MultiLayerMie<FloatType>::calcFieldByComponents(const FloatType Rho,
+                                const FloatType Theta, const FloatType Phi,
+                                const int mode_n, const int mode_type,
+                                std::vector<std::complex<FloatType> >& E,
+                                std::vector<std::complex<FloatType> >& H)  {
 
     std::complex<FloatType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
-    std::vector<std::complex<FloatType> > ipow = {c_one, c_i, -c_one, -c_i}; // Vector containing precomputed integer powers of i to avoid computation
+    // Vector containing precomputed integer powers of i to avoid computation
+    std::vector<std::complex<FloatType> > ipow = {c_one, c_i, -c_one, -c_i}; 
     std::vector<std::complex<FloatType> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
     std::vector<std::complex<FloatType> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
-    std::vector<std::complex<FloatType> > Psi(nmax_ + 1), D1n(nmax_ + 1), Zeta(nmax_ + 1), D3n(nmax_ + 1);
+    std::vector<std::complex<FloatType> > Psi(nmax_ + 1), D1n(nmax_ + 1),
+      Zeta(nmax_ + 1), D3n(nmax_ + 1);
     std::vector<FloatType> Pi(nmax_), Tau(nmax_);
 
     int l = 0;  // Layer number
@@ -1052,19 +1066,43 @@ namespace nmie {
       FloatType rn = static_cast<FloatType>(n1);
 
       // using BH 4.12 and 4.50
-      calcSpherHarm(Rho*ml, Theta, Phi, Psi[n1], D1n[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
-      calcSpherHarm(Rho*ml, Theta, Phi, Zeta[n1], D3n[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
+      calcSpherHarm(Rho*ml, Theta, Phi, Psi[n1], D1n[n1], Pi[n], Tau[n], rn,
+                    M1o1n, M1e1n, N1o1n, N1e1n);
+      calcSpherHarm(Rho*ml, Theta, Phi, Zeta[n1], D3n[n1], Pi[n], Tau[n], rn,
+                    M3o1n, M3e1n, N3o1n, N3e1n);
 
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
       std::complex<FloatType> En = ipow[n1 % 4]
 	*static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
       for (int i = 0; i < 3; i++) {
-        // electric field E [V m - 1] = EF*E0
-        E[i] += En*(cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
-              + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
+        if (mode_n == Modes::kAll) {
+          // electric field E [V m - 1] = EF*E0
+          E[i] += En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
+                      + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
 
-        H[i] += En*(-dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
-              +  c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
+          H[i] += En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
+                      + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
+          continue;
+        }
+        if (n1 == mode_n) {
+          if (mode_type == Modes::kElectric) {
+            E[i] += En*( -c_i*dln_[l][n]*N1e1n[i]
+                        + c_i*aln_[l][n]*N3e1n[i]);
+
+            H[i] += En*(-dln_[l][n]*M1e1n[i]
+                        +aln_[l][n]*M3e1n[i]);
+            continue;
+          }
+          if (mode_type == Modes::kMagnetic) {
+            E[i] += En*(  cln_[l][n]*M1o1n[i]
+                        - bln_[l][n]*M3o1n[i]);
+
+            H[i] += En*( -c_i*cln_[l][n]*N1o1n[i]
+                        + c_i*bln_[l][n]*N3o1n[i]);
+            continue;
+          }
+        }
+        throw std::invalid_argument("Error! Unexpected mode for field evaluation!");
       }
     }  // end of for all n
 
@@ -1073,7 +1111,7 @@ namespace nmie {
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
     }
-   }  // end of MultiLayerMie::calcField(...)
+   }  // end of MultiLayerMie::calcFieldByComponents(...)
 
 
   //**********************************************************************************//
@@ -1091,6 +1129,14 @@ namespace nmie {
   //   ncoord: Number of coordinate points                                            //
   //   Coords: Array containing all coordinates where the complex electric and        //
   //           magnetic fields will be calculated                                     //
+  //   mode_n: mode order.                                                            //
+  //          -1 - use all modes (all_)                                               //
+  //           1 - use dipole mode only                                               //
+  //           2 - use quadrupole mode only                                           //
+  //           ...                                                                    //
+  //   mode_type: only used when mode_n != -1                                         //
+  //          0 - electric only                                                       //
+  //          1 - magnetic only                                                       //
   //                                                                                  //
   // Output parameters:                                                               //
   //   E, H: Complex electric and magnetic field at the provided coordinates          //
@@ -1099,7 +1145,8 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::RunFieldCalculation() {
+  void MultiLayerMie<FloatType>::RunFieldCalculation(
+                                const int mode_n, const int mode_type) {
     FloatType Rho, Theta, Phi;
 
     // Calculate scattering coefficients an_ and bn_
@@ -1150,7 +1197,7 @@ namespace nmie {
       std::vector<std::complex<FloatType> > Es(3), Hs(3);
 
       // Do the actual calculation of electric and magnetic field
-      calcField(Rho, Theta, Phi, Es, Hs);
+      calcFieldByComponents(Rho, Theta, Phi, mode_n, mode_type, Es, Hs);
       for (int sph_coord = 0; sph_coord<3; ++sph_coord) {
         Es_[point][sph_coord] = Es[sph_coord];
         Hs_[point][sph_coord] = Hs[sph_coord];

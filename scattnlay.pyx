@@ -44,7 +44,7 @@ cdef inline double *npy2c(np.ndarray a):
 cdef extern from "py_nmie.h":
     cdef int ScattCoeffs(int L, int pl, vector[double] x, vector[complex] m, int nmax, double anr[], double ani[], double bnr[], double bni[])
     cdef int nMie(int L, int pl, vector[double] x, vector[complex] m, int nTheta, vector[double] Theta, int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, double S1r[], double S1i[], double S2r[], double S2i[])
-    cdef int nField(int L, int pl, vector[double] x, vector[complex] m, int nmax, int nCoords, vector[double] Xp, vector[double] Yp, vector[double] Zp, double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[], double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[])
+    cdef int nField(int L, int pl, vector[double] x, vector[complex] m, int nmax, int mode_n, int mode_type, int nCoords, vector[double] Xp, vector[double] Yp, vector[double] Zp, double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[], double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[])
 
 def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.int_t nmax, np.int_t pl = -1):
     cdef Py_ssize_t i
@@ -106,7 +106,7 @@ def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, 
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 
-def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords, np.int_t nmax = -1, np.int_t pl = -1):
+def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords, np.int_t nmax = -1, np.int_t mode_n = -1, np.int_t mode_type = -1, np.int_t pl = -1):
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
@@ -141,7 +141,7 @@ def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, 
         Hiy = np.zeros(coords.shape[0], dtype = np.float64)
         Hiz = np.zeros(coords.shape[0], dtype = np.float64)
 
-        terms[i] = nField(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, coords.shape[0], coords[:, 0].copy('C'), coords[:, 1].copy('C'), coords[:, 2].copy('C'), npy2c(Erx), npy2c(Ery), npy2c(Erz), npy2c(Eix), npy2c(Eiy), npy2c(Eiz), npy2c(Hrx), npy2c(Hry), npy2c(Hrz), npy2c(Hix), npy2c(Hiy), npy2c(Hiz))
+        terms[i] = nField(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, mode_n, mode_type, coords.shape[0], coords[:, 0].copy('C'), coords[:, 1].copy('C'), coords[:, 2].copy('C'), npy2c(Erx), npy2c(Ery), npy2c(Erz), npy2c(Eix), npy2c(Eiy), npy2c(Eiz), npy2c(Hrx), npy2c(Hry), npy2c(Hrz), npy2c(Hix), npy2c(Hiy), npy2c(Hiz))
 
         E[i] = np.vstack((Erx.copy('C') + 1.0j*Eix.copy('C'), Ery.copy('C') + 1.0j*Eiy.copy('C'), Erz.copy('C') + 1.0j*Eiz.copy('C'))).transpose()
         H[i] = np.vstack((Hrx.copy('C') + 1.0j*Hix.copy('C'), Hry.copy('C') + 1.0j*Hiy.copy('C'), Hrz.copy('C') + 1.0j*Hiz.copy('C'))).transpose()

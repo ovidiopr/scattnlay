@@ -83,6 +83,7 @@ int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::com
 // This is a workaround because I have not been able to return the results using 
 // std::vector<std::complex<double> >
 int nField(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
+           const int mode_n, const int mode_type,
            const int nCoords, std::vector<double>& Xp, std::vector<double>& Yp, std::vector<double>& Zp,
            double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[],
            double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[]) {
@@ -96,7 +97,7 @@ int nField(const int L, const int pl, std::vector<double>& x, std::vector<std::c
     H[i].resize(3);
   }
 
-  result = nmie::nField(L, pl, x, m, nmax, nCoords, Xp, Yp, Zp, E, H);
+  result = nmie::nField(L, pl, x, m, nmax, mode_n, mode_type, nCoords, Xp, Yp, Zp, E, H);
 
   for (i = 0; i < nCoords; i++) {
     Erx[i] = E[i][0].real();

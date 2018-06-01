@@ -1,8 +1,9 @@
 PYTHON=`which python`
+PYTHON3=`which python3`
 CYTHON=`which cython`
 DESTDIR=/
 PROJECT=python-scattnlay
-VERSION=2.1
+VERSION=2.2  # compare with nmie.hpp 
 BUILDIR=$(CURDIR)/debian/$(PROJECT)
 SRCDIR=$(CURDIR)/src
 MULTIPREC=100
@@ -12,6 +13,8 @@ all:
 	@echo "make cython - Convert Cython code to C++"
 	@echo "make python_ext - Create Python extension using C++ code"
 	@echo "make cython_ext - Create Python extension using Cython code"
+	@echo "make python3_ext - Create Python3 extension using C++ code"
+	@echo "make cython3_ext - Create Python3 extension using Cython code"
 	@echo "make install - Install Python extension on local system"
 	@echo "make buildrpm - Generate a rpm package for Python extension"
 	@echo "make builddeb - Generate a deb package for Python extension"
@@ -34,6 +37,11 @@ python_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc $(SRCDIR)/scattnlay.cpp $(SRC
 	$(PYTHON) setup.py build_ext --inplace
 
 cython_ext: cython python_ext
+
+python3_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc $(SRCDIR)/scattnlay.cpp $(SRCDIR)/scattnlay_mp.cpp
+	$(PYTHON3) setup.py build_ext --inplace
+
+cython3_ext: cython python3_ext
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
