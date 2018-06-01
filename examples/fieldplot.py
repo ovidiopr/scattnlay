@@ -223,6 +223,7 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
             # Eabs = np.real(Ec[:, 0])
             # label = r'$Re(E_x)$'
             Eabs_data = np.resize(Eabs, (npts, npts)).T
+            #Eabs_data = np.flipud(np.resize(Eabs, (npts, npts)))
         elif field_to_plot == 'Habs':
             Habs = np.sqrt(Hr[:, 0]**2 + Hr[:, 1]**2 + Hr[:, 2]**2)
             Eabs_data = np.resize(Habs, (npts, npts)).T
@@ -259,14 +260,19 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         #         horizontalalignment='right',
         #         verticalalignment='bottom',
         #         transform=ax.transAxes)
-        cax = ax.imshow(Eabs_data, interpolation='nearest', cmap=cm.jet,
+        cax = ax.imshow(Eabs_data
+                         , interpolation='nearest'
+                        #, interpolation='quadric'
+                        , cmap=cm.jet,
                         origin='lower', vmin=min_tick, vmax=max_tick, extent=(min(scale_x), max(scale_x), min(scale_z), max(scale_z))
                         # ,norm = LogNorm()
                         )
         ax.axis("image")
 
         # Add colorbar
-        cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax)
+        cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax
+                            #,fraction=0.45
+            )
         # vertically oriented colorbar
         if 'angle' in field_to_plot:
             cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])
