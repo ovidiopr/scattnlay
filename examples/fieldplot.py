@@ -132,7 +132,7 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
 
 
 ###############################################################################
-def GetField(crossplane, npts, factor, x, m, pl):
+def GetField(crossplane, npts, factor, x, m, pl, mode_n=-1, mode_type=-1):
     """
     crossplane: XZ, YZ, XY, or XYZ (half is XZ, half is YZ)
     npts: number of point in each direction
@@ -184,7 +184,9 @@ def GetField(crossplane, npts, factor, x, m, pl):
         sys.exit()
 
     coord = np.vstack((coordX, coordY, coordZ)).transpose()
-    terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord, pl=pl)
+    terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord, pl=pl
+                            , mode_n=mode_n, mode_type=mode_type
+                            )
     Ec = E[0, :, :]
     Hc = H[0, :, :]
     P = []
@@ -199,9 +201,10 @@ def GetField(crossplane, npts, factor, x, m, pl):
 
 def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
               field_to_plot='Pabs', npts=101, factor=2.1, flow_total=11,
-              is_flow_extend=True, pl=-1, outline_width=1, subplot_label=' '):
+              is_flow_extend=True, pl=-1, outline_width=1, subplot_label=' ',
+              mode_n=-1, mode_type=-1):
     print (x,m)
-    Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m, pl)
+    Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m, pl, mode_n, mode_type)
     Er = np.absolute(Ec)
     Hr = np.absolute(Hc)
     try:
@@ -212,17 +215,18 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
             Eabs_data = np.resize(P, (npts, npts)).T
             label = r'$\operatorname{Re}(E \times H)$'
         elif field_to_plot == 'Eabs':
-            # Eabs = np.sqrt(Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
-            # label = r'$|E|$'
+            Eabs = np.sqrt(Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
+            label = r'$|E|$'
             # Eabs = np.real(Hc[:, 0])
             # label = r'$Re(H_x)$'
             # Eabs = np.real(Hc[:, 1])
             # label = r'$Re(H_y)$'
-            Eabs = np.real(Ec[:, 1])
-            label = r'$Re(E_y)$'
+            # Eabs = np.real(Ec[:, 1])
+            # label = r'$Re(E_y)$'
             # Eabs = np.real(Ec[:, 0])
             # label = r'$Re(E_x)$'
-            Eabs_data = np.resize(Eabs, (npts, npts))
+            Eabs_data = np.resize(Eabs, (npts, npts)).T
+            #Eabs_data = np.flipud(np.resize(Eabs, (npts, npts)))
         elif field_to_plot == 'Habs':
             Habs = np.sqrt(Hr[:, 0]**2 + Hr[:, 1]**2 + Hr[:, 2]**2)
             Eabs_data = np.resize(Habs, (npts, npts)).T
@@ -259,14 +263,19 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         #         horizontalalignment='right',
         #         verticalalignment='bottom',
         #         transform=ax.transAxes)
-        cax = ax.imshow(Eabs_data, interpolation='nearest', cmap=cm.jet,
+        cax = ax.imshow(Eabs_data
+                         , interpolation='nearest'
+                        #, interpolation='quadric'
+                        , cmap=cm.jet,
                         origin='lower', vmin=min_tick, vmax=max_tick, extent=(min(scale_x), max(scale_x), min(scale_z), max(scale_z))
                         # ,norm = LogNorm()
                         )
         ax.axis("image")
 
         # Add colorbar
-        cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax)
+        cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax
+                            #,fraction=0.45
+            )
         # vertically oriented colorbar
         if 'angle' in field_to_plot:
             cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])

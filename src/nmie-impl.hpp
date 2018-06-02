@@ -1102,7 +1102,7 @@ namespace nmie {
             continue;
           }
         }
-        throw std::invalid_argument("Error! Unexpected mode for field evaluation!");
+        //throw std::invalid_argument("Error! Unexpected mode for field evaluation!\n mode_n="+std::to_string(mode_n)+", mode_type="+std::to_string(mode_type)+"\n=====*****=====");
       }
     }  // end of for all n
 
