@@ -202,7 +202,7 @@ def GetField(crossplane, npts, factor, x, m, pl, mode_n=-1, mode_type=-1):
 def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
               field_to_plot='Pabs', npts=101, factor=2.1, flow_total=11,
               is_flow_extend=True, pl=-1, outline_width=1, subplot_label=' ',
-              mode_n=-1, mode_type=-1):
+              mode_n=-1, mode_type=-1, isStream = False):
     print ("WL=",WL," xm:", x,m)
     Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m, pl, mode_n, mode_type)
     Er = np.absolute(Ec)
@@ -264,8 +264,8 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         #         verticalalignment='bottom',
         #         transform=ax.transAxes)
         cax = ax.imshow(Eabs_data
-                         , interpolation='nearest'
-                        #, interpolation='quadric'
+                        #, interpolation='nearest'
+                        , interpolation='quadric'
                         , cmap=cm.jet,
                         origin='lower', vmin=min_tick, vmax=max_tick, extent=(min(scale_x), max(scale_x), min(scale_z), max(scale_z))
                         # ,norm = LogNorm()
@@ -292,8 +292,8 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
             ax.set_xlabel('Z, ' + WL_units, labelpad=lp1)
             ax.set_ylabel('Y, ' + WL_units, labelpad=lp2)
         elif crossplane=='XYZ':
-            ax.set_xlabel(r'$Z,\lambda$'+WL_units)
-            ax.set_ylabel(r'$Y:X,\lambda$'+WL_units)
+            ax.set_xlabel(r'$Z,$'+WL_units)
+            ax.set_ylabel(r'$Y:X,$'+WL_units)
         elif crossplane == 'XY':
             ax.set_xlabel('X, ' + WL_units, labelpad=lp1)
             ax.set_ylabel('Y, ' + WL_units, labelpad=lp2)
@@ -378,11 +378,31 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
                 # patch = patches.PathPatch(
                 #     path, facecolor='none', lw=0.7, edgecolor='white', zorder=1.9, alpha=0.7)
                 ax.add_patch(patch)
-#                ax.plot(flow_z_plot, flow_f_plot, 'x', ms=2, mew=0.1,
-#                        linewidth=0.5, color='k', fillstyle='none')
-
+                #                ax.plot(flow_z_plot, flow_f_plot, 'x', ms=2, mew=0.1,
+                #                        linewidth=0.5, color='k', fillstyle='none')
     finally:
         terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
             np.array([x]), np.array([m]))
         print("Qsca = " + str(Qsca))
+    if isStream == True and field_to_plot in ["Eabs", "Habs"]:
+        if field_to_plot == "Eabs": field = np.real(Ec)
+        else: field = np.real(Hc)
+        
+        V = field[:,2].reshape((npts, npts)).T # z-component
+        if crossplane == "XZ": U = field[:,0].reshape((npts, npts)).T
+        if crossplane == "YZ": U = field[:,1].reshape((npts, npts)).T
+        #print(U[:,0])
+        X = coordX.reshape((npts, npts))[0,:]*WL/2.0/np.pi
+        Z = coordZ.reshape((npts, npts))[:,0]*WL/2.0/np.pi
+        #lw = np.sqrt((V**2+U**2)/(np.max(V)**2+np.max(U)**2))
+        ax.streamplot(X, Z, V, U, color="white", linewidth=0.5,
+                      #cmap=plt.cm.inferno,
+                          density=2, arrowstyle='->', arrowsize=1.0)
+
+        #ax.quiver(X[::5], Z[::5], V[::5,::5], U[::5,::5], units='width')
+        print(np.std(field[:,0]),
+              np.std(field[:,1]),
+              np.std(field[:,2])
+        )
+        
     #

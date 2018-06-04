@@ -1176,12 +1176,9 @@ namespace nmie {
       // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
       Theta = (Rho > 0.0) ? nmm::acos(Zp/Rho) : 0.0;
 
-      // If Xp=Yp=0 then Phi is undefined. Just set it to zero to avoid problems
-      if (Xp == 0.0)
-        Phi = (Yp != 0.0) ? nmm::asin(Yp/nmm::sqrt(pow2(Xp) + pow2(Yp))) : 0.0;
-      else
-        Phi = nmm::acos(Xp/nmm::sqrt(pow2(Xp) + pow2(Yp)));
-      if (Yp < 0.0) Phi *= -1;
+      // std::atan2 should take care of any special cases, e.g.  Xp=Yp=0, etc.
+      Phi = nmm::atan2(Yp,Xp);
+      
       // Avoid convergence problems due to Rho too small
       if (Rho < 1e-5) Rho = 1e-5;
       // std::cout << "Xp: "<<Xp<< "  Yp: "<<Yp<< "  Zp: "<<Zp<<std::endl;
