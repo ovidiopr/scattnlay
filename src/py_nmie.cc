@@ -34,23 +34,70 @@
 // Same as ScattCoeffs in 'nmie.h' but uses double arrays to return the results (useful for python).
 // This is a workaround because I have not been able to return the results using 
 // std::vector<std::complex<double> >
-int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+int ScattCoeffs(const unsigned int L, const int pl,
+                std::vector<double>& x, std::vector<std::complex<double> >& m,
                 const int nmax, double anr[], double ani[], double bnr[], double bni[]) {
 
-  int i, result;
+  int result;
   std::vector<std::complex<double> > an, bn;
   an.resize(nmax);
   bn.resize(nmax);
 
   result = nmie::ScattCoeffs(L, pl, x, m, nmax, an, bn);
 
-  for (i = 0; i < result; i++) {
+  for (int i = 0; i < result; i++) {
     anr[i] = an[i].real();
     ani[i] = an[i].imag();
     bnr[i] = bn[i].real();
     bni[i] = bn[i].imag();
   }
 
+  return result;
+}
+
+// Same as ExpansionCoeffs in 'nmie.h' but uses double arrays to
+// return the results (useful for python).  This is a workaround
+// because I have not been able to return the results using
+// std::vector<std::vector<std::complex<double> > >
+int ExpansionCoeffs(const unsigned int L, const int pl,
+                    std::vector<double>& x, std::vector<std::complex<double> >& m,
+                    const int nmax,
+                    std::vector<std::vector<double> >&  alnr,
+                    std::vector<std::vector<double> >&  alni,
+                    std::vector<std::vector<double> >&  blnr,
+                    std::vector<std::vector<double> >&  blni,
+                    std::vector<std::vector<double> >&  clnr,
+                    std::vector<std::vector<double> >&  clni,
+                    std::vector<std::vector<double> >&  dlnr,
+                    std::vector<std::vector<double> >&  dlni) {
+
+  int result;
+  std::vector< std::vector<std::complex<double> > > aln, bln, cln, dln;
+  aln.resize(L + 1);
+  bln.resize(L + 1);
+  cln.resize(L + 1);
+  dln.resize(L + 1);
+  for (unsigned int l = 0; l <= L; l++) {
+    aln[l].resize(nmax);
+    bln[l].resize(nmax);
+    cln[l].resize(nmax);
+    dln[l].resize(nmax);
+  }
+
+  result = nmie::ExpansionCoeffs(L, pl, x, m, nmax, aln, bln, cln, dln);
+
+  for (unsigned int l = 0; l <= L; l++) {
+    for (int i = 0; i < result; i++) {
+      alnr[l][i] = aln[l][i].real();
+      alni[l][i] = aln[l][i].imag();
+      blnr[l][i] = bln[l][i].real();
+      blni[l][i] = bln[l][i].imag();
+      clnr[l][i] = cln[l][i].real();
+      clni[l][i] = cln[l][i].imag();
+      dlnr[l][i] = dln[l][i].real();
+      dlni[l][i] = dln[l][i].imag();
+    }
+  }
   return result;
 }
 

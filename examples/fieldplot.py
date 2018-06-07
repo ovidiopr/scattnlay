@@ -132,7 +132,7 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
 
 
 ###############################################################################
-def GetField(crossplane, npts, factor, x, m, pl, mode_n=-1, mode_type=-1):
+def GetField(crossplane, npts, factor, x, m, pl, mode_n=-1, mode_type=-1, inner_only = False):
     """
     crossplane: XZ, YZ, XY, or XYZ (half is XZ, half is YZ)
     npts: number of point in each direction
@@ -189,6 +189,10 @@ def GetField(crossplane, npts, factor, x, m, pl, mode_n=-1, mode_type=-1):
                             )
     Ec = E[0, :, :]
     Hc = H[0, :, :]
+    if inner_only:
+        mask = [ [np.sum(c**2)>x[-1]**2]*3 for c in coord]
+        np.place(Ec, mask, 0)
+        np.place(Hc, mask, 0)
     P = []
     P = np.array(map(lambda n: np.linalg.norm(np.cross(Ec[n], Hc[n])).real,
                      range(0, len(E[0]))))
@@ -202,9 +206,9 @@ def GetField(crossplane, npts, factor, x, m, pl, mode_n=-1, mode_type=-1):
 def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
               field_to_plot='Pabs', npts=101, factor=2.1, flow_total=11,
               is_flow_extend=True, pl=-1, outline_width=1, subplot_label=' ',
-              mode_n=-1, mode_type=-1, isStream = False):
+              mode_n=-1, mode_type=-1, isStream = False,minlength=0.5 , inner_only = False):
     print ("WL=",WL," xm:", x,m)
-    Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m, pl, mode_n, mode_type)
+    Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m, pl, mode_n, mode_type, inner_only)
     Er = np.absolute(Ec)
     Hr = np.absolute(Hc)
     try:
@@ -255,7 +259,7 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         #scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
         #scale_ticks = [0.1,0.3,1,3,10, max_tick]
         # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
-        ax.set_title(label)
+        #ax.set_title(label)
         # build a rectangle in axes coords
         ax.annotate(subplot_label, xy=(0.0, 1.1), xycoords='axes fraction',  # fontsize=10,
                     horizontalalignment='left', verticalalignment='top')
@@ -265,22 +269,23 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         #         transform=ax.transAxes)
         cax = ax.imshow(Eabs_data
                         #, interpolation='nearest'
-                        , interpolation='quadric'
+                        , interpolation='none'
+                        #, interpolation='quadric'
                         , cmap=cm.jet,
                         origin='lower', vmin=min_tick, vmax=max_tick, extent=(min(scale_x), max(scale_x), min(scale_z), max(scale_z))
                         # ,norm = LogNorm()
                         )
         ax.axis("image")
 
-        # Add colorbar
-        cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax
-                            #,fraction=0.45
-            )
-        # vertically oriented colorbar
-        if 'angle' in field_to_plot:
-            cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])
-        else:
-            cbar.ax.set_yticklabels(['%g' % (a) for a in scale_ticks])
+        # # Add colorbar
+        # cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax
+        #                     #,fraction=0.45
+        #     )
+        # # vertically oriented colorbar
+        # if 'angle' in field_to_plot:
+        #     cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])
+        # else:
+        #     cbar.ax.set_yticklabels(['%g' % (a) for a in scale_ticks])
         # pos = list(cbar.ax.get_position().bounds)
         #fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
         lp2 = -10.0
@@ -303,7 +308,7 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         for xx in x:
             r = xx * WL / 2.0 / np.pi
             s1 = patches.Arc((0, 0), 2.0 * r, 2.0 * r,  angle=0.0, zorder=1.8,
-                             theta1=0.0, theta2=360.0, linewidth=outline_width, color='black')
+                             theta1=0.0, theta2=360.0, linewidth=outline_width*1.8, color='black')
             ax.add_patch(s1)
         #
         # for flow in range(0,flow_total):
@@ -394,15 +399,17 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         #print(U[:,0])
         X = coordX.reshape((npts, npts))[0,:]*WL/2.0/np.pi
         Z = coordZ.reshape((npts, npts))[:,0]*WL/2.0/np.pi
-        #lw = np.sqrt((V**2+U**2)/(np.max(V)**2+np.max(U)**2))
-        ax.streamplot(X, Z, V, U, color="white", linewidth=0.5,
+        lw = np.sqrt((V**2+U**2)/(np.max(V**2+U**2)))
+        pts2 = npts*3.0
+        
+        ax.streamplot(X, Z, V, U, color="white", linewidth=lw*4.0+1.2,
                       #cmap=plt.cm.inferno,
-                          density=2, arrowstyle='->', arrowsize=1.0)
-
-        #ax.quiver(X[::5], Z[::5], V[::5,::5], U[::5,::5], units='width')
-        print(np.std(field[:,0]),
-              np.std(field[:,1]),
-              np.std(field[:,2])
+                          density=1.1, arrowstyle='->', arrowsize=1.5
+                          ,minlength=minlength
+                          ,maxlength=25
+                      , zorder=1.3
         )
+
+        #ax.quiver(X[::15], Z[::15], V[::15,::15], U[::15,::15], units='width',color="white")
         
     #

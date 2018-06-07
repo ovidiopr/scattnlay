@@ -28,8 +28,27 @@
 #include <complex>
 #include <vector>
 
-int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
-                const int nmax, double anr[], double ani[], double bnr[], double bni[]);
+int ScattCoeffs(const unsigned int L, const int pl,
+                std::vector<double>& x, std::vector<std::complex<double> >& m,
+                const int nmax,
+                double anr[], double ani[], double bnr[], double bni[]);
+
+int ExpansionCoeffs(const unsigned int L, const int pl,
+                    std::vector<double>& x, std::vector<std::complex<double> >& m,
+                    const int nmax,
+                    std::vector<std::vector<double> >&  alnr,
+                    std::vector<std::vector<double> >&  alni,
+                    std::vector<std::vector<double> >&  blnr,
+                    std::vector<std::vector<double> >&  blni,
+                    std::vector<std::vector<double> >&  clnr,
+                    std::vector<std::vector<double> >&  clni,
+                    std::vector<std::vector<double> >&  dlnr,
+                    std::vector<std::vector<double> >&  dlni);
+/* int ExpansionCoeffs(const unsigned int L, const int pl, */
+/*                     std::vector<double>& x, std::vector<std::complex<double> >& m, */
+/*                     const int nmax, */
+/*                     double alnr[], double alni[], double blnr[], double blni[], */
+/*                     double clnr[], double clni[], double dlnr[], double dlni[]); */
 
 int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
          const int nTheta, std::vector<double>& Theta, const int nmax,

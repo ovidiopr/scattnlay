@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 #
-#    Copyright (C) 2009-2017 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
-#    Copyright (C) 2013-2017 Konstantin Ladutenko <kostyfisik@gmail.com>
+#    Copyright (C) 2009-2018 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
+#    Copyright (C) 2013-2018 Konstantin Ladutenko <kostyfisik@gmail.com>
 #
 #    This file is part of python-scattnlay
 #
@@ -26,12 +26,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = '2.1'
+__version__ = '2.2' # compare with Makefile and nmie.hpp
 __title__ = 'Calculation of the scattering of EM radiation by a multilayered sphere'
 __mod__ = 'python-scattnlay'
 __author__ = 'Ovidio Peña Rodríguez'
 __email__ = 'ovidio@bytesfall.com'
-__url__ = 'http://scattering.sourceforge.net/'
+__url__ = 'https://github.com/ovidiopr/scattnlay'
 
 from distutils.core import setup
 from distutils.extension import Extension

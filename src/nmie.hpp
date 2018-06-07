@@ -27,7 +27,7 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 
-#define VERSION "2.2"  //Compare with Makefile
+#define VERSION "2.2"  //Compare with Makefile and setup.py
 #include <array>
 #include <complex>
 #include <cstdlib>
@@ -36,6 +36,7 @@
 #include <boost/math/constants/constants.hpp>
 namespace nmie {
   int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn);
+  int ExpansionCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::vector<std::complex<double> > >& an, std::vector<std::vector<std::complex<double> > >& bn, std::vector<std::vector<std::complex<double> > >& cn, std::vector<std::vector<std::complex<double> > >& dn);
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
@@ -58,6 +59,7 @@ namespace nmie {
     void RunMieCalculation();
     void RunFieldCalculation(const int mode_n=Modes::kAll, const int mode_type=Modes::kAll);
     void calcScattCoeffs();
+    void calcExpanCoeffs();
 
     // Return calculation results
     FloatType GetQext();
@@ -72,6 +74,11 @@ namespace nmie {
 
     std::vector<std::complex<FloatType> > GetAn(){return an_;};
     std::vector<std::complex<FloatType> > GetBn(){return bn_;};
+
+    std::vector<std::vector<std::complex<FloatType> > > GetAln(){return aln_;};
+    std::vector<std::vector<std::complex<FloatType> > > GetBln(){return bln_;};
+    std::vector<std::vector<std::complex<FloatType> > > GetCln(){return cln_;};
+    std::vector<std::vector<std::complex<FloatType> > > GetDln(){return dln_;};
 
     // Problem definition
     // Modify size of all layers
@@ -123,7 +130,6 @@ namespace nmie {
     // Scattering coefficients
     std::vector<std::complex<FloatType> > an_, bn_;
     std::vector< std::vector<std::complex<FloatType> > > aln_, bln_, cln_, dln_;
-    void calcExpanCoeffs();
     // Points for field evaluation
     std::vector< std::vector<FloatType> > coords_;
 
