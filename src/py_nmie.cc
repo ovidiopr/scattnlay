@@ -59,17 +59,22 @@ int ScattCoeffs(const unsigned int L, const int pl,
 // return the results (useful for python).  This is a workaround
 // because I have not been able to return the results using
 // std::vector<std::vector<std::complex<double> > >
+// int ExpansionCoeffs(const unsigned int L, const int pl,
+//                     std::vector<double>& x, std::vector<std::complex<double> >& m,
+//                     const int nmax,
+//                     std::vector<std::vector<double> >&  alnr,
+//                     std::vector<std::vector<double> >&  alni,
+//                     std::vector<std::vector<double> >&  blnr,
+//                     std::vector<std::vector<double> >&  blni,
+//                     std::vector<std::vector<double> >&  clnr,
+//                     std::vector<std::vector<double> >&  clni,
+//                     std::vector<std::vector<double> >&  dlnr,
+//                     std::vector<std::vector<double> >&  dlni)
 int ExpansionCoeffs(const unsigned int L, const int pl,
                     std::vector<double>& x, std::vector<std::complex<double> >& m,
                     const int nmax,
-                    std::vector<std::vector<double> >&  alnr,
-                    std::vector<std::vector<double> >&  alni,
-                    std::vector<std::vector<double> >&  blnr,
-                    std::vector<std::vector<double> >&  blni,
-                    std::vector<std::vector<double> >&  clnr,
-                    std::vector<std::vector<double> >&  clni,
-                    std::vector<std::vector<double> >&  dlnr,
-                    std::vector<std::vector<double> >&  dlni) {
+                    double alnr[], double alni[], double blnr[], double blni[],
+                    double clnr[], double clni[], double dlnr[], double dlni[]) {
 
   int result;
   std::vector< std::vector<std::complex<double> > > aln, bln, cln, dln;
@@ -86,16 +91,18 @@ int ExpansionCoeffs(const unsigned int L, const int pl,
 
   result = nmie::ExpansionCoeffs(L, pl, x, m, nmax, aln, bln, cln, dln);
 
+  
   for (unsigned int l = 0; l <= L; l++) {
     for (int i = 0; i < result; i++) {
-      alnr[l][i] = aln[l][i].real();
-      alni[l][i] = aln[l][i].imag();
-      blnr[l][i] = bln[l][i].real();
-      blni[l][i] = bln[l][i].imag();
-      clnr[l][i] = cln[l][i].real();
-      clni[l][i] = cln[l][i].imag();
-      dlnr[l][i] = dln[l][i].real();
-      dlni[l][i] = dln[l][i].imag();
+      alnr[l*(result)+i] = aln[l][i].real();
+      alni[l*(result)+i] = aln[l][i].imag();
+      blnr[l*(result)+i] = bln[l][i].real();
+      blni[l*(result)+i] = bln[l][i].imag();
+      clnr[l*(result)+i] = cln[l][i].real();
+      clni[l*(result)+i] = cln[l][i].imag();
+      dlnr[l*(result)+i] = dln[l][i].real();
+      //std::cout<<l*(result)+i<<": "<<dlnr[l*(result)+i]<<std::endl;
+      dlni[l*(result)+i] = dln[l][i].imag();
     }
   }
   return result;

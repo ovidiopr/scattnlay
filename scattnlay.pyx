@@ -43,17 +43,17 @@ cdef inline double *npy2c(np.ndarray a):
 
 cdef extern from "py_nmie.h":
     cdef int ScattCoeffs(int L, int pl, vector[double] x, vector[complex] m, int nmax, double anr[], double ani[], double bnr[], double bni[])
-    cdef int ExpansionCoeffs( int L,  int pl, vector[double] x,  vector[complex] m,
-                     int nmax,
-                    vector[vector[double] ]  alnr,
-                    vector[vector[double] ]  alni,
-                    vector[vector[double] ]  blnr,
-                    vector[vector[double] ]  blni,
-                    vector[vector[double] ]  clnr,
-                    vector[vector[double] ]  clni,
-                    vector[vector[double] ]  dlnr,
-                    vector[vector[double] ]  dlni)
-    # cdef int ExpansionCoeffs(int L, int pl, vector[double] x, vector[complex] m, int nmax, double alnr[], double alni[], double blnr[], double blni[], double clnr[], double clni[], double dlnr[], double dlni[])
+    # cdef int ExpansionCoeffs( int L,  int pl, vector[double] x,  vector[complex] m,
+    #                  int nmax,
+    #                 vector[vector[double] ]&  alnr,
+    #                 vector[vector[double] ]&  alni,
+    #                 vector[vector[double] ]&  blnr,
+    #                 vector[vector[double] ]&  blni,
+    #                 vector[vector[double] ]&  clnr,
+    #                 vector[vector[double] ]&  clni,
+    #                 vector[vector[double] ]&  dlnr,
+    #                 vector[vector[double] ]&  dlni)
+    cdef int ExpansionCoeffs(int L, int pl, vector[double] x, vector[complex] m, int nmax, double alnr[], double alni[], double blnr[], double blni[], double clnr[], double clni[], double dlnr[], double dlni[])
     cdef int nMie(int L, int pl, vector[double] x, vector[complex] m, int nTheta, vector[double] Theta, int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, double S1r[], double S1i[], double S2r[], double S2i[])
     cdef int nField(int L, int pl, vector[double] x, vector[complex] m, int nmax, int mode_n, int mode_type, int nCoords, vector[double] Xp, vector[double] Yp, vector[double] Zp, double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[], double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[])
 
@@ -62,8 +62,10 @@ def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
 
-    cdef np.ndarray[np.complex128_t, ndim = 2] an = np.zeros((x.shape[0], nmax), dtype = np.complex128)
-    cdef np.ndarray[np.complex128_t, ndim = 2] bn = np.zeros((x.shape[0], nmax), dtype = np.complex128)
+    cdef np.ndarray[np.complex128_t, ndim = 2] an = np.zeros(
+        (x.shape[0], nmax), dtype = np.complex128)
+    cdef np.ndarray[np.complex128_t, ndim = 2] bn = np.zeros(
+        (x.shape[0], nmax), dtype = np.complex128)
 
     cdef np.ndarray[np.float64_t, ndim = 1] anr
     cdef np.ndarray[np.float64_t, ndim = 1] ani
@@ -88,38 +90,37 @@ def expansioncoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex1
     cdef Py_ssize_t l
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
-    
     cdef np.ndarray[np.complex128_t, ndim = 3] aln = np.zeros((x.shape[0], x.shape[1]+1, nmax), dtype = np.complex128)
     cdef np.ndarray[np.complex128_t, ndim = 3] bln = np.zeros((x.shape[0], x.shape[1]+1, nmax), dtype = np.complex128)
     cdef np.ndarray[np.complex128_t, ndim = 3] cln = np.zeros((x.shape[0], x.shape[1]+1, nmax), dtype = np.complex128)
     cdef np.ndarray[np.complex128_t, ndim = 3] dln = np.zeros((x.shape[0], x.shape[1]+1, nmax), dtype = np.complex128)
 
-    cdef np.ndarray[np.float64_t, ndim = 2] alnr
-    cdef np.ndarray[np.float64_t, ndim = 2] alni
-    cdef np.ndarray[np.float64_t, ndim = 2] blnr
-    cdef np.ndarray[np.float64_t, ndim = 2] blni
-    cdef np.ndarray[np.float64_t, ndim = 2] clnr
-    cdef np.ndarray[np.float64_t, ndim = 2] clni
-    cdef np.ndarray[np.float64_t, ndim = 2] dlnr
-    cdef np.ndarray[np.float64_t, ndim = 2] dlni
+    cdef np.ndarray[np.float64_t, ndim = 1] alnr
+    cdef np.ndarray[np.float64_t, ndim = 1] alni
+    cdef np.ndarray[np.float64_t, ndim = 1] blnr
+    cdef np.ndarray[np.float64_t, ndim = 1] blni
+    cdef np.ndarray[np.float64_t, ndim = 1] clnr
+    cdef np.ndarray[np.float64_t, ndim = 1] clni
+    cdef np.ndarray[np.float64_t, ndim = 1] dlnr
+    cdef np.ndarray[np.float64_t, ndim = 1] dlni
 
     for i in range(x.shape[0]):
-        alnr = np.zeros((x.shape[1]+1,nmax), dtype = np.float64)
-        alni = np.zeros((x.shape[1]+1,nmax), dtype = np.float64)
-        blnr = np.zeros((x.shape[1]+1,nmax), dtype = np.float64)
-        blni = np.zeros((x.shape[1]+1,nmax), dtype = np.float64)
-        clnr = np.zeros((x.shape[1]+1,nmax), dtype = np.float64)
-        clni = np.zeros((x.shape[1]+1,nmax), dtype = np.float64)
-        dlnr = np.zeros((x.shape[1]+1,nmax), dtype = np.float64)
-        dlni = np.zeros((x.shape[1]+1,nmax), dtype = np.float64)
+        alnr = np.zeros((x.shape[1]+1)*nmax, dtype = np.float64)
+        alni = np.zeros((x.shape[1]+1)*nmax, dtype = np.float64)
+        blnr = np.zeros((x.shape[1]+1)*nmax, dtype = np.float64)
+        blni = np.zeros((x.shape[1]+1)*nmax, dtype = np.float64)
+        clnr = np.zeros((x.shape[1]+1)*nmax, dtype = np.float64)
+        clni = np.zeros((x.shape[1]+1)*nmax, dtype = np.float64)
+        dlnr = np.zeros((x.shape[1]+1)*nmax, dtype = np.float64)
+        dlni = np.zeros((x.shape[1]+1)*nmax, dtype = np.float64)
 
-        terms[i] = ExpansionCoeffs(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, alnr, alni, blnr, blni, clnr, clni, dlnr, dlni)
-        # terms[i] = ExpansionCoeffs(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, npy2c(alnr), npy2c(alni), npy2c(blnr), npy2c(blni), npy2c(clnr), npy2c(clni), npy2c(dlnr), npy2c(dlni))
-
-        for l in range(x.shape[1]):
-            aln[l][i] = alnr[l].copy('C') + 1.0j*alni[l].copy('C')
-            bln[l][i] = blnr[l].copy('C') + 1.0j*blni[l].copy('C')
-
+        #terms[i] = ExpansionCoeffs(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, alnr, alni, blnr, blni, clnr, clni, dlnr, dlni)
+        terms[i] = ExpansionCoeffs(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), nmax, npy2c(alnr), npy2c(alni), npy2c(blnr), npy2c(blni), npy2c(clnr), npy2c(clni), npy2c(dlnr), npy2c(dlni))
+        for l in range(x.shape[1]+1):
+            aln[i][l] = alnr[l*nmax:(l+1)*nmax].copy('C') + 1.0j*alni[l*nmax:(l+1)*nmax].copy('C')
+            bln[i][l] = blnr[l*nmax:(l+1)*nmax].copy('C') + 1.0j*blni[l*nmax:(l+1)*nmax].copy('C')
+            cln[i][l] = clnr[l*nmax:(l+1)*nmax].copy('C') + 1.0j*clni[l*nmax:(l+1)*nmax].copy('C')
+            dln[i][l] = dlnr[l*nmax:(l+1)*nmax].copy('C') + 1.0j*dlni[l*nmax:(l+1)*nmax].copy('C')
     return terms, aln, bln, cln, dln
 
 def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t pl = -1):
