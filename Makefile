@@ -28,10 +28,10 @@ source:
 cython: scattnlay.pyx
     # create c++ code for double precision module
 	$(CYTHON) --cplus scattnlay.pyx -o $(SRCDIR)/scattnlay.cpp
-	# # create c++ code for MP module
-	# ln -s scattnlay.pyx scattnlay_mp.pyx
-	# $(CYTHON) --cplus scattnlay_mp.pyx -o $(SRCDIR)/scattnlay_mp.cpp
-	# rm scattnlay_mp.pyx
+	# create c++ code for MP module
+	ln -s scattnlay.pyx scattnlay_mp.pyx
+	$(CYTHON) --cplus scattnlay_mp.pyx -o $(SRCDIR)/scattnlay_mp.cpp
+	rm scattnlay_mp.pyx
 
 python_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc $(SRCDIR)/scattnlay.cpp $(SRCDIR)/scattnlay_mp.cpp
 	$(PYTHON) setup.py build_ext --inplace
