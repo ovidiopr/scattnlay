@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 #
 #    Copyright (C) 2018  Konstantin Ladutenko <kostyfisik@gmail.com>
@@ -50,31 +50,68 @@ WL = 550
 x[0] = 2.0*np.pi*core_r/WL#/4.0*3.0
 m[0] = index_Ag/nm
 
-R = x[0]*1.31
+R_st = x[0]*4.11
+#R_st = 0.31
+
+dx = R_st*4.0
+charge = 1.0
 
 comment='bulk-NP-WL'+str(WL)+WL_units
 
-quad_ord = 19
-#quad_ord = 131
+#quad_ord = 3
+# quad_ord = 19
+quad_ord = 131
 
-coord = quadpy.sphere.Lebedev(3).points
+#coord = quadpy.sphere.Lebedev(3).points
 # coord = np.vstack((coordX, coordY, coordZ)).transpose()
-def force(in_coord):
+def field(coord):
+    E = []
+    for rr in coord:
+        shift = np.array([dx, 0.0, 0.0])
+        unit = (rr-shift)/np.linalg.norm(rr-shift)
+        norm = np.linalg.norm(rr-shift)
+        amp = charge/(4*np.pi*(norm**2))
+        Eloc = amp*unit
+        
+        shift = np.array([0.0, 0.0, 0.0])
+        unit = (rr-shift)/np.linalg.norm(rr-shift)
+        norm = np.linalg.norm(rr-shift)
+        amp = charge/(4*np.pi*(norm**2))
+        Eloc += amp*unit
+        
+        E.append(Eloc)
+    E = np.array(E)
+    return E
+
+def gauss(in_coord):
     coord = in_coord.T
-    terms, Eall, Hall = fieldnlay(np.array([x]), np.array([m]), coord)
-    E_all = Eall[0, :, :]
-    H_all = Hall[0, :, :]
-      # std::vector<double> P = (1/(2.0))
-      #   *real(
-      #         dot(unit,E)*vconj(E) +
-      #         dot(unit,H)*vconj(H) +
-      #         (-1.0/2.0)*(dot(E,vconj(E))
-      #                     +dot(H,vconj(H))
-      #                     )*unit
-      #         );
+    E_all = field(coord)
     unit_all = coord/ R
     P = np.array([
-        ( (1/(2.0))
+        np.dot(E,unit)
+        for unit,E in zip(unit_all,E_all)
+        ])
+    return P.T
+
+def dipole(coord):
+    H = np.array([0.0,0.0,0.0]*len(coord))
+    E = field(coord)
+    return E,H
+
+def force(in_coord):
+    coord = in_coord.T
+    terms, Eall, Hall = fieldnlay(np.array([x]), np.array([m]), coord, mode_n=-1, mode_type=0)
+    E_all = Eall[0, :, :]
+    H_all = Hall[0, :, :]
+
+    E_all, H_all = dipole(coord)
+    # print(coord)
+    # print(E_all)
+    # print(H_all)
+
+    unit_all = coord/ R
+    P = np.array([
+        ( (1.0/(2.0)*(4.0*np.pi))
         *np.real(
             np.dot(unit,E)*np.conj(E) +
             np.dot(unit,H)*np.conj(H) +
@@ -94,7 +131,7 @@ def poynting(in_coord):
     H_all = Hall[0, :, :]
     unit_all = coord/ R
     P = np.array([
-        ( ( 1/(2.0) )
+        ( ( 1.0/(2.0) )
             *np.real(
                 np.cross(E,np.conj(H))
             )
@@ -103,23 +140,40 @@ def poynting(in_coord):
         ])
     return P.T
 
+
 # P = np.array(map(lambda n: np.linalg.norm(np.cross(Ec[n], Hc[n])).real,
 #                      range(0, len(E[0]))))
-
+R=R_st
 val = quadpy.sphere.integrate(
-#    force
-    poynting
+    force
+#    poynting
     ,
     [0.0, 0.0, 0.0], R,
     quadpy.sphere.Lebedev(quad_ord)
     )
 print(val)
 print("Random increase of integraion sphere radius...")
+R=R_st*3.0
 val = quadpy.sphere.integrate(
-    #force
-    poynting
+    force
+   # poynting
     ,
-    [0.0, 0.0, 0.0], R*2.718,
+    [0.0, 0.0, 0.0], R,
     quadpy.sphere.Lebedev(quad_ord)
     )
 print(val)
+
+R=R_st
+print("\n\nCheck Gauss law")
+val = quadpy.sphere.integrate(gauss,
+    [0.0, 0.0, 0.0], R,
+    quadpy.sphere.Lebedev(quad_ord)
+    )
+print("Charge: ",val)
+print("Random increase of integraion sphere radius...")
+R=R_st*3
+val = quadpy.sphere.integrate(gauss,
+        [0.0, 0.0, 0.0], R,
+    quadpy.sphere.Lebedev(quad_ord)
+    )
+print("Charge: ",val)

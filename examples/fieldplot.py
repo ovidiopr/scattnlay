@@ -277,17 +277,17 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
                         )
         ax.axis("image")
 
-        # # Add colorbar
-        # cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax
-        #                     #,fraction=0.45
-        #     )
-        # # vertically oriented colorbar
-        # if 'angle' in field_to_plot:
-        #     cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])
-        # else:
-        #     cbar.ax.set_yticklabels(['%g' % (a) for a in scale_ticks])
-        # # pos = list(cbar.ax.get_position().bounds)
-        # #fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
+        # Add colorbar
+        cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax
+                            #,fraction=0.45
+            )
+        # vertically oriented colorbar
+        if 'angle' in field_to_plot:
+            cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])
+        else:
+            cbar.ax.set_yticklabels(['%g' % (a) for a in scale_ticks])
+        # pos = list(cbar.ax.get_position().bounds)
+        #fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
         lp2 = -10.0
         lp1 = -1.0
         if crossplane == 'XZ':

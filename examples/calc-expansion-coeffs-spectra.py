@@ -83,6 +83,7 @@ plt.xlabel("D, nm")
 plt.ylabel("Mie coefficients")
 plt.savefig(comment+"-R"+str(int(round(x[-1]*WL/2.0/np.pi)))+ext,
             pad_inches=0.02, bbox_inches='tight')
+plt.show()
 plt.clf()
 plt.close()
 

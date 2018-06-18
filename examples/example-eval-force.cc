@@ -85,8 +85,8 @@ int main(int argc, char *argv[]) {
         // std::cout<<"\tforce:\t" <<F[0]<<"\t"<< F[1] <<"\t"<<F[2] << std::endl;
 
         // std::cout<<"clean"<<std::endl;
-        auto F = shell.IntegrateGauss(2.54,12.03);
-        //std::cout<<"\tcharge:\t" <<F<< std::endl;
+        auto F = shell.IntegrateGaussSimple(2.54,2.03);
+        std::cout<<"\tcharge:\t" <<F<< std::endl;
         
         // auto F1 = shell.IntegrateByComp();
         // std::cout<<"F: " <<F1[0]<<", "<< F1[1] <<", "<<F1[2] << std::endl;        

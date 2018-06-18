@@ -246,7 +246,7 @@ namespace shell_generator {
       auto vert = face_centers_[i];
       auto E0 = field(charge, shift, vert);
       // std::cout << "E0: ";
-      for (auto component : E0) std::cout << component << " ";
+      // for (auto component : E0) std::cout << component << " ";
       // std::cout << std::endl;
       // Vector to unit product
       double r = norm(vert);
