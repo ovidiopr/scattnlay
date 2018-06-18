@@ -77,13 +77,14 @@ int main(int argc, char *argv[]) {
         // auto Hs = nmie::ConvertComplexVectorVector<double>(multi_layer_mie.GetFieldHs());
         shell.SetField(E,H);
         //shell.SetFieldSph(Es,Hs);
-        // auto F = shell.Integrate();
+        //auto F = shell.Integrate();
         //auto F = shell.IntegrateByFaces();
-        //auto F = shell.IntegrateByComp();
-        //        auto F = shell.IntegrateByCompReal();
-        //std::cout << "integrate_R:\t" << scale*WL/(2.0*pi);
-        //std::cout<<"\tforce:\t" <<F[0]<<"\t"<< F[1] <<"\t"<<F[2] << std::endl;
+        // auto F = shell.IntegrateByComp();
+        // //        auto F = shell.IntegrateByCompReal();
+        // std::cout << "integrate_R:\t" << scale*WL/(2.0*pi);
+        // std::cout<<"\tforce:\t" <<F[0]<<"\t"<< F[1] <<"\t"<<F[2] << std::endl;
 
+        // std::cout<<"clean"<<std::endl;
         auto F = shell.IntegrateGauss(2.54,12.03);
         //std::cout<<"\tcharge:\t" <<F<< std::endl;
         
