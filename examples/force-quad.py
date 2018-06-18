@@ -86,19 +86,39 @@ def force(in_coord):
         for unit,E,H in zip(unit_all,E_all, H_all)
         ])
     return P.T
-    
+
+def poynting(in_coord):
+    coord = in_coord.T
+    terms, Eall, Hall = fieldnlay(np.array([x]), np.array([m]), coord)
+    E_all = Eall[0, :, :]
+    H_all = Hall[0, :, :]
+    unit_all = coord/ R
+    P = np.array([
+        ( ( 1/(2.0) )
+            *np.real(
+                np.cross(E,np.conj(H))
+            )
+        )
+        for unit,E,H in zip(unit_all,E_all, H_all)
+        ])
+    return P.T
+
 # P = np.array(map(lambda n: np.linalg.norm(np.cross(Ec[n], Hc[n])).real,
 #                      range(0, len(E[0]))))
 
 val = quadpy.sphere.integrate(
-    force,
+#    force
+    poynting
+    ,
     [0.0, 0.0, 0.0], R,
     quadpy.sphere.Lebedev(quad_ord)
     )
 print(val)
 print("Random increase of integraion sphere radius...")
 val = quadpy.sphere.integrate(
-    force,
+    #force
+    poynting
+    ,
     [0.0, 0.0, 0.0], R*2.718,
     quadpy.sphere.Lebedev(quad_ord)
     )
