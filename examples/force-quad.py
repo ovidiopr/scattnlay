@@ -50,7 +50,7 @@ WL = 550
 x[0] = 2.0*np.pi*core_r/WL#/4.0*3.0
 m[0] = index_Ag/nm
 
-R = x[0]*3.01
+R = x[0]*1.31
 
 comment='bulk-NP-WL'+str(WL)+WL_units
 
@@ -95,7 +95,11 @@ val = quadpy.sphere.integrate(
     [0.0, 0.0, 0.0], R,
     quadpy.sphere.Lebedev(quad_ord)
     )
-
-
-
+print(val)
+print("Random increase of integraion sphere radius...")
+val = quadpy.sphere.integrate(
+    force,
+    [0.0, 0.0, 0.0], R*2.718,
+    quadpy.sphere.Lebedev(quad_ord)
+    )
 print(val)
