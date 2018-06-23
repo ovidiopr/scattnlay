@@ -54,7 +54,7 @@ cdef extern from "py_nmie.h":
     #                 vector[vector[double] ]&  dlnr,
     #                 vector[vector[double] ]&  dlni)
     cdef int ExpansionCoeffs(int L, int pl, vector[double] x, vector[complex] m, int nmax, double alnr[], double alni[], double blnr[], double blni[], double clnr[], double clni[], double dlnr[], double dlni[])
-    cdef int nMie(int L, int pl, vector[double] x, vector[complex] m, int nTheta, vector[double] Theta, int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, double S1r[], double S1i[], double S2r[], double S2i[])
+    cdef int nMie(int L, int pl, vector[double] x, vector[complex] m, int nTheta, vector[double] Theta, int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, double S1r[], double S1i[], double S2r[], double S2i[], int mode_n, int mode_type)
     cdef int nField(int L, int pl, vector[double] x, vector[complex] m, int nmax, int mode_n, int mode_type, int nCoords, vector[double] Xp, vector[double] Yp, vector[double] Zp, double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[], double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[])
 
 def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.int_t nmax, np.int_t pl = -1):
@@ -123,7 +123,7 @@ def expansioncoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex1
             dln[i][l] = dlnr[l*nmax:(l+1)*nmax].copy('C') + 1.0j*dlni[l*nmax:(l+1)*nmax].copy('C')
     return terms, aln, bln, cln, dln
 
-def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t pl = -1):
+def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t mode_n = -1, np.int_t mode_type = -1, np.int_t pl = -1):
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
@@ -150,7 +150,7 @@ def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, 
         S2r = np.zeros(theta.shape[0], dtype = np.float64)
         S2i = np.zeros(theta.shape[0], dtype = np.float64)
 
-        terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i))
+        terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i), mode_n, mode_type)
 
         S1[i] = S1r.copy('C') + 1.0j*S1i.copy('C')
         S2[i] = S2r.copy('C') + 1.0j*S2i.copy('C')

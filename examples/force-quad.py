@@ -50,7 +50,7 @@ WL = 550
 x[0] = 2.0*np.pi*core_r/WL#/4.0*3.0
 m[0] = index_Ag/nm
 
-R_st = x[0]*4.11
+R_st = x[0]*2
 #R_st = 0.31
 
 dx = R_st*4.0
@@ -100,7 +100,7 @@ def dipole(coord):
 
 def force(in_coord):
     coord = in_coord.T
-    terms, Eall, Hall = fieldnlay(np.array([x]), np.array([m]), coord, mode_n=-1, mode_type=0)
+    terms, Eall, Hall = fieldnlay(np.array([x]), np.array([m]), coord)#, mode_n=-1, mode_type=0)
     E_all = Eall[0, :, :]
     H_all = Hall[0, :, :]
 

@@ -1085,7 +1085,7 @@ namespace nmie {
           continue;
         }
         if (n1 == mode_n) {
-          if (mode_type == Modes::kElectric) {
+          if (mode_type == Modes::kElectric || mode_type == Modes::kAll) {
             E[i] += En*( -c_i*dln_[l][n]*N1e1n[i]
                         + c_i*aln_[l][n]*N3e1n[i]);
 
@@ -1093,7 +1093,7 @@ namespace nmie {
                         +aln_[l][n]*M3e1n[i]);
             continue;
           }
-          if (mode_type == Modes::kMagnetic) {
+          if (mode_type == Modes::kMagnetic  || mode_type == Modes::kAll) {
             E[i] += En*(  cln_[l][n]*M1o1n[i]
                         - bln_[l][n]*M3o1n[i]);
 

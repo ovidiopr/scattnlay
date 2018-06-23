@@ -51,10 +51,13 @@ int ExpansionCoeffs(const unsigned int L, const int pl,
                     double alnr[], double alni[], double blnr[], double blni[],
                     double clnr[], double clni[], double dlnr[], double dlni[]);
 
-int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+int nMie(const int L, const int pl,
+         std::vector<double>& x, std::vector<std::complex<double> >& m,
          const int nTheta, std::vector<double>& Theta, const int nmax,
-         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-		 double S1r[], double S1i[], double S2r[], double S2i[]);
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
+         double *g, double *Albedo,
+         double S1r[], double S1i[], double S2r[], double S2i[],
+         int mode_n, int mode_type);
 
 int nField(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, const int mode_n, const int mode_type,
            const int nCoords, std::vector<double>& Xp, std::vector<double>& Yp, std::vector<double>& Zp,

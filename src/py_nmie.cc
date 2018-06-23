@@ -111,17 +111,20 @@ int ExpansionCoeffs(const unsigned int L, const int pl,
 // Same as nMie in 'nmie.h' but uses double arrays to return the results (useful for python).
 // This is a workaround because I have not been able to return the results using 
 // std::vector<std::complex<double> >
-int nMie(const int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+int nMie(const int L, const int pl,
+         std::vector<double>& x, std::vector<std::complex<double> >& m,
          const int nTheta, std::vector<double>& Theta, const int nmax,
-         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-		 double S1r[], double S1i[], double S2r[], double S2i[]) {
+         double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
+         double *g, double *Albedo,
+         double S1r[], double S1i[], double S2r[], double S2i[],
+         int mode_n, int mode_type) {
 
   int i, result;
   std::vector<std::complex<double> > S1, S2;
   S1.resize(nTheta);
   S2.resize(nTheta);
 
-  result = nmie::nMie(L, pl, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+  result = nmie::nMie(L, pl, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2, mode_n, mode_type);
 
   for (i = 0; i < nTheta; i++) {
     S1r[i] = S1[i].real();
