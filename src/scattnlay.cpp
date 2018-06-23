@@ -1841,7 +1841,7 @@ static PyObject *__pyx_n_s_x;
 static PyObject *__pyx_n_s_zeros;
 static PyObject *__pyx_pf_9scattnlay_scattcoeffs(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_x, PyArrayObject *__pyx_v_m, __pyx_t_5numpy_int_t __pyx_v_nmax, __pyx_t_5numpy_int_t __pyx_v_pl); /* proto */
 static PyObject *__pyx_pf_9scattnlay_2expansioncoeffs(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_x, PyArrayObject *__pyx_v_m, __pyx_t_5numpy_int_t __pyx_v_nmax, __pyx_t_5numpy_int_t __pyx_v_pl); /* proto */
-static PyObject *__pyx_pf_9scattnlay_4scattnlay(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_x, PyArrayObject *__pyx_v_m, PyArrayObject *__pyx_v_theta, __pyx_t_5numpy_int_t __pyx_v_nmax, __pyx_t_5numpy_int_t __pyx_v_pl); /* proto */
+static PyObject *__pyx_pf_9scattnlay_4scattnlay(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_x, PyArrayObject *__pyx_v_m, PyArrayObject *__pyx_v_theta, __pyx_t_5numpy_int_t __pyx_v_nmax, __pyx_t_5numpy_int_t __pyx_v_mode_n, __pyx_t_5numpy_int_t __pyx_v_mode_type, __pyx_t_5numpy_int_t __pyx_v_pl); /* proto */
 static PyObject *__pyx_pf_9scattnlay_6fieldnlay(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_x, PyArrayObject *__pyx_v_m, PyArrayObject *__pyx_v_coords, __pyx_t_5numpy_int_t __pyx_v_nmax, __pyx_t_5numpy_int_t __pyx_v_mode_n, __pyx_t_5numpy_int_t __pyx_v_mode_type, __pyx_t_5numpy_int_t __pyx_v_pl); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
@@ -4177,7 +4177,7 @@ static PyObject *__pyx_pf_9scattnlay_2expansioncoeffs(CYTHON_UNUSED PyObject *__
  *             dln[i][l] = dlnr[l*nmax:(l+1)*nmax].copy('C') + 1.0j*dlni[l*nmax:(l+1)*nmax].copy('C')
  *     return terms, aln, bln, cln, dln             # <<<<<<<<<<<<<<
  * 
- * def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t pl = -1):
+ * def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t mode_n = -1, np.int_t mode_type = -1, np.int_t pl = -1):
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_4 = PyTuple_New(5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 124, __pyx_L1_error)
@@ -4277,7 +4277,7 @@ static PyObject *__pyx_pf_9scattnlay_2expansioncoeffs(CYTHON_UNUSED PyObject *__
 /* "scattnlay.pyx":126
  *     return terms, aln, bln, cln, dln
  * 
- * def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t pl = -1):             # <<<<<<<<<<<<<<
+ * def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t mode_n = -1, np.int_t mode_type = -1, np.int_t pl = -1):             # <<<<<<<<<<<<<<
  *     cdef Py_ssize_t i
  * 
  */
@@ -4290,18 +4290,24 @@ static PyObject *__pyx_pw_9scattnlay_5scattnlay(PyObject *__pyx_self, PyObject *
   PyArrayObject *__pyx_v_m = 0;
   PyArrayObject *__pyx_v_theta = 0;
   __pyx_t_5numpy_int_t __pyx_v_nmax;
+  __pyx_t_5numpy_int_t __pyx_v_mode_n;
+  __pyx_t_5numpy_int_t __pyx_v_mode_type;
   __pyx_t_5numpy_int_t __pyx_v_pl;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("scattnlay (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_x,&__pyx_n_s_m,&__pyx_n_s_theta,&__pyx_n_s_nmax,&__pyx_n_s_pl,0};
-    PyObject* values[5] = {0,0,0,0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_x,&__pyx_n_s_m,&__pyx_n_s_theta,&__pyx_n_s_nmax,&__pyx_n_s_mode_n,&__pyx_n_s_mode_type,&__pyx_n_s_pl,0};
+    PyObject* values[7] = {0,0,0,0,0,0,0};
     values[2] = (PyObject *)__pyx_k__18;
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
+        case  7: values[6] = PyTuple_GET_ITEM(__pyx_args, 6);
+        CYTHON_FALLTHROUGH;
+        case  6: values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
+        CYTHON_FALLTHROUGH;
         case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
         CYTHON_FALLTHROUGH;
         case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
@@ -4324,7 +4330,7 @@ static PyObject *__pyx_pw_9scattnlay_5scattnlay(PyObject *__pyx_self, PyObject *
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_m)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("scattnlay", 0, 2, 5, 1); __PYX_ERR(0, 126, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("scattnlay", 0, 2, 7, 1); __PYX_ERR(0, 126, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
@@ -4341,8 +4347,20 @@ static PyObject *__pyx_pw_9scattnlay_5scattnlay(PyObject *__pyx_self, PyObject *
         CYTHON_FALLTHROUGH;
         case  4:
         if (kw_args > 0) {
-          PyObject* value = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_pl);
+          PyObject* value = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_mode_n);
           if (value) { values[4] = value; kw_args--; }
+        }
+        CYTHON_FALLTHROUGH;
+        case  5:
+        if (kw_args > 0) {
+          PyObject* value = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_mode_type);
+          if (value) { values[5] = value; kw_args--; }
+        }
+        CYTHON_FALLTHROUGH;
+        case  6:
+        if (kw_args > 0) {
+          PyObject* value = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_pl);
+          if (value) { values[6] = value; kw_args--; }
         }
       }
       if (unlikely(kw_args > 0)) {
@@ -4350,6 +4368,10 @@ static PyObject *__pyx_pw_9scattnlay_5scattnlay(PyObject *__pyx_self, PyObject *
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
+        case  7: values[6] = PyTuple_GET_ITEM(__pyx_args, 6);
+        CYTHON_FALLTHROUGH;
+        case  6: values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
+        CYTHON_FALLTHROUGH;
         case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
         CYTHON_FALLTHROUGH;
         case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
@@ -4371,14 +4393,24 @@ static PyObject *__pyx_pw_9scattnlay_5scattnlay(PyObject *__pyx_self, PyObject *
       __pyx_v_nmax = ((__pyx_t_5numpy_int_t)-1L);
     }
     if (values[4]) {
-      __pyx_v_pl = __Pyx_PyInt_As_npy_long(values[4]); if (unlikely((__pyx_v_pl == ((npy_long)-1)) && PyErr_Occurred())) __PYX_ERR(0, 126, __pyx_L3_error)
+      __pyx_v_mode_n = __Pyx_PyInt_As_npy_long(values[4]); if (unlikely((__pyx_v_mode_n == ((npy_long)-1)) && PyErr_Occurred())) __PYX_ERR(0, 126, __pyx_L3_error)
+    } else {
+      __pyx_v_mode_n = ((__pyx_t_5numpy_int_t)-1L);
+    }
+    if (values[5]) {
+      __pyx_v_mode_type = __Pyx_PyInt_As_npy_long(values[5]); if (unlikely((__pyx_v_mode_type == ((npy_long)-1)) && PyErr_Occurred())) __PYX_ERR(0, 126, __pyx_L3_error)
+    } else {
+      __pyx_v_mode_type = ((__pyx_t_5numpy_int_t)-1L);
+    }
+    if (values[6]) {
+      __pyx_v_pl = __Pyx_PyInt_As_npy_long(values[6]); if (unlikely((__pyx_v_pl == ((npy_long)-1)) && PyErr_Occurred())) __PYX_ERR(0, 126, __pyx_L3_error)
     } else {
       __pyx_v_pl = ((__pyx_t_5numpy_int_t)-1L);
     }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("scattnlay", 0, 2, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 126, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("scattnlay", 0, 2, 7, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 126, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("scattnlay.scattnlay", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -4387,7 +4419,7 @@ static PyObject *__pyx_pw_9scattnlay_5scattnlay(PyObject *__pyx_self, PyObject *
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_x), __pyx_ptype_5numpy_ndarray, 1, "x", 0))) __PYX_ERR(0, 126, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_m), __pyx_ptype_5numpy_ndarray, 1, "m", 0))) __PYX_ERR(0, 126, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_theta), __pyx_ptype_5numpy_ndarray, 1, "theta", 0))) __PYX_ERR(0, 126, __pyx_L1_error)
-  __pyx_r = __pyx_pf_9scattnlay_4scattnlay(__pyx_self, __pyx_v_x, __pyx_v_m, __pyx_v_theta, __pyx_v_nmax, __pyx_v_pl);
+  __pyx_r = __pyx_pf_9scattnlay_4scattnlay(__pyx_self, __pyx_v_x, __pyx_v_m, __pyx_v_theta, __pyx_v_nmax, __pyx_v_mode_n, __pyx_v_mode_type, __pyx_v_pl);
 
   /* function exit code */
   goto __pyx_L0;
@@ -4398,7 +4430,7 @@ static PyObject *__pyx_pw_9scattnlay_5scattnlay(PyObject *__pyx_self, PyObject *
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9scattnlay_4scattnlay(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_x, PyArrayObject *__pyx_v_m, PyArrayObject *__pyx_v_theta, __pyx_t_5numpy_int_t __pyx_v_nmax, __pyx_t_5numpy_int_t __pyx_v_pl) {
+static PyObject *__pyx_pf_9scattnlay_4scattnlay(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_x, PyArrayObject *__pyx_v_m, PyArrayObject *__pyx_v_theta, __pyx_t_5numpy_int_t __pyx_v_nmax, __pyx_t_5numpy_int_t __pyx_v_mode_n, __pyx_t_5numpy_int_t __pyx_v_mode_type, __pyx_t_5numpy_int_t __pyx_v_pl) {
   Py_ssize_t __pyx_v_i;
   PyArrayObject *__pyx_v_terms = 0;
   PyArrayObject *__pyx_v_Qext = 0;
@@ -5247,7 +5279,7 @@ static PyObject *__pyx_pf_9scattnlay_4scattnlay(CYTHON_UNUSED PyObject *__pyx_se
  *         S2r = np.zeros(theta.shape[0], dtype = np.float64)
  *         S2i = np.zeros(theta.shape[0], dtype = np.float64)             # <<<<<<<<<<<<<<
  * 
- *         terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i))
+ *         terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i), mode_n, mode_type)
  */
     __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 151, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
@@ -5301,7 +5333,7 @@ static PyObject *__pyx_pf_9scattnlay_4scattnlay(CYTHON_UNUSED PyObject *__pyx_se
     /* "scattnlay.pyx":153
  *         S2i = np.zeros(theta.shape[0], dtype = np.float64)
  * 
- *         terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i))             # <<<<<<<<<<<<<<
+ *         terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i), mode_n, mode_type)             # <<<<<<<<<<<<<<
  * 
  *         S1[i] = S1r.copy('C') + 1.0j*S1i.copy('C')
  */
@@ -5412,10 +5444,10 @@ static PyObject *__pyx_pf_9scattnlay_4scattnlay(CYTHON_UNUSED PyObject *__pyx_se
       __Pyx_RaiseBufferIndexError(__pyx_t_20);
       __PYX_ERR(0, 153, __pyx_L1_error)
     }
-    *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_terms.rcbuffer->pybuffer.buf, __pyx_t_37, __pyx_pybuffernd_terms.diminfo[0].strides) = nMie((__pyx_v_x->dimensions[1]), __pyx_v_pl, __pyx_t_27, __pyx_t_28, (__pyx_v_theta->dimensions[0]), __pyx_t_29, __pyx_v_nmax, (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Qext.rcbuffer->pybuffer.buf, __pyx_t_30, __pyx_pybuffernd_Qext.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Qsca.rcbuffer->pybuffer.buf, __pyx_t_31, __pyx_pybuffernd_Qsca.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Qabs.rcbuffer->pybuffer.buf, __pyx_t_32, __pyx_pybuffernd_Qabs.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Qbk.rcbuffer->pybuffer.buf, __pyx_t_33, __pyx_pybuffernd_Qbk.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Qpr.rcbuffer->pybuffer.buf, __pyx_t_34, __pyx_pybuffernd_Qpr.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_g.rcbuffer->pybuffer.buf, __pyx_t_35, __pyx_pybuffernd_g.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Albedo.rcbuffer->pybuffer.buf, __pyx_t_36, __pyx_pybuffernd_Albedo.diminfo[0].strides))), __pyx_f_9scattnlay_npy2c(((PyArrayObject *)__pyx_v_S1r)), __pyx_f_9scattnlay_npy2c(((PyArrayObject *)__pyx_v_S1i)), __pyx_f_9scattnlay_npy2c(((PyArrayObject *)__pyx_v_S2r)), __pyx_f_9scattnlay_npy2c(((PyArrayObject *)__pyx_v_S2i)));
+    *__Pyx_BufPtrStrided1d(__pyx_t_5numpy_int_t *, __pyx_pybuffernd_terms.rcbuffer->pybuffer.buf, __pyx_t_37, __pyx_pybuffernd_terms.diminfo[0].strides) = nMie((__pyx_v_x->dimensions[1]), __pyx_v_pl, __pyx_t_27, __pyx_t_28, (__pyx_v_theta->dimensions[0]), __pyx_t_29, __pyx_v_nmax, (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Qext.rcbuffer->pybuffer.buf, __pyx_t_30, __pyx_pybuffernd_Qext.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Qsca.rcbuffer->pybuffer.buf, __pyx_t_31, __pyx_pybuffernd_Qsca.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Qabs.rcbuffer->pybuffer.buf, __pyx_t_32, __pyx_pybuffernd_Qabs.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Qbk.rcbuffer->pybuffer.buf, __pyx_t_33, __pyx_pybuffernd_Qbk.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Qpr.rcbuffer->pybuffer.buf, __pyx_t_34, __pyx_pybuffernd_Qpr.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_g.rcbuffer->pybuffer.buf, __pyx_t_35, __pyx_pybuffernd_g.diminfo[0].strides))), (&(*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_float64_t *, __pyx_pybuffernd_Albedo.rcbuffer->pybuffer.buf, __pyx_t_36, __pyx_pybuffernd_Albedo.diminfo[0].strides))), __pyx_f_9scattnlay_npy2c(((PyArrayObject *)__pyx_v_S1r)), __pyx_f_9scattnlay_npy2c(((PyArrayObject *)__pyx_v_S1i)), __pyx_f_9scattnlay_npy2c(((PyArrayObject *)__pyx_v_S2r)), __pyx_f_9scattnlay_npy2c(((PyArrayObject *)__pyx_v_S2i)), __pyx_v_mode_n, __pyx_v_mode_type);
 
     /* "scattnlay.pyx":155
- *         terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i))
+ *         terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i), mode_n, mode_type)
  * 
  *         S1[i] = S1r.copy('C') + 1.0j*S1i.copy('C')             # <<<<<<<<<<<<<<
  *         S2[i] = S2r.copy('C') + 1.0j*S2i.copy('C')
@@ -5522,7 +5554,7 @@ static PyObject *__pyx_pf_9scattnlay_4scattnlay(CYTHON_UNUSED PyObject *__pyx_se
   /* "scattnlay.pyx":126
  *     return terms, aln, bln, cln, dln
  * 
- * def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t pl = -1):             # <<<<<<<<<<<<<<
+ * def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t mode_n = -1, np.int_t mode_type = -1, np.int_t pl = -1):             # <<<<<<<<<<<<<<
  *     cdef Py_ssize_t i
  * 
  */
@@ -10227,7 +10259,7 @@ static int __Pyx_InitCachedConstants(void) {
   /* "scattnlay.pyx":153
  *         S2i = np.zeros(theta.shape[0], dtype = np.float64)
  * 
- *         terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i))             # <<<<<<<<<<<<<<
+ *         terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i), mode_n, mode_type)             # <<<<<<<<<<<<<<
  * 
  *         S1[i] = S1r.copy('C') + 1.0j*S1i.copy('C')
  */
@@ -10242,7 +10274,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__21);
 
   /* "scattnlay.pyx":155
- *         terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i))
+ *         terms[i] = nMie(x.shape[1], pl, x[i].copy('C'), m[i].copy('C'), theta.shape[0], theta.copy('C'), nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], npy2c(S1r), npy2c(S1i), npy2c(S2r), npy2c(S2i), mode_n, mode_type)
  * 
  *         S1[i] = S1r.copy('C') + 1.0j*S1i.copy('C')             # <<<<<<<<<<<<<<
  *         S2[i] = S2r.copy('C') + 1.0j*S2i.copy('C')
@@ -10486,17 +10518,17 @@ static int __Pyx_InitCachedConstants(void) {
   /* "scattnlay.pyx":126
  *     return terms, aln, bln, cln, dln
  * 
- * def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t pl = -1):             # <<<<<<<<<<<<<<
+ * def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t mode_n = -1, np.int_t mode_type = -1, np.int_t pl = -1):             # <<<<<<<<<<<<<<
  *     cdef Py_ssize_t i
  * 
  */
   __pyx_tuple__62 = PyTuple_Pack(1, __pyx_int_0); if (unlikely(!__pyx_tuple__62)) __PYX_ERR(0, 126, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__62);
   __Pyx_GIVEREF(__pyx_tuple__62);
-  __pyx_tuple__63 = PyTuple_Pack(20, __pyx_n_s_x, __pyx_n_s_m, __pyx_n_s_theta, __pyx_n_s_nmax, __pyx_n_s_pl, __pyx_n_s_i, __pyx_n_s_terms, __pyx_n_s_Qext, __pyx_n_s_Qabs, __pyx_n_s_Qsca, __pyx_n_s_Qbk, __pyx_n_s_Qpr, __pyx_n_s_g, __pyx_n_s_Albedo, __pyx_n_s_S1, __pyx_n_s_S2, __pyx_n_s_S1r, __pyx_n_s_S1i, __pyx_n_s_S2r, __pyx_n_s_S2i); if (unlikely(!__pyx_tuple__63)) __PYX_ERR(0, 126, __pyx_L1_error)
+  __pyx_tuple__63 = PyTuple_Pack(22, __pyx_n_s_x, __pyx_n_s_m, __pyx_n_s_theta, __pyx_n_s_nmax, __pyx_n_s_mode_n, __pyx_n_s_mode_type, __pyx_n_s_pl, __pyx_n_s_i, __pyx_n_s_terms, __pyx_n_s_Qext, __pyx_n_s_Qabs, __pyx_n_s_Qsca, __pyx_n_s_Qbk, __pyx_n_s_Qpr, __pyx_n_s_g, __pyx_n_s_Albedo, __pyx_n_s_S1, __pyx_n_s_S2, __pyx_n_s_S1r, __pyx_n_s_S1i, __pyx_n_s_S2r, __pyx_n_s_S2i); if (unlikely(!__pyx_tuple__63)) __PYX_ERR(0, 126, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__63);
   __Pyx_GIVEREF(__pyx_tuple__63);
-  __pyx_codeobj__64 = (PyObject*)__Pyx_PyCode_New(5, 0, 20, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__63, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_scattnlay_pyx, __pyx_n_s_scattnlay, 126, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__64)) __PYX_ERR(0, 126, __pyx_L1_error)
+  __pyx_codeobj__64 = (PyObject*)__Pyx_PyCode_New(7, 0, 22, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__63, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_scattnlay_pyx, __pyx_n_s_scattnlay, 126, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__64)) __PYX_ERR(0, 126, __pyx_L1_error)
 
   /* "scattnlay.pyx":160
  *     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
@@ -10821,7 +10853,7 @@ if (!__Pyx_RefNanny) {
   /* "scattnlay.pyx":126
  *     return terms, aln, bln, cln, dln
  * 
- * def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t pl = -1):             # <<<<<<<<<<<<<<
+ * def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t mode_n = -1, np.int_t mode_type = -1, np.int_t pl = -1):             # <<<<<<<<<<<<<<
  *     cdef Py_ssize_t i
  * 
  */

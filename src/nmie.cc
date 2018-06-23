@@ -392,7 +392,10 @@ namespace nmie {
       ml_mie.SetFieldCoords({ConvertVector<FloatType>(Xp_vec),
 	    ConvertVector<FloatType>(Yp_vec),
 	    ConvertVector<FloatType>(Zp_vec) });
-      ml_mie.RunFieldCalculation(mode_n, mode_type);
+      
+      ml_mie.SetModeNmaxAndType(mode_n, mode_type);
+
+      ml_mie.RunFieldCalculation();
       E = ConvertComplexVectorVector<double>(ml_mie.GetFieldE());
       H = ConvertComplexVectorVector<double>(ml_mie.GetFieldH());
 

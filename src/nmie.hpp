@@ -95,7 +95,7 @@ namespace nmie {
     const double mu_ = 4.0*PI_*1.0e-7;
     // Run calculation
     void RunMieCalculation();
-    void RunFieldCalculation(const int mode_n=Modes::kAll, const int mode_type=Modes::kAll);
+    void RunFieldCalculation();
     void calcScattCoeffs();
     void calcExpanCoeffs();
 
@@ -202,8 +202,8 @@ namespace nmie {
                        std::vector<std::complex<FloatType> >& No1n, std::vector<std::complex<FloatType> >& Ne1n);
 
     void calcFieldByComponents(const FloatType Rho, const FloatType Theta, const FloatType Phi,
-                               const int mode_n, const int mode_type,
-                               std::vector<std::complex<FloatType> >& E, std::vector<std::complex<FloatType> >& H);
+                               std::vector<std::complex<FloatType> >& E,
+                               std::vector<std::complex<FloatType> >& H);
 
     bool isExpCoeffsCalc_ = false;
     bool isScaCoeffsCalc_ = false;

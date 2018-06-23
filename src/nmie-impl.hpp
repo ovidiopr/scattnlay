@@ -828,6 +828,7 @@ namespace nmie {
     //      http://en.wikipedia.org/wiki/Loss_of_significance
     for (int i = nmax_ - 2; i >= 0; i--) {
       const int n = i + 1;
+      if (mode_n_ != Modes::kAll && n != mode_n_) continue;
       // Equation (27)
       Qext_ += (n + n + 1.0)*(an_[i].real() + bn_[i].real());
       // Equation (28)
@@ -1019,7 +1020,6 @@ namespace nmie {
   template <typename FloatType>
   void MultiLayerMie<FloatType>::calcFieldByComponents(const FloatType Rho,
                                 const FloatType Theta, const FloatType Phi,
-                                const int mode_n, const int mode_type,
                                 std::vector<std::complex<FloatType> >& E,
                                 std::vector<std::complex<FloatType> >& H)  {
 
@@ -1075,7 +1075,7 @@ namespace nmie {
       std::complex<FloatType> En = ipow[n1 % 4]
 	*static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
       for (int i = 0; i < 3; i++) {
-        if (mode_n == Modes::kAll) {
+        if (mode_n_ == Modes::kAll) {
           // electric field E [V m - 1] = EF*E0
           E[i] += En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
                       + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
@@ -1084,8 +1084,8 @@ namespace nmie {
                       + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
           continue;
         }
-        if (n1 == mode_n) {
-          if (mode_type == Modes::kElectric || mode_type == Modes::kAll) {
+        if (n1 == mode_n_) {
+          if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
             E[i] += En*( -c_i*dln_[l][n]*N1e1n[i]
                         + c_i*aln_[l][n]*N3e1n[i]);
 
@@ -1093,7 +1093,7 @@ namespace nmie {
                         +aln_[l][n]*M3e1n[i]);
             continue;
           }
-          if (mode_type == Modes::kMagnetic  || mode_type == Modes::kAll) {
+          if (mode_type_ == Modes::kMagnetic  || mode_type_ == Modes::kAll) {
             E[i] += En*(  cln_[l][n]*M1o1n[i]
                         - bln_[l][n]*M3o1n[i]);
 
@@ -1145,8 +1145,7 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::RunFieldCalculation(
-                                const int mode_n, const int mode_type) {
+  void MultiLayerMie<FloatType>::RunFieldCalculation() {
     FloatType Rho, Theta, Phi;
 
     // Calculate scattering coefficients an_ and bn_
@@ -1194,7 +1193,7 @@ namespace nmie {
       std::vector<std::complex<FloatType> > Es(3), Hs(3);
 
       // Do the actual calculation of electric and magnetic field
-      calcFieldByComponents(Rho, Theta, Phi, mode_n, mode_type, Es, Hs);
+      calcFieldByComponents(Rho, Theta, Phi, Es, Hs);
       for (int sph_coord = 0; sph_coord<3; ++sph_coord) {
         Es_[point][sph_coord] = Es[sph_coord];
         Hs_[point][sph_coord] = Hs[sph_coord];
