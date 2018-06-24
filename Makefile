@@ -6,6 +6,7 @@ VERSION=2.2
 BUILDIR=$(CURDIR)/debian/$(PROJECT)
 SRCDIR=$(CURDIR)/src
 MULTIPREC=100
+CXX_NMIE_HEADERS=$(SRCDIR)/nmie.hpp $(SRCDIR)/nmie-impl.hpp $(SRCDIR)/nmie-precision.hpp
 
 all:
 	@echo "make source - Create source package for Python extension"
@@ -53,14 +54,14 @@ builddeb:
 standalone: ../scattnlay ../fieldnlay ../scattnlay-mp ../fieldnlay-mp
 
 # standalone programs with DP
-../scattnlay: $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc
+../scattnlay: $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc $(CXX_NMIE_HEADERS)
 	c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o ../scattnlay
-../fieldnlay: $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc
+../fieldnlay: $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc $(CXX_NMIE_HEADERS)
 	c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o ../fieldnlay
 # standalone programs with MP
-../scattnlay-mp: $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc
+../scattnlay-mp: $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc $(CXX_NMIE_HEADERS)
 	c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o ../scattnlay-mp
-../fieldnlay-mp: $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc
+../fieldnlay-mp: $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc $(CXX_NMIE_HEADERS)
 	c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o ../fieldnlay-mp
 
 clean:
