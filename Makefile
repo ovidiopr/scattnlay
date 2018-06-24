@@ -50,12 +50,17 @@ builddeb:
 	# build the package
 	dpkg-buildpackage -i -I -rfakeroot
 
-standalone: $(SRCDIR)/farfield.cc $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc
-    # create standalone programs with DP
+standalone: ../scattnlay ../fieldnlay ../scattnlay-mp ../fieldnlay-mp
+
+# standalone programs with DP
+../scattnlay: $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc
 	c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o ../scattnlay
+../fieldnlay: $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc
 	c++ -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o ../fieldnlay
-	# create standalone programs with MP
+# standalone programs with MP
+../scattnlay-mp: $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc
 	c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o ../scattnlay-mp
+../fieldnlay-mp: $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc
 	c++ -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o ../fieldnlay-mp
 
 clean:
