@@ -94,9 +94,7 @@ namespace nmie {
     std::vector<std::complex<ToFloatType> > new_x;
     for (auto element : x) {
       new_x.push_back(std::complex<ToFloatType>(static_cast<ToFloatType>(element.real()),
-						static_cast<ToFloatType>(element.imag())
-						)
-		      );
+                                                static_cast<ToFloatType>(element.imag()) ) );
     }
     return new_x;
   }
@@ -108,10 +106,8 @@ namespace nmie {
     for (auto y : x) {
       new_y.clear();
       for (auto element : y) {
-	new_y.push_back(std::complex<ToFloatType>(static_cast<ToFloatType>(element.real()),
-						static_cast<ToFloatType>(element.imag())
-						  )
-			);
+        new_y.push_back(std::complex<ToFloatType>(static_cast<ToFloatType>(element.real()),
+                                                  static_cast<ToFloatType>(element.imag()) ) );
       }
       new_x.push_back(new_y);
     }
@@ -391,8 +387,8 @@ namespace nmie {
     std::complex<FloatType> Num = (Ha/mL + n/XL)*PsiXL - PsiXLM1;
     std::complex<FloatType> Denom = (Ha/mL + n/XL)*ZetaXL - ZetaXLM1;
     // std::cout<< std::setprecision(100)
-    // 	     << "Ql "	<< PsiXL
-    // 	     <<std::endl;
+    //          << "Ql "        << PsiXL
+    //          << std::endl;
 
 
     return Num/Denom;
@@ -467,7 +463,7 @@ namespace nmie {
 
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta_[0] = static_cast<FloatType>(0.5)*(static_cast<FloatType>(1.0) - std::complex<FloatType>(nmm::cos(2.0*z.real()), nmm::sin(2.0*z.real()))
-		       *static_cast<FloatType>(nmm::exp(-2.0*z.imag())));
+                 *static_cast<FloatType>(nmm::exp(-2.0*z.imag())));
     D3[0] = std::complex<FloatType>(0.0, 1.0);
 
     for (int n = 1; n <= nmax_; n++) {
@@ -701,7 +697,7 @@ namespace nmie {
       //*************************************************//
       // Upward recurrence for Q - equations (19a) and (19b)
       Num = std::complex<FloatType>(nmm::exp(-2.0*(z1.imag() - z2.imag())), 0.0)
-	*std::complex<FloatType>(nmm::cos(-2.0*z2.real()) - nmm::exp(-2.0*z2.imag()), nmm::sin(-2.0*z2.real()));
+      *std::complex<FloatType>(nmm::cos(-2.0*z2.real()) - nmm::exp(-2.0*z2.imag()), nmm::sin(-2.0*z2.real()));
       Denom = std::complex<FloatType>(nmm::cos(-2.0*z1.real()) - nmm::exp(-2.0*z1.imag()), nmm::sin(-2.0*z1.real()));
       Q[l][0] = Num/Denom;
 
@@ -984,17 +980,17 @@ namespace nmie {
       if (cabs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
       else {
         //throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
-	std::cout<< std::setprecision(100)
-		 << "Warning: Potentially unstable calculation of aln[0]["
-		 << n << "] = "<< aln_[0][n] <<std::endl;
+        std::cout<< std::setprecision(100)
+                 << "Warning: Potentially unstable calculation of aln[0]["
+                 << n << "] = "<< aln_[0][n] <<std::endl;
         aln_[0][n] = 0.0;
       }
       if (cabs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
       else {
         //throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
-	std::cout<< std::setprecision(100)
-		 << "Warning: Potentially unstable calculation of bln[0]["
-		 << n << "] = "<< bln_[0][n] <<std::endl;
+        std::cout<< std::setprecision(100)
+                 << "Warning: Potentially unstable calculation of bln[0]["
+                 << n << "] = "<< bln_[0][n] <<std::endl;
         bln_[0][n] = 0.0;
       }
     }
@@ -1065,7 +1061,7 @@ namespace nmie {
 
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
       std::complex<FloatType> En = ipow[n1 % 4]
-	*static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
+      *static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
       for (int i = 0; i < 3; i++) {
         // electric field E [V m - 1] = EF*E0
         E[i] += En*(cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
