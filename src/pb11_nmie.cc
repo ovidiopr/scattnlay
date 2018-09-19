@@ -36,70 +36,12 @@
 #include <stdio.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/complex.h>
+#include <pybind11/stl.h>
 #include "nmie.hpp"
-//#include "pb11_nmie.hpp"
 
 
 namespace py = pybind11;
-
-
-py::array_t<int> array_cpp2py(const std::vector<int>& cpp_array)
-{
-  // allocate py::array (to pass the result of the C++ function to Python)
-  auto result = py::array_t<int>(array.size());
-  auto buffer = result.request();
-  int *pointr = (int *) buffer.ptr;
-
-  // copy std::vector -> py::array
-  std::memcpy(pointr, cpp_array.data(), cpp_array.size()*sizeof(int));
-
-  return result;
-}
-
-py::array_t<double> array_cpp2py(const std::vector<double>& cpp_array)
-{
-  // allocate py::array (to pass the result of the C++ function to Python)
-  auto result = py::array_t<double>(array.size());
-  auto buffer = result.request();
-  double *pointr = (double *) buffer.ptr;
-
-  // copy std::vector -> py::array
-  std::memcpy(pointr, cpp_array.data(), cpp_array.size()*sizeof(double));
-
-  return result;
-}
-
-py::array_t<py::array_t<std::complex<double> > > array_cpp2py(const std::vector<std::vector<std::complex<double> > >& cpp_array, int rows, int cols)
-{
-  ssize_t ndim = 2;
-  std::vector<ssize_t> shape = {cpp_array.shape()[0], 3};
-  std::vector<ssize_t> strides = {sizeof(std::complex<double>)*3, sizeof(std::complex<double>)};
-
-  // return 2-D NumPy array
-  return py::array(py::buffer_info(
-    cpp_array.data(),                                       /* data as contiguous array  */
-    sizeof(std::complex<double>),                           /* size of one scalar        */
-    py::format_descriptor<std::complex<double> >::format(), /* data type                 */
-    ndim,                                                   /* number of dimensions      */
-    shape,                                                  /* shape of the matrix       */
-    strides                                                 /* strides for each axis     */
-  ));
-}
-
-py::array_t<py::array_t<py::array_t<std::complex<double> > > > array_cpp2py(const std::vector<std::vector<std::vector<std::complex<double> > > >& cpp_array)
-{
-  std::vector<size_t> shape(3);
-  std::vector<size_t> strides(3);
-
-  for (int i = 0; i < 3; ++i) {
-    shape[i] = cpp_array.shape()[i];
-    strides[i] = cpp_array.strides[i]*sizeof(std::complex<double>);
-  }
-
-  py::array a(std::move(shape), std::move(strides), cpp_array.data());
-
-  return a.release();
-}
 
 
 py::tuple scattcoeffs(py::array_t<double, py::array::c_style | py::array::forcecast> x,
@@ -112,6 +54,11 @@ py::tuple scattcoeffs(py::array_t<double, py::array::c_style | py::array::forcec
     throw std::runtime_error("The relative refractive index (m) should be 2-D NumPy array.");
 
 
+  std::complex<float> c_zero(0.0, 0.0);
+
+  int num_wvlght = x.shape(0);
+  int num_layers = x.shape(1);
+
   // allocate std::vector (to pass to the C++ function)
   std::vector<std::vector<double> > x_cpp(x.size());
   std::vector<std::vector<std::complex<double> > > m_cpp(m.size());
@@ -121,16 +68,36 @@ py::tuple scattcoeffs(py::array_t<double, py::array::c_style | py::array::forcec
   std::memcpy(m_cpp.data(), m.data(), m.size()*sizeof(std::complex<double>));
 
   // create std::vector (to get return from the C++ function)
-  std::vector<int> terms(x.shape(0));
+  std::vector<int> terms(num_wvlght);
   std::vector<std::vector<std::complex<double> > > an, bn;
-  an.resize(x.shape(0));
-  bn.resize(x.shape(0));
+  an.resize(num_wvlght);
+  bn.resize(num_wvlght);
   
-  for (ssize_t i = 0; i < x.shape(0); i++) {
-    terms[i] = nmie::ScattCoeffs(x.shape(1), pl, x_cpp[i], m_cpp[i], nmax, an[i], bn[i]);
+  ssize_t max_terms = 0;
+  for (ssize_t i = 0; i < num_wvlght; i++) {
+    terms[i] = nmie::ScattCoeffs(num_layers, pl, x_cpp[i], m_cpp[i], nmax, an[i], bn[i]);
+
+    if (terms[i] > max_terms)
+      max_terms = terms[i];
   }
 
-  return py::make_tuple(array_cpp2py(terms), array_cpp2py(an), array_cpp2py(bn));
+  for (ssize_t i = 0; i < num_wvlght; i++) {
+    an[i].resize(max_terms);
+    bn[i].resize(max_terms);
+
+    for (ssize_t j = terms[i]; j < max_terms; j++) {
+      an[i][j] = c_zero;
+      bn[i][j] = c_zero;
+    }
+  }
+
+//  py::array_t<int> terms_py = py::array_t<int>(std::vector<ptrdiff_t>{num_wvlght}, &terms[0]);
+
+//  py::array_t<std::complex<double> > an_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, max_terms}, &an[0]);
+//  py::array_t<std::complex<double> > bn_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, max_terms}, &bn[0]);
+
+//  return py::make_tuple(terms_py, an_py, bn_py);
+  return py::make_tuple(terms, an, bn);
 
 }
 
@@ -139,6 +106,8 @@ py::tuple scattnlay(py::array_t<double, py::array::c_style | py::array::forcecas
                     py::array_t<double, py::array::c_style | py::array::forcecast> theta,
                     int nmax, int pl)
 {
+  std::cout << "Test!";
+
   if (x.ndim() != 2)
     throw std::runtime_error("The size parameter (x) should be 2-D NumPy array.");
   if (m.ndim() != 2)
@@ -146,6 +115,9 @@ py::tuple scattnlay(py::array_t<double, py::array::c_style | py::array::forcecas
   if (theta.ndim() != 1)
     throw std::runtime_error("The scattering angles (theta) should be 1-D NumPy array.");
 
+  int num_wvlght = x.shape(0);
+  int num_layers = x.shape(1);
+  int num_angles = theta.shape(0);
 
   // allocate std::vector (to pass to the C++ function)
   std::vector<std::vector<double> > x_cpp(x.size());
@@ -159,29 +131,46 @@ py::tuple scattnlay(py::array_t<double, py::array::c_style | py::array::forcecas
 
 
   // create std::vector (to get return from the C++ function)
-  std::vector<int> terms(x.shape(0));
+  std::vector<int> terms(num_wvlght);
   std::vector<std::vector<std::complex<double> > > S1, S2;
-  S1.resize(x.shape(0));
-  S2.resize(x.shape(0));
+  S1.resize(num_wvlght);
+  S2.resize(num_wvlght);
 
-  std::vector<double> Qext(x.shape(0));
-  std::vector<double> Qsca(x.shape(0));
-  std::vector<double> Qabs(x.shape(0));
-  std::vector<double> Qbk(x.shape(0));
-  std::vector<double> Qpr(x.shape(0));
-  std::vector<double> g(x.shape(0));
-  std::vector<double> Albedo(x.shape(0));
+  std::vector<double> Qext(num_wvlght);
+  std::vector<double> Qsca(num_wvlght);
+  std::vector<double> Qabs(num_wvlght);
+  std::vector<double> Qbk(num_wvlght);
+  std::vector<double> Qpr(num_wvlght);
+  std::vector<double> g(num_wvlght);
+  std::vector<double> Albedo(num_wvlght);
   
-  for (ssize_t i = 0; i < x.shape(0); i++) {
-    S1[i].resize(theta.shape(0));
-    S2[i].resize(theta.shape(0));
+  for (ssize_t i = 0; i < num_wvlght; i++) {
+    S1[i].resize(num_angles);
+    S2[i].resize(num_angles);
 
-    terms[i] = nmie::nMie(x.shape(1), pl, x_cpp[i], m_cpp[i], theta.shape(0), theta_cpp, nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], S1[i], S2[i]);
+    terms[i] = nmie::nMie(num_layers, pl, x_cpp[i], m_cpp[i], num_angles, theta_cpp, nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], S1[i], S2[i]);
   }
 
-  return py::make_tuple(array_cpp2py(terms), array_cpp2py(Qext), array_cpp2py(Qsca), array_cpp2py(Qabs),
-                        array_cpp2py(Qbk), array_cpp2py(Qpr), array_cpp2py(g), array_cpp2py(Albedo),
-                        array_cpp2py(S1), array_cpp2py(S2));
+//  py::array_t<int> terms_py = py::array_t<int>(std::vector<ptrdiff_t>{num_wvlght}, &terms[0]);
+
+//  py::array_t<double> Qext_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Qext[0]);
+//  py::array_t<double> Qsca_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Qsca[0]);
+//  py::array_t<double> Qabs_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Qabs[0]);
+//  py::array_t<double> Qbk_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Qbk[0]);
+//  py::array_t<double> Qpr_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Qpr[0]);
+//  py::array_t<double> g_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &g[0]);
+//  py::array_t<double> Albedo_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Albedo[0]);
+
+//  py::array_t<std::complex<double> > S1_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, num_angles}, &S1[0]);
+//  py::array_t<std::complex<double> > S2_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, num_angles}, &S2[0]);
+
+//  return py::make_tuple(terms_py, Qext_py, Qsca_py, Qabs_py,
+//                        Qbk_py, Qpr_py, g_py, Albedo_py,
+//                        S1_py, S2_py);
+
+  return py::make_tuple(terms, Qext, Qsca, Qabs,
+                        Qbk, Qpr, g, Albedo,
+                        S1, S2);
 }
 
 py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecast> x,
@@ -189,6 +178,8 @@ py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecas
                     py::array_t<double, py::array::c_style | py::array::forcecast> coords,
                     int nmax, int pl)
 {
+  std::cout << "Test!";
+
   if (x.ndim() != 2)
     throw std::runtime_error("The size parameter (x) should be 2-D NumPy array.");
   if (m.ndim() != 2)
@@ -196,6 +187,10 @@ py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecas
   if (coords.ndim() != 2)
     throw std::runtime_error("The coordinates should be 2-D NumPy array.");
 
+
+  int num_wvlght = x.shape(0);
+  int num_layers = x.shape(1);
+  int num_points = coords.shape(0);
 
   // allocate std::vector (to pass to the C++ function)
   std::vector<std::vector<double> > x_cpp(x.size());
@@ -213,23 +208,30 @@ py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecas
 
 
   // create std::vector (to get return from the C++ function)
-  std::vector<int> terms(x.shape(0));
+  std::vector<int> terms(num_wvlght);
   std::vector<std::vector<std::vector<std::complex<double> > > > E, H;
-  E.resize(x.shape(0));
-  H.resize(x.shape(0));
+  E.resize(num_wvlght);
+  H.resize(num_wvlght);
 
-  for (ssize_t i = 0; i < x.shape(0); i++) {
-    E[i].resize(coords.shape(0));
-    H[i].resize(coords.shape(0));
+  for (ssize_t i = 0; i < num_wvlght; i++) {
+    E[i].resize(num_points);
+    H[i].resize(num_points);
 
     for (int j = 0; j < 3; j++) {
       E[i][j].resize(3);
       H[i][j].resize(3);
     }
 
-    terms[i] = nmie::nField(x.shape(1), pl, x_cpp[i], m_cpp[i], nmax, coords.shape(0), Xc, Yc, Zc, E[i], H[i]);
+    terms[i] = nmie::nField(num_layers, pl, x_cpp[i], m_cpp[i], nmax, num_points, Xc, Yc, Zc, E[i], H[i]);
   }
 
-  return py::make_tuple(array_cpp2py(terms), array_cpp2py(E), array_cpp2py(H));
+//  py::array_t<int> terms_py = py::array_t<int>(std::vector<ptrdiff_t>{num_wvlght}, &terms[0]);
+
+//  py::array_t<std::complex<double> > E_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, num_points, 3}, &E[0]);
+//  py::array_t<std::complex<double> > H_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, num_points, 3}, &H[0]);
+
+//  return py::make_tuple(terms_py, E_py, H_py);
+
+  return py::make_tuple(terms, E, H);
 }
 
