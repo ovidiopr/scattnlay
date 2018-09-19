@@ -27,6 +27,21 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Several functions to plot field and streamlines (power flow lines).
+#
+# To have nice streamline you may want to tweak streamplot.py from
+# your python site-packages of matplotlib.
+#
+# After:
+#    lc = mcollections.LineCollection(
+#        streamlines, transform=transform, **line_kw)
+# Add:
+#    lc.set_capstyle('round')
+#
+# And modify:
+#    maxds = min(1. / dmap.mask.nx, 1. / dmap.mask.ny, 0.1)
+# To:
+#    maxds = 0.1*min(1. / dmap.mask.nx, 1. / dmap.mask.ny, 0.1)
+
 
 import scattnlay
 from scattnlay import fieldnlay
@@ -277,17 +292,17 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
                         )
         ax.axis("image")
 
-        # # Add colorbar
-        # cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax
-        #                     #,fraction=0.45
-        #     )
-        # # vertically oriented colorbar
-        # if 'angle' in field_to_plot:
-        #     cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])
-        # else:
-        #     cbar.ax.set_yticklabels(['%g' % (a) for a in scale_ticks])
-        # # pos = list(cbar.ax.get_position().bounds)
-        # #fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
+        # Add colorbar
+        cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax
+                            #,fraction=0.45
+            )
+        # vertically oriented colorbar
+        if 'angle' in field_to_plot:
+            cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])
+        else:
+            cbar.ax.set_yticklabels(['%g' % (a) for a in scale_ticks])
+        # pos = list(cbar.ax.get_position().bounds)
+        #fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
         lp2 = -10.0
         lp1 = -1.0
         if crossplane == 'XZ':
@@ -401,10 +416,10 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         Z = coordZ.reshape((npts, npts))[:,0]*WL/2.0/np.pi
         lw = np.sqrt((V**2+U**2)/(np.max(V**2+U**2)))
         pts2 = npts*3.0
-        
+
         ax.streamplot(X, Z, V, U, color="white", linewidth=lw*4.0+1.2,
                       #cmap=plt.cm.inferno,
-                          density=1.1, arrowstyle='->', arrowsize=1.5
+                          density=0.96502, arrowstyle='->', arrowsize=1.5
                           ,minlength=minlength
                           ,maxlength=25
                       , zorder=1.3
