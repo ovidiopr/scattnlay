@@ -19,4 +19,6 @@ PYBIND11_MODULE(scattnlay, m)
   m.def("fieldnlay", &fieldnlay,
         "Calculate the complex electric and magnetic field in the surroundings and inside the particle.",
         py::arg("x"), py::arg("m"), py::arg("coords"), py::arg("nmax"), py::arg("pl"));
+
+  return m.ptr();
 }

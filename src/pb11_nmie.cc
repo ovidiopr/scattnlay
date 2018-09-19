@@ -43,6 +43,65 @@
 namespace py = pybind11;
 
 
+py::array_t<int> array_cpp2py(const std::vector<int>& cpp_array)
+{
+  // allocate py::array (to pass the result of the C++ function to Python)
+  auto result = py::array_t<int>(array.size());
+  auto buffer = result.request();
+  int *pointr = (int *) buffer.ptr;
+
+  // copy std::vector -> py::array
+  std::memcpy(pointr, cpp_array.data(), cpp_array.size()*sizeof(int));
+
+  return result;
+}
+
+py::array_t<double> array_cpp2py(const std::vector<double>& cpp_array)
+{
+  // allocate py::array (to pass the result of the C++ function to Python)
+  auto result = py::array_t<double>(array.size());
+  auto buffer = result.request();
+  double *pointr = (double *) buffer.ptr;
+
+  // copy std::vector -> py::array
+  std::memcpy(pointr, cpp_array.data(), cpp_array.size()*sizeof(double));
+
+  return result;
+}
+
+py::array_t<py::array_t<std::complex<double> > > array_cpp2py(const std::vector<std::vector<std::complex<double> > >& cpp_array, int rows, int cols)
+{
+  ssize_t ndim = 2;
+  std::vector<ssize_t> shape = {cpp_array.shape()[0], 3};
+  std::vector<ssize_t> strides = {sizeof(std::complex<double>)*3, sizeof(std::complex<double>)};
+
+  // return 2-D NumPy array
+  return py::array(py::buffer_info(
+    cpp_array.data(),                                       /* data as contiguous array  */
+    sizeof(std::complex<double>),                           /* size of one scalar        */
+    py::format_descriptor<std::complex<double> >::format(), /* data type                 */
+    ndim,                                                   /* number of dimensions      */
+    shape,                                                  /* shape of the matrix       */
+    strides                                                 /* strides for each axis     */
+  ));
+}
+
+py::array_t<py::array_t<py::array_t<std::complex<double> > > > array_cpp2py(const std::vector<std::vector<std::vector<std::complex<double> > > >& cpp_array)
+{
+  std::vector<size_t> shape(3);
+  std::vector<size_t> strides(3);
+
+  for (int i = 0; i < 3; ++i) {
+    shape[i] = cpp_array.shape()[i];
+    strides[i] = cpp_array.strides[i]*sizeof(std::complex<double>);
+  }
+
+  py::array a(std::move(shape), std::move(strides), cpp_array.data());
+
+  return a.release();
+}
+
+
 py::tuple scattcoeffs(py::array_t<double, py::array::c_style | py::array::forcecast> x,
                       py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> m,
                       int nmax, int pl)
@@ -71,7 +130,7 @@ py::tuple scattcoeffs(py::array_t<double, py::array::c_style | py::array::forcec
     terms[i] = nmie::ScattCoeffs(x.shape(1), pl, x_cpp[i], m_cpp[i], nmax, an[i], bn[i]);
   }
 
-  return py::make_tuple(terms, an, bn);
+  return py::make_tuple(array_cpp2py(terms), array_cpp2py(an), array_cpp2py(bn));
 
 }
 
@@ -120,7 +179,9 @@ py::tuple scattnlay(py::array_t<double, py::array::c_style | py::array::forcecas
     terms[i] = nmie::nMie(x.shape(1), pl, x_cpp[i], m_cpp[i], theta.shape(0), theta_cpp, nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], S1[i], S2[i]);
   }
 
-  return py::make_tuple(terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+  return py::make_tuple(array_cpp2py(terms), array_cpp2py(Qext), array_cpp2py(Qsca), array_cpp2py(Qabs),
+                        array_cpp2py(Qbk), array_cpp2py(Qpr), array_cpp2py(g), array_cpp2py(Albedo),
+                        array_cpp2py(S1), array_cpp2py(S2));
 }
 
 py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecast> x,
@@ -169,6 +230,6 @@ py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecas
     terms[i] = nmie::nField(x.shape(1), pl, x_cpp[i], m_cpp[i], nmax, coords.shape(0), Xc, Yc, Zc, E[i], H[i]);
   }
 
-  return py::make_tuple(terms, E, H);
+  return py::make_tuple(array_cpp2py(terms), array_cpp2py(E), array_cpp2py(H));
 }
 
