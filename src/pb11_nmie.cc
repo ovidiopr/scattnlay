@@ -91,12 +91,6 @@ py::tuple scattcoeffs(py::array_t<double, py::array::c_style | py::array::forcec
     }
   }
 
-//  py::array_t<int> terms_py = py::array_t<int>(std::vector<ptrdiff_t>{num_wvlght}, &terms[0]);
-
-//  py::array_t<std::complex<double> > an_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, max_terms}, &an[0]);
-//  py::array_t<std::complex<double> > bn_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, max_terms}, &bn[0]);
-
-//  return py::make_tuple(terms_py, an_py, bn_py);
   return py::make_tuple(terms, an, bn);
 
 }
@@ -106,8 +100,6 @@ py::tuple scattnlay(py::array_t<double, py::array::c_style | py::array::forcecas
                     py::array_t<double, py::array::c_style | py::array::forcecast> theta,
                     int nmax, int pl)
 {
-  std::cout << "Test!";
-
   if (x.ndim() != 2)
     throw std::runtime_error("The size parameter (x) should be 2-D NumPy array.");
   if (m.ndim() != 2)
@@ -148,29 +140,12 @@ py::tuple scattnlay(py::array_t<double, py::array::c_style | py::array::forcecas
     S1[i].resize(num_angles);
     S2[i].resize(num_angles);
 
-    terms[i] = nmie::nMie(num_layers, pl, x_cpp[i], m_cpp[i], num_angles, theta_cpp, nmax, &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i], S1[i], S2[i]);
+    terms[i] = nmie::nMie(num_layers, pl, x_cpp[i], m_cpp[i], num_angles, theta_cpp, nmax,
+                          &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i],
+                          S1[i], S2[i]);
   }
 
-//  py::array_t<int> terms_py = py::array_t<int>(std::vector<ptrdiff_t>{num_wvlght}, &terms[0]);
-
-//  py::array_t<double> Qext_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Qext[0]);
-//  py::array_t<double> Qsca_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Qsca[0]);
-//  py::array_t<double> Qabs_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Qabs[0]);
-//  py::array_t<double> Qbk_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Qbk[0]);
-//  py::array_t<double> Qpr_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Qpr[0]);
-//  py::array_t<double> g_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &g[0]);
-//  py::array_t<double> Albedo_py = py::array_t<double>(std::vector<ptrdiff_t>{num_wvlght}, &Albedo[0]);
-
-//  py::array_t<std::complex<double> > S1_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, num_angles}, &S1[0]);
-//  py::array_t<std::complex<double> > S2_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, num_angles}, &S2[0]);
-
-//  return py::make_tuple(terms_py, Qext_py, Qsca_py, Qabs_py,
-//                        Qbk_py, Qpr_py, g_py, Albedo_py,
-//                        S1_py, S2_py);
-
-  return py::make_tuple(terms, Qext, Qsca, Qabs,
-                        Qbk, Qpr, g, Albedo,
-                        S1, S2);
+  return py::make_tuple(terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
 }
 
 py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecast> x,
@@ -178,8 +153,6 @@ py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecas
                     py::array_t<double, py::array::c_style | py::array::forcecast> coords,
                     int nmax, int pl)
 {
-  std::cout << "Test!";
-
   if (x.ndim() != 2)
     throw std::runtime_error("The size parameter (x) should be 2-D NumPy array.");
   if (m.ndim() != 2)
@@ -224,13 +197,6 @@ py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecas
 
     terms[i] = nmie::nField(num_layers, pl, x_cpp[i], m_cpp[i], nmax, num_points, Xc, Yc, Zc, E[i], H[i]);
   }
-
-//  py::array_t<int> terms_py = py::array_t<int>(std::vector<ptrdiff_t>{num_wvlght}, &terms[0]);
-
-//  py::array_t<std::complex<double> > E_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, num_points, 3}, &E[0]);
-//  py::array_t<std::complex<double> > H_py = py::array_t<std::complex<double> >(std::vector<ptrdiff_t>{num_wvlght, num_points, 3}, &H[0]);
-
-//  return py::make_tuple(terms_py, E_py, H_py);
 
   return py::make_tuple(terms, E, H);
 }
