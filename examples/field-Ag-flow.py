@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 #
 #    Copyright (C) 2009-2015 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
@@ -29,7 +29,7 @@
 # This test case calculates the electric field in the 
 # E-k plane, for an spherical Ag nanoparticle.
 
-import scattnlay
+#import scattnlay
 from scattnlay import fieldnlay
 from scattnlay import scattnlay
 from fieldplot import fieldplot
@@ -74,8 +74,8 @@ m = np.ones((2), dtype = np.complex128)
 m[0] = index_Ag/nm
 m[1] = index_Ag/nm
 
-print "x =", x
-print "m =", m
+print( "x =", x)
+print( "m =", m)
 
 comment='bulk-Ag-flow'
 WL_units='nm'

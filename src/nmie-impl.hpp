@@ -1091,7 +1091,7 @@ namespace nmie {
 
             H[i] += En*(-dln_[l][n]*M1e1n[i]
                         +aln_[l][n]*M3e1n[i]);
-            continue;
+            //std::cout << mode_n_;
           }
           if (mode_type_ == Modes::kMagnetic  || mode_type_ == Modes::kAll) {
             E[i] += En*(  cln_[l][n]*M1o1n[i]
@@ -1099,8 +1099,9 @@ namespace nmie {
 
             H[i] += En*( -c_i*cln_[l][n]*N1o1n[i]
                         + c_i*bln_[l][n]*N3o1n[i]);
-            continue;
+            //std::cout << mode_n_;
           }
+          //std::cout << std::endl;
         }
         //throw std::invalid_argument("Error! Unexpected mode for field evaluation!\n mode_n="+std::to_string(mode_n)+", mode_type="+std::to_string(mode_type)+"\n=====*****=====");
       }

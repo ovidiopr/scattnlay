@@ -32,11 +32,13 @@
 import scattnlay
 from scattnlay import fieldnlay
 from scattnlay import scattnlay
+
 import numpy as np
 import cmath
 # from fieldplot import GetFlow3D
 # from fieldplot import GetField
 from fieldplot import fieldplot
+from polarplot import polarplot
 
 ###############################################################################
 def SetXM(design):
@@ -94,12 +96,17 @@ def SetXM(design):
         # m[1] = index_Ag
         return x, m, WL
     elif design==6:
-        WL=1052 #nm
-        core_r = 140.0
-        #core_r = 190.0
-        core_r = 204.2
-        epsilon_Si = 12.7294053067+0.000835315166667j
-        index_Si = np.sqrt(epsilon_Si)
+        # WL=1052 #nm
+        # core_r = 140.0
+        # #core_r = 190.0
+        # core_r = 204.2
+        # epsilon_Si = 12.7294053067+0.000835315166667j
+        # index_Si = np.sqrt(epsilon_Si)
+
+        #WL=455
+        WL=456.33
+        core_r = 90
+        index_Si = 4.615+0.131j
         x = np.ones((1), dtype = np.float64)
         x[0] = 2.0*np.pi*core_r/WL
         m = np.ones((1), dtype = np.complex128)
@@ -152,15 +159,15 @@ comment='Si-flow'
 x, m, WL = SetXM(design)
 
 WL_units='nm'
-print "x =", x[-1]
-print "m =", m
-npts = 501
-factor=2.1
-flow_total = 39
+print( "x =", x[-1])
+print( "m =", m)
+npts = 151
+factor=1.1
+#flow_total = 39
 #flow_total = 21
-#flow_total = 0
-#crossplane='XZ'
-crossplane='XYZ'
+flow_total = 0
+crossplane='XZ'
+#crossplane='XYZ'
 #crossplane='YZ'
 #crossplane='XY'
 
@@ -173,7 +180,9 @@ import matplotlib.pyplot as plt
 fig, axs = plt.subplots(1,1)#, sharey=True, sharex=True)
 fig.tight_layout()
 fieldplot(fig, axs, x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
-          subplot_label=' ',is_flow_extend=False)
+          subplot_label=' ',is_flow_extend=False,
+          #inner_only = True
+)
 
 fig.subplots_adjust(hspace=0.3, wspace=-0.1)
 
@@ -188,4 +197,6 @@ plt.clf()
 plt.close()
 
 
+polarplot(x,m,comment+"-R"+str(int(round(x[-1]*WL/2.0/np.pi)))+"-"+crossplane+"-"
+                    +field_to_plot+"-polar.pdf")
 

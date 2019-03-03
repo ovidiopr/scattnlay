@@ -43,11 +43,15 @@
 #    maxds = 0.1*min(1. / dmap.mask.nx, 1. / dmap.mask.ny, 0.1)
 
 
-import scattnlay
+from matplotlib import cm
+from matplotlib import patches
+from matplotlib.colors import LogNorm
+from matplotlib.path import Path
 from scattnlay import fieldnlay
 from scattnlay import scattnlay
-import numpy as np
 import cmath
+import numpy as np
+import sys
 
 
 def unit_vector(vector):
@@ -118,7 +122,7 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
             Ec, Hc = E[0, 0, :], H[0, 0, :]
             Eth = max(np.absolute(Ec)) / 1e10
             Hth = max(np.absolute(Hc)) / 1e10
-            for i in xrange(0, len(Ec)):
+            for i in range(0, len(Ec)):
                 if abs(Ec[i]) < Eth:
                     Ec[i] = 0 + 0j
                 if abs(Hc[i]) < Hth:
@@ -147,6 +151,43 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
 
 
 ###############################################################################
+def Get3DField(npts, factor, x, m, pl, mode_n=-1, mode_type=-1):
+    """
+    npts: number of point in each direction
+    factor: ratio of linear size to outer size of the particle
+    x: size parameters for particle layers
+    m: relative index values for particle layers
+    mode_n: second column from table
+        all     -1 
+        dipole   1 -- 2
+        quad     2 -- 4
+        octo     3 -- 8
+        hex      4 -- 16
+        32       5 -- 32
+    mode_type:
+        -1   -- all modes
+         0   -- only electric modes
+         1   -- only magnetic modes
+    """
+    scan = np.linspace(-factor*x[-1], factor*x[-1], npts)
+    zero = np.zeros(npts*npts, dtype = np.float64)
+
+    coordX, coordY, coordZ = np.meshgrid(scan, scan, scan)
+    coordX.resize(npts * npts * npts)
+    coordY.resize(npts * npts * npts)
+    coordZ.resize(npts * npts * npts)
+    coordPlot1 = coordX
+    coordPlot2 = coordZ
+
+    coord = np.vstack((coordX, coordY, coordZ)).transpose()
+    print(x,m)
+    terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord, pl=pl
+                            , mode_n=mode_n, mode_type=mode_type
+                            )
+    P = np.array(map(lambda n: np.linalg.norm(np.cross(E[n], H[n])).real,
+                     range(0, len(E[0]))))
+    return coordX, coordY, coordZ, E, H, P
+###############################################################################
 def GetField(crossplane, npts, factor, x, m, pl, mode_n=-1, mode_type=-1, inner_only = False):
     """
     crossplane: XZ, YZ, XY, or XYZ (half is XZ, half is YZ)
@@ -154,6 +195,17 @@ def GetField(crossplane, npts, factor, x, m, pl, mode_n=-1, mode_type=-1, inner_
     factor: ratio of plotting size to outer size of the particle
     x: size parameters for particle layers
     m: relative index values for particle layers
+    mode_n: second column from table
+        all     -1 
+        dipole   1 -- 2
+        quad     2 -- 4
+        octo     3 -- 8
+        hex      4 -- 16
+        32       5 -- 32
+    mode_type:
+        -1   -- all modes
+         0   -- only electric modes
+         1   -- only magnetic modes
     """
     scan = np.linspace(-factor*x[-1], factor*x[-1], npts)
     zero = np.zeros(npts*npts, dtype = np.float64)
@@ -195,7 +247,6 @@ def GetField(crossplane, npts, factor, x, m, pl, mode_n=-1, mode_type=-1, inner_
         coordZ.resize(npts*npts)
     else:
         print("Unknown crossplane")
-        import sys
         sys.exit()
 
     coord = np.vstack((coordX, coordY, coordZ)).transpose()
@@ -227,8 +278,6 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
     Er = np.absolute(Ec)
     Hr = np.absolute(Hc)
     try:
-        from matplotlib import cm
-        from matplotlib.colors import LogNorm
 
         if field_to_plot == 'Pabs':
             Eabs_data = np.resize(P, (npts, npts)).T
@@ -248,7 +297,8 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
             #Eabs_data = np.flipud(np.resize(Eabs, (npts, npts)))
         elif field_to_plot == 'Habs':
             Habs = np.sqrt(Hr[:, 0]**2 + Hr[:, 1]**2 + Hr[:, 2]**2)
-            Eabs_data = np.resize(Habs, (npts, npts)).T
+            Eabs_data = 376.73031346177*np.resize(Habs, (npts, npts)).T  #  multiplied by free space impedance
+            #Eabs_data = np.resize(Habs, (npts, npts)).T
             label = r'$|H|$'
         elif field_to_plot == 'angleEx':
             Eangle = np.angle(Ec[:, 0]) / np.pi * 180
@@ -292,15 +342,15 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
                         )
         ax.axis("image")
 
-        # Add colorbar
-        cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax
-                            #,fraction=0.45
-            )
-        # vertically oriented colorbar
-        if 'angle' in field_to_plot:
-            cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])
-        else:
-            cbar.ax.set_yticklabels(['%g' % (a) for a in scale_ticks])
+        # # Add colorbar
+        # cbar = fig.colorbar(cax, ticks=[a for a in scale_ticks], ax=ax
+        #                     #,fraction=0.45
+        #     )
+        # # vertically oriented colorbar
+        # if 'angle' in field_to_plot:
+        #     cbar.ax.set_yticklabels(['%3.0f' % (a) for a in scale_ticks])
+        # else:
+        #     cbar.ax.set_yticklabels(['%g' % (a) for a in scale_ticks])
         # pos = list(cbar.ax.get_position().bounds)
         #fig.text(pos[0] - 0.02, 0.925, '|E|/|E$_0$|', fontsize = 14)
         lp2 = -10.0
@@ -318,8 +368,6 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
             ax.set_xlabel('X, ' + WL_units, labelpad=lp1)
             ax.set_ylabel('Y, ' + WL_units, labelpad=lp2)
         # # This part draws the nanoshell
-        from matplotlib import patches
-        from matplotlib.path import Path
         for xx in x:
             r = xx * WL / 2.0 / np.pi
             s1 = patches.Arc((0, 0), 2.0 * r, 2.0 * r,  angle=0.0, zorder=1.8,
@@ -341,7 +389,6 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
         #     ax.add_patch(patch)
         if (not crossplane == 'XY') and flow_total > 0:
 
-            from matplotlib.path import Path
             scanSP = np.linspace(-factor * x[-1], factor * x[-1], npts)
             min_SP = -factor * x[-1]
             step_SP = 2.0 * factor * x[-1] / (flow_total - 1)
@@ -401,8 +448,7 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
                 #                ax.plot(flow_z_plot, flow_f_plot, 'x', ms=2, mew=0.1,
                 #                        linewidth=0.5, color='k', fillstyle='none')
     finally:
-        terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
-            np.array([x]), np.array([m]))
+        terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(np.array([x]), np.array([m]))
         print("Qsca = " + str(Qsca))
     if isStream == True and field_to_plot in ["Eabs", "Habs"]:
         if field_to_plot == "Eabs": field = np.real(Ec)
