@@ -1,8 +1,8 @@
 #ifndef SRC_NMIE_IMPL_HPP_
 #define SRC_NMIE_IMPL_HPP_
 //**********************************************************************************//
-//    Copyright (C) 2009-2016  Ovidio Pena <ovidio@bytesfall.com>                   //
-//    Copyright (C) 2013-2016  Konstantin Ladutenko <kostyfisik@gmail.com>          //
+//    Copyright (C) 2009-2018  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2013-2018  Konstantin Ladutenko <kostyfisik@gmail.com>          //
 //                                                                                  //
 //    This file is part of scattnlay                                                //
 //                                                                                  //
@@ -18,10 +18,14 @@
 //                                                                                  //
 //    The only additional remark is that we expect that all publications            //
 //    describing work using this software, or all commercial products               //
-//    using it, cite the following reference:                                       //
+//    using it, cite at least one of the following references:                      //
 //    [1] O. Pena and U. Pal, "Scattering of electromagnetic radiation by           //
 //        a multilayered sphere," Computer Physics Communications,                  //
 //        vol. 180, Nov. 2009, pp. 2348-2354.                                       //
+//    [2] K. Ladutenko, U. Pal, A. Rivera, and O. Pena-Rodriguez, "Mie              //
+//        calculation of electromagnetic near-field for a multilayered              //
+//        sphere," Computer Physics Communications, vol. 214, May 2017,             //
+//        pp. 225-230.                                                              //
 //                                                                                  //
 //    You should have received a copy of the GNU General Public License             //
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
@@ -36,6 +40,10 @@
 //    [2] O. Pena and U. Pal, "Scattering of electromagnetic radiation by           //
 //        a multilayered sphere," Computer Physics Communications,                  //
 //        vol. 180, Nov. 2009, pp. 2348-2354.                                       //
+//    [3] K. Ladutenko, U. Pal, A. Rivera, and O. Pena-Rodriguez, "Mie              //
+//        calculation of electromagnetic near-field for a multilayered              //
+//        sphere," Computer Physics Communications, vol. 214, May 2017,             //
+//        pp. 225-230.                                                              //
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
@@ -86,9 +94,7 @@ namespace nmie {
     std::vector<std::complex<ToFloatType> > new_x;
     for (auto element : x) {
       new_x.push_back(std::complex<ToFloatType>(static_cast<ToFloatType>(element.real()),
-						static_cast<ToFloatType>(element.imag())
-						)
-		      );
+                                                static_cast<ToFloatType>(element.imag()) ) );
     }
     return new_x;
   }
@@ -100,10 +106,8 @@ namespace nmie {
     for (auto y : x) {
       new_y.clear();
       for (auto element : y) {
-	new_y.push_back(std::complex<ToFloatType>(static_cast<ToFloatType>(element.real()),
-						static_cast<ToFloatType>(element.imag())
-						  )
-			);
+        new_y.push_back(std::complex<ToFloatType>(static_cast<ToFloatType>(element.real()),
+                                                  static_cast<ToFloatType>(element.imag()) ) );
       }
       new_x.push_back(new_y);
     }
@@ -383,8 +387,8 @@ namespace nmie {
     std::complex<FloatType> Num = (Ha/mL + n/XL)*PsiXL - PsiXLM1;
     std::complex<FloatType> Denom = (Ha/mL + n/XL)*ZetaXL - ZetaXLM1;
     // std::cout<< std::setprecision(100)
-    // 	     << "Ql "	<< PsiXL
-    // 	     <<std::endl;
+    //          << "Ql "        << PsiXL
+    //          << std::endl;
 
 
     return Num/Denom;
@@ -459,7 +463,7 @@ namespace nmie {
 
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta_[0] = static_cast<FloatType>(0.5)*(static_cast<FloatType>(1.0) - std::complex<FloatType>(nmm::cos(2.0*z.real()), nmm::sin(2.0*z.real()))
-		       *static_cast<FloatType>(nmm::exp(-2.0*z.imag())));
+                 *static_cast<FloatType>(nmm::exp(-2.0*z.imag())));
     D3[0] = std::complex<FloatType>(0.0, 1.0);
 
     for (int n = 1; n <= nmax_; n++) {
@@ -693,7 +697,7 @@ namespace nmie {
       //*************************************************//
       // Upward recurrence for Q - equations (19a) and (19b)
       Num = std::complex<FloatType>(nmm::exp(-2.0*(z1.imag() - z2.imag())), 0.0)
-	*std::complex<FloatType>(nmm::cos(-2.0*z2.real()) - nmm::exp(-2.0*z2.imag()), nmm::sin(-2.0*z2.real()));
+      *std::complex<FloatType>(nmm::cos(-2.0*z2.real()) - nmm::exp(-2.0*z2.imag()), nmm::sin(-2.0*z2.real()));
       Denom = std::complex<FloatType>(nmm::cos(-2.0*z1.real()) - nmm::exp(-2.0*z1.imag()), nmm::sin(-2.0*z1.real()));
       Q[l][0] = Num/Denom;
 
@@ -976,17 +980,17 @@ namespace nmie {
       if (cabs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
       else {
         //throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
-	std::cout<< std::setprecision(100)
-		 << "Warning: Potentially unstable calculation of aln[0]["
-		 << n << "] = "<< aln_[0][n] <<std::endl;
+        std::cout<< std::setprecision(100)
+                 << "Warning: Potentially unstable calculation of aln[0]["
+                 << n << "] = "<< aln_[0][n] <<std::endl;
         aln_[0][n] = 0.0;
       }
       if (cabs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
       else {
         //throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
-	std::cout<< std::setprecision(100)
-		 << "Warning: Potentially unstable calculation of bln[0]["
-		 << n << "] = "<< bln_[0][n] <<std::endl;
+        std::cout<< std::setprecision(100)
+                 << "Warning: Potentially unstable calculation of bln[0]["
+                 << n << "] = "<< bln_[0][n] <<std::endl;
         bln_[0][n] = 0.0;
       }
     }
@@ -1057,7 +1061,7 @@ namespace nmie {
 
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
       std::complex<FloatType> En = ipow[n1 % 4]
-	*static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
+      *static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
       for (int i = 0; i < 3; i++) {
         // electric field E [V m - 1] = EF*E0
         E[i] += En*(cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]

@@ -1,6 +1,6 @@
 //**********************************************************************************//
-//    Copyright (C) 2009-2015  Ovidio Pena <ovidio@bytesfall.com>                   //
-//    Copyright (C) 2013-2015  Konstantin Ladutenko <kostyfisik@gmail.com>          //
+//    Copyright (C) 2009-2018  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2013-2018  Konstantin Ladutenko <kostyfisik@gmail.com>          //
 //                                                                                  //
 //    This file is part of scattnlay                                                //
 //                                                                                  //
@@ -16,10 +16,14 @@
 //                                                                                  //
 //    The only additional remark is that we expect that all publications            //
 //    describing work using this software, or all commercial products               //
-//    using it, cite the following reference:                                       //
+//    using it, cite at least one of the following references:                      //
 //    [1] O. Pena and U. Pal, "Scattering of electromagnetic radiation by           //
 //        a multilayered sphere," Computer Physics Communications,                  //
 //        vol. 180, Nov. 2009, pp. 2348-2354.                                       //
+//    [2] K. Ladutenko, U. Pal, A. Rivera, and O. Pena-Rodriguez, "Mie              //
+//        calculation of electromagnetic near-field for a multilayered              //
+//        sphere," Computer Physics Communications, vol. 214, May 2017,             //
+//        pp. 225-230.                                                              //
 //                                                                                  //
 //    You should have received a copy of the GNU General Public License             //
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
@@ -34,6 +38,10 @@
 //    [2] O. Pena and U. Pal, "Scattering of electromagnetic radiation by           //
 //        a multilayered sphere," Computer Physics Communications,                  //
 //        vol. 180, Nov. 2009, pp. 2348-2354.                                       //
+//    [3] K. Ladutenko, U. Pal, A. Rivera, and O. Pena-Rodriguez, "Mie              //
+//        calculation of electromagnetic near-field for a multilayered              //
+//        sphere," Computer Physics Communications, vol. 214, May 2017,             //
+//        pp. 225-230.                                                              //
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
@@ -70,7 +78,8 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
+  int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+                  const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
 
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -125,7 +134,10 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+           const unsigned int nTheta, std::vector<double>& Theta, const int nmax,
+           double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
 
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -195,7 +207,10 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m,
+           const unsigned int nTheta, std::vector<double>& Theta,
+           double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nmie::nMie(L, -1, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
@@ -227,7 +242,10 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+           const unsigned int nTheta, std::vector<double>& Theta,
+           double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nmie::nMie(L, pl, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
@@ -261,7 +279,10 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m,
+           const unsigned int nTheta, std::vector<double>& Theta, const int nmax,
+           double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nmie::nMie(L, -1, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
@@ -288,7 +309,10 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const unsigned int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
+  int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m,
+             const int nmax, const unsigned int ncoord,
+             const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec,
+             std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
     if (x.size() != L || m.size() != L)
       throw std::invalid_argument("Declared number of layers do not fit x and m!");
     if (Xp_vec.size() != ncoord || Yp_vec.size() != ncoord || Zp_vec.size() != ncoord

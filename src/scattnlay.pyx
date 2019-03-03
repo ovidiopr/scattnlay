@@ -1,7 +1,7 @@
-#    Copyright (C) 2009-2017 Ovidio Pena <ovidio@bytesfall.com>
-#    Copyright (C) 2013-2017 Konstantin Ladutenko <kostyfisik@gmail.com>
+#    Copyright (C) 2009-2018 Ovidio Pena <ovidio@bytesfall.com>
+#    Copyright (C) 2013-2018 Konstantin Ladutenko <kostyfisik@gmail.com>
 #
-#    This file is part of python-scattnlay
+#    This file is part of scattnlay
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -15,10 +15,14 @@
 #
 #    The only additional remark is that we expect that all publications
 #    describing work using this software, or all commercial products
-#    using it, cite the following reference:
-#    [1] O. Pena and U. Pal, "Scattering of electromagnetic radiation by
+#    using it, cite at least one of the following references:
+#    [1] O. Peña and U. Pal, "Scattering of electromagnetic radiation by
 #        a multilayered sphere," Computer Physics Communications,
 #        vol. 180, Nov. 2009, pp. 2348-2354.
+#    [2] K. Ladutenko, U. Pal, A. Rivera, and O. Peña-Rodríguez, "Mie
+#        calculation of electromagnetic near-field for a multilayered
+#        sphere," Computer Physics Communications, vol. 214, May 2017,
+#        pp. 225-230.
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -47,6 +51,24 @@ cdef extern from "py_nmie.h":
     cdef int nField(int L, int pl, vector[double] x, vector[complex] m, int nmax, int nCoords, vector[double] Xp, vector[double] Yp, vector[double] Zp, double Erx[], double Ery[], double Erz[], double Eix[], double Eiy[], double Eiz[], double Hrx[], double Hry[], double Hrz[], double Hix[], double Hiy[], double Hiz[])
 
 def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.int_t nmax, np.int_t pl = -1):
+    """
+    scattcoeffs(x, m[, nmax, pl])
+
+    Calculate the scattering coefficients required to calculate both the
+    near- and far-field parameters.
+
+        x: Size parameters (2D ndarray)
+        m: Relative refractive indices (2D ndarray)
+        nmax: Maximum number of multipolar expansion terms to be used for the
+              calculations. Only use it if you know what you are doing, otherwise
+              set this parameter to -1 and the function will calculate it.
+        pl: Index of PEC layer. If there is none just send -1
+
+    Returns: (terms, an, bn)
+    with
+        terms: Number of multipolar expansion terms used for the calculations
+        an, bn: Complex scattering coefficients
+    """
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
@@ -73,6 +95,31 @@ def scattcoeffs(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t
     return terms, an, bn
 
 def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 1] theta = np.zeros(0, dtype = np.float64), np.int_t nmax = -1, np.int_t pl = -1):
+    """
+    scattnlay(x, m[, theta, nmax, pl])
+
+    Calculate the actual scattering parameters and amplitudes.
+
+        x: Size parameters (2D ndarray)
+        m: Relative refractive indices (2D ndarray)
+        theta: Scattering angles where the scattering amplitudes will be
+               calculated (optional, 1D ndarray)
+        nmax: Maximum number of multipolar expansion terms to be used for the
+              calculations. Only use it if you know what you are doing.
+        pl: Index of PEC layer.
+
+    Returns: (terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2)
+    with
+        terms: Number of multipolar expansion terms used for the calculations
+        Qext: Efficiency factor for extinction
+        Qsca: Efficiency factor for scattering
+        Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)
+        Qbk: Efficiency factor for backscattering
+        Qpr: Efficiency factor for the radiation pressure
+        g: Asymmetry factor (g = (Qext-Qpr)/Qsca)
+        Albedo: Single scattering albedo (Albedo = Qsca/Qext)
+        S1, S2: Complex scattering amplitudes
+    """
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)
@@ -107,6 +154,24 @@ def scattnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 
 def fieldnlay(np.ndarray[np.float64_t, ndim = 2] x, np.ndarray[np.complex128_t, ndim = 2] m, np.ndarray[np.float64_t, ndim = 2] coords, np.int_t nmax = -1, np.int_t pl = -1):
+    """
+    fieldnlay(x, m, coords[, theta, nmax, pl])
+
+    Calculate the actual scattering parameters and amplitudes.
+
+        x: Size parameters (2D ndarray)
+        m: Relative refractive indices (2D ndarray)
+        coords: Array containing all coordinates where the complex electric
+                and magnetic fields will be calculated (2D ndarray)
+        nmax: Maximum number of multipolar expansion terms to be used for the
+              calculations. Only use it if you know what you are doing.
+        pl: Index of PEC layer.
+
+    Returns: (terms, E, H)
+    with
+        terms: Number of multipolar expansion terms used for the calculations
+        E, H: Complex electric and magnetic field at the provided coordinates
+    """
     cdef Py_ssize_t i
 
     cdef np.ndarray[np.int_t, ndim = 1] terms = np.zeros(x.shape[0], dtype = np.int)

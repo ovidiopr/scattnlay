@@ -1,6 +1,6 @@
 ![output example](/doc/OutputExample.png)
 **Output example:** Field distribution inside layered Si\Ag\Si sphere
-and Poynting vector distribution in Ag sphere with poweflow lines
+and Poynting vector distribution in Ag sphere with powerflow lines
 calculated with Scattnlay (scripts  field-SiAgSi-flow.py and
 field-Ag-flow.py from example section as [revision](https://github.com/ovidiopr/scattnlay/commit/57c7261705a5776f78420c1f486e929517d5f584) ).
 
@@ -75,6 +75,10 @@ and then you simply install the package:
 ``` bash
 sudo apt-get install python-scattnlay
 ```
+You can also install it from PyPi via
+```bash
+sudo pip install python-scattnlay
+```
 
 Use:
 ----
@@ -125,7 +129,7 @@ Scattnlay "Hello world!" example:
 
 ```C++
     try {
-      nmie::MultiLayerMieApplied<double> multi_layer_mie;  
+      nmie::MultiLayerMieApplied<double> multi_layer_mie; 
       multi_layer_mie.AddTargetLayer(core_width, index_Si);
       multi_layer_mie.AddTargetLayer(inner_width, index_Ag);
       multi_layer_mie.AddTargetLayer(outer_width, index_Si);
@@ -148,31 +152,41 @@ The complete `example-minimal.cc` and a bit more complicated
 multiple precision (just include `-DMULTI_PRECISION=200` to use 200
 digits for calculations). 
 
-Papers
-------
+Related papers
+--------------
 
-1. "Scattering of electromagnetic radiation by a multilayered sphere"
-   O. Pena and U. Pal,  Computer Physics Communications, vol. 180,
-   Nov. 2009, pp. 2348-2354. http://dx.doi.org/10.1016/j.cpc.2009.07.010
+1. O. Peña and U. Pal, "Scattering of electromagnetic radiation by a
+   multilayered sphere," Comput. Phys. Commun. 180, 2348-2354 (2009).
+   http://dx.doi.org/10.1016/j.cpc.2009.07.010
 
-2. "Reduction of scattering using thin all-dielectric shells designed by stochastic optimizer"
-   Konstantin Ladutenko, Ovidio Peña-Rodríguez, Irina Melchakova, Ilya
-   Yagupov, and Pavel Belov  J. Appl. Phys., vol. 116, pp. 184508,
-   2014 http://dx.doi.org/10.1063/1.4900529
+2. K. Ladutenko, O. Peña-Rodríguez, I. Melchakova, I. Yagupov and P. Belov,
+   "Reduction of scattering using thin all-dielectric shells designed by
+   stochastic optimizer," J. Appl. Phys. 116, 184508 (2014).
+   http://dx.doi.org/10.1063/1.4900529
 
-3. "Superabsorption of light by nanoparticles" Konstantin Ladutenko,
-   Pavel Belov, Ovidio Peña-Rodríguez, Ali Mirzaei, Andrey
-   E. Miroshnichenko and Ilya V. Shadrivov  Nanoscale, 2015,7,
-   18897-18901 http://dx.doi.org/10.1039/C5NR05468K
+3. K. Ladutenko, P. Belov, O. Peña-Rodríguez, A. Mirzaei, A. Miroshnichenko
+   and I. Shadrivov, "Superabsorption of light by nanoparticles,"
+   Nanoscale 7, 18897-18901 (2015).
+   http://dx.doi.org/10.1039/C5NR05468K
+
+4. K. Ladutenko, U. Pal, A. Rivera, and O. Peña-Rodríguez, "Mie calculation
+   of electromagnetic near-field for a multilayered sphere,"
+   Comp. Phys. Comm. 214, 225-230 (2017).
+   http://dx.doi.org/j.cpc.2017.01.017
 
 Acknowledgment
 --------------
 
 We expect that all publications describing work using this software,
-or all commercial products using it, cite the following reference:
-> O. Pena and U. Pal, "Scattering of electromagnetic radiation
-> by a multilayered sphere," Computer Physics Communications,
-> vol. 180, Nov. 2009, pp. 2348-2354.
+or all commercial products using it, cite at least one of the following references:
+> [1] O. Peña and U. Pal, "Scattering of electromagnetic radiation
+>     by a multilayered sphere," Computer Physics Communications,
+>     vol. 180, Nov. 2009, pp. 2348-2354.
+>
+> [2] K. Ladutenko, U. Pal, A. Rivera and O. Peña-Rodríguez, "Mie calculation
+>     of electromagnetic near-field for a multilayered sphere,"
+>     Computer Physics Communications, vol. 214, May 2017, pp. 225-230.
+
 
 License
 -------

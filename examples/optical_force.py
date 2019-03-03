@@ -2,8 +2,9 @@
 # -*- coding: UTF-8 -*-
 #
 #    Copyright (C) 2009-2017 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
+#    Copyright (C) 2013-2017 Konstantin Ladutenko <kostyfisik@gmail.com>
 #
-#    This file is part of python-scattnlay
+#    This file is part of scattnlay
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -29,47 +30,56 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# This test case calculates the differential scattering
-# cross section for different x values of a PEC sphere
-
-# The differential cross section from wave optics is:
-# d(Csca)/d(a**2*Omega) = S11(Theta)/x**2
+# This test case calculates the optical force over a silver nanoparticle,
+# as a function of the irradiance and the radius.
 
 from scattnlay import scattnlay
 import numpy as np
+from scipy.constants import pi, c
 
-dX = 0.5
-Xmax = 5.0
+radius = np.linspace(0.5, 180.0, 360)
+nAg = np.sqrt(-4.0 + 0.7j)
+wl = 400.0
 
-m = np.array([[1.0 - 1.0j]], dtype = np.complex128)
-theta = np.arange(0.0, 180.25, 0.25, dtype = np.float64)*np.pi/180.0
+x = np.ones((len(radius), 1), dtype = np.float64)
+x[:, 0] = 2.0*pi*radius/wl
 
-result = theta*180.0/np.pi
+m = np.ones((len(radius), 1), dtype = np.complex128)
+m[:, 0] *= nAg
 
-for xl in np.arange(dX, Xmax, dX, dtype = np.float64):
-    x = np.array([[xl]], dtype = np.float64)
-    terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m, theta)
+terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
+F = pi*Qpr*radius*radius/c/1e9
 
-    S11 = S1[0].real*S1[0].real + S1[0].imag*S1[0].imag + S2[0].real*S2[0].real + S2[0].imag*S2[0].imag
-    result = np.vstack((result, S11/(2.0*xl*xl)))
-
-result = result.transpose()
+result = np.vstack((radius, 1e11*F, 1e13*F, 1e15*F)).transpose()
 
 try:
     import matplotlib.pyplot as plt
 
-    plt.plot(result[ : , 0], result[ : , 1:])
-
+    plt.figure(1)
+    plt.subplot(311)
+    plt.plot(radius, 1e11*F, 'k', label = '10$^{11}$ W/m$^2$')
+    plt.plot(radius, 1e13*F, 'b', label = '10$^{13}$ W/m$^2$')
+    plt.plot(radius, 1e15*F, 'g', label = '10$^{15}$ W/m$^2$')
+    plt.ylabel('F (nN)')
+    plt.legend(loc = 4)
     ax = plt.gca()
     ax.set_yscale('log')
-#    ax.set_ylim(1e-4, 1e3)
 
-    plt.xlabel('Theta')
+    plt.subplot(312)
+    plt.plot(radius, g, 'r', label = 'g')
+    plt.ylabel('g')
 
-    plt.draw()
+    plt.subplot(313)
+    plt.plot(radius, Qext, 'k', label = 'Q$_{ext}$')
+    plt.plot(radius, Qsca, 'b', label = 'Q$_{sca}$')
+    plt.plot(radius, Qpr, 'g', label = 'Q$_{pr}$')
+    plt.ylabel('Q')
+    plt.legend()
+
+    plt.xlabel('R (nm)')
+    
     plt.show()
 finally:
-    np.savetxt("scattPEC.txt", result, fmt = "%.5f")
+    #np.savetxt("test_force.txt", result, fmt = "%.5e")
     print result
-
 
