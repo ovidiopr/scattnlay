@@ -70,8 +70,8 @@ m[:, 3] *= 2.8 + 0.2j
 m[:, 4] *= 1.5 + 0.4j
 
 terms, an, bn = scattcoeffs(x, m, 105)
-terms1, an1, bn1 = example.scattcoeffs(x[0,:], m[0,:])
-print(terms)
+terms1, an1, bn1 = example.scattcoeffs(x[0,:], m[0,:], nmax=10)
+print(an1[:3], bn1[:3])
 print(terms1)
 
 result = np.vstack((x[:, 4], an[:, 0].real, an[:, 0].imag, an[:, 1].real, an[:, 1].imag, an[:, 2].real, an[:, 2].imag,
@@ -96,5 +96,5 @@ try:
     plt.show()
 finally:
     np.savetxt("scattcoeffs.txt", result, fmt = "%.5f")
-    print( result)
+    print( result[0,:])
 

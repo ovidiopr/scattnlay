@@ -43,3 +43,8 @@ build*
 tests/python/field.txt
 examples/*.pdf
 examples/*.png
+examples/*.7z
+examples/Egor*
+examples/egor*
+examples/*.txt
+examples/*.pyc
