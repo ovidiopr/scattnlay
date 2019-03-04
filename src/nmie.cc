@@ -431,42 +431,40 @@ namespace nmie {
   // int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
   //                 const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
 
-    
-std::complex<double>
-test_stdvec(const  std::complex<double> a, const std::vector< std::complex<double> > input, std::vector< std::complex<double> >& output) {
-  for (unsigned int i = 0; i < input.size();++i){    
-    output[i] = input[i]*a;
-  }
-  return a;
-}
 
-std::tuple<
-  py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast>,
- std::complex<double>
-  >
-py_test_stdvec(const  std::complex<double> a,
-                   py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> py_input) {
-  std::vector< std::complex<double> > c_input(py_input.size());
-  std::vector< std::complex<double> > c_output(py_input.size());
+py::tuple py_ScattCoeffs(
+               py::array_t<double, py::array::c_style | py::array::forcecast> py_x,
+               py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> py_m// ,
+               // const int nmax=-1, const int pl=-1
+               ) {
   
-  std::memcpy(c_input.data(), py_input.data(), py_input.size()*sizeof( std::complex<double>));
+  std::vector<double> c_x(py_x.size());
+  std::vector< std::complex<double> > c_m(py_m.size());
+  int L = py_x.size();
+  int nmax = -1, pl = -1;
+  
+  std::memcpy(c_x.data(), py_x.data(), py_x.size()*sizeof(double));
+  std::memcpy(c_m.data(), py_m.data(), py_m.size()*sizeof( std::complex<double>));
 
-   std::complex<double> c_a = 0;
-  c_a = test_stdvec(a, c_input, c_output);
-    
+  int terms = 0;
+  std::vector<std::complex<double> > c_an, c_bn;
+  terms = nmie::ScattCoeffs( L, pl, c_x, c_m, nmax, c_an, c_bn);
 
-  auto result        = py::array_t< std::complex<double>>(c_output.size());
-  auto result_buffer = result.request();
-   std::complex<double> *result_ptr    = ( std::complex<double> *) result_buffer.ptr;
+  auto py_an = py::array_t< std::complex<double>>(c_an.size());
+  auto py_bn = py::array_t< std::complex<double>>(c_bn.size());
+  auto py_an_buffer = py_an.request();
+  auto py_bn_buffer = py_bn.request();
+  std::complex<double> *py_an_ptr    = ( std::complex<double> *) py_an_buffer.ptr;
+  std::complex<double> *py_bn_ptr    = ( std::complex<double> *) py_bn_buffer.ptr;
 
-  std::memcpy(result_ptr,c_output.data(),c_output.size()*sizeof( std::complex<double>));
+  std::memcpy(py_an_ptr,c_an.data(),c_an.size()*sizeof( std::complex<double>));
+  std::memcpy(py_bn_ptr,c_bn.data(),c_bn.size()*sizeof( std::complex<double>));
 
-  return std::make_tuple(result, c_a);
-
+  return py::make_tuple(terms, py_an, py_bn);
 }
 
 PYBIND11_MODULE(example, m) {
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
-    m.def("test_stdvec", &py_test_stdvec, "Multipy vec by a const");
+    m.def("scattcoeffs", &py_ScattCoeffs, "test");
 }
