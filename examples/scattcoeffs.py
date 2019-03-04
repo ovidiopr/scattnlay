@@ -75,7 +75,7 @@ nmax=105
 an2 = np.zeros((len(size),nmax), dtype = np.complex128)
 bn2 = np.zeros((len(size),nmax), dtype = np.complex128)
 
-for i in range(300):
+for _ in range(300):
     for i in range(len(size)):
         terms1, an2[i,:], bn2[i,:] = example.scattcoeffs(x[i,:], m[i,:], nmax=nmax)
 
