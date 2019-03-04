@@ -69,32 +69,42 @@ m[:, 2] *= 1.2 + 0.09j
 m[:, 3] *= 2.8 + 0.2j
 m[:, 4] *= 1.5 + 0.4j
 
-terms, an, bn = scattcoeffs(x, m, 105)
-terms1, an1, bn1 = example.scattcoeffs(x[0,:], m[0,:], nmax=10)
-print(an1[:3], bn1[:3])
-print(terms1)
+# for i in range(300):
+#     terms, an, bn = scattcoeffs(x, m, 105)
+nmax=105
+an2 = np.zeros((len(size),nmax), dtype = np.complex128)
+bn2 = np.zeros((len(size),nmax), dtype = np.complex128)
 
-result = np.vstack((x[:, 4], an[:, 0].real, an[:, 0].imag, an[:, 1].real, an[:, 1].imag, an[:, 2].real, an[:, 2].imag,
-                             bn[:, 0].real, bn[:, 0].imag, bn[:, 1].real, bn[:, 1].imag, bn[:, 2].real, bn[:, 2].imag)).transpose()
+for i in range(300):
+    for i in range(len(size)):
+        terms1, an2[i,:], bn2[i,:] = example.scattcoeffs(x[i,:], m[i,:], nmax=nmax)
 
-try:
-    import matplotlib.pyplot as plt
+# print(an1[:3], bn1[:3])
+# print(an2)
+# print(an)
+# print(terms1)
 
-    plt.figure(1)
-    for i in range(3):
-        plt.subplot(310 + i + 1)
-        plt.plot(x[:, 4], an[:, i].real, label = "Re(a$_%i$)" % (i + 1))
-        plt.plot(x[:, 4], bn[:, i].real, label = "Re(b$_%i$)" % (i + 1))
-        plt.plot(x[:, 4], an[:, i].imag, label = "Im(a$_%i$)" % (i + 1))
-        plt.plot(x[:, 4], bn[:, i].imag, label = "Im(b$_%i$)" % (i + 1))
+# result = np.vstack((x[:, 4], an[:, 0].real, an[:, 0].imag, an[:, 1].real, an[:, 1].imag, an[:, 2].real, an[:, 2].imag,
+#                              bn[:, 0].real, bn[:, 0].imag, bn[:, 1].real, bn[:, 1].imag, bn[:, 2].real, bn[:, 2].imag)).transpose()
 
-        plt.ylabel('n = %i' % (i + 1))
-        plt.legend()
+# try:
+#     import matplotlib.pyplot as plt
 
-    plt.xlabel('X')
+#     plt.figure(1)
+#     for i in range(3):
+#         plt.subplot(310 + i + 1)
+#         plt.plot(x[:, 4], an[:, i].real, label = "Re(a$_%i$)" % (i + 1))
+#         plt.plot(x[:, 4], bn[:, i].real, label = "Re(b$_%i$)" % (i + 1))
+#         plt.plot(x[:, 4], an[:, i].imag, label = "Im(a$_%i$)" % (i + 1))
+#         plt.plot(x[:, 4], bn[:, i].imag, label = "Im(b$_%i$)" % (i + 1))
+
+#         plt.ylabel('n = %i' % (i + 1))
+#         plt.legend()
+
+#     plt.xlabel('X')
     
-    plt.show()
-finally:
-    np.savetxt("scattcoeffs.txt", result, fmt = "%.5f")
-    print( result[0,:])
+#     plt.show()
+# finally:
+#     np.savetxt("scattcoeffs.txt", result, fmt = "%.5f")
+#     print( result[0,:])
 
