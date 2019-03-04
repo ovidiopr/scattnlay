@@ -57,6 +57,106 @@
 #include <iomanip>
 #include <vector>
 
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+#include <pybind11/complex.h>
+
+
+// // -------------
+// // pure C++ code
+// // -------------
+
+// std::vector<int> multiply(const std::vector<double>& input)
+// {
+//   std::vector<int> output(input.size());
+
+//   for ( size_t i = 0 ; i < input.size() ; ++i )
+//     output[i] = 10*static_cast<int>(input[i]);
+
+//   return output;
+// }
+
+// // ----------------
+// // Python interface
+// // ----------------
+
+// namespace py = pybind11;
+
+// // wrap C++ function with NumPy array IO
+// py::array_t<int> py_multiply(py::array_t<double, py::array::c_style | py::array::forcecast> array)
+// {
+//   // allocate std::vector (to pass to the C++ function)
+//   std::vector<double> array_vec(array.size());
+
+//   // copy py::array -> std::vector
+//   std::memcpy(array_vec.data(),array.data(),array.size()*sizeof(double));
+
+//   // call pure C++ function
+//   std::vector<int> result_vec = multiply(array_vec);
+
+//   // allocate py::array (to pass the result of the C++ function to Python)
+//   auto result        = py::array_t<int>(array.size());
+//   auto result_buffer = result.request();
+//   int *result_ptr    = (int *) result_buffer.ptr;
+
+//   // copy std::vector -> py::array
+//   std::memcpy(result_ptr,result_vec.data(),result_vec.size()*sizeof(int));
+
+//   return result;
+// }
+
+// // wrap as Python module
+// PYBIND11_MODULE(example,m)
+// {
+//   m.doc() = "pybind11 example plugin";
+
+//   m.def("multiply", &py_multiply, "Convert all entries of an 1-D NumPy-array to int and multiply by 10");
+// }
+
+namespace py = pybind11;
+
+int add(int i, int j) {
+    return i + j;
+}
+
+int test_stdvec(const int a, const std::vector<double> input, std::vector<double>& output) {
+  for (unsigned int i = 0; i < input.size();++i){    
+    output[i] = input[i]*a;
+  }
+  return a;
+}
+
+// PYBIND11_MAKE_OPAQUE(std::vector<double>);
+
+py::array_t<double, py::array::c_style | py::array::forcecast>
+py_test_stdvec(const int a,
+                   py::array_t<double, py::array::c_style | py::array::forcecast> py_input) {
+  std::vector<double> c_input(py_input.size());
+  std::vector<double> c_output(py_input.size());
+  
+  std::memcpy(c_input.data(), py_input.data(), py_input.size()*sizeof(double));
+
+  int c_a = 0;
+  c_a = test_stdvec(a, c_input, c_output);
+    
+
+  auto result        = py::array_t<double>(c_output.size());
+  auto result_buffer = result.request();
+  double *result_ptr    = (double *) result_buffer.ptr;
+
+  std::memcpy(result_ptr,c_output.data(),c_output.size()*sizeof(double));
+
+  return result;
+
+}
+
+PYBIND11_MODULE(example, m) {
+    m.doc() = "pybind11 example plugin"; // optional module docstring
+
+    m.def("add", &add, "A function which adds two numbers");
+    m.def("test_stdvec", &py_test_stdvec, "Multipy vec by a const");
+}
+
 namespace nmie {
   
   //**********************************************************************************//
