@@ -431,6 +431,12 @@ namespace nmie {
   // int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
   //                 const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
 
+    
+// std::tuple<
+//   int, // used terms
+//   py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast>,  //an
+//   py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast>   //bn
+//   >
 
 py::tuple py_ScattCoeffs(
                py::array_t<double, py::array::c_style | py::array::forcecast> py_x,
@@ -467,4 +473,5 @@ PYBIND11_MODULE(example, m) {
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
     m.def("scattcoeffs", &py_ScattCoeffs, "test");
+    m.def("scattcoeffs", py::vectorize(&py_ScattCoeffs), "test");
 }
