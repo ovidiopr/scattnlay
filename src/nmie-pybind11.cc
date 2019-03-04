@@ -87,10 +87,33 @@ py::tuple py_ScattCoeffs(py::array_t<double, py::array::c_style | py::array::for
   return py::make_tuple(terms, VectorComplex2Py(c_an), VectorComplex2Py(c_bn));
 }
 
+
+py::tuple py_scattnlay(py::array_t<double, py::array::c_style | py::array::forcecast> py_x,
+                       py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> py_m,
+                       py::array_t<double, py::array::c_style | py::array::forcecast> py_theta,
+                       const int nmax=-1, const int pl=-1) {
+  auto c_x = Py2VectorDouble(py_x);
+  auto c_m = Py2VectorComplex(py_m);
+  auto c_theta = Py2VectorDouble(py_theta);
+
+  int L = py_x.size(), nTheta = c_theta.size(), terms;
+  double Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo;
+  std::vector<std::complex<double> > S1, S2;
+
+  terms = nmie::nMie(L, pl, c_x, c_m, nTheta, c_theta, nmax, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+  
+  return py::make_tuple(terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo,
+                        VectorComplex2Py(S1), VectorComplex2Py(S2));
+}
+
 PYBIND11_MODULE(example, m) {
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
     m.def("scattcoeffs", &py_ScattCoeffs, "test",
           py::arg("x"), py::arg("m"),
+          py::arg("nmax")=-1, py::arg("pl")=-1);
+    m.def("scattnlay", &py_scattnlay, "test",
+          py::arg("x"), py::arg("m"),
+          py::arg("theta")=py::array_t<double>(0),
           py::arg("nmax")=-1, py::arg("pl")=-1);
 }
