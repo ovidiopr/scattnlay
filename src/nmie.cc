@@ -49,7 +49,6 @@
 #include "nmie-impl.hpp"
 #include "nmie-precision.hpp"
 #include <array>
-#include <tuple>
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
