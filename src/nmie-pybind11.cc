@@ -49,7 +49,7 @@
 namespace py = pybind11;
 
 
-py::array_t< std::complex<double>> VectorComplex2Py(std::vector<std::complex<double> > c_x) {
+py::array_t< std::complex<double>> VectorComplex2Py(const std::vector<std::complex<double> > &c_x) {
   auto py_x = py::array_t< std::complex<double>>(c_x.size());
   auto py_x_buffer = py_x.request();
   std::complex<double> *py_x_ptr    = ( std::complex<double> *) py_x_buffer.ptr;
@@ -58,22 +58,58 @@ py::array_t< std::complex<double>> VectorComplex2Py(std::vector<std::complex<dou
 }
 
 
-std::vector<double> Py2VectorDouble(py::array_t<double> py_x) {
+// https://stackoverflow.com/questions/17294629/merging-flattening-sub-vectors-into-a-single-vector-c-converting-2d-to-1d
+template <typename T>
+std::vector<T> flatten(const std::vector<std::vector<T>>& v) {
+    std::size_t total_size = 0;
+    for (const auto& sub : v)
+        total_size += sub.size(); // I wish there was a transform_accumulate
+    std::vector<T> result;
+    result.reserve(total_size);
+    for (const auto& sub : v)
+        result.insert(result.end(), sub.begin(), sub.end());
+    return result;
+}
+
+
+py::array VectorVectorComplex2Py(const std::vector<std::vector<std::complex<double> > > &E) {
+  size_t ncoord = E.size();
+  size_t ncomp = E[0].size();
+  auto result = flatten(E);
+  // https://github.com/tdegeus/pybind11_examples/blob/master/04_numpy-2D_cpp-vector/example.cpp 
+  size_t              ndim    = 2;
+  std::vector<size_t> shape   = { ncoord , ncomp };
+  std::vector<size_t> strides = { sizeof(std::complex<double>)*3 , sizeof(std::complex<double>) };
+
+  // return 2-D NumPy array
+  return py::array(py::buffer_info(
+    result.data(),                           /* data as contiguous array  */
+    sizeof(std::complex<double>),            /* size of one scalar        */
+    py::format_descriptor<std::complex<double>>::format(), /* data type                 */
+    ndim,                                    /* number of dimensions      */
+    shape,                                   /* shape of the matrix       */
+    strides                                  /* strides for each axis     */
+  ));
+
+}
+
+
+std::vector<double> Py2VectorDouble(const py::array_t<double> &py_x) {
   std::vector<double> c_x(py_x.size());
   std::memcpy(c_x.data(), py_x.data(), py_x.size()*sizeof(double));
   return c_x;
 }
 
 
-std::vector< std::complex<double> > Py2VectorComplex(py::array_t< std::complex<double> > py_x){
+std::vector< std::complex<double> > Py2VectorComplex(const py::array_t< std::complex<double> > &py_x){
   std::vector< std::complex<double> > c_x(py_x.size());
   std::memcpy(c_x.data(), py_x.data(), py_x.size()*sizeof( std::complex<double>));
   return c_x;
 }
 
 
-py::tuple py_ScattCoeffs(py::array_t<double, py::array::c_style | py::array::forcecast> py_x,
-                         py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> py_m,
+py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
+                         const py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
                          const int nmax=-1, const int pl=-1) {
 
   auto c_x = Py2VectorDouble(py_x);
@@ -107,20 +143,6 @@ py::tuple py_scattnlay(py::array_t<double, py::array::c_style | py::array::force
 }
 
 
-// https://stackoverflow.com/questions/17294629/merging-flattening-sub-vectors-into-a-single-vector-c-converting-2d-to-1d
-template <typename T>
-std::vector<T> flatten(const std::vector<std::vector<T>>& v) {
-    std::size_t total_size = 0;
-    for (const auto& sub : v)
-        total_size += sub.size(); // I wish there was a transform_accumulate
-    std::vector<T> result;
-    result.reserve(total_size);
-    for (const auto& sub : v)
-        result.insert(result.end(), sub.begin(), sub.end());
-    return result;
-}
-
-
 py::tuple py_fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecast> py_x,
                        py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> py_m,
                        py::array_t<double, py::array::c_style | py::array::forcecast> py_Xp,
@@ -130,18 +152,19 @@ py::tuple py_fieldnlay(py::array_t<double, py::array::c_style | py::array::force
 
   auto c_x = Py2VectorDouble(py_x);
   auto c_m = Py2VectorComplex(py_m);
-  auto c_Xp = Py2VectorComplex(py_Xp);
-  auto c_Yp = Py2VectorComplex(py_Yp);
-  auto c_Zp = Py2VectorComplex(py_Zp);
+  auto c_Xp = Py2VectorDouble(py_Xp);
+  auto c_Yp = Py2VectorDouble(py_Yp);
+  auto c_Zp = Py2VectorDouble(py_Zp);
   unsigned int ncoord = py_Xp.size();
   std::vector<std::vector<std::complex<double> > > E(ncoord);
   std::vector<std::vector<std::complex<double> > > H(ncoord);
   for (auto& f : E) f.resize(3);
   for (auto& f : H) f.resize(3);
   int L = py_x.size(), terms;
-  // terms = nmie::nField(L, pl, c_x, c_m, nmax, ncoord, c_Xp, c_Yp, c_Zp, E, H);
-
-  return py::make_tuple(terms, ncoord);
+  terms = nmie::nField(L, pl, c_x, c_m, nmax, ncoord, c_Xp, c_Yp, c_Zp, E, H);
+  auto py_E = VectorVectorComplex2Py(E);
+  auto py_H = VectorVectorComplex2Py(H);
+  return py::make_tuple(terms, py_E, py_H);
 }
 
 PYBIND11_MODULE(example, m) {
