@@ -98,12 +98,50 @@ py::tuple py_scattnlay(py::array_t<double, py::array::c_style | py::array::force
 
   int L = py_x.size(), nTheta = c_theta.size(), terms;
   double Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo;
-  std::vector<std::complex<double> > S1, S2;
+  std::vector<std::complex<double> > c_S1, c_S2;
 
-  terms = nmie::nMie(L, pl, c_x, c_m, nTheta, c_theta, nmax, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+  terms = nmie::nMie(L, pl, c_x, c_m, nTheta, c_theta, nmax, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, c_S1, c_S2);
   
   return py::make_tuple(terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo,
-                        VectorComplex2Py(S1), VectorComplex2Py(S2));
+                        VectorComplex2Py(c_S1), VectorComplex2Py(c_S2));
+}
+
+
+// https://stackoverflow.com/questions/17294629/merging-flattening-sub-vectors-into-a-single-vector-c-converting-2d-to-1d
+template <typename T>
+std::vector<T> flatten(const std::vector<std::vector<T>>& v) {
+    std::size_t total_size = 0;
+    for (const auto& sub : v)
+        total_size += sub.size(); // I wish there was a transform_accumulate
+    std::vector<T> result;
+    result.reserve(total_size);
+    for (const auto& sub : v)
+        result.insert(result.end(), sub.begin(), sub.end());
+    return result;
+}
+
+
+py::tuple py_fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecast> py_x,
+                       py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> py_m,
+                       py::array_t<double, py::array::c_style | py::array::forcecast> py_Xp,
+                       py::array_t<double, py::array::c_style | py::array::forcecast> py_Yp,
+                       py::array_t<double, py::array::c_style | py::array::forcecast> py_Zp,
+                       const int nmax=-1, const int pl=-1) {
+
+  auto c_x = Py2VectorDouble(py_x);
+  auto c_m = Py2VectorComplex(py_m);
+  auto c_Xp = Py2VectorComplex(py_Xp);
+  auto c_Yp = Py2VectorComplex(py_Yp);
+  auto c_Zp = Py2VectorComplex(py_Zp);
+  unsigned int ncoord = py_Xp.size();
+  std::vector<std::vector<std::complex<double> > > E(ncoord);
+  std::vector<std::vector<std::complex<double> > > H(ncoord);
+  for (auto& f : E) f.resize(3);
+  for (auto& f : H) f.resize(3);
+  int L = py_x.size(), terms;
+  // terms = nmie::nField(L, pl, c_x, c_m, nmax, ncoord, c_Xp, c_Yp, c_Zp, E, H);
+
+  return py::make_tuple(terms, ncoord);
 }
 
 PYBIND11_MODULE(example, m) {
@@ -116,4 +154,9 @@ PYBIND11_MODULE(example, m) {
           py::arg("x"), py::arg("m"),
           py::arg("theta")=py::array_t<double>(0),
           py::arg("nmax")=-1, py::arg("pl")=-1);
+    m.def("fieldnlay", &py_fieldnlay, "test",
+          py::arg("x"), py::arg("m"),
+          py::arg("xp"),py::arg("yp"),py::arg("zp"),
+          py::arg("nmax")=-1, py::arg("pl")=-1);
 }
+
