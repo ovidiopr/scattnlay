@@ -79,7 +79,7 @@ py::array VectorVectorComplex2Py(const std::vector<std::vector<std::complex<doub
   // https://github.com/tdegeus/pybind11_examples/blob/master/04_numpy-2D_cpp-vector/example.cpp 
   size_t              ndim    = 2;
   std::vector<size_t> shape   = { ncoord , ncomp };
-  std::vector<size_t> strides = { sizeof(std::complex<double>)*3 , sizeof(std::complex<double>) };
+  std::vector<size_t> strides = { sizeof(std::complex<double>)*ncomp , sizeof(std::complex<double>) };
 
   // return 2-D NumPy array
   return py::array(py::buffer_info(
@@ -93,27 +93,21 @@ py::array VectorVectorComplex2Py(const std::vector<std::vector<std::complex<doub
 
 }
 
-
-std::vector<double> Py2VectorDouble(const py::array_t<double> &py_x) {
-  std::vector<double> c_x(py_x.size());
-  std::memcpy(c_x.data(), py_x.data(), py_x.size()*sizeof(double));
+template <typename T>
+std::vector<T> Py2Vector(const py::array_t<T> &py_x) {
+  std::vector<T> c_x(py_x.size());
+  std::memcpy(c_x.data(), py_x.data(), py_x.size()*sizeof(T));
   return c_x;
 }
 
-
-std::vector< std::complex<double> > Py2VectorComplex(const py::array_t< std::complex<double> > &py_x){
-  std::vector< std::complex<double> > c_x(py_x.size());
-  std::memcpy(c_x.data(), py_x.data(), py_x.size()*sizeof( std::complex<double>));
-  return c_x;
-}
 
 
 py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
                          const py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
                          const int nmax=-1, const int pl=-1) {
 
-  auto c_x = Py2VectorDouble(py_x);
-  auto c_m = Py2VectorComplex(py_m);
+  auto c_x = Py2Vector<double>(py_x);
+  auto c_m = Py2Vector< std::complex<double> >(py_m);
 
   int terms = 0;
   std::vector<std::complex<double> > c_an, c_bn;
@@ -124,13 +118,13 @@ py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::arra
 }
 
 
-py::tuple py_scattnlay(py::array_t<double, py::array::c_style | py::array::forcecast> py_x,
-                       py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> py_m,
-                       py::array_t<double, py::array::c_style | py::array::forcecast> py_theta,
+py::tuple py_scattnlay(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
+                       const py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
+                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_theta,
                        const int nmax=-1, const int pl=-1) {
-  auto c_x = Py2VectorDouble(py_x);
-  auto c_m = Py2VectorComplex(py_m);
-  auto c_theta = Py2VectorDouble(py_theta);
+  auto c_x = Py2Vector<double>(py_x);
+  auto c_m = Py2Vector< std::complex<double> >(py_m);
+  auto c_theta = Py2Vector<double>(py_theta);
 
   int L = py_x.size(), nTheta = c_theta.size(), terms;
   double Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo;
@@ -143,18 +137,18 @@ py::tuple py_scattnlay(py::array_t<double, py::array::c_style | py::array::force
 }
 
 
-py::tuple py_fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecast> py_x,
-                       py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> py_m,
-                       py::array_t<double, py::array::c_style | py::array::forcecast> py_Xp,
-                       py::array_t<double, py::array::c_style | py::array::forcecast> py_Yp,
-                       py::array_t<double, py::array::c_style | py::array::forcecast> py_Zp,
+py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
+                       const py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
+                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,
+                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Yp,
+                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Zp,
                        const int nmax=-1, const int pl=-1) {
 
-  auto c_x = Py2VectorDouble(py_x);
-  auto c_m = Py2VectorComplex(py_m);
-  auto c_Xp = Py2VectorDouble(py_Xp);
-  auto c_Yp = Py2VectorDouble(py_Yp);
-  auto c_Zp = Py2VectorDouble(py_Zp);
+  auto c_x = Py2Vector<double>(py_x);
+  auto c_m = Py2Vector< std::complex<double> >(py_m);
+  auto c_Xp = Py2Vector<double>(py_Xp);
+  auto c_Yp = Py2Vector<double>(py_Yp);
+  auto c_Zp = Py2Vector<double>(py_Zp);
   unsigned int ncoord = py_Xp.size();
   std::vector<std::vector<std::complex<double> > > E(ncoord);
   std::vector<std::vector<std::complex<double> > > H(ncoord);
