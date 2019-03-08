@@ -67,6 +67,7 @@ fieldnlay-mp: $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc $(CXX_NMIE_HEADERS)
 
 lib:
 	c++ -O3 -Wall -shared -std=c++11 -fPIC `python3 -m pybind11 --includes` $(SRCDIR)/nmie.cc $(SRCDIR)/nmie-pybind11.cc  -lm -o example`python3-config --extension-suffix`
+	mv example`python3-config --extension-suffix` scattnlay2
 clean:
 	$(PYTHON) setup.py clean
 	$(MAKE) -f $(CURDIR)/debian/rules clean

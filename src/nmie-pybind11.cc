@@ -165,14 +165,14 @@ py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array:
 PYBIND11_MODULE(example, m) {
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
-    m.def("scattcoeffs", &py_ScattCoeffs, "test",
+    m.def("scattcoeffs_", &py_ScattCoeffs, "test",
           py::arg("x"), py::arg("m"),
           py::arg("nmax")=-1, py::arg("pl")=-1);
-    m.def("scattnlay", &py_scattnlay, "test",
+    m.def("scattnlay_", &py_scattnlay, "test",
           py::arg("x"), py::arg("m"),
           py::arg("theta")=py::array_t<double>(0),
           py::arg("nmax")=-1, py::arg("pl")=-1);
-    m.def("fieldnlay", &py_fieldnlay, "test",
+    m.def("fieldnlay_", &py_fieldnlay, "test",
           py::arg("x"), py::arg("m"),
           py::arg("xp"),py::arg("yp"),py::arg("zp"),
           py::arg("nmax")=-1, py::arg("pl")=-1);
