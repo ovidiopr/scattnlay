@@ -1,4 +1,4 @@
-from scattnlay2.example import scattcoeffs_, scattnlay_,  fieldnlay_
+from scattnlay2.pynmie import scattcoeffs_, scattnlay_,  fieldnlay_
 import numpy as np
 def scattcoeffs(x, m, nmax=-1, pl=-1, nstore=1000):
     if len(x.shape) != 2:

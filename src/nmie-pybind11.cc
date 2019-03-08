@@ -162,7 +162,7 @@ py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array:
   return py::make_tuple(terms, py_E, py_H);
 }
 
-PYBIND11_MODULE(example, m) {
+PYBIND11_MODULE(pynmie, m) {
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
     m.def("scattcoeffs_", &py_ScattCoeffs, "test",
