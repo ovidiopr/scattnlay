@@ -1,1 +1,1 @@
-# import main
+from scattnlay2.main import scattcoeffs
