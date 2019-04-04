@@ -63,12 +63,12 @@ O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
       ext_modules = [Extension("scattnlay",
                                ["src/nmie.cc", "src/pb11_nmie.cc", "src/pb11_wrapper.cc"],
                                language = "c++",
-                               include_dirs = [np.get_include(), pb.get_include(True)], 
+                               include_dirs = [np.get_include(), pb.get_include()], 
                                extra_compile_args=['-std=c++11']),
                      Extension("scattnlay_mp",
                                ["src/nmie.cc", "src/pb11_nmie.cc", "src/pb11_wrapper_mp.cc"],
                                language = "c++",
-                               include_dirs = [np.get_include(), pb.get_include(True)], 
+                               include_dirs = [np.get_include(), pb.get_include()], 
                                extra_compile_args=['-std=c++11', '-DMULTI_PRECISION=100'])]
 )
 

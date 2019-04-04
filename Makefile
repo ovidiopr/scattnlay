@@ -11,6 +11,7 @@ CXX_NMIE_HEADERS=$(SRCDIR)/nmie.hpp $(SRCDIR)/nmie-impl.hpp $(SRCDIR)/nmie-preci
 all:
 	@echo "make source - Create source package for Python extension"
 	@echo "make cython - Convert Cython code to C++"
+	@echo "make python_ext_pb11 - Create Python extension using pybind11"
 	@echo "make python_ext - Create Python extension using C++ code"
 	@echo "make cython_ext - Create Python extension using Cython code"
 	@echo "make install - Install Python extension on local system"
@@ -30,6 +31,9 @@ cython: $(SRCDIR)/scattnlay.pyx
 	ln -s $(SRCDIR)/scattnlay.pyx $(SRCDIR)/scattnlay_mp.pyx
 	$(CYTHON) --cplus $(SRCDIR)/scattnlay_mp.pyx -o $(SRCDIR)/scattnlay_mp.cpp
 	rm $(SRCDIR)/scattnlay_mp.pyx
+
+python_ext_pb11: $(SRCDIR)/nmie.cc $(SRCDIR)/pb11_nmie.cc $(SRCDIR)/pb11_wrapper.cc $(SRCDIR)/pb11_wrapper_mp.cc
+	$(PYTHON) setup_pb11.py build_ext --inplace
 
 python_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc $(SRCDIR)/scattnlay.cpp $(SRCDIR)/scattnlay_mp.cpp
 	$(PYTHON) setup.py build_ext --inplace

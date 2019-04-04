@@ -60,12 +60,8 @@ py::tuple scattcoeffs(py::array_t<double, py::array::c_style | py::array::forcec
   int num_layers = x.shape(1);
 
   // allocate std::vector (to pass to the C++ function)
-  std::vector<std::vector<double> > x_cpp(x.size());
-  std::vector<std::vector<std::complex<double> > > m_cpp(m.size());
-
-  // copy py::array -> std::vector
-  std::memcpy(x_cpp.data(), x.data(), x.size()*sizeof(double));
-  std::memcpy(m_cpp.data(), m.data(), m.size()*sizeof(std::complex<double>));
+  std::vector<double> x_cpp(num_layers);
+  std::vector<std::complex<double> > m_cpp(num_layers);
 
   // create std::vector (to get return from the C++ function)
   std::vector<int> terms(num_wvlght);
@@ -75,7 +71,11 @@ py::tuple scattcoeffs(py::array_t<double, py::array::c_style | py::array::forcec
   
   ssize_t max_terms = 0;
   for (ssize_t i = 0; i < num_wvlght; i++) {
-    terms[i] = nmie::ScattCoeffs(num_layers, pl, x_cpp[i], m_cpp[i], nmax, an[i], bn[i]);
+    // copy py::array -> std::vector
+    std::memcpy(x_cpp.data(), x.data() + i*num_layers, num_layers*sizeof(double));
+    std::memcpy(m_cpp.data(), m.data() + i*num_layers, num_layers*sizeof(std::complex<double>));
+
+    terms[i] = nmie::ScattCoeffs(num_layers, pl, x_cpp, m_cpp, nmax, an[i], bn[i]);
 
     if (terms[i] > max_terms)
       max_terms = terms[i];
@@ -112,14 +112,12 @@ py::tuple scattnlay(py::array_t<double, py::array::c_style | py::array::forcecas
   int num_angles = theta.shape(0);
 
   // allocate std::vector (to pass to the C++ function)
-  std::vector<std::vector<double> > x_cpp(x.size());
-  std::vector<std::vector<std::complex<double> > > m_cpp(m.size());
-  std::vector<double> theta_cpp(theta.size());
+  std::vector<double> x_cpp(num_layers);
+  std::vector<std::complex<double> > m_cpp(num_layers);
+  std::vector<double> theta_cpp(num_angles);
 
   // copy py::array -> std::vector
-  std::memcpy(x_cpp.data(), x.data(), x.size()*sizeof(double));
-  std::memcpy(m_cpp.data(), m.data(), m.size()*sizeof(std::complex<double>));
-  std::memcpy(theta_cpp.data(), theta.data(), theta.size()*sizeof(double));
+  std::memcpy(theta_cpp.data(), theta.data(), num_angles*sizeof(double));
 
 
   // create std::vector (to get return from the C++ function)
@@ -140,7 +138,11 @@ py::tuple scattnlay(py::array_t<double, py::array::c_style | py::array::forcecas
     S1[i].resize(num_angles);
     S2[i].resize(num_angles);
 
-    terms[i] = nmie::nMie(num_layers, pl, x_cpp[i], m_cpp[i], num_angles, theta_cpp, nmax,
+    // copy py::array -> std::vector
+    std::memcpy(x_cpp.data(), x.data() + i*num_layers, num_layers*sizeof(double));
+    std::memcpy(m_cpp.data(), m.data() + i*num_layers, num_layers*sizeof(std::complex<double>));
+
+    terms[i] = nmie::nMie(num_layers, pl, x_cpp, m_cpp, num_angles, theta_cpp, nmax,
                           &Qext[i], &Qsca[i], &Qabs[i], &Qbk[i], &Qpr[i], &g[i], &Albedo[i],
                           S1[i], S2[i]);
   }
@@ -160,25 +162,24 @@ py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecas
   if (coords.ndim() != 2)
     throw std::runtime_error("The coordinates should be 2-D NumPy array.");
 
-
   int num_wvlght = x.shape(0);
   int num_layers = x.shape(1);
   int num_points = coords.shape(0);
 
   // allocate std::vector (to pass to the C++ function)
-  std::vector<std::vector<double> > x_cpp(x.size());
-  std::vector<std::vector<std::complex<double> > > m_cpp(m.size());
-  std::vector<double> Xc(coords.size()/3);
-  std::vector<double> Yc(coords.size()/3);
-  std::vector<double> Zc(coords.size()/3);
+  std::vector<double> x_cpp(num_layers);
+  std::vector<std::complex<double> > m_cpp(num_layers);
+
+  std::vector<double> Xc(num_points);
+  std::vector<double> Yc(num_points);
+  std::vector<double> Zc(num_points);
 
   // copy py::array -> std::vector
-  std::memcpy(x_cpp.data(), x.data(), x.size()*sizeof(double));
-  std::memcpy(m_cpp.data(), m.data(), m.size()*sizeof(std::complex<double>));
-  std::memcpy(Xc.data(), coords.data(), coords.size()*sizeof(double)/3);
-  std::memcpy(Yc.data(), coords.data() + coords.size()*sizeof(double)/3, coords.size()*sizeof(double)/3);
-  std::memcpy(Zc.data(), coords.data() + 2*coords.size()*sizeof(double)/3, coords.size()*sizeof(double)/3);
-
+  for (ssize_t j = 0; j < num_points; j++) {
+    Xc[j] = coords.data()[3*j];
+    Yc[j] = coords.data()[3*j + 1];
+    Zc[j] = coords.data()[3*j + 2];
+  }
 
   // create std::vector (to get return from the C++ function)
   std::vector<int> terms(num_wvlght);
@@ -190,12 +191,16 @@ py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecas
     E[i].resize(num_points);
     H[i].resize(num_points);
 
-    for (int j = 0; j < 3; j++) {
+    for (ssize_t j = 0; j < num_points; j++) {
       E[i][j].resize(3);
       H[i][j].resize(3);
     }
 
-    terms[i] = nmie::nField(num_layers, pl, x_cpp[i], m_cpp[i], nmax, num_points, Xc, Yc, Zc, E[i], H[i]);
+    // copy py::array -> std::vector
+    std::memcpy(x_cpp.data(), x.data() + i*num_layers, num_layers*sizeof(double));
+    std::memcpy(m_cpp.data(), m.data() + i*num_layers, num_layers*sizeof(std::complex<double>));
+
+    terms[i] = nmie::nField(num_layers, pl, x_cpp, m_cpp, nmax, num_points, Xc, Yc, Zc, E[i], H[i]);
   }
 
   return py::make_tuple(terms, E, H);
