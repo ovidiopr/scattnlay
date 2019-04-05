@@ -52,8 +52,8 @@ namespace py = pybind11;
 py::array_t< std::complex<double>> VectorComplex2Py(const std::vector<std::complex<double> > &c_x) {
   auto py_x = py::array_t< std::complex<double>>(c_x.size());
   auto py_x_buffer = py_x.request();
-  std::complex<double> *py_x_ptr    = ( std::complex<double> *) py_x_buffer.ptr;
-  std::memcpy(py_x_ptr,c_x.data(),c_x.size()*sizeof( std::complex<double>));
+  std::complex<double> *py_x_ptr = (std::complex<double> *) py_x_buffer.ptr;
+  std::memcpy(py_x_ptr, c_x.data(), c_x.size()*sizeof(std::complex<double>));
   return py_x;
 }
 
@@ -79,20 +79,20 @@ py::array VectorVector2Py(const std::vector<std::vector<T > > &x) {
   auto result = flatten(x);
   // https://github.com/tdegeus/pybind11_examples/blob/master/04_numpy-2D_cpp-vector/example.cpp 
   size_t              ndim    = 2;
-  std::vector<size_t> shape   = { dim1 , dim2 };
-  std::vector<size_t> strides = { sizeof(T)*dim2 , sizeof(T) };
+  std::vector<size_t> shape   = {dim1, dim2};
+  std::vector<size_t> strides = {sizeof(T)*dim2, sizeof(T)};
 
   // return 2-D NumPy array
   return py::array(py::buffer_info(
-    result.data(),                           /* data as contiguous array  */
-    sizeof(T),                          /* size of one scalar        */
-    py::format_descriptor<T>::format(), /* data type                 */
-    ndim,                                    /* number of dimensions      */
-    shape,                                   /* shape of the matrix       */
-    strides                                  /* strides for each axis     */
+    result.data(),                       /* data as contiguous array  */
+    sizeof(T),                           /* size of one scalar        */
+    py::format_descriptor<T>::format(),  /* data type                 */
+    ndim,                                /* number of dimensions      */
+    shape,                               /* shape of the matrix       */
+    strides                              /* strides for each axis     */
   ));
-
 }
+
 
 template <typename T>
 std::vector<T> Py2Vector(const py::array_t<T> &py_x) {
@@ -102,9 +102,8 @@ std::vector<T> Py2Vector(const py::array_t<T> &py_x) {
 }
 
 
-
 py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
-                         const py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
+                         const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
                          const int nmax=-1, const int pl=-1) {
 
   auto c_x = Py2Vector<double>(py_x);
@@ -113,16 +112,17 @@ py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::arra
   int terms = 0;
   std::vector<std::complex<double> > c_an, c_bn;
   int L = py_x.size();
-  terms = nmie::ScattCoeffs( L, pl, c_x, c_m, nmax, c_an, c_bn);
+  terms = nmie::ScattCoeffs(L, pl, c_x, c_m, nmax, c_an, c_bn);
   
   return py::make_tuple(terms, VectorComplex2Py(c_an), VectorComplex2Py(c_bn));
 }
 
 
 py::tuple py_scattnlay(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
-                       const py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
+                       const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_theta,
                        const int nmax=-1, const int pl=-1) {
+
   auto c_x = Py2Vector<double>(py_x);
   auto c_m = Py2Vector< std::complex<double> >(py_m);
   auto c_theta = Py2Vector<double>(py_theta);
@@ -139,7 +139,7 @@ py::tuple py_scattnlay(const py::array_t<double, py::array::c_style | py::array:
 
 
 py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
-                       const py::array_t< std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
+                       const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,
                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Yp,
                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Zp,
@@ -160,21 +160,5 @@ py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array:
   auto py_E = VectorVector2Py<std::complex<double> >(E);
   auto py_H = VectorVector2Py<std::complex<double> >(H);
   return py::make_tuple(terms, py_E, py_H);
-}
-
-PYBIND11_MODULE(pynmie, m) {
-    m.doc() = "pybind11 example plugin"; // optional module docstring
-
-    m.def("scattcoeffs_", &py_ScattCoeffs, "test",
-          py::arg("x"), py::arg("m"),
-          py::arg("nmax")=-1, py::arg("pl")=-1);
-    m.def("scattnlay_", &py_scattnlay, "test",
-          py::arg("x"), py::arg("m"),
-          py::arg("theta")=py::array_t<double>(0),
-          py::arg("nmax")=-1, py::arg("pl")=-1);
-    m.def("fieldnlay_", &py_fieldnlay, "test",
-          py::arg("x"), py::arg("m"),
-          py::arg("xp"),py::arg("yp"),py::arg("zp"),
-          py::arg("nmax")=-1, py::arg("pl")=-1);
 }
 

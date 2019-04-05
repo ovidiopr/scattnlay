@@ -5,8 +5,6 @@ include CHANGES
 include MANIFEST.in
 include Makefile
 include setup.py
-include setup_cython.py
-include src/scattnlay.pyx
 include src/*
 include examples/*
 include tests/python/*

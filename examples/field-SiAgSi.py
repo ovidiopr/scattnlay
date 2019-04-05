@@ -91,10 +91,8 @@ coordX.resize(npts*npts)
 coordZ.resize(npts*npts)
 coordY = np.zeros(npts*npts, dtype = np.float64)
 
-coord = np.vstack((coordX, coordY, coordZ)).transpose()
-
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
-terms, E, H = fieldnlay(x, m, coord)
+terms, E, H = fieldnlay(x, m, coordX, coordY, coordZ)
 print("Qabs = "+str(Qabs));
 Er = np.absolute(E)
 Hr = np.absolute(H)

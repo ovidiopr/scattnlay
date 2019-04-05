@@ -50,11 +50,8 @@ import numpy as np
 nL = 500.0
 Xmax = 60.0
 
-x = np.ones((1, nL), dtype = np.float64)
-x[0] = np.arange(1.0, nL + 1.0)*Xmax/nL
-
-m = np.ones((1, nL), dtype = np.complex128)
-m[0] = np.sqrt((2.0 - ((x[0] - 0.5*Xmax/nL)/60.0)**2.0)) + 0.0j
+x = np.array([np.arange(1.0, nL + 1.0)*Xmax/nL], dtype = np.float64)
+m = np.array([np.sqrt((2.0 - ((x[0] - 0.5*Xmax/nL)/60.0)**2.0)) + 0.0j], dtype = np.complex128)
 
 print "x =", x
 print "m =", m
@@ -68,9 +65,7 @@ coordX.resize(npts*npts)
 coordY.resize(npts*npts)
 coordZ = np.zeros(npts*npts, dtype = np.float64)
 
-coord = np.vstack((coordX, coordY, coordZ)).transpose()
-
-terms, E, H = fieldnlay(x, m, coord)
+terms, E, H = fieldnlay(x, m, coordX, coordY, coordZ)
 
 Er = np.absolute(E)
 
