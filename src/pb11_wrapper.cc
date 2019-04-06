@@ -4,7 +4,11 @@
 namespace py = pybind11;
 
 // wrap as Python module
+#ifdef MULTI_PRECISION
+PYBIND11_MODULE(scattnlay_mp_, m)
+#else
 PYBIND11_MODULE(scattnlay_, m)
+#endif  // MULTI_PRECISION
 {
   m.doc() = "The Python version of scattnlay";
 

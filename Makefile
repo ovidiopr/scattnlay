@@ -1,4 +1,4 @@
-PYTHON=`which python`
+PYTHON=`which python3`
 DESTDIR=/
 PROJECT=python-scattnlay
 VERSION=2.2
@@ -20,7 +20,7 @@ all:
 source:
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 
-python_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/nmie-pybind11.cc $(SRCDIR)/pb11_wrapper.cc $(SRCDIR)/pb11_wrapper_mp.cc
+python_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/nmie-pybind11.cc $(SRCDIR)/pb11_wrapper.cc
 	$(PYTHON) setup.py build_ext --inplace
 
 install:

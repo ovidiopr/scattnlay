@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 #
-#    Copyright (C) 2009-2018 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
-#    Copyright (C) 2013-2018 Konstantin Ladutenko <kostyfisik@gmail.com>
+#    Copyright (C) 2009-2019 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
+#    Copyright (C) 2013-2019 Konstantin Ladutenko <kostyfisik@gmail.com>
 #
 #    This file is part of scattnlay
 #
@@ -67,7 +67,7 @@ O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
                                include_dirs = [np.get_include(), pb.get_include()], 
                                extra_compile_args=['-std=c++11']),
                      Extension("scattnlay_mp_",
-                               ["src/nmie.cc", "src/nmie-pybind11.cc", "src/pb11_wrapper_mp.cc"],
+                               ["src/nmie.cc", "src/nmie-pybind11.cc", "src/pb11_wrapper.cc"],
                                language = "c++",
                                include_dirs = [np.get_include(), pb.get_include()], 
                                extra_compile_args=['-std=c++11', '-DMULTI_PRECISION=100'])]
