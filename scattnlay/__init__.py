@@ -30,4 +30,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from scattnlay.main import switch_to_double_precision
+from scattnlay.main import switch_to_multiple_precision
+switch_to_double_precision()
 from scattnlay.main import scattcoeffs, scattnlay, fieldnlay

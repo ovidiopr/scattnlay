@@ -26,15 +26,16 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#from scattnlay_mp_ import scattnlay_,scattcoeffs_,fieldnlay_
-from scattnlay_ import scattnlay_,scattcoeffs_,fieldnlay_
-# from fieldplot import fieldplot
+import sys
+sys.path.insert(0,'..')  # to be able to import scattnlay from the upper dir
+
+from scattnlay import scattnlay,scattcoeffs,fieldnlay, switch_to_double_precision, switch_to_multiple_precision
 
 import matplotlib.pyplot as plt
-
 import numpy as np
 import cmath
 
+#switch_to_multiple_precision()
 from_WL = 400
 to_WL = 800
 WL_points= 100
@@ -45,7 +46,7 @@ x = np.ones((1), dtype = np.float64)
 m = np.ones((1), dtype = np.complex128)
 
 
-core_r = 450000
+core_r = 45000
 
 
 
@@ -59,10 +60,10 @@ bn_vec = []
 for WL in WLs:
     x[0] = 2.0*np.pi*core_r/WL#/4.0*3.0
     m[0] = index_NP
-    terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay_(
+    terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
         np.array(x), np.array(m))
     print(np.array([Qsca]))
-    terms, an, bn = scattcoeffs_(x, m,24)
+    terms, an, bn = scattcoeffs(x, m,24)
     # Qsca_vec.append(Qsca*np.pi*core_r**2*1e-5)
     Qsca_vec.append(Qsca)#*np.pi*core_r**2*1e-5)
     core_r_vec.append(core_r)
