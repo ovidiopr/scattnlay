@@ -30,26 +30,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from scattnlay_ import scattcoeffs_, scattnlay_,  fieldnlay_
 import numpy as np
 import sys
 
-
-def switch_to_double_precision():
-    from scattnlay_ import scattcoeffs_, scattnlay_,  fieldnlay_
-    sys.modules['scattnlay.main'].scattnlay_ = scattnlay_
-    sys.modules['scattnlay.main'].scattcoeffs_ = scattcoeffs_
-    sys.modules['scattnlay.main'].fieldnlay_ = fieldnlay_
-
-
-def switch_to_multiple_precision():
-    from scattnlay_mp_ import scattcoeffs_, scattnlay_,  fieldnlay_
-    sys.modules['scattnlay.main'].scattnlay_ = scattnlay_
-    sys.modules['scattnlay.main'].scattcoeffs_ = scattcoeffs_
-    sys.modules['scattnlay.main'].fieldnlay_ = fieldnlay_
-
-
-def scattcoeffs(x, m, nmax=-1, pl=-1):
+def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     """
     scattcoeffs(x, m[, nmax, pl])
 
@@ -61,18 +45,25 @@ def scattcoeffs(x, m, nmax=-1, pl=-1):
         nmax: Maximum number of multipolar expansion terms to be used for the
               calculations. Only use it if you know what you are doing, otherwise
               set this parameter to -1 and the function will calculate it.
-        pl: Index of PEC layer. If there is none just send -1
+        pl: Index of PEC layer. If there is none just send -1.
+        mp: Use multiple (True) or double (False) precision.
 
     Returns: (terms, an, bn)
     with
         terms: Number of multipolar expansion terms used for the calculations
         an, bn: Complex scattering coefficients
     """
+
+    if mp:
+        from scattnlay_mp import scattcoeffs, scattnlay,  fieldnlay
+    else:
+        from scattnlay_dp import scattcoeffs, scattnlay,  fieldnlay
+
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return scattcoeffs_(x, m, nmax=nmax, pl=pl)
+            return scattcoeffs(x, m, nmax=nmax, pl=pl)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -93,7 +84,7 @@ def scattcoeffs(x, m, nmax=-1, pl=-1):
         else:
             mi = m[i]
 
-        terms[i], a, b = scattcoeffs_(xi, mi, nmax=nmax, pl=pl)
+        terms[i], a, b = scattcoeffs(xi, mi, nmax=nmax, pl=pl)
 
         if terms[i] > nstore:
             nstore = terms[i]
@@ -107,7 +98,7 @@ def scattcoeffs(x, m, nmax=-1, pl=-1):
 #scattcoeffs()
 
 
-def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1):
+def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     """
     scattnlay(x, m[, theta, nmax, pl])
 
@@ -119,7 +110,8 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1):
                calculated (optional, 1D ndarray)
         nmax: Maximum number of multipolar expansion terms to be used for the
               calculations. Only use it if you know what you are doing.
-        pl: Index of PEC layer.
+        pl: Index of PEC layer. If there is none just send -1.
+        mp: Use multiple (True) or double (False) precision.
 
     Returns: (terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2)
     with
@@ -133,11 +125,17 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1):
         Albedo: Single scattering albedo (Albedo = Qsca/Qext)
         S1, S2: Complex scattering amplitudes
     """
+
+    if mp:
+        from scattnlay_mp import scattcoeffs, scattnlay,  fieldnlay
+    else:
+        from scattnlay_dp import scattcoeffs, scattnlay,  fieldnlay
+
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return scattnlay_(x, m, theta, nmax=nmax, pl=pl)
+            return scattnlay(x, m, theta, nmax=nmax, pl=pl)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -162,13 +160,13 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1):
         else:
             mi = m[i]
 
-        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(xi, mi, theta, nmax=nmax, pl=pl)
+        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay(xi, mi, theta, nmax=nmax, pl=pl)
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 #scattnlay()
 
 
-def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1):
+def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     """
     fieldnlay(x, m, xp, yp, zp[, theta, nmax, pl])
 
@@ -180,18 +178,25 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1):
             electric and magnetic fields (1D ndarray)
         nmax: Maximum number of multipolar expansion terms to be used for the
               calculations. Only use it if you know what you are doing.
-        pl: Index of PEC layer.
+        pl: Index of PEC layer. If there is none just send -1.
+        mp: Use multiple (True) or double (False) precision.
 
     Returns: (terms, E, H)
     with
         terms: Number of multipolar expansion terms used for the calculations
         E, H: Complex electric and magnetic field at the provided coordinates
     """
+
+    if mp:
+        from scattnlay_mp import scattcoeffs, scattnlay,  fieldnlay
+    else:
+        from scattnlay_dp import scattcoeffs, scattnlay,  fieldnlay
+
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return fieldnlay_(x, m, xp, yp, zp, nmax=nmax, pl=pl)
+            return fieldnlay(x, m, xp, yp, zp, nmax=nmax, pl=pl)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -207,7 +212,7 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1):
         else:
             mi = m[i]
 
-        terms[i], E[i], H[i] = fieldnlay_(xi, mi, xp, yp, zp, nmax=nmax, pl=pl)
+        terms[i], E[i], H[i] = fieldnlay(xi, mi, xp, yp, zp, nmax=nmax, pl=pl)
 
     return terms, E, H
 #fieldnlay()
