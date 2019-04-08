@@ -55,15 +55,15 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     """
 
     if mp:
-        from scattnlay_mp import scattcoeffs, scattnlay,  fieldnlay
+        import scattnlay_mp as snl
     else:
-        from scattnlay_dp import scattcoeffs, scattnlay,  fieldnlay
+        import scattnlay_dp as snl
 
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return scattcoeffs(x, m, nmax=nmax, pl=pl)
+            return snl.scattcoeffs(x, m, nmax=nmax, pl=pl)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -84,7 +84,7 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
         else:
             mi = m[i]
 
-        terms[i], a, b = scattcoeffs(xi, mi, nmax=nmax, pl=pl)
+        terms[i], a, b = snl.scattcoeffs(xi, mi, nmax=nmax, pl=pl)
 
         if terms[i] > nstore:
             nstore = terms[i]
@@ -127,15 +127,15 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     """
 
     if mp:
-        from scattnlay_mp import scattcoeffs, scattnlay,  fieldnlay
+        import scattnlay_mp as snl
     else:
-        from scattnlay_dp import scattcoeffs, scattnlay,  fieldnlay
+        import scattnlay_dp as snl
 
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return scattnlay(x, m, theta, nmax=nmax, pl=pl)
+            return snl.scattnlay(x, m, theta, nmax=nmax, pl=pl)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -160,7 +160,7 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
         else:
             mi = m[i]
 
-        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay(xi, mi, theta, nmax=nmax, pl=pl)
+        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = snl.scattnlay(xi, mi, theta, nmax=nmax, pl=pl)
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 #scattnlay()
@@ -188,15 +188,15 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     """
 
     if mp:
-        from scattnlay_mp import scattcoeffs, scattnlay,  fieldnlay
+        import scattnlay_mp as snl
     else:
-        from scattnlay_dp import scattcoeffs, scattnlay,  fieldnlay
+        import scattnlay_dp as snl
 
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return fieldnlay(x, m, xp, yp, zp, nmax=nmax, pl=pl)
+            return snl.fieldnlay(x, m, xp, yp, zp, nmax=nmax, pl=pl)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -212,7 +212,7 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
         else:
             mi = m[i]
 
-        terms[i], E[i], H[i] = fieldnlay(xi, mi, xp, yp, zp, nmax=nmax, pl=pl)
+        terms[i], E[i], H[i] = snl.fieldnlay(xi, mi, xp, yp, zp, nmax=nmax, pl=pl)
 
     return terms, E, H
 #fieldnlay()
