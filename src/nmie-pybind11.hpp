@@ -38,19 +38,21 @@
 namespace py = pybind11;
 
 
-py::tuple scattcoeffs(py::array_t<double, py::array::c_style | py::array::forcecast> x,
-                      py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> m,
-                      int nmax, int pl);
+py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
+                         const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
+                         const int nmax=-1, const int pl=-1);
 
 
-py::tuple scattnlay(py::array_t<double, py::array::c_style | py::array::forcecast> x,
-                    py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> m,
-                    py::array_t<double, py::array::c_style | py::array::forcecast> theta,
-                    int nmax, int pl);
+py::tuple py_scattnlay(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
+                       const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
+                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_theta,
+                       const int nmax=-1, const int pl=-1);
 
 
-py::tuple fieldnlay(py::array_t<double, py::array::c_style | py::array::forcecast> x,
-                    py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> m,
-                    py::array_t<double, py::array::c_style | py::array::forcecast> coords,
-                    int nmax, int pl);
+py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
+                       const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
+                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,
+                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Yp,
+                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Zp,
+                       const int nmax=-1, const int pl=-1);
 

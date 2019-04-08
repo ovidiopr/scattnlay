@@ -1,5 +1,4 @@
-PYTHON=`which python`
-CYTHON=`which cython`
+PYTHON=`which python3`
 DESTDIR=/
 PROJECT=python-scattnlay
 VERSION=2.2
@@ -9,45 +8,29 @@ MULTIPREC=100
 CXX_NMIE_HEADERS=$(SRCDIR)/nmie.hpp $(SRCDIR)/nmie-impl.hpp $(SRCDIR)/nmie-precision.hpp
 
 all:
-	@echo "make source - Create source package for Python extension"
-	@echo "make cython - Convert Cython code to C++"
-	@echo "make python_ext_pb11 - Create Python extension using pybind11"
-	@echo "make python_ext - Create Python extension using C++ code"
-	@echo "make cython_ext - Create Python extension using Cython code"
+	@echo "make src - Create source package for Python extension"
+	@echo "make ext - Create Python extension in place"
 	@echo "make install - Install Python extension on local system"
-	@echo "make buildrpm - Generate a rpm package for Python extension"
-	@echo "make builddeb - Generate a deb package for Python extension"
+	@echo "make rpm - Generate a rpm package for Python extension"
+	@echo "make deb - Generate a deb package for Python extension"
 	@echo "make standalone - Create standalone programs (scattnlay and fieldnlay)"
 	@echo "make clean - Delete temporal files"
 #	make standalone
 
-source:
+src:
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 
-cython: $(SRCDIR)/scattnlay.pyx
-    # create c++ code for double precision module
-	$(CYTHON) --cplus $(SRCDIR)/scattnlay.pyx -o $(SRCDIR)/scattnlay.cpp
-	# create c++ code for MP module
-	ln -s $(SRCDIR)/scattnlay.pyx $(SRCDIR)/scattnlay_mp.pyx
-	$(CYTHON) --cplus $(SRCDIR)/scattnlay_mp.pyx -o $(SRCDIR)/scattnlay_mp.cpp
-	rm $(SRCDIR)/scattnlay_mp.pyx
-
-python_ext_pb11: $(SRCDIR)/nmie.cc $(SRCDIR)/pb11_nmie.cc $(SRCDIR)/pb11_wrapper.cc $(SRCDIR)/pb11_wrapper_mp.cc
-	$(PYTHON) setup_pb11.py build_ext --inplace
-
-python_ext: $(SRCDIR)/nmie.cc $(SRCDIR)/py_nmie.cc $(SRCDIR)/scattnlay.cpp $(SRCDIR)/scattnlay_mp.cpp
+ext: $(SRCDIR)/nmie.cc $(SRCDIR)/nmie-pybind11.cc $(SRCDIR)/pb11_wrapper.cc
 	$(PYTHON) setup.py build_ext --inplace
-
-cython_ext: cython python_ext
 
 install:
 	$(PYTHON) setup.py install --root $(DESTDIR) $(COMPILE)
 
-buildrpm:
+rpm:
 	#$(PYTHON) setup.py bdist_rpm --post-install=rpm/postinstall --pre-uninstall=rpm/preuninstall
 	$(PYTHON) setup.py bdist_rpm --dist-dir=../
 
-builddeb:
+deb:
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../ --prune
@@ -60,11 +43,14 @@ standalone: scattnlay fieldnlay scattnlay-mp fieldnlay-mp
 # standalone programs with DP
 scattnlay: $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc $(CXX_NMIE_HEADERS)
 	$(CXX) -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o scattnlay $(CXXFLAGS) $(LDFLAGS)
+
 fieldnlay: $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc $(CXX_NMIE_HEADERS)
 	$(CXX) -DNDEBUG -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o fieldnlay $(CXXFLAGS) $(LDFLAGS)
+
 # standalone programs with MP
 scattnlay-mp: $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc $(CXX_NMIE_HEADERS)
 	$(CXX) -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/farfield.cc $(SRCDIR)/nmie.cc  -lm -o scattnlay-mp $(CXXFLAGS) $(LDFLAGS)
+
 fieldnlay-mp: $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc $(CXX_NMIE_HEADERS)
 	$(CXX) -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o fieldnlay-mp $(CXXFLAGS) $(LDFLAGS)
 

@@ -42,8 +42,8 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def is_test_coord_passed(x,m,coord):
-    terms, E, H = fieldnlay(x, m, coord)
+def is_test_coord_passed(x,m,coordX,coordY,coordZ):
+    terms, E, H = fieldnlay(x, m, coordX,coordY,coordZ)
     Er = np.absolute(E)
     Eabs = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
     analytic_E = (3/(m[0,0]**2+2)).real
@@ -60,12 +60,10 @@ def is_test_all_coord_passed(x,m):
     npts = 5
     scan = np.linspace(0.999*x[0, 0], -0.999*x[0, 0], npts)
     zero = np.zeros(npts, dtype = np.float64)
-    coordZ = np.vstack((zero, zero, scan)).transpose()
-    coordY = np.vstack((zero, scan, zero)).transpose()
-    coordX = np.vstack((scan, zero, zero)).transpose()
-    if (is_test_coord_passed(x,m,coordX)
-        and is_test_coord_passed(x,m,coordY)
-        and is_test_coord_passed(x,m,coordY)):
+
+    if (is_test_coord_passed(x,m,scan, zero, zero)
+        and is_test_coord_passed(x,m,zero, scan, zero)
+        and is_test_coord_passed(x,m,zero, zero, scan)):
         return True
     return False
 

@@ -75,9 +75,7 @@ coordX.resize(nptsx*nptsy)
 coordY.resize(nptsx*nptsy)
 coordZ = np.ones(nptsx*nptsy, dtype=np.float64)*distance*twopi
 
-coord = np.vstack((coordX, coordY, coordZ)).transpose()
-
-terms, E, H = scattnlay.fieldnlay(x, m, coord)
+terms, E, H = scattnlay.fieldnlay(x, m, coordX, coordY, coordZ)
 
 # take the x-component of the electric field
 Ex = E[:,:,0].reshape(nptsx, nptsy)

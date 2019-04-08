@@ -61,11 +61,9 @@ coordX.resize(npts*npts)
 coordY.resize(npts*npts)
 coordZ = np.zeros(npts*npts, dtype = np.float64)
 
-coord = np.vstack((coordX, coordY, coordZ)).transpose()
-
 start_time = time.time()
 
-terms, E, H = fieldnlay(x, m, coord)
+terms, E, H = fieldnlay(x, m, coordX, coordY, coordZ)
 
 elapsed_time = time.time() - start_time
 print "Time: ", elapsed_time

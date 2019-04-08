@@ -51,13 +51,11 @@ And to compile the Debian package you need some tools:
 
 Compilation options
 
- - **make source** - Create source package for Python extension
- - **make cython** - Convert Cython code to C++
- - **make python_ext** - Create Python extension using C++ code
- - **make cython_ext** - Create Python extension using Cython code
+ - **make src** - Create source package for Python extension
+ - **make ext** - Create Python extension using C++ code
  - **make install** - Install Python extension on local system
- - **make buildrpm** - Generate a rpm package for Python extension
- - **make builddeb** - Generate a deb package for Python extension
+ - **make rpm** - Generate a rpm package for Python extension
+ - **make deb** - Generate a deb package for Python extension
  - **make standalone** - Create standalone programs (scattnlay and fieldnlay)
  - **make clean** - Delete temporal files
 

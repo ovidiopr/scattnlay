@@ -57,9 +57,7 @@ coordX.resize(npts*npts)
 coordZ.resize(npts*npts)
 coordY = np.zeros(npts*npts, dtype = np.float64)
 
-coord = np.vstack((coordX, coordY, coordZ)).transpose()
-
-terms, E, H = fieldnlay(x, m, coord)
+terms, E, H = fieldnlay(x, m, coordX, coordY, coordZ)
 
 Er = np.absolute(E)
 

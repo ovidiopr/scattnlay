@@ -73,8 +73,7 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
     step = min_step * 2.0
     if max_step < min_step:
         max_step = min_step
-    coord = np.vstack(([flow_x[-1]], [flow_y[-1]], [flow_z[-1]])).transpose()
-    terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord, pl=pl)
+    terms, E, H = fieldnlay(np.array([x]), np.array([m]), [flow_x[-1]], [flow_y[-1]], [flow_z[-1]], pl=pl)
     Ec, Hc = E[0, 0, :], H[0, 0, :]
     S = np.cross(Ec, Hc.conjugate()).real
     Snorm_prev = S / np.linalg.norm(S)
@@ -99,7 +98,8 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
             # max_angle
             coord = np.vstack(([flow_x[-1] + dx], [flow_y[-1] + dy],
                                [flow_z[-1] + dz])).transpose()
-            terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord, pl=pl)
+            terms, E, H = fieldnlay(np.array([x]), np.array([m]), [flow_x[-1] + dx],
+                                    [flow_y[-1] + dy], [flow_z[-1] + dz], pl=pl)
             Ec, Hc = E[0, 0, :], H[0, 0, :]
             Eth = max(np.absolute(Ec)) / 1e10
             Hth = max(np.absolute(Hc)) / 1e10
@@ -183,8 +183,7 @@ def GetField(crossplane, npts, factor, x, m, pl):
         import sys
         sys.exit()
 
-    coord = np.vstack((coordX, coordY, coordZ)).transpose()
-    terms, E, H = fieldnlay(np.array([x]), np.array([m]), coord, pl=pl)
+    terms, E, H = fieldnlay(np.array([x]), np.array([m]), coordX, coordY, coordZ, pl=pl)
     Ec = E[0, :, :]
     Hc = H[0, :, :]
     P = []
