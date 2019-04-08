@@ -35,7 +35,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cmath
 
-#switch_to_multiple_precision()
+
+switch_to_multiple_precision()
 from_WL = 400
 to_WL = 800
 WL_points= 100
@@ -49,13 +50,10 @@ m = np.ones((1), dtype = np.complex128)
 core_r = 45000
 
 
-
 Qsca_vec = []
 core_r_vec = []
 an_vec = []
 bn_vec = []
-
-
 
 for WL in WLs:
     x[0] = 2.0*np.pi*core_r/WL#/4.0*3.0

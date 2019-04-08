@@ -32,15 +32,21 @@
 
 from scattnlay_ import scattcoeffs_, scattnlay_,  fieldnlay_
 import numpy as np
+import sys
+
 
 def switch_to_double_precision():
-    global scattcoeffs_, scattnlay_,  fieldnlay_
     from scattnlay_ import scattcoeffs_, scattnlay_,  fieldnlay_
+    sys.modules['scattnlay.main'].scattnlay_ = scattnlay_
+    sys.modules['scattnlay.main'].scattcoeffs_ = scattcoeffs_
+    sys.modules['scattnlay.main'].fieldnlay_ = fieldnlay_
 
 
 def switch_to_multiple_precision():
-    global scattcoeffs_, scattnlay_,  fieldnlay_
     from scattnlay_mp_ import scattcoeffs_, scattnlay_,  fieldnlay_
+    sys.modules['scattnlay.main'].scattnlay_ = scattnlay_
+    sys.modules['scattnlay.main'].scattcoeffs_ = scattcoeffs_
+    sys.modules['scattnlay.main'].fieldnlay_ = fieldnlay_
 
 
 def scattcoeffs(x, m, nmax=-1, pl=-1):
