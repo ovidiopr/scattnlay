@@ -51,23 +51,18 @@
 from scattnlay import scattcoeffs
 import numpy as np
 
-import example
+#import example
 
 size = np.arange(0.25, 100.25, 0.25)
 
-x = np.ones((len(size), 5), dtype = np.float64)
-x[:, 0] = 0.1**(1.0/3.0)*size
-x[:, 1] = 0.36**(1.0/3.0)*size
-x[:, 2] = 0.404**(1.0/3.0)*size
-x[:, 3] = 0.7706**(1.0/3.0)*size
-x[:, 4] = size
+x = np.vstack(( 0.1**(1.0/3.0)*size,
+                0.36**(1.0/3.0)*size,
+                0.404**(1.0/3.0)*size,
+                0.7706**(1.0/3.0)*size,
+                size)).transpose()
 
-m = np.ones((len(size), 5), dtype = np.complex128)
-m[:, 0] *= 1.8 + 1.7j
-m[:, 1] *= 0.8 + 0.7j
-m[:, 2] *= 1.2 + 0.09j
-m[:, 3] *= 2.8 + 0.2j
-m[:, 4] *= 1.5 + 0.4j
+m = np.array((1.8 + 1.7j, 0.8 + 0.7j, 1.2 + 0.09j,
+              2.8 + 0.2j, 1.5 + 0.4j), dtype = np.complex128)
 
 # for i in range(300):
 #     terms, an, bn = scattcoeffs(x, m, 105)
@@ -77,7 +72,7 @@ bn2 = np.zeros((len(size),nmax), dtype = np.complex128)
 
 for _ in range(300):
     for i in range(len(size)):
-        terms1, an2[i,:], bn2[i,:] = example.scattcoeffs(x[i,:], m[i,:], nmax=nmax)
+        terms1, an2[i,:], bn2[i,:] = scattcoeffs(x[i,:], m, nmax=nmax)
 
 # print(an1[:3], bn1[:3])
 # print(an2)

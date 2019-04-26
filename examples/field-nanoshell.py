@@ -41,20 +41,15 @@ n1 = 1.53413
 n2 = 0.565838 + 7.23262j
 nm = 1.3205
 
-x = np.ones((1, 2), dtype = np.float64)
-x[0, 0] = 2.0*np.pi*nm*0.05/1.064
-x[0, 1] = 2.0*np.pi*nm*0.06/1.064
-
-m = np.ones((1, 2), dtype = np.complex128)
-m[0, 0] = n1/nm
-m[0, 1] = n2/nm
+x = 2.0*np.pi*nm*np.array([[0.05, 0.06]], dtype = np.float64)/1.064
+m = np.array([[n1/nm, n2/nm]], dtype = np.complex128)
 
 print "x =", x
 print "m =", m
 
 npts = 501
 
-scan = np.linspace(-4.0*x[0, 0], 4.0*x[0, 0], npts)
+scan = np.linspace(-3.0*x[0, 0], 3.0*x[0, 0], npts)
 
 coordX, coordY = np.meshgrid(scan, scan)
 coordX.resize(npts*npts)

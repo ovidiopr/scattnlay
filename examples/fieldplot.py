@@ -73,7 +73,7 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
     step = min_step * 2.0
     if max_step < min_step:
         max_step = min_step
-    terms, E, H = fieldnlay(np.array([x]), np.array([m]), [flow_x[-1]], [flow_y[-1]], [flow_z[-1]], pl=pl)
+    terms, E, H = fieldnlay(np.array([x]), np.array([m]), np.array([flow_x[-1]]), np.array([flow_y[-1]]), np.array([flow_z[-1]]), pl=pl)
     Ec, Hc = E[0, 0, :], H[0, 0, :]
     S = np.cross(Ec, Hc.conjugate()).real
     Snorm_prev = S / np.linalg.norm(S)
@@ -96,10 +96,10 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
             dz = dpos * Snorm_prev[2]
             # Test the next position not to turn\chang size for more than
             # max_angle
-            coord = np.vstack(([flow_x[-1] + dx], [flow_y[-1] + dy],
-                               [flow_z[-1] + dz])).transpose()
-            terms, E, H = fieldnlay(np.array([x]), np.array([m]), [flow_x[-1] + dx],
-                                    [flow_y[-1] + dy], [flow_z[-1] + dz], pl=pl)
+            coord = np.vstack((np.array([flow_x[-1] + dx]), np.array([flow_y[-1] + dy]),
+                               np.array([flow_z[-1] + dz]))).transpose()
+            terms, E, H = fieldnlay(np.array([x]), np.array([m]), np.array([flow_x[-1] + dx]),
+                                    np.array([flow_y[-1] + dy]), np.array([flow_z[-1] + dz]), pl=pl)
             Ec, Hc = E[0, 0, :], H[0, 0, :]
             Eth = max(np.absolute(Ec)) / 1e10
             Hth = max(np.absolute(Hc)) / 1e10
@@ -199,7 +199,7 @@ def GetField(crossplane, npts, factor, x, m, pl):
 def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
               field_to_plot='Pabs', npts=101, factor=2.1, flow_total=11,
               is_flow_extend=True, pl=-1, outline_width=1, subplot_label=' '):
-    print (x,m)
+
     Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m, pl)
     Er = np.absolute(Ec)
     Hr = np.absolute(Hc)

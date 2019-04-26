@@ -47,13 +47,11 @@
 from scattnlay import scattnlay
 import numpy as np
 
-x = np.ones((400, 2), dtype = np.float64)
-x[:, 1] = np.arange(0.1, 100.0, 0.25)
-x[:, 0] = 0.99**(1.0/3.0)*x[:, 1]
+size = np.linspace(0.1, 100., 1000)
 
-m = np.ones((400, 2), dtype = np.complex128)
-m[:, 0] *= 1.33
-m[:, 1] *= 1.59 + 0.66j
+x = np.vstack((0.99**(1.0/3.0)*size, size)).transpose()
+
+m = np.array((1.33, 1.59 + 0.66j), dtype = np.complex128)
 
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 

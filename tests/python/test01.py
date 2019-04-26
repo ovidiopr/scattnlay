@@ -58,21 +58,16 @@ import os
 from scattnlay import scattnlay
 import numpy as np
 
-size = np.arange(0.25, 100.25, 0.25)
+size = np.linspace(0.1, 100., 1000)
 
-x = np.ones((len(size), 5), dtype = np.float64)
-x[:, 0] = 0.1**(1.0/3.0)*size
-x[:, 1] = 0.36**(1.0/3.0)*size
-x[:, 2] = 0.404**(1.0/3.0)*size
-x[:, 3] = 0.7706**(1.0/3.0)*size
-x[:, 4] = size
+x = np.vstack(( 0.1**(1.0/3.0)*size,
+                0.36**(1.0/3.0)*size,
+                0.404**(1.0/3.0)*size,
+                0.7706**(1.0/3.0)*size,
+                size)).transpose()
 
-m = np.ones((len(size), 5), dtype = np.complex128)
-m[:, 0] *= 1.8 + 1.7j
-m[:, 1] *= 0.8 + 0.7j
-m[:, 2] *= 1.2 + 0.09j
-m[:, 3] *= 2.8 + 0.2j
-m[:, 4] *= 1.5 + 0.4j
+m = np.array((1.8 + 1.7j, 0.8 + 0.7j, 1.2 + 0.09j,
+              2.8 + 0.2j, 1.5 + 0.4j), dtype = np.complex128)
 
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 

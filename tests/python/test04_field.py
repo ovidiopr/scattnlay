@@ -35,30 +35,30 @@
 
 # The Luneburg lens is a sphere of radius a, with a
 # radially-varying index of refraction, given by:
-# m(r) = [2 - (r/a)**1]**(1/2)
+# m(r) = [2 - (r/a)**2]**(1/2)
 
 # For the calculations, the Luneburg lens was approximated
 # as a multilayered sphere with 500 equally spaced layers.
 # The refractive index of each layer is defined to be equal to
-# m(r) at the midpoint of the layer: ml = [2 - (xm/xL)**1]**(1/2),
+# m(r) at the midpoint of the layer: ml = [2 - (xm/xL)**2]**(1/2),
 # with xm = (xl-1 + xl)/2, for l = 1,2,...,L. The size
 # parameter in the lth layer is xl = l*xL/500.
 
 from scattnlay import fieldnlay
 import numpy as np
 
-nL = 500.0
+nL = 2
 Xmax = 60.0
 
-x = np.array([np.arange(1.0, nL + 1.0)*Xmax/nL], dtype = np.float64)
-m = np.array([np.sqrt((2.0 - ((x[0] - 0.5*Xmax/nL)/60.0)**2.0)) + 0.0j], dtype = np.complex128)
+x = np.array([np.linspace(Xmax/nL, Xmax, nL)], dtype = np.float64)
+m = np.array((np.sqrt((2.0 - (x[0]/Xmax - 0.5/nL)**2.0))), dtype = np.complex128)
 
 print "x =", x
 print "m =", m
 
-npts = 501
+npts = 500
 
-scan = np.linspace(-10.0*x[0, -1], 10.0*x[0, -1], npts)
+scan = np.linspace(-3*Xmax, 3*Xmax, npts)
 
 coordX, coordY = np.meshgrid(scan, scan)
 coordX.resize(npts*npts)
@@ -91,15 +91,17 @@ try:
     scale_y = np.linspace(min(coordY), max(coordY), npts)
 
     # Define scale ticks
-    min_tick = min(min_tick, np.amin(edata))
-    max_tick = max(max_tick, np.amax(edata))
-    scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
+    print np.amin(edata), np.amax(edata)
+    min_tick = 0.#min(min_tick, np.amin(edata))
+    max_tick = 10.0#max(max_tick, np.amax(edata))
+    scale_ticks = np.linspace(min_tick, max_tick, 6)
+    #scale_ticks = np.power(10.0, np.linspace(np.log10(min_tick), np.log10(max_tick), 6))
 
     # Interpolation can be 'nearest', 'bilinear' or 'bicubic'
     cax = ax.imshow(edata, interpolation = 'nearest', cmap = cm.jet,
                     origin = 'lower', vmin = min_tick, vmax = max_tick,
-                    extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y)),
-                    norm = LogNorm())
+                    extent = (min(scale_x), max(scale_x), min(scale_y), max(scale_y)))#,
+                    #norm = LogNorm())
 
     # Add colorbar
     cbar = fig.colorbar(cax, ticks = [a for a in scale_ticks])
