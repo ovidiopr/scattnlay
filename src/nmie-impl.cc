@@ -59,10 +59,9 @@
 #include <vector>
 
 namespace nmie {  
-  //helpers
+  //helper functions
 
-  
-  
+
   template<class T> inline T pow2(const T value) {return value*value;}
 
   template<class T> inline T cabs(const std::complex<T> value)
@@ -80,42 +79,8 @@ namespace nmie {
     return std::polar(r, x.imag()); 
   }  
 
-  template <typename ToFloatType, typename FromFloatType>
-  std::vector<ToFloatType> ConvertVector(const std::vector<FromFloatType> x) {
-    std::vector<ToFloatType> new_x;
-    for (auto element : x) {
-      new_x.push_back(static_cast<ToFloatType>(element));
-    }
-    return new_x;
-  }
 
-  template <typename ToFloatType, typename FromFloatType>
-  std::vector<std::complex<ToFloatType> > ConvertComplexVector(std::vector<std::complex<FromFloatType> > x) {
-    std::vector<std::complex<ToFloatType> > new_x;
-    for (auto element : x) {
-      new_x.push_back(std::complex<ToFloatType>(static_cast<ToFloatType>(element.real()),
-                                                static_cast<ToFloatType>(element.imag()) ) );
-    }
-    return new_x;
-  }
-
-  template <typename ToFloatType, typename FromFloatType>
-  std::vector<std::vector<std::complex<ToFloatType> > > ConvertComplexVectorVector(std::vector<std::vector<std::complex<FromFloatType> > > x) {
-    std::vector<std::vector<std::complex<ToFloatType> > > new_x;
-    std::vector<std::complex<ToFloatType> >  new_y;
-    for (auto y : x) {
-      new_y.clear();
-      for (auto element : y) {
-        new_y.push_back(std::complex<ToFloatType>(static_cast<ToFloatType>(element.real()),
-                                                  static_cast<ToFloatType>(element.imag()) ) );
-      }
-      new_x.push_back(new_y);
-    }
-    return new_x;
-  }
-  
-  
-
+  //class implementation
 
   // ********************************************************************** //
   // Returns previously calculated Qext                                     //
