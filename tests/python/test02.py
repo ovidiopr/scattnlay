@@ -78,5 +78,5 @@ try:
     plt.show()
 finally:
     np.savetxt("test02.txt", result, fmt = "%.5f")
-    print result
+    print(result)
 

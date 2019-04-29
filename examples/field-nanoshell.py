@@ -41,11 +41,14 @@ n1 = 1.53413
 n2 = 0.565838 + 7.23262j
 nm = 1.3205
 
-x = 2.0*np.pi*nm*np.array([[0.05, 0.06]], dtype = np.float64)/1.064
-m = np.array([[n1/nm, n2/nm]], dtype = np.complex128)
+r1 = 0.05
+r2 = 0.06
 
-print "x =", x
-print "m =", m
+x = 2.0*np.pi*nm*np.array([[r1, r2]], dtype = np.float64)/1.064
+m = np.array((n1/nm, n2/nm), dtype = np.complex128)
+
+print("x =", x)
+print("m =", m)
 
 npts = 501
 
@@ -61,7 +64,7 @@ start_time = time.time()
 terms, E, H = fieldnlay(x, m, coordX, coordY, coordZ)
 
 elapsed_time = time.time() - start_time
-print "Time: ", elapsed_time
+print("Time: ", elapsed_time)
 
 Er = np.absolute(E)
 
@@ -107,15 +110,15 @@ try:
     plt.ylabel('Y ( nm )')
 
     # This part draws the nanoshell
-#    from matplotlib import patches
+    from matplotlib import patches
 
-#    s1 = patches.Arc((0, 0), 2.0*x[0, 0], 2.0*x[0, 0], angle=0.0, zorder=2,
-#                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
-#    ax.add_patch(s1)
+    s1 = patches.Arc((0, 0), 2000.0*r1, 2000.0*r1, angle=0.0, zorder=2,
+                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
+    ax.add_patch(s1)
 
-#    s2 = patches.Arc((0, 0), 2.0*x[0, 1], 2.0*x[0, 1], angle=0.0, zorder=2,
-#                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
-#    ax.add_patch(s2)
+    s2 = patches.Arc((0, 0), 2000.0*r2, 2000.0*r2, angle=0.0, zorder=2,
+                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
+    ax.add_patch(s2)
     # End of drawing
 
     plt.draw()
@@ -126,6 +129,6 @@ try:
     plt.close()
 finally:
     np.savetxt("field-nanoshell.txt", result, fmt = "%.5f")
-    print result
+    print(result)
 
 
