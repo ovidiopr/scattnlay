@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Scattnlay web</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+<input type="number" id="fromWL" step="any" value="400.0">from WL<br>
+<input type="number" id="toWL" step="any" value="800">to WL<br>
+<input type="number" id="R" step="any" value="100">R<br>
+<input type="number" id="reN" step="any" value="4">Re(n)<br>
+<input type="number" id="imN" step="any" value="0">Im(n)<br>
+
+<button id="Evaluate">Run Mie!</button>
+<div id="PlotQsca"></div>
+  <script src="/nmie.js"></script>
+  <script>
+    var fromWL = parseFloat(document.getElementById("fromWL").value);
+    var toWL = parseFloat(document.getElementById("toWL").value);
+    var R = parseFloat(document.getElementById("R").value);
+    var reN = parseFloat(document.getElementById("reN").value);
+    var imN = parseFloat(document.getElementById("imN").value);
+    const range = (start, stop, step = 1) =>
+            Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
+    Module.addOnPostRun(() => {
+      const nmie = new Module.nmie()
+      Evaluate.onclick = () => {
+        nmie.AddTargetLayerReIm(R, reN, imN)
+        var WLs = range(fromWL,toWL,1)
+        var Qsca = [], Qabs = [];
+        WLs.forEach(function(WL) {
+          nmie.SetWavelength(WL);
+          nmie.RunMieCalculation();
+          Qsca.push(nmie.GetQsca());
+          Qabs.push(nmie.GetQabs());
+        });
+        console.log('Qsca = ', Qsca);
+        var trace1 = {
+          x: WLs,
+          y: Qsca,
+          type: 'scatter',
+        };
+
+        var trace2 = {
+          x: WLs,
+          y: Qabs,
+          type: 'scatter'
+        };
+
+        var data = [trace1, trace2];
+
+        Plotly.newPlot('PlotQsca', data, {}, {showSendToCloud: true});
+      };
+    })
+  </script>
+</body>
+</html>
