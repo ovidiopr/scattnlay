@@ -70,6 +70,8 @@ namespace nmie {
     // For many runs it can be convenient to separate target and coating layers.
     // Per layer
     void AddTargetLayer(FloatType layer_width, std::complex<FloatType> layer_index);
+    void AddTargetLayerReIm(FloatType layer_width,
+            FloatType re_layer_index, FloatType im_layer_index);
     void AddCoatingLayer(FloatType layer_width, std::complex<FloatType> layer_index);
     // For all layers
     void SetTargetWidth(std::vector<FloatType> width);

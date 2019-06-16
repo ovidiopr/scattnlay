@@ -37,7 +37,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#ifdef MULTI_PRECISION
 #include <boost/math/constants/constants.hpp>
+#endif
 namespace nmie {
   int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn);
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
@@ -88,7 +90,7 @@ namespace nmie {
 
     // Set a fixed value for the maximun number of terms
     void SetMaxTerms(int nmax);
-    // Get maximun number of terms
+    // Get maximum number of terms
     int GetMaxTerms() {return nmax_;};
 
     bool isMieCalculated(){return isMieCalculated_;};

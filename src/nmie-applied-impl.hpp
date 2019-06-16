@@ -74,12 +74,24 @@ namespace nmie {
   // ********************************************************************** //
   template <typename FloatType>
   void MultiLayerMieApplied<FloatType>::AddTargetLayer(FloatType width, std::complex<FloatType> layer_index) {
+      this->MarkUncalculated();
+      if (width <= 0)
+          throw std::invalid_argument("Layer width should be positive!");
+      target_width_.push_back(width);
+      target_index_.push_back(layer_index);
+  }  // end of void  MultiLayerMieApplied<FloatType>::AddTargetLayer(...)
+  // ********************************************************************** //
+  // ********************************************************************** //
+  // ********************************************************************** //
+  template <typename FloatType>
+  void MultiLayerMieApplied<FloatType>::AddTargetLayerReIm(FloatType width,
+                                                           FloatType re_layer_index, FloatType im_layer_index) {
     this->MarkUncalculated();
     if (width <= 0)
       throw std::invalid_argument("Layer width should be positive!");
     target_width_.push_back(width);
-    target_index_.push_back(layer_index);
-  }  // end of void  MultiLayerMieApplied<FloatType>::AddTargetLayer(...)  
+    target_index_.push_back(std::complex<FloatType>(re_layer_index,im_layer_index));
+  }  // end of void  MultiLayerMieApplied<FloatType>::AddTargetLayer(...)
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
