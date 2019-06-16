@@ -113,6 +113,10 @@ namespace nmie {
     std::vector<FloatType> GetPatternHk();
     std::vector<FloatType> GetPatternUnpolarized();
 
+    // Dimensionless
+    FloatType GetQsca(){ return this->MultiLayerMie<FloatType>::GetQsca();};
+    FloatType GetQabs(){ return this->MultiLayerMie<FloatType>::GetQabs();};
+    FloatType GetQext(){ return this->MultiLayerMie<FloatType>::GetQext();};
     // Size parameter units
     std::vector<FloatType> GetLayerWidthSP();
     // Same as to get target and coating index

@@ -41,17 +41,14 @@ using namespace emscripten;
 nmie::MultiLayerMieApplied<double> ml_mie;
 
 EMSCRIPTEN_BINDINGS (c) {
-        class_<nmie::MultiLayerMie<double>>("nmie_base")
-                .constructor<>()
-                .function("GetQsca",&nmie::MultiLayerMie<double>::GetQsca)
-                .function("GetQext",&nmie::MultiLayerMie<double>::GetQext)
-                .function("GetQabs",&nmie::MultiLayerMie<double>::GetQabs)
-        ;
         class_<nmie::MultiLayerMieApplied<double>>("nmie")
                 .constructor<>()
                 .function("SetWavelength", &nmie::MultiLayerMieApplied<double>::SetWavelength)
                 .function("AddTargetLayerReIm",&nmie::MultiLayerMieApplied<double>::AddTargetLayerReIm)
                 .function("RunMieCalculation",&nmie::MultiLayerMieApplied<double>::RunMieCalculation)
+                .function("GetQsca",&nmie::MultiLayerMieApplied<double>::GetQsca)
+                .function("GetQext",&nmie::MultiLayerMieApplied<double>::GetQext)
+                .function("GetQabs",&nmie::MultiLayerMieApplied<double>::GetQabs)
 //                .function("bf",&nmie::MultiLayerMieApplied<double>::bf)
         ;
 }
