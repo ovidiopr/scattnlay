@@ -8,28 +8,32 @@
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-<input type="number" id="fromWL" step="any" value="400.0">from WL<br>
-<input type="number" id="toWL" step="any" value="800">to WL<br>
-<input type="number" id="R" step="any" value="100">R<br>
-<input type="number" id="reN" step="any" value="4">Re(n)<br>
-<input type="number" id="imN" step="any" value="0">Im(n)<br>
+WL from <input type="number" id="fromWL" step="any" value="400.0">
+to <input type="number" id="toWL" step="any" value="800">
+step <input type="number" id="stepWL" step="any" value="0.1"><br>
+R: <input type="number" id="R" step="any" value="100">
+Re(n): <input type="number" id="reN" step="any" value="4">
+Im(n): <input type="number" id="imN" step="any" value="0"><br>
 
-<button id="Evaluate">Run Mie!</button>
-<div id="PlotQsca"></div>
+<button id="Evaluate">Run Mie!</button> <div id="time"></div>
+<div id="PlotQsca" style="width:640px;height:580px;" ></div>
   <script src="/nmie.js"></script>
   <script>
-    var fromWL = parseFloat(document.getElementById("fromWL").value);
-    var toWL = parseFloat(document.getElementById("toWL").value);
-    var R = parseFloat(document.getElementById("R").value);
-    var reN = parseFloat(document.getElementById("reN").value);
-    var imN = parseFloat(document.getElementById("imN").value);
     const range = (start, stop, step = 1) =>
             Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
     Module.addOnPostRun(() => {
       const nmie = new Module.nmie()
       Evaluate.onclick = () => {
+        var t0 = performance.now();
+        var fromWL = parseFloat(document.getElementById("fromWL").value);
+        var toWL = parseFloat(document.getElementById("toWL").value);
+        var stepWL = parseFloat(document.getElementById("stepWL").value);
+        var R = parseFloat(document.getElementById("R").value);
+        var reN = parseFloat(document.getElementById("reN").value);
+        var imN = parseFloat(document.getElementById("imN").value);
+        nmie.ClearTarget();
         nmie.AddTargetLayerReIm(R, reN, imN)
-        var WLs = range(fromWL,toWL,1)
+        var WLs = range(fromWL,toWL,stepWL)
         var Qsca = [], Qabs = [];
         WLs.forEach(function(WL) {
           nmie.SetWavelength(WL);
@@ -42,17 +46,51 @@
           x: WLs,
           y: Qsca,
           type: 'scatter',
+          name: 'Qsca'
         };
 
         var trace2 = {
           x: WLs,
           y: Qabs,
-          type: 'scatter'
+          type: 'scatter',
+          name: 'Qabs'
         };
 
         var data = [trace1, trace2];
-
-        Plotly.newPlot('PlotQsca', data, {}, {showSendToCloud: true});
+        var layout = {
+          title: {
+            text:'Mie calculation',
+            // font: {
+            //   family: 'Courier New, monospace',
+            //   size: 24
+            // },
+            xref: 'paper',
+            x: 0.05,
+          },
+          xaxis: {
+            title: {
+              text: 'Wavelength',
+              // font: {
+              //   family: 'Courier New, monospace',
+              //   size: 18,
+              //   color: '#7f7f7f'
+              // }
+            },
+          },
+          yaxis: {
+            title: {
+              text: 'Q',
+              // font: {
+              //   family: 'Courier New, monospace',
+              //   size: 18,
+              //   color: '#7f7f7f'
+              // }
+            }
+          }
+        };
+        Plotly.newPlot('PlotQsca', data, layout, {showSendToCloud: true});
+        var t1 = performance.now();
+        document.getElementById("time").innerHTML = "It took " + ((t1 - t0)/1000).toFixed(2) + " seconds.";
       };
     })
   </script>
