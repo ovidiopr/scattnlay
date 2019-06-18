@@ -53,6 +53,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
@@ -768,10 +769,10 @@ namespace nmie {
 
     const std::vector<FloatType>& x = size_param_;
 
-    MarkUncalculated();
+    //MarkUncalculated();
 
     // Calculate scattering coefficients
-    calcScattCoeffs();
+    if (!isScaCoeffsCalc_) calcScattCoeffs();
 
     // Initialize the scattering parameters
     Qext_ = 0.0;
@@ -787,6 +788,11 @@ namespace nmie {
     std::vector<std::complex<FloatType> > tmp1(theta_.size(),std::complex<FloatType>(0.0, 0.0));
     S1_.swap(tmp1);
     S2_ = S1_;
+    // Precalculate cos(theta) - gives about 5% speed up.
+    std::vector<FloatType> costheta(theta_.size(), 0.0);
+    for (unsigned int t = 0; t < theta_.size(); t++) {
+      costheta[t] = nmm::cos(theta_[t]);
+    }
 
     std::vector<FloatType> Pi(nmax_), Tau(nmax_);
 
@@ -795,31 +801,50 @@ namespace nmie {
     // By using downward recurrence we avoid loss of precision due to float rounding errors
     // See: https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
     //      http://en.wikipedia.org/wiki/Loss_of_significance
-    for (int i = nmax_ - 2; i >= 0; i--) {
-      const int n = i + 1;
-      if (mode_n_ != Modes::kAll && n != mode_n_) continue;
-      // Equation (27)
-      Qext_ += (n + n + 1.0)*(an_[i].real() + bn_[i].real());
-      // Equation (28)
-      Qsca_ += (n + n + 1.0)*(an_[i].real()*an_[i].real() + an_[i].imag()*an_[i].imag()
-                            + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
-      // Equation (29)
-      Qpr_ += ((n*(n + 2.0)/(n + 1.0))*((an_[i]*std::conj(an_[n]) + bn_[i]*std::conj(bn_[n])).real())
-               + ((n + n + 1.0)/(n*(n + 1.0)))*(an_[i]*std::conj(bn_[i])).real());
-      // Equation (33)
-      Qbktmp += (FloatType)(n + n + 1.0)*(1.0 - 2.0*(n % 2))*(an_[i]- bn_[i]);
-      // Calculate the scattering amplitudes (S1 and S2)    //
-      // Precalculate cos(theta) - gives about 5% speed up.
-      std::vector<FloatType> costheta(theta_.size(), 0.0);
-      for (unsigned int t = 0; t < theta_.size(); t++) {
-        costheta[t] = nmm::cos(theta_[t]);
+    for (int n = nmax_ - 2; n >= 0; n--) {
+      const int n1 = n + 1;
+      if (mode_n_ == Modes::kAll) {
+        // Equation (27)
+        Qext_ += (n1 + n1 + 1.0) * (an_[n].real() + bn_[n].real());
+        // Equation (28)
+        Qsca_ += (n1 + n1 + 1.0) * (an_[n].real() * an_[n].real() + an_[n].imag() * an_[n].imag()
+            + bn_[n].real() * bn_[n].real() + bn_[n].imag() * bn_[n].imag());
+        // Equation (29)
+        Qpr_ += ((n1 * (n1 + 2.0) / (n1 + 1.0)) * ((an_[n] * std::conj(an_[n1]) + bn_[n] * std::conj(bn_[n1])).real())
+            + ((n1 + n1 + 1.0) / (n1 * (n1 + 1.0))) * (an_[n] * std::conj(bn_[n])).real());
+        // Equation (33)
+        Qbktmp += (FloatType) (n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (an_[n] - bn_[n]);
+        // Calculate the scattering amplitudes (S1 and S2) Equations (25a) - (25b)
+        for (unsigned int t = 0; t < theta_.size(); t++) {
+          calcPiTau(costheta[t], Pi, Tau);
+          S1_[t] += calc_S1(n1, an_[n], bn_[n], Pi[n], Tau[n]);
+          S2_[t] += calc_S2(n1, an_[n], bn_[n], Pi[n], Tau[n]);
+        }
+        continue;
       }
-      // Equations (25a) - (25b)                            //
-      for (unsigned int t = 0; t < theta_.size(); t++) {
-        calcPiTau(costheta[t], Pi, Tau);
-
-        S1_[t] += calc_S1(n, an_[i], bn_[i], Pi[i], Tau[i]);
-        S2_[t] += calc_S2(n, an_[i], bn_[i], Pi[i], Tau[i]);
+      if (n1 == mode_n_) {
+        if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
+          Qext_ += (n1 + n1 + 1.0) * (an_[n].real());
+          Qsca_ += (n1 + n1 + 1.0) * (an_[n].real() * an_[n].real() + an_[n].imag() * an_[n].imag());
+          Qpr_ += std::nan("");
+          Qbktmp += (FloatType) (n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (an_[n]);
+          for (unsigned int t = 0; t < theta_.size(); t++) {
+            calcPiTau(costheta[t], Pi, Tau);
+            S1_[t] += calc_S1(n1, an_[n], static_cast<std::complex<FloatType>>(0), Pi[n], Tau[n]);
+            S2_[t] += calc_S2(n1, an_[n], static_cast<std::complex<FloatType>>(0), Pi[n], Tau[n]);
+          }
+        }
+        if (mode_type_ == Modes::kMagnetic || mode_type_ == Modes::kAll) {
+          Qext_ += (n1 + n1 + 1.0) * (bn_[n].real());
+          Qsca_ += (n1 + n1 + 1.0) * (bn_[n].real() * bn_[n].real() + bn_[n].imag() * bn_[n].imag());
+          Qpr_ += std::nan("");
+          Qbktmp += (FloatType) (n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (bn_[n]);
+          for (unsigned int t = 0; t < theta_.size(); t++) {
+            calcPiTau(costheta[t], Pi, Tau);
+            S1_[t] += calc_S1(n1, static_cast<std::complex<FloatType>>(0), bn_[n], Pi[n], Tau[n]);
+            S2_[t] += calc_S2(n1, static_cast<std::complex<FloatType>>(0), bn_[n], Pi[n], Tau[n]);
+          }
+        }
       }
     }
     FloatType x2 = pow2(x.back());

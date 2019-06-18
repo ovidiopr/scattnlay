@@ -9,21 +9,25 @@
 </head>
 <body>
 WL from <input type="number" id="fromWL" step="any" value="400.0">
-to <input type="number" id="toWL" step="any" value="800">
-step <input type="number" id="stepWL" step="any" value="0.1"><br>
+to <input type="number" id="toWL" step="any" value="1000">
+step <input type="number" id="stepWL" step="any" value="5"><br>
 R: <input type="number" id="R" step="any" value="100">
 Re(n): <input type="number" id="reN" step="any" value="4">
-Im(n): <input type="number" id="imN" step="any" value="0"><br>
-
+Im(n): <input type="number" id="imN" step="any" value="0.01"><br>
 <button id="Evaluate" autofocus>Run Mie!</button> <span id="time"></span>
 <div id="PlotQsca" style="width:640px;height:580px;" ></div>
   <script src="/nmie.js"></script>
   <script>
     const range = (start, stop, step = 1) =>
-            Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
+            Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
+    if (!Array.prototype.last){
+      Array.prototype.last = function(){
+        return this[this.length - 1];
+      };
+    };
     Module.addOnPostRun(() => {
-      const nmie = new Module.nmie()
       Evaluate.onclick = () => {
+        const nmie = new Module.nmie()
         var t0 = performance.now();
         var fromWL = parseFloat(document.getElementById("fromWL").value);
         var toWL = parseFloat(document.getElementById("toWL").value);
@@ -35,13 +39,34 @@ Im(n): <input type="number" id="imN" step="any" value="0"><br>
         nmie.AddTargetLayerReIm(R, reN, imN)
         var WLs = range(fromWL,toWL,stepWL)
         var Qsca = [], Qabs = [];
+        var Qsca_n = [[],[]], Qabs_n = [[],[]];
+        var mode_n = range(1,4)
+        var mode_n1 = range(1,5)
+        var mode_types = range(0,2)
+        mode_types.forEach(function(mode_type) {
+          mode_n1.forEach(function (n) {
+            Qsca_n[mode_type].push([]);
+            Qabs_n[mode_type].push([]);
+          });
+        });
         WLs.forEach(function(WL) {
+          console.log(WL)
+          nmie.SetModeNmaxAndType(-1, -1);
           nmie.SetWavelength(WL);
           nmie.RunMieCalculation();
           Qsca.push(nmie.GetQsca());
           Qabs.push(nmie.GetQabs());
+          mode_n.forEach(function (n) {
+            mode_types.forEach(function(mode_type) {
+              console.log(mode_type,n-1,Qsca_n[mode_type,0,n-1])
+              nmie.SetModeNmaxAndType(n,mode_type);
+              nmie.RunMieCalculation();
+              // Qsca_n[mode_type,n-1].push(nmie.GetQsca());
+              // Qabs_n[mode_type,n-1].push(nmie.GetQabs());
+            });
+          });
         });
-        console.log('Qsca = ', Qsca);
+        console.log('Qsca_n = ', Qsca_n);
         var trace1 = {
           x: WLs,
           y: Qsca,

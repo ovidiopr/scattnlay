@@ -65,7 +65,9 @@ namespace nmie {
       } while (false);
     }
     // Set parameters in applied units 
-    void SetWavelength(FloatType wavelength) {wavelength_ = wavelength;};
+    void SetWavelength(FloatType wavelength) {
+      this->MultiLayerMie<FloatType>::MarkUncalculated();
+      wavelength_ = wavelength;};
     // It is possible to set only a multilayer target to run calculaitons.
     // For many runs it can be convenient to separate target and coating layers.
     // Per layer
@@ -87,6 +89,8 @@ namespace nmie {
     void SetFieldPointsSP(const std::vector< std::vector<FloatType> >& coords_sp);
 
     // Set common parameters
+    void SetModeNmaxAndType(int mode_n, int mode_type) {
+        this->MultiLayerMie<FloatType>::SetModeNmaxAndType(mode_n, mode_type);};
     void SetAnglesForPattern(FloatType from_angle, FloatType to_angle, int samples);
     std::vector<FloatType> GetAngles();
     

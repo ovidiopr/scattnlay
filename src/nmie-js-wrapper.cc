@@ -45,6 +45,7 @@ EMSCRIPTEN_BINDINGS (c) {
                 .constructor<>()
                 .function("SetWavelength", &nmie::MultiLayerMieApplied<double>::SetWavelength)
                 .function("AddTargetLayerReIm",&nmie::MultiLayerMieApplied<double>::AddTargetLayerReIm)
+                .function("SetModeNmaxAndType",&nmie::MultiLayerMieApplied<double>::SetModeNmaxAndType)
                 .function("ClearTarget",&nmie::MultiLayerMieApplied<double>::ClearTarget)
                 .function("RunMieCalculation",&nmie::MultiLayerMieApplied<double>::RunMieCalculation)
                 .function("GetQsca",&nmie::MultiLayerMieApplied<double>::GetQsca)
