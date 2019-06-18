@@ -15,7 +15,7 @@ R: <input type="number" id="R" step="any" value="100">
 Re(n): <input type="number" id="reN" step="any" value="4">
 Im(n): <input type="number" id="imN" step="any" value="0"><br>
 
-<button id="Evaluate">Run Mie!</button> <div id="time"></div>
+<button id="Evaluate" autofocus>Run Mie!</button> <span id="time"></span>
 <div id="PlotQsca" style="width:640px;height:580px;" ></div>
   <script src="/nmie.js"></script>
   <script>
@@ -88,9 +88,9 @@ Im(n): <input type="number" id="imN" step="any" value="0"><br>
             }
           }
         };
-        Plotly.newPlot('PlotQsca', data, layout, {showSendToCloud: true});
+        Plotly.newPlot('PlotQsca', data, layout, {showSendToCloud: true, displaylogo: false});
         var t1 = performance.now();
-        document.getElementById("time").innerHTML = "It took " + ((t1 - t0)/1000).toFixed(2) + " seconds.";
+        document.getElementById("time").innerHTML = "It took " + ((t1 - t0)/1000).toFixed(2) + " s.";
       };
     })
   </script>

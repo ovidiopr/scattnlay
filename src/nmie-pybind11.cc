@@ -156,7 +156,7 @@ py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array:
   for (auto& f : E) f.resize(3);
   for (auto& f : H) f.resize(3);
   int L = py_x.size(), terms;
-  terms = nmie::nField(L, pl, c_x, c_m, nmax, ncoord, c_Xp, c_Yp, c_Zp, E, H);
+  terms = nmie::nField(L, pl, c_x, c_m, nmax, nmie::Modes::kAll, nmie::Modes::kAll, ncoord, c_Xp, c_Yp, c_Zp, E, H);
   auto py_E = VectorVector2Py<std::complex<double> >(E);
   auto py_H = VectorVector2Py<std::complex<double> >(H);
   return py::make_tuple(terms, py_E, py_H);
