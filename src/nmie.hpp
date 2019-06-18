@@ -31,7 +31,7 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 
-#define VERSION "2.2"
+#define VERSION "2.2"  //Compare with Makefile and setup.py
 #include <array>
 #include <complex>
 #include <cstdlib>
@@ -42,11 +42,58 @@
 #endif
 namespace nmie {
   int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn);
-  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const unsigned int ncoord, const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
+  int ExpansionCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::vector<std::complex<double> > >& an, std::vector<std::vector<std::complex<double> > >& bn, std::vector<std::vector<std::complex<double> > >& cn, std::vector<std::vector<std::complex<double> > >& dn);
+  // pl, nmax, mode_n, mode_type
+  int nMie(const unsigned int L,
+           const int pl,
+           std::vector<double>& x, std::vector<std::complex<double> >& m,
+           const unsigned int nTheta, std::vector<double>& Theta,
+           const int nmax,
+           double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
+           double *g, double *Albedo,
+           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2,
+           int mode_n, int mode_type);
+  // pl and nmax
+  int nMie(const unsigned int L,
+           const int pl,
+           std::vector<double>& x, std::vector<std::complex<double> >& m,
+           const unsigned int nTheta, std::vector<double>& Theta,
+           const int nmax,
+           double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
+           double *g, double *Albedo,
+           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+  // no pl and nmax
+  int nMie(const unsigned int L,
+           std::vector<double>& x, std::vector<std::complex<double> >& m,
+           const unsigned int nTheta, std::vector<double>& Theta,
+           double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
+           double *g, double *Albedo,
+           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+  // pl
+  int nMie(const unsigned int L,
+           const int pl,
+           std::vector<double>& x, std::vector<std::complex<double> >& m,
+           const unsigned int nTheta, std::vector<double>& Theta,
+           double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
+           double *g, double *Albedo,
+           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+  // nmax
+  int nMie(const unsigned int L,
+           std::vector<double>& x, std::vector<std::complex<double> >& m,
+           const unsigned int nTheta, std::vector<double>& Theta,
+           const int nmax,
+           double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
+           double *g, double *Albedo,
+           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+  int nField(const unsigned int L, const int pl, const std::vector<double>& x,
+          const std::vector<std::complex<double> >& m, const int nmax,
+          const int mode_n, const int mode_type,
+          const unsigned int ncoord,
+          const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp,
+          std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
+
+  // constants for per mode evaluation
+  enum Modes {kAll = -1, kElectric = 0, kMagnetic = 1};
 
   template <typename FloatType = double>
   class MultiLayerMie {    
@@ -61,6 +108,7 @@ namespace nmie {
     void RunMieCalculation();
     void RunFieldCalculation();
     void calcScattCoeffs();
+    void calcExpanCoeffs();
 
     // Return calculation results
     FloatType GetQext();
@@ -76,6 +124,11 @@ namespace nmie {
     std::vector<std::complex<FloatType> > GetAn(){return an_;};
     std::vector<std::complex<FloatType> > GetBn(){return bn_;};
 
+    std::vector<std::vector<std::complex<FloatType> > > GetAln(){return aln_;};
+    std::vector<std::vector<std::complex<FloatType> > > GetBln(){return bln_;};
+    std::vector<std::vector<std::complex<FloatType> > > GetCln(){return cln_;};
+    std::vector<std::vector<std::complex<FloatType> > > GetDln(){return dln_;};
+
     // Problem definition
     // Modify size of all layers
     void SetLayersSize(const std::vector<FloatType>& layer_size);
@@ -87,6 +140,8 @@ namespace nmie {
     void SetFieldCoords(const std::vector< std::vector<FloatType> >& coords);
     // Modify index of PEC layer
     void SetPECLayer(int layer_position = 0);
+    // Modify the mode taking into account for evaluation of output variables
+    void SetModeNmaxAndType(int mode_n, int mode_type){mode_n_ = mode_n; mode_type_ = mode_type;};
 
     // Set a fixed value for the maximun number of terms
     void SetMaxTerms(int nmax);
@@ -126,7 +181,6 @@ namespace nmie {
     // Scattering coefficients
     std::vector<std::complex<FloatType> > an_, bn_;
     std::vector< std::vector<std::complex<FloatType> > > aln_, bln_, cln_, dln_;
-    void calcExpanCoeffs();
     // Points for field evaluation
     std::vector< std::vector<FloatType> > coords_;
 
@@ -158,8 +212,9 @@ namespace nmie {
                        std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n, 
                        std::vector<std::complex<FloatType> >& No1n, std::vector<std::complex<FloatType> >& Ne1n);
 
-    void calcField(const FloatType Rho, const FloatType Theta, const FloatType Phi,
-                   std::vector<std::complex<FloatType> >& E, std::vector<std::complex<FloatType> >& H);
+    void calcFieldByComponents(const FloatType Rho, const FloatType Theta, const FloatType Phi,
+                               std::vector<std::complex<FloatType> >& E,
+                               std::vector<std::complex<FloatType> >& H);
 
     bool isExpCoeffsCalc_ = false;
     bool isScaCoeffsCalc_ = false;
@@ -169,6 +224,9 @@ namespace nmie {
     std::vector<FloatType> theta_;
     // Should be -1 if there is no PEC.
     int PEC_layer_position_ = -1;
+
+    int mode_n_ = Modes::kAll;
+    int mode_type_ = Modes::kAll;
 
     // with calcNmax(int first_layer);
     int nmax_ = -1;

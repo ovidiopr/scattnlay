@@ -106,6 +106,54 @@ namespace nmie {
   }
 
   //**********************************************************************************//
+  // This function emulates a C call to calculate the scattering coefficients         //
+  // required to calculate both the near- and far-field parameters.                   //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   L: Number of layers                                                            //
+  //   pl: Index of PEC layer. If there is none just send -1                          //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
+  //         calculations. Only use it if you know what you are doing, otherwise      //
+  //         set this parameter to -1 and the function will calculate it.             //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   aln, bln ,cln, dln : Complex scattering amplitudes                             //
+  //                                                                                  //
+  // Return value:                                                                    //
+  //   Number of multipolar expansion terms used for the calculations in each layer   //
+  //**********************************************************************************//
+  int ExpansionCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::vector<std::complex<double> > >& aln, std::vector<std::vector<std::complex<double> > >& bln, std::vector<std::vector<std::complex<double> > >& cln, std::vector<std::vector<std::complex<double> > >& dln) {
+
+    if (x.size() != L || m.size() != L)
+        throw std::invalid_argument("Declared number of layers do not fit x and m!");
+    try {
+      MultiLayerMie<FloatType> ml_mie;
+      ml_mie.SetLayersSize(ConvertVector<FloatType>(x));
+      ml_mie.SetLayersIndex(ConvertComplexVector<FloatType>(m));
+      ml_mie.SetPECLayer(pl);
+      ml_mie.SetMaxTerms(nmax);
+
+      ml_mie.calcScattCoeffs();
+      ml_mie.calcExpanCoeffs();
+
+      aln = ConvertComplexVectorVector<double>(ml_mie.GetAln());
+      bln = ConvertComplexVectorVector<double>(ml_mie.GetBln());
+      cln = ConvertComplexVectorVector<double>(ml_mie.GetCln());
+      dln = ConvertComplexVectorVector<double>(ml_mie.GetDln());
+
+      return ml_mie.GetMaxTerms();
+    } catch(const std::invalid_argument& ia) {
+      // Will catch if  ml_mie fails or other errors.
+      std::cerr << "Invalid argument: " << ia.what() << std::endl;
+      throw std::invalid_argument(ia);
+      return -1;
+    }
+    return 0;
+  }
+
+  //**********************************************************************************//
   // This function emulates a C call to calculate the actual scattering parameters    //
   // and amplitudes.                                                                  //
   //                                                                                  //
@@ -137,7 +185,8 @@ namespace nmie {
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
            const unsigned int nTheta, std::vector<double>& Theta, const int nmax,
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2,
+           int mode_n, int mode_type) {
 
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -150,6 +199,7 @@ namespace nmie {
       ml_mie.SetAngles(ConvertVector<FloatType>(Theta));
       ml_mie.SetPECLayer(pl);
       ml_mie.SetMaxTerms(nmax);
+      ml_mie.SetModeNmaxAndType(mode_n, mode_type);
 
       ml_mie.RunMieCalculation();
 
@@ -180,6 +230,41 @@ namespace nmie {
   }
 
 
+  //**********************************************************************************//
+  // This function is just a wrapper to call the full 'nMie' function with fewer      //
+  // parameters, it is here mainly for compatibility with older versions of the       //
+  // program. Also, you can use it if you neither have a PEC layer nor want to define //
+  // any limit for the maximum number of terms nor limit to some mode.                //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   L: Number of layers                                                            //
+  //   pl: Index of PEC layer. If there is none just send -1                          //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   nTheta: Number of scattering angles                                            //
+  //   Theta: Array containing all the scattering angles where the scattering         //
+  //          amplitudes will be calculated                                           //
+  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
+  //         calculations. Only use it if you know what you are doing, otherwise      //
+  //         set this parameter to -1 and the function will calculate it              //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   Qext: Efficiency factor for extinction                                         //
+  //   Qsca: Efficiency factor for scattering                                         //
+  //   Qabs: Efficiency factor for absorption (Qabs = Qext - Qsca)                    //
+  //   Qbk: Efficiency factor for backscattering                                      //
+  //   Qpr: Efficiency factor for the radiation pressure                              //
+  //   g: Asymmetry factor (g = (Qext-Qpr)/Qsca)                                      //
+  //   Albedo: Single scattering albedo (Albedo = Qsca/Qext)                          //
+  //   S1, S2: Complex scattering amplitudes                                          //
+  //                                                                                  //
+  // Return value:                                                                    //
+  //   Number of multipolar expansion terms used for the calculations                 //
+  //**********************************************************************************//
+  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+    return nmie::nMie(L, -1, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2, -1, -1);
+
+  }
   //**********************************************************************************//
   // This function is just a wrapper to call the full 'nMie' function with fewer      //
   // parameters, it is here mainly for compatibility with older versions of the       //
@@ -309,8 +394,9 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m,
-             const int nmax, const unsigned int ncoord,
+  int nField(const unsigned int L, const int pl,
+             const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax,
+             const int mode_n, const int mode_type, const unsigned int ncoord,
              const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec,
              std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
     if (x.size() != L || m.size() != L)
@@ -332,6 +418,9 @@ namespace nmie {
       ml_mie.SetFieldCoords({ConvertVector<FloatType>(Xp_vec),
 	    ConvertVector<FloatType>(Yp_vec),
 	    ConvertVector<FloatType>(Zp_vec) });
+
+      ml_mie.SetModeNmaxAndType(mode_n, mode_type);
+
       ml_mie.RunFieldCalculation();
       E = ConvertComplexVectorVector<double>(ml_mie.GetFieldE());
       H = ConvertComplexVectorVector<double>(ml_mie.GetFieldH());
