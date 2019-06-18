@@ -68,15 +68,8 @@ outer_r = inner_r+outer_width
 # n2 = 0.565838 + 7.23262j
 nm = 1.0
 
-x = np.ones((1, 3), dtype = np.float64)
-x[0, 0] = 2.0*np.pi*core_r/WL
-x[0, 1] = 2.0*np.pi*inner_r/WL
-x[0, 2] = 2.0*np.pi*outer_r/WL
-
-m = np.ones((1, 3), dtype = np.complex128)
-m[0, 0] = index_Si/nm
-m[0, 1] = index_Ag/nm
-m[0, 2] = index_Si/nm
+x = 2.0*np.pi*np.array([core_r, inner_r, outer_r], dtype = np.float64)/WL
+m = np.array((index_Si, index_Ag, index_Si), dtype = np.complex128)/nm
 
 print "x =", x
 print "m =", m
@@ -84,7 +77,7 @@ print "m =", m
 npts = 281
 
 factor=2.5
-scan = np.linspace(-factor*x[0, 2], factor*x[0, 2], npts)
+scan = np.linspace(-factor*x[2], factor*x[2], npts)
 
 coordX, coordZ = np.meshgrid(scan, scan)
 coordX.resize(npts*npts)
@@ -98,11 +91,11 @@ Er = np.absolute(E)
 Hr = np.absolute(H)
 
 # |E|/|Eo|
-Eabs = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
-Eangle = np.angle(E[0, :, 0])/np.pi*180
+Eabs = np.sqrt(Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
+Eangle = np.angle(E[:, 0])/np.pi*180
 
-Habs= np.sqrt(Hr[0, :, 0]**2 + Hr[0, :, 1]**2 + Hr[0, :, 2]**2)
-Hangle = np.angle(H[0, :, 1])/np.pi*180
+Habs= np.sqrt(Hr[:, 0]**2 + Hr[:, 1]**2 + Hr[:, 2]**2)
+Hangle = np.angle(H[:, 1])/np.pi*180
 
 result = np.vstack((coordX, coordY, coordZ, Eabs)).transpose()
 result2 = np.vstack((coordX, coordY, coordZ, Eangle)).transpose()

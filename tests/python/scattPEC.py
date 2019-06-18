@@ -38,17 +38,17 @@
 from scattnlay import scattnlay
 import numpy as np
 
-dX = 0.5
-Xmax = 5.0
+dX = 3
+Xmax = 21.0
 
-m = np.array([[1.0 - 1.0j]], dtype = np.complex128)
-theta = np.arange(0.0, 180.25, 0.25, dtype = np.float64)*np.pi/180.0
+m = np.array([1.0 + 0.0j], dtype = np.complex128)
+theta = np.linspace(0.0, np.pi, 500, dtype = np.float64)
 
 result = theta*180.0/np.pi
 
 for xl in np.arange(dX, Xmax, dX, dtype = np.float64):
     x = np.array([[xl]], dtype = np.float64)
-    terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m, theta)
+    terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m, theta, pl=0)
 
     S11 = S1[0].real*S1[0].real + S1[0].imag*S1[0].imag + S2[0].real*S2[0].real + S2[0].imag*S2[0].imag
     result = np.vstack((result, S11/(2.0*xl*xl)))
@@ -61,6 +61,7 @@ try:
     plt.plot(result[ : , 0], result[ : , 1:])
 
     ax = plt.gca()
+    ax.set_xlim(0, 180)
     ax.set_yscale('log')
 #    ax.set_ylim(1e-4, 1e3)
 

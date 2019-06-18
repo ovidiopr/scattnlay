@@ -82,16 +82,8 @@ def SetXM(design):
         core_r = WL/20.0
         epsilon_Ag = -2.0 + 0.28j   #original
         index_Ag = np.sqrt(epsilon_Ag)
-        x = np.ones((1), dtype = np.float64)
-        x[0] = 2.0*np.pi*core_r/WL
-        m = np.ones((1), dtype = np.complex128)
-        m[0] = index_Ag
-        # x = np.ones((2), dtype = np.float64)
-        # x[0] = 2.0*np.pi*core_r/WL/4.0*3.0
-        # x[1] = 2.0*np.pi*core_r/WL
-        # m = np.ones((2), dtype = np.complex128)
-        # m[0] = index_Ag
-        # m[1] = index_Ag
+        x = np.array([2.0*np.pi*core_r/WL], dtype = np.float64)
+        m = np.array((index_Ag), dtype = np.complex128)
         return x, m, WL
     elif design==6:
         WL=1052 #nm
@@ -100,16 +92,8 @@ def SetXM(design):
         core_r = 204.2
         epsilon_Si = 12.7294053067+0.000835315166667j
         index_Si = np.sqrt(epsilon_Si)
-        x = np.ones((1), dtype = np.float64)
-        x[0] = 2.0*np.pi*core_r/WL
-        m = np.ones((1), dtype = np.complex128)
-        m[0] = index_Si
-        # x = np.ones((2), dtype = np.float64)
-        # x[0] = 2.0*np.pi*core_r/WL/4.0*3.0
-        # x[1] = 2.0*np.pi*core_r/WL
-        # m = np.ones((2), dtype = np.complex128)
-        # m[0] = index_Ag
-        # m[1] = index_Ag
+        x = np.array([2.0*np.pi*core_r/WL], dtype = np.float64)
+        m = np.array((index_Si), dtype = np.complex128)
         return x, m, WL
 
 
@@ -119,23 +103,12 @@ def SetXM(design):
 
     nm = 1.0
     if isSiAgSi:
-        x = np.ones((3), dtype = np.float64)
-        x[0] = 2.0*np.pi*core_r/WL
-        x[1] = 2.0*np.pi*inner_r/WL
-        x[2] = 2.0*np.pi*outer_r/WL
-        m = np.ones((3), dtype = np.complex128)
-        m[0] = index_Si/nm
-        m[1] = index_Ag/nm
-    #    m[0, 1] = index_Si/nm
-        m[2] = index_Si/nm
+        x = 2.0*np.pi*np.array([core_r, inner_r, outer_r], dtype = np.float64)/WL
+        m = np.array((index_Si, index_Ag, index_Si), dtype = np.complex128)/nm
     else:
         # bilayer
-        x = np.ones((2), dtype = np.float64)
-        x[0] = 2.0*np.pi*inner_r/WL
-        x[1] = 2.0*np.pi*outer_r/WL
-        m = np.ones((2), dtype = np.complex128)
-        m[0] = index_Ag/nm
-        m[1] = index_Si/nm
+        x = 2.0*np.pi*np.array([inner_r, outer_r], dtype = np.float64)/WL
+        m = np.array((index_Ag, index_Si), dtype = np.complex128)/nm
     return x, m, WL
 
 
@@ -152,7 +125,7 @@ comment='Si-flow'
 x, m, WL = SetXM(design)
 
 WL_units='nm'
-print "x =", x[-1]
+print "x =", x
 print "m =", m
 npts = 501
 factor=2.1

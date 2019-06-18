@@ -72,15 +72,8 @@ outer_r = inner_r+outer_width
 # n2 = 0.565838 + 7.23262j
 nm = 1.0
 
-x = np.ones((3), dtype = np.float64)
-x[0] = 2.0*np.pi*core_r/WL
-x[1] = 2.0*np.pi*inner_r/WL
-x[2] = 2.0*np.pi*outer_r/WL
-
-m = np.ones((3), dtype = np.complex128)
-m[0] = index_Si/nm
-m[1] = index_Ag/nm
-m[2] = index_Si/nm
+x = 2.0*np.pi*np.array([core_r, inner_r, outer_r], dtype = np.float64)/WL
+m = np.array((index_Si, index_Ag, index_Si), dtype = np.complex128)/nm
 
 print "x =", x
 print "m =", m

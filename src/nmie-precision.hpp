@@ -49,14 +49,48 @@
 #endif  // MULTI_PRECISION
 
 namespace nmie {
-    #ifdef MULTI_PRECISION
-	namespace nmm = boost::multiprecision;
-	typedef nmm::number<nmm::cpp_bin_float<MULTI_PRECISION> > FloatType;
-    #else
-	namespace nmm = std;
-	typedef double FloatType;
-	//typedef float FloatType;
-    #endif  // MULTI_PRECISION
+  #ifdef MULTI_PRECISION
+  namespace nmm = boost::multiprecision;
+  typedef nmm::number<nmm::cpp_bin_float<MULTI_PRECISION> > FloatType;
+  #else
+  namespace nmm = std;
+  typedef double FloatType;
+  //typedef float FloatType;
+  #endif  // MULTI_PRECISION
+
+  template <typename ToFloatType, typename FromFloatType>
+  std::vector<ToFloatType> ConvertVector(const std::vector<FromFloatType> x) {
+    std::vector<ToFloatType> new_x;
+    for (auto element : x) {
+      new_x.push_back(static_cast<ToFloatType>(element));
+    }
+    return new_x;
+  }
+
+  template <typename ToFloatType, typename FromFloatType>
+  std::vector<std::complex<ToFloatType> > ConvertComplexVector(std::vector<std::complex<FromFloatType> > x) {
+    std::vector<std::complex<ToFloatType> > new_x;
+    for (auto element : x) {
+      new_x.push_back(std::complex<ToFloatType>(static_cast<ToFloatType>(element.real()),
+                                                static_cast<ToFloatType>(element.imag()) ) );
+    }
+    return new_x;
+  }
+
+  template <typename ToFloatType, typename FromFloatType>
+  std::vector<std::vector<std::complex<ToFloatType> > > ConvertComplexVectorVector(std::vector<std::vector<std::complex<FromFloatType> > > x) {
+    std::vector<std::vector<std::complex<ToFloatType> > > new_x;
+    std::vector<std::complex<ToFloatType> >  new_y;
+    for (auto y : x) {
+      new_y.clear();
+      for (auto element : y) {
+        new_y.push_back(std::complex<ToFloatType>(static_cast<ToFloatType>(element.real()),
+                                                  static_cast<ToFloatType>(element.imag()) ) );
+      }
+      new_x.push_back(new_y);
+    }
+    return new_x;
+  }
 
 }  // end of namespace nmie
 #endif  // SRC_NMIE_PRECISION_H_

@@ -29,7 +29,6 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 #include "nmie.hpp"
-#include "nmie-impl.hpp"
 #include "nmie-precision.hpp"
 #include <array>
 #include <tuple>

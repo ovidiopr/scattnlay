@@ -31,11 +31,10 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-import sys
 
 def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     """
-    scattcoeffs(x, m[, nmax, pl])
+    scattcoeffs(x, m[, nmax, pl, mp])
 
     Calculate the scattering coefficients required to calculate both the
     near- and far-field parameters.
@@ -55,15 +54,15 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     """
 
     if mp:
-        import scattnlay_mp as snl
+        from scattnlay_mp import scattcoeffs as scattcoeffs_
     else:
-        import scattnlay_dp as snl
+        from scattnlay_dp import scattcoeffs as scattcoeffs_
 
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return snl.scattcoeffs(x, m, nmax=nmax, pl=pl)
+            return scattcoeffs_(x, m, nmax=nmax, pl=pl)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -84,7 +83,7 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
         else:
             mi = m[i]
 
-        terms[i], a, b = snl.scattcoeffs(xi, mi, nmax=nmax, pl=pl)
+        terms[i], a, b = scattcoeffs_(xi, mi, nmax=nmax, pl=pl)
 
         if terms[i] > nstore:
             nstore = terms[i]
@@ -100,7 +99,7 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
 
 def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     """
-    scattnlay(x, m[, theta, nmax, pl])
+    scattnlay(x, m[, theta, nmax, pl, mp])
 
     Calculate the actual scattering parameters and amplitudes.
 
@@ -127,15 +126,15 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     """
 
     if mp:
-        import scattnlay_mp as snl
+        from scattnlay_mp import scattnlay as scattnlay_
     else:
-        import scattnlay_dp as snl
+        from scattnlay_dp import scattnlay as scattnlay_
 
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return snl.scattnlay(x, m, theta, nmax=nmax, pl=pl)
+            return scattnlay_(x, m, theta, nmax=nmax, pl=pl)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -160,7 +159,7 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
         else:
             mi = m[i]
 
-        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = snl.scattnlay(xi, mi, theta, nmax=nmax, pl=pl)
+        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(xi, mi, theta, nmax=nmax, pl=pl)
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 #scattnlay()
@@ -168,13 +167,17 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
 
 def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     """
-    fieldnlay(x, m, xp, yp, zp[, theta, nmax, pl])
+    fieldnlay(x, m, xp, yp, zp[, nmax, pl, mp])
 
     Calculate the actual scattering parameters and amplitudes.
 
         x: Size parameters (1D or 2D ndarray)
         m: Relative refractive indices (1D or 2D ndarray)
         xp: Array containing all X coordinates to calculate the complex
+            electric and magnetic fields (1D ndarray)
+        yp: Array containing all Y coordinates to calculate the complex
+            electric and magnetic fields (1D ndarray)
+        zp: Array containing all Z coordinates to calculate the complex
             electric and magnetic fields (1D ndarray)
         nmax: Maximum number of multipolar expansion terms to be used for the
               calculations. Only use it if you know what you are doing.
@@ -188,15 +191,15 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     """
 
     if mp:
-        import scattnlay_mp as snl
+        from scattnlay_mp import fieldnlay as fieldnlay_
     else:
-        import scattnlay_dp as snl
+        from scattnlay_dp import fieldnlay as fieldnlay_
 
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return snl.fieldnlay(x, m, xp, yp, zp, nmax=nmax, pl=pl)
+            return fieldnlay_(x, m, xp, yp, zp, nmax=nmax, pl=pl)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -212,7 +215,7 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
         else:
             mi = m[i]
 
-        terms[i], E[i], H[i] = snl.fieldnlay(xi, mi, xp, yp, zp, nmax=nmax, pl=pl)
+        terms[i], E[i], H[i] = fieldnlay_(xi, mi, xp, yp, zp, nmax=nmax, pl=pl)
 
     return terms, E, H
 #fieldnlay()

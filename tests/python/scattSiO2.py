@@ -39,11 +39,11 @@
 from scattnlay import scattnlay
 import numpy as np
 
-dX = 0.5
-Xmax = 5.0
+dX = 3
+Xmax = 21.0
 
-m = np.array([[1.46 + 0.0j]], dtype = np.complex128)
-theta = np.arange(0.0, 180.25, 0.25, dtype = np.float64)*np.pi/180.0
+m = np.array([1.46 + 0.0j], dtype = np.complex128)
+theta = np.linspace(0.0, np.pi, 500, dtype = np.float64)
 
 result = theta*180.0/np.pi
 
@@ -62,6 +62,7 @@ try:
     plt.plot(result[ : , 0], result[ : , 1:])
 
     ax = plt.gca()
+    ax.set_xlim(0, 180)
     ax.set_yscale('log')
 #    ax.set_ylim(1e-4, 1e3)
 

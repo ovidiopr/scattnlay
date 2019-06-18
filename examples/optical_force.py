@@ -41,11 +41,8 @@ radius = np.linspace(0.5, 180.0, 360)
 nAg = np.sqrt(-4.0 + 0.7j)
 wl = 400.0
 
-x = np.ones((len(radius), 1), dtype = np.float64)
-x[:, 0] = 2.0*pi*radius/wl
-
-m = np.ones((len(radius), 1), dtype = np.complex128)
-m[:, 0] *= nAg
+x = 2.0*pi*np.array([radius], dtype = np.float64).transpose()/wl
+m = np.array([nAg], dtype = np.complex128)
 
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
 F = pi*Qpr*radius*radius/c/1e9

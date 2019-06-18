@@ -29,9 +29,7 @@
 # This test case calculates the electric field in the 
 # E-k plane, for an spherical Ag nanoparticle.
 
-import scattnlay
-from scattnlay import fieldnlay
-from scattnlay import scattnlay
+from scattnlay import fieldnlay, scattnlay
 from fieldplot import fieldplot
 
 import numpy as np
@@ -66,13 +64,9 @@ index_Ag = np.sqrt(epsilon_Ag)
 # n2 = 0.565838 + 7.23262j
 nm = 1.0
 
-x = np.ones((2), dtype = np.float64)
-x[0] = 2.0*np.pi*core_r/WL/4.0*3.0
-x[1] = 2.0*np.pi*core_r/WL
+x = 2.0*np.pi*np.array([core_r/4.0*3.0, core_r], dtype = np.float64)/WL
 
-m = np.ones((2), dtype = np.complex128)
-m[0] = index_Ag/nm
-m[1] = index_Ag/nm
+m = np.array((index_Ag, index_Ag), dtype = np.complex128)/nm
 
 print "x =", x
 print "m =", m

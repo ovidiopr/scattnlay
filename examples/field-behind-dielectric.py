@@ -57,15 +57,13 @@ resolution = 20.0
 twopi = 2*np.pi*nm
 
 # There is only one sphere, no layers
-x = np.ones((1, 1), dtype = np.float64)
-x[0, 0] = radius*twopi
+x = np.array([radius*twopi], dtype = np.float64)
 
 # Set the refractive index of the sphere, normalized to that of the medium
-m = np.ones((1, 1), dtype = np.complex128)
-m[0, 0] = n1/nm
+m = np.array([n1/nm], dtype = np.complex128)
 
-nptsx = extent*resolution
-nptsy = extent*resolution
+nptsx = int(extent*resolution)
+nptsy = int(extent*resolution)
 
 scanx = np.linspace(-extent/2, extent/2, nptsx, endpoint=True)*twopi
 scany = np.linspace(-extent/2, extent/2, nptsy, endpoint=True)*twopi
@@ -78,10 +76,10 @@ coordZ = np.ones(nptsx*nptsy, dtype=np.float64)*distance*twopi
 terms, E, H = scattnlay.fieldnlay(x, m, coordX, coordY, coordZ)
 
 # take the x-component of the electric field
-Ex = E[:,:,0].reshape(nptsx, nptsy)
+Ex = E[:,0].reshape(nptsx, nptsy)
 
 # normalize by the background field (free space propagation)
-Ex /= np.exp(1j*2*np.pi*distance*nm)
+Ex /= np.exp(2j*np.pi*distance*nm)
 
 # plot the phase (np.angle) of the x-component of the electric field
 ax = plt.subplot(111)

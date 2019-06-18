@@ -35,12 +35,12 @@
 
 # The Luneburg lens is a sphere of radius a, with a
 # radially-varying index of refraction, given by:
-# m(r) = [2 - (r/a)**1]**(1/2)
+# m(r) = [2 - (r/a)**2]**(1/2)
 
 # For the calculations, the Luneburg lens was approximated
 # as a multilayered sphere with 500 equally spaced layers.
 # The refractive index of each layer is defined to be equal to
-# m(r) at the midpoint of the layer: ml = [2 - (xm/xL)**1]**(1/2),
+# m(r) at the midpoint of the layer: ml = [2 - (xm/xL)**2]**(1/2),
 # with xm = (xl-1 + xl)/2, for l = 1,2,...,L. The size
 # parameter in the lth layer is xl = l*xL/500. According to
 # geometrical optics theory, the differential cross section
@@ -53,13 +53,13 @@
 from scattnlay import scattnlay
 import numpy as np
 
-nL = 500.0
+nL = 500
 Xmax = 60.0
 
-x = np.array([np.arange(1.0, nL + 1.0)*Xmax/nL], dtype = np.float64)
-m = np.array([np.sqrt((2.0 - ((x[0] - 0.5*Xmax/nL)/60.0)**2.0)) + 0.0j], dtype = np.complex128)
+x = np.array([np.linspace(Xmax/nL, Xmax, nL)], dtype = np.float64)
+m = np.array((np.sqrt((2.0 - (x[0]/Xmax - 0.5/nL)**2.0))), dtype = np.complex128)
 
-theta = np.arange(0.0, 180.25, 0.25, dtype = np.float64)*np.pi/180.0
+theta = np.linspace(0.0, np.pi, 1001, dtype = np.float64)
 
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m, theta)
 
@@ -81,6 +81,6 @@ try:
     plt.show()
 finally:
     np.savetxt("test04.txt", result, fmt = "%.5f")
-    print result
+    print(result)
 
 

@@ -46,8 +46,8 @@
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
 #include "nmie.hpp"
-#include "nmie-impl.hpp"
 #include "nmie-precision.hpp"
+#include "nmie-impl.cc"
 #include <array>
 #include <algorithm>
 #include <cstdio>
