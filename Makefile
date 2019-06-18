@@ -5,7 +5,7 @@ VERSION=2.2
 BUILDIR=$(CURDIR)/debian/$(PROJECT)
 SRCDIR=$(CURDIR)/src
 MULTIPREC=100
-CXX_NMIE_HEADERS=$(SRCDIR)/nmie.hpp $(SRCDIR)/nmie-impl.hpp $(SRCDIR)/nmie-precision.hpp
+CXX_NMIE_HEADERS=$(SRCDIR)/nmie.hpp $(SRCDIR)/nmie-impl.cc $(SRCDIR)/nmie-precision.hpp
 
 all:
 	@echo "make src - Create source package for Python extension"
