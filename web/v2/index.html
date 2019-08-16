@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" class="section">
+<head>
+    <meta charset="UTF-8">
+    <title>Input  - Buefy example</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'><link rel='stylesheet' href='https://unpkg.com/buefy/dist/buefy.min.css'>
+    <link rel='stylesheet' href='https://cdn.materialdesignicons.com/2.0.46/css/materialdesignicons.min.css'>
+    <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.0.6/css/all.css'>
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div id="app" class="container">
+    <section style="padding: 1rem">
+    <button class="button is-primary is-medium"
+            @click="isShowInfo = true">
+        Show info
+    </button>
+    <b-modal :active.sync="isShowInfo">
+        <div class="message" style="padding: 2rem">
+            <span style="text-decoration: underline;text-emphasis: before;font-weight: bold;">Usage:</span>
+            <br><br>
+            Feel free to use provided software, however, use it at your own risk. We made our best effort to verify
+            it is correct, however, we do not provide any warranty.
+            <br><br>
+            If it was usefull for your project, please, cite in your related paper the following reference:
+            <br><br>
+            <article style="margin-left: 1rem">
+                <div style="font-style: italic; padding-bottom: 0.5rem">"Mie calculation of electromagnetic near-field
+                    for a multilayered sphere"</div>
+                Konstantin Ladutenko, Umapada Pal, Antonio Rivera, Ovidio Peña-Rodríguez<br>
+                <span style="font-weight: bold">Comp. Phys. Comm., vol. 214, pp. 225–230, 2017</span>
+            </article>
+        </div>
+    </b-modal>
+    </section>
+
+    <section>
+        <div class="field is-horizontal">
+            <div class="field-label is-normal">
+                <label class="label">Units</label>
+            </div>
+            <div class="field-body">
+                <b-select v-model="units">
+                    <option units="nm">nm</option>
+                    <option units="mkm">mkm</option>
+                    <option units="mm">mm</option>
+                    <option units="cm">cm</option>
+                    <option units="m">m</option>
+                    <option units="km">km</option>
+                </b-select>
+            </div>
+        </div>
+
+        <div class="field is-horizontal">
+            <div class="field-label is-normal">
+                <label class="label">Wavelength</label>
+            </div>
+            <div class="field-body">
+                <div class="field is-grouped is-grouped-multiline">
+                    <input-with-units title="from" v-bind:units="units"
+                                      v-bind:value="fromWL"
+                                      @newdata="fromWL=$event"></input-with-units>
+                    <input-with-units title="to" v-bind:units="units"
+                                      v-bind:value="toWL"
+                                      @newdata="toWL=$event"></input-with-units>
+                    <input-with-units title="step" v-bind:units="units"
+                                      v-bind:value="stepWL"
+                                      @newdata="stepWL=$event"></input-with-units>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="field is-horizontal">
+            <div class="field-label is-normal">
+                <label class="label">Spherical particle</label>
+            </div>
+            <div class="field-body">
+                <div class="field is-grouped is-grouped-multiline">
+                    <input-with-units title="R" v-bind:units="units"
+                                      v-bind:value="R"
+                                      @newdata="R=$event"></input-with-units>
+                    <input-with-units title="Re(n)" units=""
+                                      v-bind:value="reN"
+                                      @newdata="reN=$event"></input-with-units>
+                    <input-with-units title="Im(n)" units=""
+                                      v-bind:value="imN"
+                                      @newdata="imN=$event"></input-with-units>
+                </div>
+            </div>
+        </div>
+
+        <div  class="field is-horizontal">
+            <div class="field-label is-normal">
+                <label class="label">Modes to plot</label>
+            </div>
+            <div class="field-body">
+                <b-input v-model="total_mode_n" type='number' min=1 style="width:7rem"></b-input>
+            </div>
+        </div>
+        <div>From: {{fromWL}} to: {{toWL}} units: {{ units }} {{ window.width }}</div>
+
+        <div class="chart-container">
+            <reactive-chart :chart="chart"></reactive-chart>
+        </div>
+    </section>
+
+</div>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<!--<script src='https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.39.1/plotly.js'></script>-->
+<script src='https://unpkg.com/vue/dist/vue.min.js'></script>
+<script src='https://unpkg.com/buefy/dist/buefy.min.js'></script>
+<!--<script src='https://unpkg.com/axios/dist/axios.min.js'></script>-->
+<!--<script src='https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js'></script>-->
+<!--<script src='https://unpkg.com/cleave.js/dist/cleave.min.js'></script>-->
+<!--<script src='https://cdn.jsdelivr.net/npm/sortablejs@1.6.1/Sortable.min.js'></script>-->
+<!--<script src='https://cdn.jsdelivr.net/npm/vee-validate@2.1.0-beta.9/dist/vee-validate.min.js'></script>-->
+<script  src="./script.js"></script>
+<link rel="stylesheet" type="text/css" href="local.css">
+
+</body>
+</html>
