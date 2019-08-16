@@ -2,10 +2,14 @@
 <html lang="en" class="section">
 <head>
     <meta charset="UTF-8">
-    <title>Input  - Buefy example</title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'><link rel='stylesheet' href='https://unpkg.com/buefy/dist/buefy.min.css'>
-    <link rel='stylesheet' href='https://cdn.materialdesignicons.com/2.0.46/css/materialdesignicons.min.css'>
-    <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.0.6/css/all.css'>
+    <title>Mie calculator</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' href='buefy.min.css'>
+    <link rel='stylesheet' href='materialdesignicons.min.css'>
+    <link rel='stylesheet' href='all.css'>
+<!--    <link rel='stylesheet' href='https://unpkg.com/buefy/dist/buefy.min.css'>-->
+<!--    <link rel='stylesheet' href='https://cdn.materialdesignicons.com/2.0.46/css/materialdesignicons.min.css'>-->
+<!--    <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.0.6/css/all.css'>-->
 
 </head>
 <body>
@@ -59,14 +63,14 @@
             <div class="field-body">
                 <div class="field is-grouped is-grouped-multiline">
                     <input-with-units title="from" v-bind:units="units"
-                                      v-bind:value="fromWL"
-                                      @newdata="fromWL=$event"></input-with-units>
+                                      v-bind:value="simulationSetup.fromWL"
+                                      @newdata="simulationSetup.fromWL=$event"></input-with-units>
                     <input-with-units title="to" v-bind:units="units"
-                                      v-bind:value="toWL"
-                                      @newdata="toWL=$event"></input-with-units>
+                                      v-bind:value="simulationSetup.toWL"
+                                      @newdata="simulationSetup.toWL=$event"></input-with-units>
                     <input-with-units title="step" v-bind:units="units"
-                                      v-bind:value="stepWL"
-                                      @newdata="stepWL=$event"></input-with-units>
+                                      v-bind:value="simulationSetup.stepWL"
+                                      @newdata="simulationSetup.stepWL=$event"></input-with-units>
                 </div>
             </div>
         </div>
@@ -79,14 +83,14 @@
             <div class="field-body">
                 <div class="field is-grouped is-grouped-multiline">
                     <input-with-units title="R" v-bind:units="units"
-                                      v-bind:value="R"
-                                      @newdata="R=$event"></input-with-units>
+                                      v-bind:value="simulationSetup.R"
+                                      @newdata="simulationSetup.R=$event"></input-with-units>
                     <input-with-units title="Re(n)" units=""
-                                      v-bind:value="reN"
-                                      @newdata="reN=$event"></input-with-units>
+                                      v-bind:value="simulationSetup.reN"
+                                      @newdata="simulationSetup.reN=$event"></input-with-units>
                     <input-with-units title="Im(n)" units=""
-                                      v-bind:value="imN"
-                                      @newdata="imN=$event"></input-with-units>
+                                      v-bind:value="simulationSetup.imN"
+                                      @newdata="simulationSetup.imN=$event"></input-with-units>
                 </div>
             </div>
         </div>
@@ -96,10 +100,13 @@
                 <label class="label">Modes to plot</label>
             </div>
             <div class="field-body">
-                <b-input v-model="total_mode_n" type='number' min=1 style="width:7rem"></b-input>
+                <b-input v-model="simulationSetup.total_mode_n" type='number' min=1 style="width:7rem"></b-input>
             </div>
         </div>
-        <div>From: {{fromWL}} to: {{toWL}} units: {{ units }} {{ window.width }}</div>
+        <div>From: {{simulationSetup.fromWL}} to: {{simulationSetup.toWL}} units: {{ units }}
+            <br>
+        Changes:{{ changes }}
+        </div>
 
         <div class="chart-container">
             <reactive-chart :chart="chart"></reactive-chart>
@@ -107,15 +114,19 @@
     </section>
 
 </div>
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<!--<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>-->
+<script src="plotly-latest.min.js"></script>
 <!--<script src='https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.39.1/plotly.js'></script>-->
-<script src='https://unpkg.com/vue/dist/vue.min.js'></script>
-<script src='https://unpkg.com/buefy/dist/buefy.min.js'></script>
+<script src='vue.min.js'></script>
+<script src='buefy.min.js'></script>
+<!--<script src='https://unpkg.com/vue/dist/vue.min.js'></script>-->
+<!--<script src='https://unpkg.com/buefy/dist/buefy.min.js'></script>-->
 <!--<script src='https://unpkg.com/axios/dist/axios.min.js'></script>-->
 <!--<script src='https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js'></script>-->
 <!--<script src='https://unpkg.com/cleave.js/dist/cleave.min.js'></script>-->
 <!--<script src='https://cdn.jsdelivr.net/npm/sortablejs@1.6.1/Sortable.min.js'></script>-->
 <!--<script src='https://cdn.jsdelivr.net/npm/vee-validate@2.1.0-beta.9/dist/vee-validate.min.js'></script>-->
+<script  src="./tested-components.js"></script>
 <script  src="./script.js"></script>
 <link rel="stylesheet" type="text/css" href="local.css">
 

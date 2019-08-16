@@ -1,3 +1,4 @@
+'use strict';
 const example = {
     data() {
         return {
@@ -5,20 +6,20 @@ const example = {
                 width: 0,
                 height: 0
             },
-            textStyle:"underline",
-            styleObject: {
-                color: 'red',
-                fontSize: '13px'
-            },
+            // on change of initial value for __ units __
+            // remember to update this.chart.layout.xaxis.title
             units: 'nm',
-            stepWL: 0.5,
-            fromWL: 300.0,
-            toWL:1000.0,
-            R: 100.0,
-            reN: 4.0,
-            imN: 0.01,
+            simulationSetup: {
+                stepWL: 0.5,
+                fromWL: 300.0,
+                toWL: 1000.0,
+                R: 100.0,
+                reN: 4.0,
+                imN: 0.01,
+                total_mode_n:4
+            },
+            changes: 0,
             isShowInfo: false,
-            total_mode_n:4,
             chart: {
                 uuid: "123",
                 traces: [
@@ -34,7 +35,8 @@ const example = {
                 layout: {
                     title:'reactive charts',
                     xaxis: {
-                        title: 'xaxis title'
+                        // initial value should be same as in units
+                        title: 'Wavelength, nm'
                     },
                     yaxis: {
                         title: 'yaxis title'
@@ -51,73 +53,32 @@ const example = {
     destroyed() {
         window.removeEventListener('resize', this.handleResize)
     },
+    mounted(){ this.runMie();},
+    watch: {
+        simulationSetup: {
+            handler: function () {
+                this.runMie();
+            },
+            deep: true
+        },
+        units:{
+            handler: function () {
+                this.chart.layout.xaxis.title = "Wavelength, "+this.units;
+            }
+        }
+    },
     methods: {
         handleResize() {
             this.window.width = window.innerWidth;
             this.window.height = window.innerHeight;
+        },
+        runMie(){
+            this.changes++;
         }
     },
-    watch: {
-        window: function () {
-            this.styleObject.color ='blue';
-        }
-    }
 
 };
 
 
-Vue.component("reactive-chart", {
-    props: ["chart"],
-    template: '<div :ref="chart.uuid"></div>',
-    mounted() {
-        Plotly.newPlot(this.$refs[this.chart.uuid], this.chart.traces, this.chart.layout, {responsive: true});
-    },
-    watch: {
-        chart: {
-            handler: function() {
-                Plotly.react(
-                    this.$refs[this.chart.uuid],
-                    this.chart.traces,
-                    this.chart.layout
-                );
-            },
-            deep: true
-        }
-    }
-});
-
-
-Vue.component('input-with-units',{
-    // data: function() {return {value: 303.0}},
-    watch: {
-        value: {
-            handler: function () {
-                this.$emit('newdata',this.value);
-            }
-        },
-        deep: true
-    },
-    props: ['title', 'units', 'value'],
-    template: `
-                    <div class="field has-addons">
-                        <p class="control">
-                            <a class="button is-static" style="width:4rem">
-                                {{ title }}
-                            </a>
-                        </p>
-                        <p class="control">
-                            <b-input v-model="value" type="number" step="any" style="width:6rem"></b-input>
-                        </p>
-                        <p class="control">
-                            <a class="button is-static" style="width:3rem">
-                                {{ units }}
-                            </a>
-                        </p>
-                    </div>
-
-    `
-    })
-
 const app = new Vue(example);
-
 app.$mount('#app');
