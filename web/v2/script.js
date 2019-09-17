@@ -1,4 +1,11 @@
 'use strict';
+// import("nmie.js");
+// const nmie = new Module.nmie();
+
+const range = (start, stop, step = 1) =>
+    Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
+
+
 const example = {
     data() {
         return {
@@ -9,6 +16,19 @@ const example = {
             // on change of initial value for __ units __
             // remember to update this.chart.layout.xaxis.title
             units: 'nm',
+            simulationRuntime: {
+                mode_n : [],
+                mode_types: range(0,2),
+                mode_names: ['E','H'],
+                WLs: [],
+                Qsca: [],
+                Qabs: [],
+                Qsca_n: [[],[]],
+                Qabs_n: [[],[]],
+                layout: {},
+                trace1: {},
+                trace2: {}
+            },
             simulationSetup: {
                 stepWL: 0.5,
                 fromWL: 300.0,
@@ -73,6 +93,16 @@ const example = {
             this.window.height = window.innerHeight;
         },
         runMie(){
+
+            let t0 = performance.now();
+            let fromWL = parseFloat(this.simulationSetup.fromWL);
+            let toWL = parseFloat(this.simulationSetup.toWL);
+            let stepWL = parseFloat(this.simulationSetup.stepWL);
+            let R = parseFloat(this.simulationSetup.R);
+            let reN = parseFloat(this.simulationSetup.reN);
+            let imN = parseFloat(this.simulationSetup.imN);
+
+
             this.changes++;
         }
     },

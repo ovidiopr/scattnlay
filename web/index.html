@@ -6,7 +6,24 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Scattnlay web</title>
   <link rel="stylesheet" type="text/css" href="nmie.css">
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<!--  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>-->
+  <script src="plotly-latest.min.js"></script>
+
+  <!-- Yandex.Metrika counter -->
+  <script type="text/javascript" >
+    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+      m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+    (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+    ym(54984811, "init", {
+      clickmap:true,
+      trackLinks:true,
+      accurateTrackBounce:true
+    });
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/54984811" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <!-- /Yandex.Metrika counter -->
+
 </head>
 <body>
 <div id="Usage" style="font-size: small;">
@@ -33,6 +50,17 @@ Im(n): <input type="number" id="imN" step="any" value="0.01"><br>
   <script src="nmie.js"></script>
   <script>
     'use strict';
+    // var importObject = {
+    //   imports: { nmie: arg => console.log(arg) }
+    // };
+    //
+    // fetch('nmie.wasm').then(response =>
+    //         response.arrayBuffer()
+    // ).then(bytes =>
+    //         WebAssembly.instantiate(bytes, importObject)
+    // ).then(results => {
+    //   results.instance.exports.nmie();
+    // });
     const total_mode_n = 4;
     let mode_n, mode_types;
     let mode_names = ['E','H'];

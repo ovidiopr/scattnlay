@@ -55,7 +55,33 @@ fieldnlay-mp: $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc $(CXX_NMIE_HEADERS)
 	$(CXX) -DNDEBUG -DMULTI_PRECISION=$(MULTIPREC) -O2 -Wall -std=c++11 $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc  -lm -o fieldnlay-mp $(CXXFLAGS) $(LDFLAGS)
 
 wasm: $(SRCDIR)/nmie-js-wrapper.cc $(CXX_NMIE_HEADERS)
-	emcc --bind -lm -Wall -O2 -std=c++11 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
+#    emcc -lm -Wall -O2 -std=c++11 --bind -s ENVIRONMENT="web" -s MODULARIZE=1 -s SINGLE_FILE=1 -s WASM=1 -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
+# 	emcc --bind -lm -Wall -O2 -std=c++11 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
+
+# 	emcc --bind -lm -Wall -O2 -std=c++11 -s MODULARIZE=1 -s WASM=1 -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
+	emcc --bind -lm -Wall -O2 -std=c++11 -s MODULARIZE=1 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='[\"cwrap\"]' -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
+
+# 	emcc -g --bind -lm -Wall -std=c++11 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
+# 	emcc --bind -lm -Wall -O2 -std=c++11 -s MODULARIZE=1 -s EXPORT_ES6=1 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
+
+#     "build:codec": "emcc -O3 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='[\"cwrap\"]' -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s 'EXPORT_NAME=\"fibonacci\"' -o ./fibonacci.js fibonacci.c",
+
+
+# emcc -O2 \
+#     oniguruma/src/.libs/libonig.so \
+#     src/onigasm.cc\
+#     -Isrc -Ioniguruma/src \
+#     -s ENVIRONMENT=shell \
+#     -s NO_EXIT_RUNTIME=1 \
+#     -s NO_FILESYSTEM=1 \
+#     -s TOTAL_MEMORY=157286400 \
+#     -s ALLOW_MEMORY_GROWTH=1 \
+#     -s DEMANGLE_SUPPORT=1 \
+#     -s EXTRA_EXPORTED_RUNTIME_METHODS="['ccall']" \
+#     -s MODULARIZE=1 \
+#     -s EXPORT_NAME="'Onigasm'" \
+#     -o lib/onigasm.js
+
 	# @cp nmie.js web/
 	# @cp nmie.wasm web/
 

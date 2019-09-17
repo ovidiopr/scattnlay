@@ -103,7 +103,7 @@
                 <b-input v-model="simulationSetup.total_mode_n" type='number' min=1 style="width:7rem"></b-input>
             </div>
         </div>
-        <div>From: {{simulationSetup.fromWL}} to: {{simulationSetup.toWL}} units: {{ units }}
+        <div>From {{simulationSetup.fromWL}} to {{simulationSetup.toWL}} {{ units }}
             <br>
         Changes:{{ changes }}
         </div>
@@ -127,7 +127,15 @@
 <!--<script src='https://cdn.jsdelivr.net/npm/sortablejs@1.6.1/Sortable.min.js'></script>-->
 <!--<script src='https://cdn.jsdelivr.net/npm/vee-validate@2.1.0-beta.9/dist/vee-validate.min.js'></script>-->
 <script  src="./tested-components.js"></script>
-<script  src="./script.js"></script>
+<!--<script src="nmie.js"></script>-->
+<script>
+    'use strict';
+    // var myExports = require('./nmie.js');
+    //
+    // console.log(Object.keys(myExports));
+    // const nmie = new Module.nmie();
+</script>
+<script  src="script.js"></script>
 <link rel="stylesheet" type="text/css" href="local.css">
 
 </body>
