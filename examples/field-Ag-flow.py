@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 #
 #    Copyright (C) 2009-2015 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
@@ -26,7 +26,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# This test case calculates the electric field in the 
+# This test case calculates the electric field in the
 # E-k plane, for an spherical Ag nanoparticle.
 
 from scattnlay import fieldnlay, scattnlay
@@ -56,7 +56,7 @@ import cmath
 
 WL=500 #nm
 core_r = 50.0
-epsilon_Ag = 4.0 
+epsilon_Ag = 4.0
 
 
 index_Ag = np.sqrt(epsilon_Ag)
@@ -68,8 +68,8 @@ x = 2.0*np.pi*np.array([core_r/4.0*3.0, core_r], dtype = np.float64)/WL
 
 m = np.array((index_Ag, index_Ag), dtype = np.complex128)/nm
 
-print "x =", x
-print "m =", m
+print( "x =", x)
+print( "m =", m)
 
 comment='bulk-Ag-flow'
 WL_units='nm'
