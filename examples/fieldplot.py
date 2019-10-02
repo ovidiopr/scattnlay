@@ -103,7 +103,7 @@ def GetFlow3D(x0, y0, z0, max_length, max_angle, x, m, pl):
             Ec, Hc = E[0, 0, :], H[0, 0, :]
             Eth = max(np.absolute(Ec)) / 1e10
             Hth = max(np.absolute(Hc)) / 1e10
-            for i in xrange(0, len(Ec)):
+            for i in range(0, len(Ec)):
                 if abs(Ec[i]) < Eth:
                     Ec[i] = 0 + 0j
                 if abs(Hc[i]) < Hth:
@@ -186,10 +186,12 @@ def GetField(crossplane, npts, factor, x, m, pl):
     terms, E, H = fieldnlay(np.array([x]), np.array([m]), coordX, coordY, coordZ, pl=pl)
     Ec = E[0, :, :]
     Hc = H[0, :, :]
-    P = []
-    P = np.array(map(lambda n: np.linalg.norm(np.cross(Ec[n], Hc[n])).real,
-                     range(0, len(E[0]))))
-
+    P = np.array(list(map(lambda n: np.linalg.norm(np.cross(Ec[n],
+                                                            np.conjugate(Hc[n])
+                                                            # Hc[n]
+                                                            )).real,
+                     range(0, len(E[0])))))
+    print(P)
     # for n in range(0, len(E[0])):
     #     P.append(np.linalg.norm( np.cross(Ec[n], np.conjugate(Hc[n]) ).real/2 ))
     return Ec, Hc, P, coordPlot1, coordPlot2
@@ -199,7 +201,9 @@ def GetField(crossplane, npts, factor, x, m, pl):
 def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
               field_to_plot='Pabs', npts=101, factor=2.1, flow_total=11,
               is_flow_extend=True, pl=-1, outline_width=1, subplot_label=' '):
-
+    # print(fig, ax, x, m, WL, comment, WL_units, crossplane,
+    #       field_to_plot, npts, factor, flow_total,
+    #       is_flow_extend, pl, outline_width, subplot_label)
     Ec, Hc, P, coordX, coordZ = GetField(crossplane, npts, factor, x, m, pl)
     Er = np.absolute(Ec)
     Hr = np.absolute(Hc)
@@ -209,21 +213,22 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
 
         if field_to_plot == 'Pabs':
             Eabs_data = np.resize(P, (npts, npts)).T
-            label = r'$\operatorname{Re}(E \times H)$'
+            label = r'$\operatorname{Re}(E \times H^*)$'
         elif field_to_plot == 'Eabs':
-            # Eabs = np.sqrt(Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
-            # label = r'$|E|$'
+            Eabs = np.sqrt(Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
+            label = r'$|E|$'
             # Eabs = np.real(Hc[:, 0])
             # label = r'$Re(H_x)$'
             # Eabs = np.real(Hc[:, 1])
             # label = r'$Re(H_y)$'
-            Eabs = np.real(Ec[:, 1])
-            label = r'$Re(E_y)$'
+            # Eabs = np.real(Ec[:, 1])
+            # label = r'$Re(E_y)$'
             # Eabs = np.real(Ec[:, 0])
             # label = r'$Re(E_x)$'
-            Eabs_data = np.resize(Eabs, (npts, npts))
+            Eabs_data = np.resize(Eabs, (npts, npts)).T
         elif field_to_plot == 'Habs':
             Habs = np.sqrt(Hr[:, 0]**2 + Hr[:, 1]**2 + Hr[:, 2]**2)
+            Habs = 376.730313667 * Habs # scale to free space impedance
             Eabs_data = np.resize(Habs, (npts, npts)).T
             label = r'$|H|$'
         elif field_to_plot == 'angleEx':

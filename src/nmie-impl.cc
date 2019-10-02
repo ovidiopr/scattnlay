@@ -59,7 +59,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace nmie {  
+namespace nmie {
   //helper functions
 
 
@@ -74,11 +74,11 @@ namespace nmie {
     //return x >= 0 ? (x + 0.5).convert_to<int>():(x - 0.5).convert_to<int>();
   }
   template<typename T>
-  inline std::complex<T> my_exp(const std::complex<T>& x) { 
+  inline std::complex<T> my_exp(const std::complex<T>& x) {
     using std::exp; // use ADL
     T const& r = exp(x.real());
-    return std::polar(r, x.imag()); 
-  }  
+    return std::polar(r, x.imag());
+  }
 
 
   //class implementation
@@ -456,7 +456,7 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcPsiZeta(std::complex<FloatType> z,
                                   std::vector<std::complex<FloatType> >& Psi,
                                   std::vector<std::complex<FloatType> >& Zeta) {
-  
+
     std::complex<FloatType> c_i(0.0, 1.0);
     std::vector<std::complex<FloatType> > D1(nmax_ + 1), D3(nmax_ + 1);
 
@@ -529,7 +529,7 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcSpherHarm(const std::complex<FloatType> Rho, const FloatType Theta, const FloatType Phi,
                                     const std::complex<FloatType>& rn, const std::complex<FloatType>& Dn,
                                     const FloatType& Pi, const FloatType& Tau, const FloatType& n,
-                                    std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n, 
+                                    std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n,
                                     std::vector<std::complex<FloatType> >& No1n, std::vector<std::complex<FloatType> >& Ne1n) {
 
     // using eq 4.50 in BH
@@ -1033,7 +1033,7 @@ namespace nmie {
       E[i] = c_zero;
       H[i] = c_zero;
     }
-    
+
     if (Rho > size_param_.back()) {
       l = size_param_.size();
       ml = c_one;
