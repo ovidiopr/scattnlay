@@ -44,19 +44,19 @@ import cmath
 #core_r = WL/20.0
 #epsilon_Ag = -2.0 + 1.0j
 
-# # c)
-# WL=354 #nm
-# core_r = WL/20.0
-# epsilon_Ag = -2.0 + 0.28j
+# c)
+WL=354 #nm
+core_r = WL/20.0
+epsilon_Ag = -2.0 + 0.28j
 
 # d)
 #WL=367 #nm
 #core_r = WL/20.0
 #epsilon_Ag = -2.71 + 0.25j
 
-WL=500 #nm
-core_r = 50.0
-epsilon_Ag = 4.0
+# WL=500 #nm
+# core_r = 615.0
+# epsilon_Ag = 4.0
 
 
 index_Ag = np.sqrt(epsilon_Ag)
@@ -71,19 +71,19 @@ m = np.array((index_Ag, index_Ag), dtype = np.complex128)/nm
 print( "x =", x)
 print( "m =", m)
 
-comment='bulk-Ag-flow'
+comment='bulk-WL'+str(WL)+'nm_r'+str(core_r)+'nm_epsilon'+str(epsilon_Ag)+'-flow'
 WL_units='nm'
-npts = 151
+npts = 251
 factor=2.1
 flow_total = 9
 #flow_total = 21
 #flow_total = 0
-#crossplane='XZ'
+crossplane='XZ'
 #crossplane='YZ'
-crossplane='XY'
+# crossplane='XY'
 
 # Options to plot: Eabs, Habs, Pabs, angleEx, angleHy
-field_to_plot='Eabs'
+field_to_plot='Pabs'
 #field_to_plot='angleEx'
 
 

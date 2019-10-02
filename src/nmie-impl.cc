@@ -58,7 +58,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace nmie {  
+namespace nmie {
   //helper functions
 
 
@@ -73,11 +73,11 @@ namespace nmie {
     //return x >= 0 ? (x + 0.5).convert_to<int>():(x - 0.5).convert_to<int>();
   }
   template<typename T>
-  inline std::complex<T> my_exp(const std::complex<T>& x) { 
+  inline std::complex<T> my_exp(const std::complex<T>& x) {
     using std::exp; // use ADL
     T const& r = exp(x.real());
-    return std::polar(r, x.imag()); 
-  }  
+    return std::polar(r, x.imag());
+  }
 
 
   //class implementation
@@ -455,7 +455,7 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcPsiZeta(std::complex<FloatType> z,
                                   std::vector<std::complex<FloatType> >& Psi,
                                   std::vector<std::complex<FloatType> >& Zeta) {
-  
+
     std::complex<FloatType> c_i(0.0, 1.0);
     std::vector<std::complex<FloatType> > D1(nmax_ + 1), D3(nmax_ + 1);
 
@@ -528,7 +528,7 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcSpherHarm(const std::complex<FloatType> Rho, const FloatType Theta, const FloatType Phi,
                                     const std::complex<FloatType>& rn, const std::complex<FloatType>& Dn,
                                     const FloatType& Pi, const FloatType& Tau, const FloatType& n,
-                                    std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n, 
+                                    std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n,
                                     std::vector<std::complex<FloatType> >& No1n, std::vector<std::complex<FloatType> >& Ne1n) {
 
     // using eq 4.50 in BH
@@ -995,7 +995,7 @@ namespace nmie {
       E[i] = c_zero;
       H[i] = c_zero;
     }
-    
+
     if (Rho > size_param_.back()) {
       l = size_param_.size();
       ml = c_one;
@@ -1098,12 +1098,9 @@ namespace nmie {
       // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
       Theta = (Rho > 0.0) ? nmm::acos(Zp/Rho) : 0.0;
 
-      // If Xp=Yp=0 then Phi is undefined. Just set it to zero to avoid problems
-      if (Xp == 0.0)
-        Phi = (Yp != 0.0) ? nmm::asin(Yp/nmm::sqrt(pow2(Xp) + pow2(Yp))) : 0.0;
-      else
-        Phi = nmm::acos(Xp/nmm::sqrt(pow2(Xp) + pow2(Yp)));
-      if (Yp < 0.0) Phi *= -1;
+      // std::atan2 should take care of any special cases, e.g.  Xp=Yp=0, etc.
+      Phi = nmm::atan2(Yp,Xp);
+
       // Avoid convergence problems due to Rho too small
       if (Rho < 1e-5) Rho = 1e-5;
       // std::cout << "Xp: "<<Xp<< "  Yp: "<<Yp<< "  Zp: "<<Zp<<std::endl;
