@@ -30,7 +30,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = '2.2'
+__version__ = '2.3'
 __title__ = 'Calculation of the scattering of EM radiation by a multilayered sphere'
 __mod__ = 'python-scattnlay'
 __author__ = 'Ovidio Peña Rodríguez'
@@ -38,8 +38,8 @@ __email__ = 'ovidio@bytesfall.com'
 __url__ = 'https://github.com/ovidiopr/scattnlay'
 __download_url__ = 'https://github.com/ovidiopr/scattnlay/archive/v2.2.0.tar.gz'
 
-from distutils.core import setup
-from distutils.extension import Extension
+from setuptools import setup
+from setuptools.extension import Extension
 import numpy as np
 import pybind11 as pb
 
@@ -60,7 +60,7 @@ O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
       download_url = __download_url__,
       license = 'GPL',
       platforms = 'any',
-      packages = ['scattnlay', 'scattnlay_dp', 'scattnlay_mp'],
+      packages = ['scattnlay'],#, 'scattnlay_dp', 'scattnlay_mp'],
       ext_modules = [Extension("scattnlay_dp",
                                ["src/nmie.cc", "src/nmie-pybind11.cc", "src/pb11_wrapper.cc"],
                                language = "c++",
