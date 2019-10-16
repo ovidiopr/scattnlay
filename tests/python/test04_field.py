@@ -47,7 +47,7 @@
 from scattnlay import fieldnlay
 import numpy as np
 
-nL = 2
+nL = 10
 Xmax = 60.0
 
 x = np.array([np.linspace(Xmax/nL, Xmax, nL)], dtype = np.float64)
@@ -56,7 +56,7 @@ m = np.array((np.sqrt((2.0 - (x[0]/Xmax - 0.5/nL)**2.0))), dtype = np.complex128
 print "x =", x
 print "m =", m
 
-npts = 500
+npts = 100
 
 scan = np.linspace(-3*Xmax, 3*Xmax, npts)
 
@@ -65,12 +65,20 @@ coordX.resize(npts*npts)
 coordY.resize(npts*npts)
 coordZ = np.zeros(npts*npts, dtype = np.float64)
 
+#idx = np.where(np.sqrt(coordX**2 + coordY**2) < 10.)
+#coordX = np.delete(coordX, idx)
+#coordY = np.delete(coordY, idx)
+#coordZ = np.delete(coordZ, idx)
+
 terms, E, H = fieldnlay(x, m, coordX, coordY, coordZ)
+print "E", E
 
 Er = np.absolute(E)
+print "Er", Er
 
 # |E|/|Eo|
 Eh = np.sqrt(Er[0, :, 0]**2 + Er[0, :, 1]**2 + Er[0, :, 2]**2)
+print "Eh", Eh
 
 result = np.vstack((coordX, coordY, coordZ, Eh)).transpose()
 
@@ -112,12 +120,12 @@ try:
     plt.xlabel('X')
     plt.ylabel('Y')
 
-    # This part draws the nanoshell
-#    from matplotlib import patches
+    # This part draws the lens
+    from matplotlib import patches
 
-#    s1 = patches.Arc((0, 0), 2.0*x[0, 0], 2.0*x[0, 0], angle=0.0, zorder=2,
-#                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
-#    ax.add_patch(s1)
+    s1 = patches.Arc((0, 0), 2.0*Xmax, 2.0*Xmax, angle=0.0, zorder=2,
+                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')
+    ax.add_patch(s1)
 
 #    s2 = patches.Arc((0, 0), 2.0*x[0, 1], 2.0*x[0, 1], angle=0.0, zorder=2,
 #                      theta1=0.0, theta2=360.0, linewidth=1, color='#00fa9a')

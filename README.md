@@ -51,7 +51,7 @@ And to compile the Debian package you need some tools:
 
 Compilation options
 
- - **make src** - Create source package for Python extension
+ - **make source** - Create source package for Python extension
  - **make ext** - Create Python extension using C++ code
  - **make install** - Install Python extension on local system
  - **make rpm** - Generate a rpm package for Python extension

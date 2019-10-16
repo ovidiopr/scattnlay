@@ -1,14 +1,14 @@
 PYTHON=`which python3`
 DESTDIR=/
 PROJECT=python-scattnlay
-VERSION=2.2
+VERSION=2.3
 BUILDIR=$(CURDIR)/debian/$(PROJECT)
 SRCDIR=$(CURDIR)/src
 MULTIPREC=100
 CXX_NMIE_HEADERS=$(SRCDIR)/nmie.hpp $(SRCDIR)/nmie-impl.hpp $(SRCDIR)/nmie-precision.hpp
 
 all:
-	@echo "make src - Create source package for Python extension"
+	@echo "make source - Create source package for Python extension"
 	@echo "make ext - Create Python extension in place"
 	@echo "make install - Install Python extension on local system"
 	@echo "make rpm - Generate a rpm package for Python extension"
@@ -17,7 +17,7 @@ all:
 	@echo "make clean - Delete temporal files"
 #	make standalone
 
-src:
+source:
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 
 ext: $(SRCDIR)/nmie.cc $(SRCDIR)/nmie-pybind11.cc $(SRCDIR)/pb11_wrapper.cc
@@ -30,10 +30,9 @@ rpm:
 	#$(PYTHON) setup.py bdist_rpm --post-install=rpm/postinstall --pre-uninstall=rpm/preuninstall
 	$(PYTHON) setup.py bdist_rpm --dist-dir=../
 
-deb:
+deb: source
 	# build the source package in the parent directory
 	# then rename it to project_version.orig.tar.gz
-	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../ --prune
 	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
 	dpkg-buildpackage -i -I -rfakeroot
