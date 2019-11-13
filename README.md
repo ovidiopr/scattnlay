@@ -42,6 +42,7 @@ To compile the Python extension you need [NumPy](http://www.numpy.org/):
  - **python-numpy (>= 1.0)**
  - **python-all-dev (any version)**
  - **python-numpy-dev (any version)**
+ - **pybind11 (any version)**
 
 And to compile the Debian package you need some tools:
 
