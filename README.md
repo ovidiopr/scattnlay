@@ -59,6 +59,7 @@ Compilation options
  - **make deb** - Generate a deb package for Python extension
  - **make standalone** - Create standalone programs (scattnlay and fieldnlay)
  - **make clean** - Delete temporal files
+  
 
 Binary install:
 --------------
@@ -78,6 +79,8 @@ You can also install it from PyPi via
 ```bash
 sudo pip install python-scattnlay
 ```
+
+You can also ```git clone``` and ```pip install -e .``` to develop python package.
 
 Use:
 ----

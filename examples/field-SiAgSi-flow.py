@@ -26,7 +26,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# This test case calculates the electric field in the 
+# This test case calculates the electric field in the
 # E-k plane, for an spherical Si-Ag-Si nanoparticle. Core radius is 17.74 nm,
 # inner layer 23.31nm, outer layer 22.95nm. Working wavelength is 800nm, we use
 # silicon epsilon=13.64+i0.047, silver epsilon= -28.05+i1.525
@@ -72,11 +72,19 @@ outer_r = inner_r+outer_width
 # n2 = 0.565838 + 7.23262j
 nm = 1.0
 
+# WL=354 #nm
+# core_r = WL/20.0
+# epsilon_Ag = -2.0 + 0.28j
+# index_Ag = np.sqrt(epsilon_Ag)
+# x = 2.0*np.pi*np.array([core_r/3., core_r/2., core_r], dtype = np.float64)/WL
+# m = np.array((index_Ag, index_Ag, index_Ag), dtype = np.complex128)/nm
+
+
 x = 2.0*np.pi*np.array([core_r, inner_r, outer_r], dtype = np.float64)/WL
 m = np.array((index_Si, index_Ag, index_Si), dtype = np.complex128)/nm
 
-print "x =", x
-print "m =", m
+print("x =", x)
+print("m =", m)
 
 npts = 501
 factor=2.2
