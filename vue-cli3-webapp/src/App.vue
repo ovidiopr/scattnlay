@@ -122,13 +122,13 @@
   //   console.log(module._fib(12));
   // };
 
-  // // Test the size of wasm file
-  // fetch('fibonacci.wasm'
-  // ).then(response =>
-  //         response.arrayBuffer()
-  // ).then(bytes =>
-  //         console.log(bytes)
-  // );
+  // Test the size of wasm file
+  fetch('nmiejs.wasm'
+  ).then(response =>
+          response.arrayBuffer()
+  ).then(bytes =>
+          console.log(bytes)
+  );
 
   import nmiejs from './nmiejs.js';
   const module = nmiejs({
@@ -249,21 +249,19 @@
         this.window.height = window.innerHeight;
       },
       runMie(){
-        module.onRuntimeInitialized = () => {
-          const nmie = new module.nmie();
-
-          // let t0 = performance.now();
-          // let fromWL = parseFloat(this.simulationSetup.fromWL);
-          // let toWL = parseFloat(this.simulationSetup.toWL);
-          // let stepWL = parseFloat(this.simulationSetup.stepWL);
-          let R = parseFloat(this.simulationSetup.R);
-          let reN = parseFloat(this.simulationSetup.reN);
-          let imN = parseFloat(this.simulationSetup.imN);
-          this.simulationRuntime.Qsca = [], this.simulationRuntime.Qabs = [];
-          this.simulationRuntime.Qsca_n = [[], []], this.simulationRuntime.Qabs_n = [[], []];
-          nmie.ClearTarget();
-          nmie.AddTargetLayerReIm(R, reN, imN)
-        }
+        // const nmie = new module.nmie();
+        //
+        // // let t0 = performance.now();
+        // // let fromWL = parseFloat(this.simulationSetup.fromWL);
+        // // let toWL = parseFloat(this.simulationSetup.toWL);
+        // // let stepWL = parseFloat(this.simulationSetup.stepWL);
+        // let R = parseFloat(this.simulationSetup.R);
+        // let reN = parseFloat(this.simulationSetup.reN);
+        // let imN = parseFloat(this.simulationSetup.imN);
+        // this.simulationRuntime.Qsca = [], this.simulationRuntime.Qabs = [];
+        // this.simulationRuntime.Qsca_n = [[], []], this.simulationRuntime.Qabs_n = [[], []];
+        // nmie.ClearTarget();
+        // nmie.AddTargetLayerReIm(R, reN, imN)
 
         this.changes++;
       }
