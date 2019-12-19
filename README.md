@@ -51,13 +51,14 @@ And to compile the Debian package you need some tools:
 
 Compilation options
 
- - **make src** - Create source package for Python extension
+ - **make source** - Create source package for Python extension
  - **make ext** - Create Python extension using C++ code
  - **make install** - Install Python extension on local system
  - **make rpm** - Generate a rpm package for Python extension
  - **make deb** - Generate a deb package for Python extension
  - **make standalone** - Create standalone programs (scattnlay and fieldnlay)
  - **make clean** - Delete temporal files
+  
 
 Binary install:
 --------------
@@ -77,6 +78,8 @@ You can also install it from PyPi via
 ```bash
 sudo pip install python-scattnlay
 ```
+
+You can also ```git clone``` and ```pip install -e .``` to develop python package.
 
 Use:
 ----

@@ -34,25 +34,26 @@ from fieldplot import fieldplot
 
 import numpy as np
 import cmath
+
 # # a)
-#WL=400 #nm
-#core_r = WL/20.0
-#epsilon_Ag = -2.0 + 10.0j
+# WL=400 #nm
+# core_r = WL/20.0
+# epsilon_Ag = -2.0 + 10.0j
 
 # # b)
-#WL=400 #nm
-#core_r = WL/20.0
-#epsilon_Ag = -2.0 + 1.0j
+# WL=400 #nm
+# core_r = WL/20.0
+# epsilon_Ag = -2.0 + 1.0j
 
 # c)
-WL=354 #nm
-core_r = WL/20.0
+WL = 354  # nm
+core_r = WL / 20.0
 epsilon_Ag = -2.0 + 0.28j
 
 # d)
-#WL=367 #nm
-#core_r = WL/20.0
-#epsilon_Ag = -2.71 + 0.25j
+# WL=367 #nm
+# core_r = WL/20.0
+# epsilon_Ag = -2.71 + 0.25j
 
 # WL=500 #nm
 # core_r = 615.0
@@ -64,36 +65,37 @@ index_Ag = np.sqrt(epsilon_Ag)
 # n2 = 0.565838 + 7.23262j
 nm = 1.0
 
-x = 2.0*np.pi*np.array([core_r/4.0*3.0, core_r], dtype = np.float64)/WL
+x = 2.0 * np.pi * np.array([core_r / 4.0 * 3.0, core_r], dtype=np.float64) / WL
 
-m = np.array((index_Ag, index_Ag), dtype = np.complex128)/nm
+m = np.array((index_Ag, index_Ag), dtype=np.complex128) / nm
 
-print( "x =", x)
-print( "m =", m)
+print("x =", x)
+print("m =", m)
 
-comment='bulk-WL'+str(WL)+'nm_r'+str(core_r)+'nm_epsilon'+str(epsilon_Ag)+'-flow'
-WL_units='nm'
+comment = 'bulk-WL' + str(WL) + 'nm_r' + str(core_r) + 'nm_epsilon' + str(epsilon_Ag) + '-flow'
+WL_units = 'nm'
 npts = 251
-factor=2.1
+factor = 2.1
 flow_total = 9
-#flow_total = 21
-#flow_total = 0
-crossplane='XZ'
-#crossplane='YZ'
+# flow_total = 21
+# flow_total = 0
+crossplane = 'XZ'
+# crossplane='YZ'
 # crossplane='XY'
 
 # Options to plot: Eabs, Habs, Pabs, angleEx, angleHy
-field_to_plot='Pabs'
-#field_to_plot='angleEx'
+field_to_plot = 'Pabs'
+# field_to_plot='angleEx'
 
 
 import matplotlib.pyplot as plt
-fig, axs = plt.subplots(1,1)#, sharey=True, sharex=True)
-fig.tight_layout()
-fieldplot(fig, axs, x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
-          subplot_label=' ',is_flow_extend=False)
 
-#fieldplot(x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total, is_flow_extend=False)
+fig, axs = plt.subplots(1, 1)  # , sharey=True, sharex=True)
+fig.tight_layout()
+fieldplot(fig, axs, x, m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
+          subplot_label=' ', is_flow_extend=False)
+
+# fieldplot(x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total, is_flow_extend=False)
 
 # for ax in axs:
 #     ax.locator_params(axis='x',nbins=5)
@@ -101,8 +103,8 @@ fieldplot(fig, axs, x,m, WL, comment, WL_units, crossplane, field_to_plot, npts,
 
 fig.subplots_adjust(hspace=0.3, wspace=-0.1)
 
-plt.savefig(comment+"-R"+str(int(round(x[-1]*WL/2.0/np.pi)))+"-"+crossplane+"-"
-                    +field_to_plot+".pdf",pad_inches=0.02, bbox_inches='tight')
+plt.savefig(comment + "-R" + str(int(round(x[-1] * WL / 2.0 / np.pi))) + "-" + crossplane + "-"
+            + field_to_plot + ".pdf", pad_inches=0.02, bbox_inches='tight')
 
 plt.draw()
 
