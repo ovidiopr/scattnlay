@@ -104,7 +104,13 @@
 <script>
   import InputWithUnits from "./components/InputWithUnits.vue";
 
+  // To compile fibbonacci example use
+  //   emcc -O3 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s 'EXPORT_NAME="fibonacci"' -o ./fibonacci.js fibonacci.c
+  // for and example from https://gist.github.com/ashleygwilliams/32c31a3f5b8c87bf2894108b3534ee4f
+  // You should put *.wasm to public and *.js to src folder
   import fibonacci from './fibonacci.js';
+
+  // import fibonacciModule from "../surma-ashley-test/fibonacci.wasm";
   const module = fibonacci({
     locateFile(path) {
       console.log(path);
@@ -125,6 +131,23 @@
   //           console.log(obj._fib(12));
   //           // return obj
   // }
+  // );
+
+  // fetch( {
+  //           locateFile(path) {
+  //             if(path.endsWith('fibonacci.wasm')) {
+  //               return fibonacciModule;
+  //             }
+  //             return path;
+  //           }
+  //         }
+  // ).
+
+  // fetch('fibonacci.wasm'
+  // ).then(response =>
+  //         response.arrayBuffer()
+  // ).then(bytes =>
+  //         console.log(bytes)
   // );
 
   // alert("test")
@@ -168,8 +191,7 @@
   //   // Qabs.push(nmie.GetQabs());
   //
   //   console.log(nmie.GetQsca());
-  // };
-
+  //q
   // console.log(Object.keys(nmie));
   //import ReactiveChart from "./components/ReactiveChart.vue";
 // import VueWasm from 'vue-wasm';

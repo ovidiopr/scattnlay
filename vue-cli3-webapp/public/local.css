@@ -1,0 +1,18 @@
+.field-body .field .field {
+    margin-bottom: 1rem;
+}
+
+.container {
+    margin: 0;
+}
+
+.is-vertical-center {
+    display: flex;
+    align-items: center;
+}
+/*.chart-container {*/
+/*    margin: 0 auto;*/
+/*    border: 1px solid black;*/
+/*    height: 85vh;*/
+/*    min-height: 300px;*/
+/*}*/
