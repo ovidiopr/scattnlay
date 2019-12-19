@@ -6,7 +6,7 @@
             </a>
         </p>
         <p class="control">
-            <b-input v-model="value" type="number" step="any"
+            <b-input v-model="valueLocal" type="number" step="any"
                      class="input-with-units-value"></b-input>
         </p>
         <p class="control">
@@ -28,6 +28,12 @@
             },
             deep: true
         },
+        data () {
+            return {
+                valueLocal: this.value
+            }
+        },
+
         props: ['title', 'units', 'value']
     }
 </script>
