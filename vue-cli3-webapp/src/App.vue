@@ -93,9 +93,9 @@
         Changes:{{ changes }}
       </div>
 
-<!--      <div class="chart-container">-->
-<!--        <reactive-chart :chart="chart"></reactive-chart>-->
-<!--      </div>-->
+      <div class="chart-container">
+        <reactive-chart :chart="chart"></reactive-chart>
+      </div>
     </section>
 
   </div>
@@ -103,7 +103,7 @@
 
 <script>
   import InputWithUnits from "./components/InputWithUnits.vue";
-  // import ReactiveChart from "./components/ReactiveChart.vue";
+  import ReactiveChart from "./components/ReactiveChart.vue";
 
   // You should put *.wasm to public and *.js to src folder
 
@@ -160,7 +160,7 @@ export default {
   name: 'app',
   components: {
     InputWithUnits,
-    // ReactiveChart
+    ReactiveChart
     // HelloWorld
   },
   data() {

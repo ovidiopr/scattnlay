@@ -2,6 +2,7 @@
     <div :ref="chart.uuid"></div>
 </template>
 <script>
+    var Plotly = require('plotly.js');
     export default {
         name: "ReactiveChart",
         props: ["chart"],
