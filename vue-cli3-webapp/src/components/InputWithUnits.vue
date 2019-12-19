@@ -21,9 +21,9 @@
     export default {
         name: "InputWithUnits",
         watch: {
-            value: {
+            valueLocal: {
                 handler: function () {
-                    this.$emit('newdata',this.value);
+                    this.$emit('newdata',this.valueLocal);
                 }
             },
             deep: true

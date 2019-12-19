@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="container">
+  <div id="app">
     <b-loading :active.sync="isLoading" :can-cancel="isLoading"></b-loading>
 
     <section style="padding: 1rem">
@@ -503,5 +503,6 @@
   /*text-align: center;*/
   /*color: #2c3e50;*/
   /*margin-top: 60px;*/
+  margin: 0;
 }
 </style>
