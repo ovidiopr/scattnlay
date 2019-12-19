@@ -103,6 +103,7 @@
 
 <script>
   import InputWithUnits from "./components/InputWithUnits.vue";
+  // import ReactiveChart from "./components/ReactiveChart.vue";
 
   // You should put *.wasm to public and *.js to src folder
 
@@ -129,7 +130,6 @@
   //         console.log(bytes)
   // );
 
-  // // TODO: uncomment
   import nmiejs from './nmiejs.js';
   const module = nmiejs({
     locateFile(path) {
@@ -137,26 +137,8 @@
       return path;
     }
   });
-  // import nmiejs from './nmiejs.js';
-  // import nmiejsModule from './nmiejs.wasm';
-  // const module = nmiejs({
-  //   locateFile(path) {
-  //     if(path.endsWith('.wasm')) {
-  //       return nmiejsModule;
-  //     }
-  //     return path;
-  //   }
-  // });
-  //
-  // nmiejs().then(function(module) {
-  //   // this is reached when everything is ready, and you can call methods on Module
-  // });
-  // let getMethods = (obj) => Object.getOwnPropertyNames(obj);
-  // // TODO: end uncomment block
 
-
-
-  //
+  // Test nmiejs if working
   module.onRuntimeInitialized = () => {
     const nmie = new module.nmie();
     nmie.ClearTarget();
@@ -168,16 +150,8 @@
     let WL = 800;
     nmie.SetWavelength(WL);
     nmie.RunMieCalculation();
-    // Qsca.push();
-    // Qabs.push(nmie.GetQabs());
-
     console.log(nmie.GetQsca());
   }
-  // console.log(Object.keys(nmie));
-  //import ReactiveChart from "./components/ReactiveChart.vue";
-// import VueWasm from 'vue-wasm';
-// import nmie from './assets/nmie.wasm';
-// VueWasm(Vue, { modules: { arithmetic: arithmeticModule } });
 
 const range = (start, stop, step = 1) =>
         Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);

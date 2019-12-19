@@ -9,13 +9,12 @@
   },
   "dependencies": {
     "buefy": "^0.8.0",
-    "vue-plotly": "^1.0.0",
+    "plotly": "^1.0.0",
     "core-js": "^3.4.3",
-    "vue": "^2.6.10",
-    "exports-loader": "^0.7.0",
-    "file-loader": "^1.1.11"
+    "vue": "^2.6.10"
   },
   "devDependencies": {
+    "ify-loader": "^1.1.0",
     "@vue/cli-plugin-babel": "^4.1.0",
     "@vue/cli-plugin-eslint": "^4.1.0",
     "@vue/cli-service": "^4.1.0",

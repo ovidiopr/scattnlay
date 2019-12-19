@@ -3,7 +3,7 @@
 </template>
 <script>
     export default {
-        name: "ReactiveCart",
+        name: "ReactiveChart",
         props: ["chart"],
         mounted() {
             Plotly.newPlot(this.$refs[this.chart.uuid], this.chart.traces,
