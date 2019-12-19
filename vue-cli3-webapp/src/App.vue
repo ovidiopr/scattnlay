@@ -104,45 +104,24 @@
 <script>
   import InputWithUnits from "./components/InputWithUnits.vue";
 
+  // You should put *.wasm to public and *.js to src folder
+
   // To compile fibbonacci example use
   //   emcc -O3 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s 'EXPORT_NAME="fibonacci"' -o ./fibonacci.js fibonacci.c
   // for and example from https://gist.github.com/ashleygwilliams/32c31a3f5b8c87bf2894108b3534ee4f
-  // You should put *.wasm to public and *.js to src folder
-  import fibonacci from './fibonacci.js';
 
-  // import fibonacciModule from "../surma-ashley-test/fibonacci.wasm";
-  const module = fibonacci({
-    locateFile(path) {
-      console.log(path);
-      return path;
-    }
-  });
-  module.onRuntimeInitialized = () => {
-    console.log(module._fib(12));
-  };
+  // import fibonacci from './fibonacci.js';
+  // const module = fibonacci({
+  //   locateFile(path) {
+  //     console.log(path);
+  //     return path;
+  //   }
+  // });
+  // module.onRuntimeInitialized = () => {
+  //   console.log(module._fib(12));
+  // };
 
-  // // const moduleFib =
-  // fetch('fibonacci.wasm').then(response =>
-  //         response.arrayBuffer()
-  // ).then(bytes =>
-  //         WebAssembly.instantiate(bytes)
-  //
-  // ).then(obj => {
-  //           console.log(obj._fib(12));
-  //           // return obj
-  // }
-  // );
-
-  // fetch( {
-  //           locateFile(path) {
-  //             if(path.endsWith('fibonacci.wasm')) {
-  //               return fibonacciModule;
-  //             }
-  //             return path;
-  //           }
-  //         }
-  // ).
-
+  // // Test the size of wasm file
   // fetch('fibonacci.wasm'
   // ).then(response =>
   //         response.arrayBuffer()
@@ -150,12 +129,14 @@
   //         console.log(bytes)
   // );
 
-  // alert("test")
-  // moduleFib.onRuntimeInitialized = () => {
-  //   alert(moduleFib._fib(12));
-  // };
-
   // // TODO: uncomment
+  import nmiejs from './nmiejs.js';
+  const module = nmiejs({
+    locateFile(path) {
+      console.log(path);
+      return path;
+    }
+  });
   // import nmiejs from './nmiejs.js';
   // import nmiejsModule from './nmiejs.wasm';
   // const module = nmiejs({
@@ -176,22 +157,22 @@
 
 
   //
-  // const nmie = new module.nmie();
-  // module.onRuntimeInitialized = () => {
-  //   nmie.ClearTarget();
-  //   let R = 100.0;
-  //   let reN = 4.0;
-  //   let imN = 0.01;
-  //   nmie.AddTargetLayerReIm(R, reN, imN)
-  //   nmie.SetModeNmaxAndType(-1, -1);
-  //   let WL = 800;
-  //   nmie.SetWavelength(WL);
-  //   nmie.RunMieCalculation();
-  //   // Qsca.push();
-  //   // Qabs.push(nmie.GetQabs());
-  //
-  //   console.log(nmie.GetQsca());
-  //q
+  module.onRuntimeInitialized = () => {
+    const nmie = new module.nmie();
+    nmie.ClearTarget();
+    let R = 100.0;
+    let reN = 4.0;
+    let imN = 0.01;
+    nmie.AddTargetLayerReIm(R, reN, imN)
+    nmie.SetModeNmaxAndType(-1, -1);
+    let WL = 800;
+    nmie.SetWavelength(WL);
+    nmie.RunMieCalculation();
+    // Qsca.push();
+    // Qabs.push(nmie.GetQabs());
+
+    console.log(nmie.GetQsca());
+  }
   // console.log(Object.keys(nmie));
   //import ReactiveChart from "./components/ReactiveChart.vue";
 // import VueWasm from 'vue-wasm';

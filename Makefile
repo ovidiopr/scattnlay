@@ -56,11 +56,11 @@ fieldnlay-mp: $(SRCDIR)/nearfield.cc $(SRCDIR)/nmie.cc $(CXX_NMIE_HEADERS)
 
 wasm: $(SRCDIR)/nmie-js-wrapper.cc $(CXX_NMIE_HEADERS)
 #    emcc -lm -Wall -O2 -std=c++11 --bind -s ENVIRONMENT="web" -s MODULARIZE=1 -s SINGLE_FILE=1 -s WASM=1 -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
-# 	emcc --bind -lm -Wall -O2 -std=c++11 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
+#	emcc --bind -lm -Wall -O2 -std=c++11 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 
 # 	emcc --bind -lm -Wall -O2 -std=c++11 -s MODULARIZE=1 -s WASM=1 -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
-#	emcc --bind -lm -Wall -O2 -std=c++11 -s MODULARIZE=1 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='[\"cwrap\"]' -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
-	emcc --bind -lm -Wall -O3 -std=c++11 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s 'EXPORT_NAME="nmiejs"' -o ./nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
+	-emcc --bind -lm -Wall -O2 -std=c++11 -s MODULARIZE=1 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='[\"cwrap\"]' -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
+#	emcc --bind -lm -Wall -O3 -std=c++11 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s 'EXPORT_NAME="nmiejs"' -o ./nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 
 # 	emcc -g --bind -lm -Wall -std=c++11 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
 # 	emcc --bind -lm -Wall -O2 -std=c++11 -s MODULARIZE=1 -s EXPORT_ES6=1 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
@@ -82,8 +82,9 @@ wasm: $(SRCDIR)/nmie-js-wrapper.cc $(CXX_NMIE_HEADERS)
 #     -s EXPORT_NAME="'Onigasm'" \
 #     -o lib/onigasm.js
 
-	# @cp nmie.js web/
-	# @cp nmie.wasm web/
+
+	@cp -f nmiejs.js vue-cli3-webapp/src/
+	@cp -f nmiejs.wasm vue-cli3-webapp/public/
 
 clean:
 	$(PYTHON) setup.py clean
