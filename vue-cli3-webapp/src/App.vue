@@ -342,19 +342,20 @@
             duration: 200,
             message: 'Simulation was started!',
             type: 'is-danger',
-            position: 'is-bottom-left',
+            position: 'is-top',
             });
           setTimeout(
                   () => {
                     this.runMie();
                     this.plotResults();
                     this.$buefy.notification.open({
+                      duration: 3000,
                       message: 'Finished!',
                       type: 'is-success',
-                      position: 'is-bottom-left',
+                      position: 'is-top',
                       })
                     ;
-                  }, 200);
+                  }, 20);
         },
         runMie: function () {
           let t0 = performance.now();
