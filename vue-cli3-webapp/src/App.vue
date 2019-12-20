@@ -108,7 +108,7 @@
       <table class="table is-narrow">
         <thead>
         <tr>
-          <th v-for="mode_name in simulationRuntime.mode_n_names" v-bind:key="mode_name">
+          <th v-for="mode_name in simulationRuntime.mode_n_names" v-bind:key="mode_name.name">
             {{ mode_name.name == 'type' ? '': mode_name.name}}
           </th>
         </tr>
