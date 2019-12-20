@@ -343,16 +343,16 @@
             message: 'Simulation was started!',
             type: 'is-danger',
             position: 'is-bottom-left',
-            hasIcon: true});
+            });
           setTimeout(
                   () => {
                     this.runMie();
                     this.plotResults();
                     this.$buefy.notification.open({
-                      message: 'Simulation was finished!',
+                      message: 'Finished!',
                       type: 'is-success',
                       position: 'is-bottom-left',
-                      hasIcon: true})
+                      })
                     ;
                   }, 200);
         },
