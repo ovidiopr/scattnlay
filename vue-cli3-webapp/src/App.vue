@@ -91,7 +91,7 @@
         </div>
       </div>
       <div>
-        <b-button class="is-primary is-medium" @click="runMie();plotResults();">
+        <b-button class="is-primary is-medium" @click="runSimulation();">
           Run simulation
         </b-button><br>
         It took {{ ttime }} s.
@@ -337,6 +337,25 @@
           this.window.width = window.innerWidth;
           this.window.height = window.innerHeight;
         },
+        runSimulation: function() {
+          this.$buefy.notification.open({
+            duration: 200,
+            message: 'Simulation was started!',
+            type: 'is-danger',
+            position: 'is-bottom-left',
+            hasIcon: true});
+          setTimeout(
+                  () => {
+                    this.runMie();
+                    this.plotResults();
+                    this.$buefy.notification.open({
+                      message: 'Simulation was finished!',
+                      type: 'is-success',
+                      position: 'is-bottom-left',
+                      hasIcon: true})
+                    ;
+                  }, 200);
+        },
         runMie: function () {
           let t0 = performance.now();
           let fromWL = parseFloat(this.simulationSetup.fromWL);
@@ -439,7 +458,7 @@
           });
           this.simulationRuntime.mode_n_names = mode_n_names;
           console.log(this.plotSelectorNames)
-          console.log("sp,e 'as;ld")
+          console.log("Are plotSelectorNames are still undefined? TODO:fix?")
           return mode_n_names;
         },
         plotResults: function () {
