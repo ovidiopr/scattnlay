@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <b-loading :active.sync="isLoading" :can-cancel="isLoading"></b-loading>
+    <b-loading :active.sync="isLoading" :can-cancel="isLoading"/>
 
     <section style="padding: 1rem">
       <button class="button is-primary is-medium"
@@ -51,13 +51,13 @@
           <div class="field is-grouped is-grouped-multiline">
             <input-with-units title="from" v-bind:units="units"
                               v-bind:value="simulationSetup.fromWL"
-                              @newdata="simulationSetup.fromWL=$event"></input-with-units>
+                              @newdata="simulationSetup.fromWL=$event"/>
             <input-with-units title="to" v-bind:units="units"
                               v-bind:value="simulationSetup.toWL"
-                              @newdata="simulationSetup.toWL=$event"></input-with-units>
+                              @newdata="simulationSetup.toWL=$event"/>
             <input-with-units title="step" v-bind:units="units"
                               v-bind:value="simulationSetup.stepWL"
-                              @newdata="simulationSetup.stepWL=$event"></input-with-units>
+                              @newdata="simulationSetup.stepWL=$event"/>
           </div>
         </div>
       </div>
@@ -71,13 +71,13 @@
           <div class="field is-grouped is-grouped-multiline">
             <input-with-units title="R" v-bind:units="units"
                               v-bind:value="simulationSetup.R"
-                              @newdata="simulationSetup.R=$event"></input-with-units>
+                              @newdata="simulationSetup.R=$event"/>
             <input-with-units title="Re(n)" units=""
                               v-bind:value="simulationSetup.reN"
-                              @newdata="simulationSetup.reN=$event"></input-with-units>
+                              @newdata="simulationSetup.reN=$event"/>
             <input-with-units title="Im(n)" units=""
                               v-bind:value="simulationSetup.imN"
-                              @newdata="simulationSetup.imN=$event"></input-with-units>
+                              @newdata="simulationSetup.imN=$event"/>
           </div>
         </div>
       </div>
@@ -87,7 +87,7 @@
           <label class="label">Modes to plot</label>
         </div>
         <div class="field-body">
-          <b-input v-model="simulationSetup.total_mode_n" type='number' min=1 style="width:7rem"></b-input>
+          <b-input v-model="simulationSetup.total_mode_n" type='number' min=1 style="width:7rem"/>
         </div>
       </div>
       <div>
@@ -141,7 +141,7 @@
 
     </section>
     <div class="chart-container">
-      <reactive-chart :chart="chart"></reactive-chart>
+      <reactive-chart :chart="chart"/>
     </div>
 
   </div>
@@ -210,7 +210,6 @@
     components: {
       InputWithUnits,
       ReactiveChart
-      // HelloWorld
     },
     data() {
         return {
@@ -259,7 +258,7 @@
           },
           // plotSelectorData: undefined,
           // plotSelectorColumns: undefined,
-          plotSelectorNames: undefined,
+          // plotSelectorNames: undefined,
           chart: {
             uuid: "123",
             traces: [
@@ -288,7 +287,7 @@
         };
       },
     created() {
-        window.addEventListener('resize', this.handleResize)
+        window.addEventListener('resize', this.handleResize);
         this.handleResize();
       },
     destroyed() {
@@ -299,11 +298,10 @@
         this.nmie = new module.nmie();
         this.runMie();
         this.setIsPlotMode();
-        let mode_n_names = this.setModeNNames();
+        this.setModeNNames();
         this.plotResults();
         this.isLoading = false;
       }
-      // this.setPlotSelectorDataAndColumns(mode_n_names);
     },
     watch: {
         plotSelector: {
@@ -312,9 +310,9 @@
           },
           deep: true
         },
-        'simulationSetup.total_mode_n': function (newVal, oldVal) {
+        'simulationSetup.total_mode_n': function () {
           this.setIsPlotMode();
-          let mode_n_names = this.setModeNNames();
+          this.setModeNNames();
         },
         units: {
           handler: function () {
@@ -325,8 +323,8 @@
           handler: function () {
             this.chart.layout.width = this.window.width * 0.9;
             this.chart.layout.height = this.window.height * 0.75;
-            if (this.window.width < 600) this.chart.layout.width = this.window.width * 1.0;
-            if (this.window.height < 600) this.chart.layout.height = this.window.height * 1.0;
+            if (this.window.width < 600) this.chart.layout.width = this.window.width;
+            if (this.window.height < 600) this.chart.layout.height = this.window.height;
 
           },
           deep: true
@@ -380,8 +378,6 @@
           let mode_types = range(0, 2);
           this.simulationSetup.mode_n = mode_n;
           this.simulationSetup.mode_types = mode_types;
-          // this.simulationRuntime.mode_n_names = this.setModeNNames(total_mode_n);
-          // console.log(this.simulationRuntime.mode_n_names)
           mode_types.forEach(function (mode_type) {
             mode_n.forEach(function () {
               Qsca_n[mode_type].push([]);
@@ -458,9 +454,6 @@
             else mode_n_names.push({id: n, name: (Math.pow(2, n)).toString()});
           });
           this.simulationRuntime.mode_n_names = mode_n_names;
-          console.log(this.plotSelectorNames)
-          console.log("Are plotSelectorNames are still undefined? TODO:fix?")
-          return mode_n_names;
         },
         plotResults: function () {
           let traceQsca, traceQabs;
