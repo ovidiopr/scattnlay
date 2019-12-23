@@ -8,14 +8,31 @@
           <label class="label">Units</label>
         </div>
         <div class="field-body">
-          <b-select v-model="units">
-            <option units="nm">nm</option>
-            <option units="mkm">mkm</option>
-            <option units="mm">mm</option>
-            <option units="cm">cm</option>
-            <option units="m">m</option>
-            <option units="km">km</option>
-          </b-select>
+          <div class="columns">
+            <div class="column">
+              <b-select v-model="units">
+                <option units="nm">nm</option>
+                <option units="mkm">mkm</option>
+                <option units="mm">mm</option>
+                <option units="cm">cm</option>
+                <option units="m">m</option>
+                <option units="km">km</option>
+              </b-select>
+            </div>
+            <div class="column">
+              <b-checkbox v-model="isSourceFrequencyDomain"> Use frequency units for source</b-checkbox>
+            </div>
+            <div class="column">
+              <b-select v-model="source_units">
+                <option units="nm">nm</option>
+                <option units="mkm">mkm</option>
+                <option units="mm">mm</option>
+                <option units="cm">cm</option>
+                <option units="m">m</option>
+                <option units="km">km</option>
+              </b-select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -25,13 +42,13 @@
         </div>
         <div class="field-body">
           <div class="field is-grouped is-grouped-multiline">
-            <input-with-units title="from" v-bind:units="units"
+            <input-with-units title="from" v-bind:units="source_units"
                               v-bind:value="simulationSetup.fromWL"
                               @newdata="simulationSetup.fromWL=$event"/>
-            <input-with-units title="to" v-bind:units="units"
+            <input-with-units title="to" v-bind:units="source_units"
                               v-bind:value="simulationSetup.toWL"
                               @newdata="simulationSetup.toWL=$event"/>
-            <input-with-units title="step" v-bind:units="units"
+            <input-with-units title="step" v-bind:units="source_units"
                               v-bind:value="simulationSetup.stepWL"
                               @newdata="simulationSetup.stepWL=$event"/>
           </div>
@@ -124,10 +141,6 @@
 </template>
 
 <script>
-  import InputWithUnits from "./components/InputWithUnits.vue";
-  import ReactiveChart from "./components/ReactiveChart.vue";
-  import ShowInfo from "./components/ShowInfo.vue";
-
   // You should put *.wasm to public/ and *.js to src/ folder
 
   // To compile fibbonacci example use
@@ -145,18 +158,18 @@
   //   console.log(module._fib(12));
   // };
 
-  // Test the size of wasm file
-  fetch('nmiejs.wasm'
-  ).then(response =>
-          response.arrayBuffer()
-  ).then(bytes =>
-          console.log(bytes)
-  );
+  // // Test the size of wasm file
+  // fetch('nmiejs.wasm'
+  // ).then(response =>
+  //         response.arrayBuffer()
+  // ).then(bytes =>
+  //         console.log(bytes)
+  // );
 
   import nmiejs from './nmiejs.js';
   const module = nmiejs({
     locateFile(path) {
-      console.log(path);
+      // console.log(path);
       return path;
     }
   });
@@ -182,6 +195,10 @@
   function rangeInt(size, startAt = 0) {
     return [...Array(size).keys()].map(i => i + startAt);
   }
+
+  import InputWithUnits from "./components/InputWithUnits.vue";
+  import ReactiveChart from "./components/ReactiveChart.vue";
+  import ShowInfo from "./components/ShowInfo.vue";
   export default {
     name: 'app',
     components: {
@@ -197,8 +214,8 @@
             width: 0,
             height: 0
           },
-          // on change of initial value for __ units __
-          // remember to update this.chart.layout.xaxis.title
+          source_units: 'nm',
+          isSourceFrequencyDomain: false,
           units: 'nm',
           simulationRuntime: {
             mode_n: [],
@@ -252,8 +269,8 @@
             layout: {
               title: 'reactive charts',
               xaxis: {
-                // initial value should be same as in units
-                title: 'Wavelength, nm'
+                // will be set on mount
+                title: ''
               },
               yaxis: {
                 title: 'Normalized cross-sections'
@@ -272,6 +289,7 @@
         window.removeEventListener('resize', this.handleResize)
       },
     mounted() {
+      this.setXaxisTitle();
       module.onRuntimeInitialized = () => {
         this.nmie = new module.nmie();
         this.runMie();
@@ -282,38 +300,52 @@
       }
     },
     watch: {
-        plotSelector: {
+      plotSelector: {
           handler: function () {
             this.plotResults();
           },
           deep: true
         },
-        'simulationSetup.total_mode_n': function () {
-          this.setIsPlotMode();
-          this.setModeNNames();
-        },
-        units: {
-          handler: function () {
-            this.chart.layout.xaxis.title = "Wavelength, " + this.units;
-          }
-        },
-        window: {
-          handler: function () {
+      'simulationSetup.total_mode_n': function () {
+        this.setIsPlotMode();
+        this.setModeNNames();
+      },
+      units: {
+        handler: function () {
+          this.source_units = this.units;
+          this.setXaxisTitle();
+        }
+      },
+      units: {
+        handler: function () {
+          this.source_units = this.units;
+          this.setXaxisTitle();
+        }
+      },
+      isSourceFrequencyDomain: {
+        handler: function () {
+          this.setXaxisTitle();
+          this.source_units = this.units;
+
+        }
+      },
+      window: {
+        handler: function () {
             this.chart.layout.width = this.window.width * 0.9;
             this.chart.layout.height = this.window.height * 0.75;
             if (this.window.width < 600) this.chart.layout.width = this.window.width;
             if (this.window.height < 600) this.chart.layout.height = this.window.height;
 
           },
-          deep: true
-        }
-      },
+        deep: true
+      }
+    },
     methods: {
-        handleResize() {
+      handleResize() {
           this.window.width = window.innerWidth;
-          this.window.height = window.innerHeight;
+          this.window.height = window.innerHeight*0.8;
         },
-        runSimulation: function() {
+      runSimulation: function() {
           this.$buefy.notification.open({
             duration: 200,
             message: 'Simulation was started!',
@@ -333,7 +365,7 @@
                     ;
                   }, 20);
         },
-        runMie: function () {
+      runMie: function () {
           let t0 = performance.now();
           let fromWL = parseFloat(this.simulationSetup.fromWL);
           let toWL = parseFloat(this.simulationSetup.toWL);
@@ -384,12 +416,12 @@
 
           let t1 = performance.now();
           this.ttime = ((t1 - t0) / 1000).toFixed(2);
-          console.log("It took " + this.ttime + " s.");
+          // console.log("It took " + this.ttime + " s.");
 
           this.changes++;
 
         },
-        setIsPlotMode: function () {
+      setIsPlotMode: function () {
           let total_mode_n = this.simulationSetup.total_mode_n;
           total_mode_n++;
           let np1 = Number(total_mode_n);
@@ -418,22 +450,29 @@
           this.plotSelector.isPlotModeE = modeE;
           this.plotSelector.isPlotModeH = modeH;
         },
-        setModeNNames: function () {
-          let total_mode_n = this.simulationSetup.total_mode_n;
-          total_mode_n++;
-          let np1 = Number(total_mode_n);
-          let mode_n = rangeInt(Number(np1), 0);
-          let mode_n_names = [];
-          mode_n.forEach(function (n) {
-            if (n === 0) mode_n_names.push({id: 0, name: 'type'});
-            else if (n === 1) mode_n_names.push({id: 1, name: 'dipole'});
-            else if (n === 2) mode_n_names.push({id: 2, name: 'quadrupole'});
-            else if (n === 3) mode_n_names.push({id: 3, name: 'octupole'});
-            else mode_n_names.push({id: n, name: (Math.pow(2, n)).toString()});
-          });
-          this.simulationRuntime.mode_n_names = mode_n_names;
-        },
-        plotResults: function () {
+      setXaxisTitle: function () {
+        if (this.isSourceFrequencyDomain) {
+          this.chart.layout.xaxis.title = "Frequency, " + this.source_units;
+        } else {
+            this.chart.layout.xaxis.title = "Wavelength, " + this.source_units;
+        }
+      },
+      setModeNNames: function () {
+        let total_mode_n = this.simulationSetup.total_mode_n;
+        total_mode_n++;
+        let np1 = Number(total_mode_n);
+        let mode_n = rangeInt(Number(np1), 0);
+        let mode_n_names = [];
+        mode_n.forEach(function (n) {
+          if (n === 0) mode_n_names.push({id: 0, name: 'type'});
+          else if (n === 1) mode_n_names.push({id: 1, name: 'dipole'});
+          else if (n === 2) mode_n_names.push({id: 2, name: 'quadrupole'});
+          else if (n === 3) mode_n_names.push({id: 3, name: 'octupole'});
+          else mode_n_names.push({id: n, name: (Math.pow(2, n)).toString()});
+        });
+        this.simulationRuntime.mode_n_names = mode_n_names;
+      },
+      plotResults: function () {
           let traceQsca, traceQabs;
           traceQsca = {
             x: this.simulationRuntime.WLs,
@@ -481,7 +520,7 @@
           }
 
         }
-      },
+    },
   };
 
 </script>
