@@ -1,31 +1,7 @@
 <template>
   <div id="app">
     <b-loading :active.sync="isLoading" :can-cancel="isLoading"/>
-
-    <section style="padding: 1rem">
-      <button class="button is-primary is-medium"
-              @click="isShowInfo = true">
-        Show info
-      </button>
-      <b-modal :active.sync="isShowInfo">
-        <div class="message" style="padding: 2rem">
-          <span style="text-decoration: underline;text-emphasis: before;font-weight: bold;">Usage:</span>
-          <br><br>
-          Feel free to use provided software, however, use it at your own risk. We made our best effort to verify
-          it is correct, however, we do not provide any warranty.
-          <br><br>
-          If it was usefull for your project, please, cite in your related paper the following reference:
-          <br><br>
-          <article style="margin-left: 1rem">
-            <div style="font-style: italic; padding-bottom: 0.5rem">"Mie calculation of electromagnetic near-field
-              for a multilayered sphere"</div>
-            Konstantin Ladutenko, Umapada Pal, Antonio Rivera, Ovidio Peña-Rodríguez<br>
-            <span style="font-weight: bold">Comp. Phys. Comm., vol. 214, pp. 225–230, 2017</span>
-          </article>
-        </div>
-      </b-modal>
-    </section>
-
+    <ShowInfo/>
     <section>
       <div class="field is-horizontal">
         <div class="field-label is-normal">
@@ -150,6 +126,7 @@
 <script>
   import InputWithUnits from "./components/InputWithUnits.vue";
   import ReactiveChart from "./components/ReactiveChart.vue";
+  import ShowInfo from "./components/ShowInfo.vue";
 
   // You should put *.wasm to public/ and *.js to src/ folder
 
@@ -209,7 +186,8 @@
     name: 'app',
     components: {
       InputWithUnits,
-      ReactiveChart
+      ReactiveChart,
+      ShowInfo
     },
     data() {
         return {
