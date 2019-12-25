@@ -192,10 +192,12 @@
             width: 0,
             height: 0
           },
+          units: 'nm',
           source_units: 'nm',
           isSourceOtherUnits: false,
-          units: 'nm',
           simulationRuntime: {
+            r_units: 'nm',
+            r_source_units: 'nm',
             mode_n: [],
             mode_n_names: [],
             mode_types: range(0, 2),
@@ -209,6 +211,13 @@
             trace1: {},
             trace2: {},
             total_mode_n_evaluated: 4,
+          },
+          plotData: {
+            pWLs: [],
+            pQsca: [],
+            pQabs: [],
+            pQsca_n: [[], []],
+            pQabs_n: [[], []],
           },
           simulationSetup: {
             stepWL: 0.5,
@@ -298,11 +307,21 @@
       source_units: {
         handler: function () {
           this.setXaxisTitle();
+          let su = this.source_units;
+          let rsu = this.simulationRuntime.r_source_units;
+          this.plotData.pWLs = this.simulationRuntime.WLs.slice();
+          if (su !== rsu) {
+            this.plotData.pWLs.forEach(function(part, index) {
+                this[index] = 1/this[index]
+            }, this.plotData.pWLs); // use as this
+          }
+          // this.reverseChartData();
+          this.plotResults();
         }
       },
       isSourceOtherUnits: {
         handler: function () {
-          this.setEmptyChart();
+          // this.setEmptyChart();
           this.setXaxisTitle();
           if (!this.isSourceOtherUnits) {
             this.source_units = this.units;
@@ -327,6 +346,34 @@
           this.window.width = window.innerWidth;
           this.window.height = window.innerHeight*0.8;
         },
+      reverseChartData() {
+        this.chart.traces.forEach(function(part, index) {
+          let tmp = this[index].x.reverse();
+          console.log(this[index].name)
+          console.log(tmp);
+          // tmp = tmp.reverse();
+          console.log(tmp);
+          this[index].x = tmp;
+          tmp = this[index].y.reverse();
+          this[index].y = tmp;
+        }, this.chart.traces); // use arr as this
+
+        // let trace_sca = {
+        //   x: this.simulationRuntime.WLs,
+        //   y: this.simulationRuntime.Qsca_n[mode_type][mode_n],
+        //   type: 'scatter',
+        //   name: 'Qsca ' + mode_names[mode_type] + ' ' + mode_n_names[mode_n + 1].name
+        // };
+        // this.chart.traces.push(trace_sca);
+        //
+        // this.simulationRuntime.WLs = this.simulationRuntime.WLs.reverse();
+        // this.simulationRuntime.Qsca = this.simulationRuntime.Qsca.reverse();
+        // this.simulationRuntime.Qabs = this.simulationRuntime.Qabs.reverse();
+                // Qsca: [],
+                // Qabs: [],
+                // Qsca_n: [[], []],
+                // Qabs_n: [[], []],
+      },
       runSimulation: function() {
           this.$buefy.notification.open({
             duration: 200,
@@ -348,61 +395,70 @@
                   }, 20);
         },
       runMie: function () {
-          let t0 = performance.now();
-          let fromWL = parseFloat(this.simulationSetup.fromWL);
-          let toWL = parseFloat(this.simulationSetup.toWL);
-          let stepWL = parseFloat(this.simulationSetup.stepWL);
-          let R = parseFloat(this.simulationSetup.R);
-          let reN = parseFloat(this.simulationSetup.reN);
-          let imN = parseFloat(this.simulationSetup.imN);
+        this.simulationRuntime.r_units = this.units;
+        this.simulationRuntime.r_source_units = this.source_units;
 
-          let Qsca = [], Qabs = [];
-          let Qsca_n = [[], []], Qabs_n = [[], []];
-          const nmie = this.nmie;
-          nmie.ClearTarget();
-          nmie.AddTargetLayerReIm(R, reN, imN);
-          let WLs = range(fromWL, toWL, stepWL);
-          this.simulationRuntime.WLs = WLs;
-          let total_mode_n = this.simulationSetup.total_mode_n;
-          let mode_n = [];
-          mode_n = rangeInt(Number(total_mode_n), 1);
-          this.simulationRuntime.total_mode_n_evaluated = total_mode_n;
-          let mode_types = range(0, 2);
-          this.simulationSetup.mode_n = mode_n;
-          this.simulationSetup.mode_types = mode_types;
+        let t0 = performance.now();
+        let fromWL = parseFloat(this.simulationSetup.fromWL);
+        let toWL = parseFloat(this.simulationSetup.toWL);
+        let stepWL = parseFloat(this.simulationSetup.stepWL);
+        let R = parseFloat(this.simulationSetup.R);
+        let reN = parseFloat(this.simulationSetup.reN);
+        let imN = parseFloat(this.simulationSetup.imN);
+
+        let Qsca = [], Qabs = [];
+        let Qsca_n = [[], []], Qabs_n = [[], []];
+        const nmie = this.nmie;
+        nmie.ClearTarget();
+        nmie.AddTargetLayerReIm(R, reN, imN);
+        let WLs = range(fromWL, toWL, stepWL);
+        this.simulationRuntime.WLs = WLs;
+        let total_mode_n = this.simulationSetup.total_mode_n;
+        let mode_n = [];
+        mode_n = rangeInt(Number(total_mode_n), 1);
+        this.simulationRuntime.total_mode_n_evaluated = total_mode_n;
+        let mode_types = range(0, 2);
+        this.simulationSetup.mode_n = mode_n;
+        this.simulationSetup.mode_types = mode_types;
+        mode_types.forEach(function (mode_type) {
+          mode_n.forEach(function () {
+            Qsca_n[mode_type].push([]);
+            Qabs_n[mode_type].push([]);
+            });
+        });
+        WLs.forEach(function (WL) {
+          nmie.SetModeNmaxAndType(-1, -1);
+          nmie.SetWavelength(WL);
+          nmie.RunMieCalculation();
+          Qsca.push(nmie.GetQsca());
+          Qabs.push(nmie.GetQabs());
           mode_types.forEach(function (mode_type) {
-            mode_n.forEach(function () {
-              Qsca_n[mode_type].push([]);
-              Qabs_n[mode_type].push([]);
+            mode_n.forEach(function (n) {
+              nmie.SetModeNmaxAndType(n, mode_type);
+              nmie.RunMieCalculation();
+              Qsca_n[mode_type][n - 1].push(nmie.GetQsca());
+              Qabs_n[mode_type][n - 1].push(nmie.GetQabs());
             });
-          });
-          WLs.forEach(function (WL) {
-            nmie.SetModeNmaxAndType(-1, -1);
-            nmie.SetWavelength(WL);
-            nmie.RunMieCalculation();
-            Qsca.push(nmie.GetQsca());
-            Qabs.push(nmie.GetQabs());
-            mode_types.forEach(function (mode_type) {
-              mode_n.forEach(function (n) {
-                nmie.SetModeNmaxAndType(n, mode_type);
-                nmie.RunMieCalculation();
-                Qsca_n[mode_type][n - 1].push(nmie.GetQsca());
-                Qabs_n[mode_type][n - 1].push(nmie.GetQabs());
-              });
             });
-          });
-          this.simulationRuntime.Qsca = Qsca;
-          this.simulationRuntime.Qabs = Qabs;
-          this.simulationRuntime.Qsca_n = Qsca_n;
-          this.simulationRuntime.Qabs_n = Qabs_n;
+        });
+        this.simulationRuntime.Qsca = Qsca;
+        this.simulationRuntime.Qabs = Qabs;
+        this.simulationRuntime.Qsca_n = Qsca_n;
+        this.simulationRuntime.Qabs_n = Qabs_n;
 
-          let t1 = performance.now();
-          this.ttime = ((t1 - t0) / 1000).toFixed(2);
-          // console.log("It took " + this.ttime + " s.");
+        let t1 = performance.now();
+        this.ttime = ((t1 - t0) / 1000).toFixed(2);
+        // console.log("It took " + this.ttime + " s.");
+        
+        this.plotData.pWLs = WLs;
+        this.plotData.pQsca = Qsca;
+        this.plotData.pQabs = Qabs;
+        this.plotData.pQsca_n = Qsca_n;
+        this.plotData.pQabs_n = Qabs_n;
 
-          this.changes++;
+        this.changes++;
 
-        },
+      },
       setIsPlotMode: function () {
           let total_mode_n = this.simulationSetup.total_mode_n;
           total_mode_n++;
@@ -457,14 +513,14 @@
       setQtotalChart: function () {
         let traceQsca, traceQabs;
         traceQsca = {
-          x: this.simulationRuntime.WLs,
-          y: this.simulationRuntime.Qsca,
+          x: this.plotData.pWLs,
+          y: this.plotData.pQsca,
           type: 'scatter',
           name: 'Qsca'
         };
         traceQabs = {
-          x: this.simulationRuntime.WLs,
-          y: this.simulationRuntime.Qabs,
+          x: this.plotData.pWLs,
+          y: this.plotData.pQabs,
           type: 'scatter',
           name: 'Qabs'
         };
@@ -496,8 +552,8 @@
             if (is_mode_plot[mode_n] === false) continue;
             if (this.plotSelector.isPlotQsca === true) {
               let trace_sca = {
-                x: this.simulationRuntime.WLs,
-                y: this.simulationRuntime.Qsca_n[mode_type][mode_n],
+                x: this.plotData.pWLs,
+                y: this.plotData.pQsca_n[mode_type][mode_n],
                   type: 'scatter',
                 name: 'Qsca ' + mode_names[mode_type] + ' ' + mode_n_names[mode_n + 1].name
               };
@@ -505,8 +561,8 @@
             }
             if (this.plotSelector.isPlotQabs === true) {
               let trace_abs = {
-                x: this.simulationRuntime.WLs,
-                y: this.simulationRuntime.Qabs_n[mode_type][mode_n],
+                x: this.plotData.pWLs,
+                y: this.plotData.pQabs_n[mode_type][mode_n],
                 type: 'scatter',
                 name: 'Qabs ' + mode_names[mode_type] + ' ' + mode_n_names[mode_n + 1].name
                 };
