@@ -3,42 +3,19 @@
     <b-loading :active.sync="isLoading" :can-cancel="isLoading"/>
     <ShowInfo/>
     <section>
+      <GetUnits v-bind:units="units"
+                v-bind:source_units="source_units"
+                v-bind:isSourceOtherUnits="isSourceOtherUnits"
+                @unitsData="units=$event"
+                @source_unitsData="source_units=$event"
+                @isSourceOtherUnitsData="isSourceOtherUnits=$event"
+      />
       <div class="field is-horizontal">
         <div class="field-label is-normal">
-          <label class="label">Units</label>
-        </div>
-        <div class="field-body">
-          <div class="columns">
-            <div class="column">
-              <b-select v-model="units">
-                <option units="nm">nm</option>
-                <option units="mkm">mkm</option>
-                <option units="mm">mm</option>
-                <option units="cm">cm</option>
-                <option units="m">m</option>
-                <option units="km">km</option>
-              </b-select>
-            </div>
-            <div class="column">
-              <b-checkbox v-model="isSourceFrequencyDomain"> Use frequency units for source</b-checkbox>
-            </div>
-            <div class="column">
-              <b-select v-model="source_units">
-                <option units="nm">nm</option>
-                <option units="mkm">mkm</option>
-                <option units="mm">mm</option>
-                <option units="cm">cm</option>
-                <option units="m">m</option>
-                <option units="km">km</option>
-              </b-select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="field is-horizontal">
-        <div class="field-label is-normal">
-          <label class="label">Wavelength</label>
+          <label class="label">
+            <div v-if="isSourceOtherUnits"> Frequency  </div>
+            <div v-else>               Wavelength              </div>
+          </label>
         </div>
         <div class="field-body">
           <div class="field is-grouped is-grouped-multiline">
@@ -189,8 +166,7 @@
   //   console.log(nmie.GetQsca());
   // }
 
-  const range = (start, stop, step = 1) =>
-          Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
+  const range = (start, stop, step = 1) => Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
 
   function rangeInt(size, startAt = 0) {
     return [...Array(size).keys()].map(i => i + startAt);
@@ -199,9 +175,11 @@
   import InputWithUnits from "./components/InputWithUnits.vue";
   import ReactiveChart from "./components/ReactiveChart.vue";
   import ShowInfo from "./components/ShowInfo.vue";
+  import GetUnits from "./components/GetUnits.vue";
   export default {
     name: 'app',
     components: {
+      GetUnits,
       InputWithUnits,
       ReactiveChart,
       ShowInfo
@@ -215,7 +193,7 @@
             height: 0
           },
           source_units: 'nm',
-          isSourceFrequencyDomain: false,
+          isSourceOtherUnits: false,
           units: 'nm',
           simulationRuntime: {
             mode_n: [],
@@ -267,7 +245,7 @@
               }
             ],
             layout: {
-              title: 'reactive charts',
+              // title: 'reactive charts',
               xaxis: {
                 // will be set on mount
                 title: ''
@@ -312,21 +290,25 @@
       },
       units: {
         handler: function () {
-          this.source_units = this.units;
+          if (!this.isSourceOtherUnits) {
+            this.source_units = this.units;
+          }
+        }
+      },
+      source_units: {
+        handler: function () {
           this.setXaxisTitle();
         }
       },
-      units: {
+      isSourceOtherUnits: {
         handler: function () {
-          this.source_units = this.units;
+          this.setEmptyChart();
           this.setXaxisTitle();
-        }
-      },
-      isSourceFrequencyDomain: {
-        handler: function () {
-          this.setXaxisTitle();
-          this.source_units = this.units;
-
+          if (!this.isSourceOtherUnits) {
+            this.source_units = this.units;
+          } else {
+            this.source_units = 'THz'
+          }
         }
       },
       window: {
@@ -358,7 +340,7 @@
                     this.plotResults();
                     this.$buefy.notification.open({
                       duration: 3000,
-                      message: 'Finished!',
+                      message: 'Finished! '+"It took " + this.ttime + " s.",
                       type: 'is-success',
                       position: 'is-top',
                       })
@@ -451,7 +433,7 @@
           this.plotSelector.isPlotModeH = modeH;
         },
       setXaxisTitle: function () {
-        if (this.isSourceFrequencyDomain) {
+        if (this.isSourceOtherUnits) {
           this.chart.layout.xaxis.title = "Frequency, " + this.source_units;
         } else {
             this.chart.layout.xaxis.title = "Wavelength, " + this.source_units;
@@ -472,54 +454,68 @@
         });
         this.simulationRuntime.mode_n_names = mode_n_names;
       },
+      setQtotalChart: function () {
+        let traceQsca, traceQabs;
+        traceQsca = {
+          x: this.simulationRuntime.WLs,
+          y: this.simulationRuntime.Qsca,
+          type: 'scatter',
+          name: 'Qsca'
+        };
+        traceQabs = {
+          x: this.simulationRuntime.WLs,
+          y: this.simulationRuntime.Qabs,
+          type: 'scatter',
+          name: 'Qabs'
+        };
+        this.chart.traces = [];
+        if (this.plotSelector.isPlotQsca === true) this.chart.traces.push(traceQsca);
+        if (this.plotSelector.isPlotQabs === true) this.chart.traces.push(traceQabs);
+      },
+      setEmptyChart: function () {
+        this.chart.traces = [
+          {
+            y: [],
+            line: {
+              color: "#5e9e7e",
+              width: 4,
+              shape: "line"
+            }
+          }];
+        this.setXaxisTitle();
+      },
       plotResults: function () {
-          let traceQsca, traceQabs;
-          traceQsca = {
-            x: this.simulationRuntime.WLs,
-            y: this.simulationRuntime.Qsca,
-            type: 'scatter',
-            name: 'Qsca'
-          };
-          traceQabs = {
-            x: this.simulationRuntime.WLs,
-            y: this.simulationRuntime.Qabs,
-            type: 'scatter',
-            name: 'Qabs'
-          };
-          this.chart.traces = [];
-          if (this.plotSelector.isPlotQsca === true) this.chart.traces.push(traceQsca);
-          if (this.plotSelector.isPlotQabs === true) this.chart.traces.push(traceQabs);
+        this.setQtotalChart();
+        let mode_type, mode_n;
+        let mode_n_names = this.simulationRuntime.mode_n_names;
+        let mode_names = this.simulationRuntime.mode_names;
 
-          let mode_type, mode_n;
-          let mode_n_names = this.simulationRuntime.mode_n_names;
-          let mode_names = this.simulationRuntime.mode_names;
-
-          for (mode_type = 0; mode_type < 2; ++mode_type) {
-            for (mode_n = 0; mode_n < this.simulationRuntime.total_mode_n_evaluated; ++mode_n) {
-              let is_mode_plot = mode_type === 0 ? this.plotSelector.isPlotModeE : this.plotSelector.isPlotModeH;
-              if (is_mode_plot[mode_n] === false) continue;
-              if (this.plotSelector.isPlotQsca === true) {
-                let trace_sca = {
-                  x: this.simulationRuntime.WLs,
-                  y: this.simulationRuntime.Qsca_n[mode_type][mode_n],
+        for (mode_type = 0; mode_type < 2; ++mode_type) {
+          for (mode_n = 0; mode_n < this.simulationRuntime.total_mode_n_evaluated; ++mode_n) {
+            let is_mode_plot = mode_type === 0 ? this.plotSelector.isPlotModeE : this.plotSelector.isPlotModeH;
+            if (is_mode_plot[mode_n] === false) continue;
+            if (this.plotSelector.isPlotQsca === true) {
+              let trace_sca = {
+                x: this.simulationRuntime.WLs,
+                y: this.simulationRuntime.Qsca_n[mode_type][mode_n],
                   type: 'scatter',
-                  name: 'Qsca ' + mode_names[mode_type] + ' ' + mode_n_names[mode_n + 1].name
+                name: 'Qsca ' + mode_names[mode_type] + ' ' + mode_n_names[mode_n + 1].name
+              };
+              this.chart.traces.push(trace_sca);
+            }
+            if (this.plotSelector.isPlotQabs === true) {
+              let trace_abs = {
+                x: this.simulationRuntime.WLs,
+                y: this.simulationRuntime.Qabs_n[mode_type][mode_n],
+                type: 'scatter',
+                name: 'Qabs ' + mode_names[mode_type] + ' ' + mode_n_names[mode_n + 1].name
                 };
-                this.chart.traces.push(trace_sca);
-              }
-              if (this.plotSelector.isPlotQabs === true) {
-                let trace_abs = {
-                  x: this.simulationRuntime.WLs,
-                  y: this.simulationRuntime.Qabs_n[mode_type][mode_n],
-                  type: 'scatter',
-                  name: 'Qabs ' + mode_names[mode_type] + ' ' + mode_n_names[mode_n + 1].name
-                };
-                this.chart.traces.push(trace_abs);
-              }
+              this.chart.traces.push(trace_abs);
             }
           }
-
         }
+
+      }
     },
   };
 
