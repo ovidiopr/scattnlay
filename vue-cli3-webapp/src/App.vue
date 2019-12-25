@@ -195,9 +195,22 @@
           units: 'nm',
           source_units: 'nm',
           isSourceOtherUnits: false,
+          simulationSetup: {
+            stepWL: 0.5,
+            fromWL: 300.0,
+            toWL: 1000.0,
+            R: 100.0,
+            reN: 4.0,
+            imN: 0.01,
+            total_mode_n: 4
+          },
           simulationRuntime: {
             r_units: 'nm',
             r_source_units: 'nm',
+            stepWL: 0.5,
+            fromWL: 300.0,
+            toWL: 1000.0,
+            R: 100.0,
             mode_n: [],
             mode_n_names: [],
             mode_types: range(0, 2),
@@ -218,15 +231,6 @@
             pQabs: [],
             pQsca_n: [[], []],
             pQabs_n: [[], []],
-          },
-          simulationSetup: {
-            stepWL: 0.5,
-            fromWL: 300.0,
-            toWL: 1000.0,
-            R: 100.0,
-            reN: 4.0,
-            imN: 0.01,
-            total_mode_n: 4
           },
           changes: 0,
           isShowInfo: false,
@@ -310,12 +314,19 @@
           let su = this.source_units;
           let rsu = this.simulationRuntime.r_source_units;
           this.plotData.pWLs = this.simulationRuntime.WLs.slice();
+          this.simulationSetup.fromWL = this.simulationRuntime.fromWL;
+          this.simulationSetup.toWL = this.simulationRuntime.toWL;
+          this.simulationSetup.stepWL = this.simulationRuntime.stepWL;
           if (su !== rsu) {
-            this.plotData.pWLs.forEach(function(part, index) {
-                this[index] = 1/this[index]
-            }, this.plotData.pWLs); // use as this
+            for (let i = 0; i < this.plotData.pWLs.length; ++i) {
+              this.plotData.pWLs[i] = this.convertUnits(rsu, su,
+                      this.plotData.pWLs[i]);
+            }
+            this.simulationSetup.fromWL = this.convertUnits(rsu, su, this.simulationRuntime.fromWL);
+            console.log(this.simulationSetup.fromWL);
+            this.simulationSetup.toWL = this.convertUnits(rsu, su,this.simulationRuntime.toWL);
+            this.simulationSetup.stepWL = (this.simulationSetup.fromWL-this.simulationSetup.toWL)/this.plotData.pWLs.length;
           }
-          // this.reverseChartData();
           this.plotResults();
         }
       },
@@ -346,33 +357,10 @@
           this.window.width = window.innerWidth;
           this.window.height = window.innerHeight*0.8;
         },
-      reverseChartData() {
-        this.chart.traces.forEach(function(part, index) {
-          let tmp = this[index].x.reverse();
-          console.log(this[index].name)
-          console.log(tmp);
-          // tmp = tmp.reverse();
-          console.log(tmp);
-          this[index].x = tmp;
-          tmp = this[index].y.reverse();
-          this[index].y = tmp;
-        }, this.chart.traces); // use arr as this
+      convertUnits(fromU,toU, val) {
+        if (fromU === toU) return val;
 
-        // let trace_sca = {
-        //   x: this.simulationRuntime.WLs,
-        //   y: this.simulationRuntime.Qsca_n[mode_type][mode_n],
-        //   type: 'scatter',
-        //   name: 'Qsca ' + mode_names[mode_type] + ' ' + mode_n_names[mode_n + 1].name
-        // };
-        // this.chart.traces.push(trace_sca);
-        //
-        // this.simulationRuntime.WLs = this.simulationRuntime.WLs.reverse();
-        // this.simulationRuntime.Qsca = this.simulationRuntime.Qsca.reverse();
-        // this.simulationRuntime.Qabs = this.simulationRuntime.Qabs.reverse();
-                // Qsca: [],
-                // Qabs: [],
-                // Qsca_n: [[], []],
-                // Qabs_n: [[], []],
+        return 1/val;
       },
       runSimulation: function() {
           this.$buefy.notification.open({
@@ -397,6 +385,10 @@
       runMie: function () {
         this.simulationRuntime.r_units = this.units;
         this.simulationRuntime.r_source_units = this.source_units;
+        this.simulationRuntime.fromWL = this.simulationSetup.fromWL;
+        this.simulationRuntime.toWL = this.simulationSetup.toWL;
+        this.simulationRuntime.stepWL = this.simulationSetup.stepWL;
+        this.simulationRuntime.R = this.simulationSetup.R;
 
         let t0 = performance.now();
         let fromWL = parseFloat(this.simulationSetup.fromWL);
@@ -405,6 +397,7 @@
         let R = parseFloat(this.simulationSetup.R);
         let reN = parseFloat(this.simulationSetup.reN);
         let imN = parseFloat(this.simulationSetup.imN);
+
 
         let Qsca = [], Qabs = [];
         let Qsca_n = [[], []], Qabs_n = [[], []];
@@ -527,18 +520,6 @@
         this.chart.traces = [];
         if (this.plotSelector.isPlotQsca === true) this.chart.traces.push(traceQsca);
         if (this.plotSelector.isPlotQabs === true) this.chart.traces.push(traceQabs);
-      },
-      setEmptyChart: function () {
-        this.chart.traces = [
-          {
-            y: [],
-            line: {
-              color: "#5e9e7e",
-              width: 4,
-              shape: "line"
-            }
-          }];
-        this.setXaxisTitle();
       },
       plotResults: function () {
         this.setQtotalChart();

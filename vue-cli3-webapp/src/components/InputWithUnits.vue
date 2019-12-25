@@ -26,6 +26,11 @@
                     this.$emit('newdata',this.valueLocal);
                 }
             },
+            value: {
+                handler: function () {
+                    this.valueLocal = this.value;
+                }
+            },
             deep: true
         },
         data () {
