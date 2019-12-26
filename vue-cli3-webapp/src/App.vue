@@ -13,7 +13,9 @@
       <div class="field is-horizontal">
         <div class="field-label is-normal">
           <label class="label">
-            <div v-if="isSourceOtherUnits"> Frequency  </div>
+            <div v-if="source_units.endsWith('Hz')"> Frequency  </div>
+            <div v-else-if="source_units.endsWith('eV')"> Energy  </div>
+            <div v-else-if="source_units.endsWith('s')"> Period  </div>
             <div v-else>               Wavelength              </div>
           </label>
         </div>
@@ -306,6 +308,9 @@
           if (!this.isSourceOtherUnits) {
             this.source_units = this.units;
           }
+          let u = this.units;
+          let ru = this.simulationRuntime.r_units;
+          this.simulationSetup.R = this.convertUnits(ru, u,this.simulationRuntime.R);
         }
       },
       source_units: {
@@ -323,9 +328,13 @@
                       this.plotData.pWLs[i]);
             }
             this.simulationSetup.fromWL = this.convertUnits(rsu, su, this.simulationRuntime.fromWL);
-            console.log(this.simulationSetup.fromWL);
             this.simulationSetup.toWL = this.convertUnits(rsu, su,this.simulationRuntime.toWL);
-            this.simulationSetup.stepWL = (this.simulationSetup.fromWL-this.simulationSetup.toWL)/this.plotData.pWLs.length;
+            if (this.simulationSetup.fromWL > this.simulationSetup.toWL) {
+              let tmp = this.simulationSetup.fromWL;
+              this.simulationSetup.fromWL = this.simulationSetup.toWL;
+              this.simulationSetup.toWL = tmp;
+            }
+            this.simulationSetup.stepWL = (this.simulationSetup.toWL-this.simulationSetup.fromWL)/this.plotData.pWLs.length;
           }
           this.plotResults();
         }
@@ -357,10 +366,45 @@
           this.window.width = window.innerWidth;
           this.window.height = window.innerHeight*0.8;
         },
+      convertUnits2nm(fromU, val) {
+        if (fromU === 'nm') return val;
+        if (fromU === 'mkm') return val*1e3;
+        if (fromU === 'mm') return val*1e6;
+        if (fromU === 'cm') return val*1e7;
+        if (fromU === 'm') return val*1e9;
+        if (fromU === 'km') return val*1e12;
+
+        let c = 299792458; // m/s
+        let hc = 1239841930.092394328; // m*eV
+        if (fromU === 'THz') return c/(val*1e12)*1e9;
+        if (fromU === 'GHz') return c/(val*1e9)*1e9;
+        if (fromU === 'MHz') return c/(val*1e6)*1e9;
+        if (fromU === 'kHz') return c/(val*1e3)*1e9;
+        if (fromU === 'Hz') return c/(val*1e0)*1e9;
+
+        return undefined;
+      },
+      convertUnitsFrom_nm(toU, val) {
+        if (toU === 'nm') return val;
+        if (toU === 'mkm') return val/1e3;
+        if (toU === 'mm') return val/1e6;
+        if (toU === 'cm') return val/1e7;
+        if (toU === 'm') return val/1e9;
+        if (toU === 'km') return val/1e12;
+
+        let c = 299792458; // m/s
+        let hc = 1239841930.092394328; // m*eV
+        if (toU === 'THz') return c/(val/1e9)/1e12;
+        if (toU === 'GHz') return c/(val/1e9)/1e9;
+        if (toU === 'MHz') return c/(val/1e9)/1e6;
+        if (toU === 'kHz') return c/(val/1e9)/1e3;
+        if (toU === 'Hz') return c/(val/1e9)/1e0;
+
+        return undefined;
+      },
       convertUnits(fromU,toU, val) {
         if (fromU === toU) return val;
-
-        return 1/val;
+        return this.convertUnitsFrom_nm(toU, this.convertUnits2nm(fromU, val));
       },
       runSimulation: function() {
           this.$buefy.notification.open({
@@ -482,8 +526,12 @@
           this.plotSelector.isPlotModeH = modeH;
         },
       setXaxisTitle: function () {
-        if (this.isSourceOtherUnits) {
+        if (this.source_units.endsWith('Hz')) {
           this.chart.layout.xaxis.title = "Frequency, " + this.source_units;
+        } else if (this.source_units.endsWith('eV')) {
+          this.chart.layout.xaxis.title = "Energy, " + this.source_units;
+        } else if (this.source_units.endsWith('s')) {
+          this.chart.layout.xaxis.title = "Period, " + this.source_units;
         } else {
             this.chart.layout.xaxis.title = "Wavelength, " + this.source_units;
         }

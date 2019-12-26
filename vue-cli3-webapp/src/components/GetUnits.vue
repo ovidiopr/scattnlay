@@ -28,17 +28,14 @@
                                 <option value="GHz">GHz</option>
                                 <option value="THz">THz</option>
                             </optgroup>
-                            <!-- TODO: implement energy and period source units -->
-                            <optgroup label="To do:">
                                 <optgroup label="Energy">
-                                    <option value="eV" disabled>eV</option>
-                                    <option value="meV" disabled>meV</option>
+                                    <option value="eV">eV</option>
+                                    <option value="meV">meV</option>
                                 </optgroup>
                                 <optgroup label="Period duration">
-                                    <option value="fs" disabled>fs</option>
-                                    <option value="ps" disabled>ps</option>
+                                    <option value="fs">fs</option>
+                                    <option value="ps">ps</option>
                                 </optgroup>
-                            </optgroup>
                         </b-select>
                     </div>
                     <div v-else>
