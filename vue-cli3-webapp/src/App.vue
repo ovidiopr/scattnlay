@@ -457,9 +457,7 @@
 
         let Qsca = [], Qabs = [];
         let Qsca_n = [[], []], Qabs_n = [[], []];
-        const nmie = this.nmie;
-        nmie.ClearTarget();
-        nmie.AddTargetLayerReIm(R, reN, imN);
+
         let WLs = range(fromWL, toWL, stepWL);
         this.simulationRuntime.WLs = WLs;
         let total_mode_n = this.simulationSetup.total_mode_n;
@@ -475,7 +473,18 @@
             Qabs_n[mode_type].push([]);
             });
         });
-        WLs.forEach(function (WL) {
+
+        // Provide all sizes (germetry and wavelengths) to nmie in same units [nm]
+        const nmie = this.nmie;
+        nmie.ClearTarget();
+        nmie.AddTargetLayerReIm( this.convertUnits2nm(this.units, R),
+                reN, imN);
+        let WLs_nm = range(fromWL, toWL, stepWL);
+        var WL_points = WLs_nm.length;
+        for (var i = 0; i < WL_points; i++) {
+          WLs_nm[i] = this.convertUnits2nm(this.source_units, WLs[i]);
+        }
+        WLs_nm.forEach(function (WL) {
           nmie.SetModeNmaxAndType(-1, -1);
           nmie.SetWavelength(WL);
           nmie.RunMieCalculation();
