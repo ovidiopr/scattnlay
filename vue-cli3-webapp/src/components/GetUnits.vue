@@ -29,12 +29,12 @@
                                 <option value="THz">THz</option>
                             </optgroup>
                                 <optgroup label="Energy">
-                                    <option value="eV">eV</option>
                                     <option value="meV">meV</option>
+                                    <option value="eV">eV</option>
                                 </optgroup>
                                 <optgroup label="Period duration">
-                                    <option value="fs">fs</option>
                                     <option value="ps">ps</option>
+                                    <option value="fs">fs</option>
                                 </optgroup>
                         </b-select>
                     </div>
