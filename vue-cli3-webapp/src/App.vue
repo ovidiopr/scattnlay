@@ -10,30 +10,15 @@
                 @source_unitsData="source_units=$event"
                 @isSourceOtherUnitsData="isSourceOtherUnits=$event"
       />
-      <div class="field is-horizontal">
-        <div class="field-label is-normal">
-          <label class="label">
-            <div v-if="source_units.endsWith('Hz')"> Frequency  </div>
-            <div v-else-if="source_units.endsWith('eV')"> Energy  </div>
-            <div v-else-if="source_units.endsWith('s')"> Period  </div>
-            <div v-else>               Wavelength              </div>
-          </label>
-        </div>
-        <div class="field-body">
-          <div class="field is-grouped is-grouped-multiline">
-            <input-with-units title="from" v-bind:units="source_units"
-                              v-bind:value="simulationSetup.fromWL"
-                              @newdata="simulationSetup.fromWL=$event"/>
-            <input-with-units title="to" v-bind:units="source_units"
-                              v-bind:value="simulationSetup.toWL"
-                              @newdata="simulationSetup.toWL=$event"/>
-            <input-with-units title="step" v-bind:units="source_units"
-                              v-bind:value="simulationSetup.stepWL"
-                              @newdata="simulationSetup.stepWL=$event"/>
-          </div>
-        </div>
-      </div>
-
+      <GetSourceParameters v-bind:fromWL="simulationSetup.fromWL"
+                           v-bind:toWL="simulationSetup.toWL"
+                           v-bind:stepWL="simulationSetup.stepWL"
+                           v-bind:source_units="source_units"
+                           @fromWLData="simulationSetup.fromWL=$event"
+                           @toWLData="simulationSetup.toWL=$event"
+                           @stepWLData="simulationSetup.stepWL=$event"
+                           @source_unitsData="source_units=$event"
+      />
 
       <div class="field is-horizontal">
         <div class="field-label is-normal">
@@ -125,7 +110,6 @@
   // To compile fibbonacci example use
   //   emcc -O3 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s 'EXPORT_NAME="fibonacci"' -o ./fibonacci.js fibonacci.c
   // for and example from https://gist.github.com/ashleygwilliams/32c31a3f5b8c87bf2894108b3534ee4f
-
   // import fibonacci from './fibonacci.js';
   // const module = fibonacci({
   //   locateFile(path) {
@@ -136,7 +120,6 @@
   // module.onRuntimeInitialized = () => {
   //   console.log(module._fib(12));
   // };
-
   // // Test the size of wasm file
   // fetch('nmiejs.wasm'
   // ).then(response =>
@@ -178,9 +161,11 @@
   import ReactiveChart from "./components/ReactiveChart.vue";
   import ShowInfo from "./components/ShowInfo.vue";
   import GetUnits from "./components/GetUnits.vue";
+  import GetSourceParameters from "./components/GetSourceParameters.vue";
   export default {
     name: 'app',
     components: {
+      GetSourceParameters,
       GetUnits,
       InputWithUnits,
       ReactiveChart,
