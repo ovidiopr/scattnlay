@@ -1,5 +1,5 @@
 <template>
-    <div class="field is-horizontal">
+    <div class="field is-horizontal source-params">
         <div class="field-label is-normal">
             <label class="label">
                 <div v-if="source_units.endsWith('Hz')"> Frequency  </div>
@@ -16,9 +16,19 @@
                 <input-with-units title="to" v-bind:units="source_units"
                                   v-bind:value="toWLLocal"
                                   @newdata="toWLLocal=$event"/>
+                <div>
+                <div v-if="isStep">
                 <input-with-units title="step" v-bind:units="source_units"
                                   v-bind:value="stepWLLocal"
                                   @newdata="stepWLLocal=$event"/>
+                </div>
+                <div v-else>
+                    <input-with-units title="points" units=""
+                                      v-bind:value="pointsNum"
+                                      @newdata="pointsNum=$event"/>
+                </div>
+                <b-switch v-model="isStep" class="switch-style"/>
+                </div>
             </div>
         </div>
     </div>
@@ -36,10 +46,21 @@
                 // TODO: Is it OK to modify Local later?
                 fromWLLocal: this.fromWL,
                 toWLLocal: this.toWL,
-                stepWLLocal: this.stepWL
+                stepWLLocal: this.stepWL,
+                pointsNum: 100,
+                isStep: true
             }
         },
         watch: {
+            isStep: {
+                handler: function () {
+                    if (this.isStep) {
+                        this.stepWLLocal = (this.toWLLocal-this.fromWLLocal)/this.pointsNum;
+                    } else {
+                        this.pointsNum = Math.round((this.toWLLocal-this.fromWLLocal)/this.stepWLLocal);
+                    }
+                }
+            },
             // emit updated values
             fromWLLocal: {
                 handler: function () {
@@ -79,4 +100,10 @@
 </script>
 
 <style scoped>
+    .source-params {
+        padding-bottom: 5px;
+    }
+    .switch-style {
+        padding: 5px;
+    }
 </style>
