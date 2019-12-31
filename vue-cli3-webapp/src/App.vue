@@ -10,6 +10,9 @@
                 @source_unitsData="source_units=$event"
                 @isSourceOtherUnitsData="isSourceOtherUnits=$event"
       />
+      <GetHostIndex v-bind:hostIndex="simulationSetup.hostIndex"
+                    @hostIndexData="simulationSetup.hostIndex=$event" />
+
       <GetSourceParameters v-bind:fromWL="simulationSetup.fromWL"
                            v-bind:toWL="simulationSetup.toWL"
                            v-bind:stepWL="simulationSetup.stepWL"
@@ -19,7 +22,6 @@
                            @stepWLData="simulationSetup.stepWL=$event"
                            @source_unitsData="source_units=$event"
       />
-
       <div class="field is-horizontal">
         <div class="field-label is-normal">
           <label class="label">Spherical particle</label>
@@ -160,11 +162,13 @@
   import InputWithUnits from "./components/InputWithUnits.vue";
   import ReactiveChart from "./components/ReactiveChart.vue";
   import ShowInfo from "./components/ShowInfo.vue";
+  import GetHostIndex from "./components/GetHostIndex.vue";
   import GetUnits from "./components/GetUnits.vue";
   import GetSourceParameters from "./components/GetSourceParameters.vue";
   export default {
     name: 'app',
     components: {
+      GetHostIndex,
       GetSourceParameters,
       GetUnits,
       InputWithUnits,
@@ -183,6 +187,7 @@
           source_units: 'nm',
           isSourceOtherUnits: false,
           simulationSetup: {
+            hostIndex: 1,
             stepWL: 0.5,
             fromWL: 300.0,
             toWL: 1000.0,
