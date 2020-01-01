@@ -187,8 +187,8 @@
           source_units: 'nm',
           isSourceOtherUnits: false,
           simulationSetup: {
-            hostIndex: 1,
-            stepWL: 0.5,
+            hostIndex: 2,
+            stepWL: 20,
             fromWL: 300.0,
             toWL: 1000.0,
             R: 100.0,
@@ -443,6 +443,7 @@
         let R = parseFloat(this.simulationSetup.R);
         let reN = parseFloat(this.simulationSetup.reN);
         let imN = parseFloat(this.simulationSetup.imN);
+        let host = parseFloat(this.simulationSetup.hostIndex);
 
 
         let Qsca = [], Qabs = [];
@@ -467,8 +468,8 @@
         // Provide all sizes (germetry and wavelengths) to nmie in same units [nm]
         const nmie = this.nmie;
         nmie.ClearTarget();
-        nmie.AddTargetLayerReIm( this.convertUnits2nm(this.units, R),
-                reN, imN);
+        nmie.AddTargetLayerReIm( this.convertUnits2nm(this.units, R)*host,
+                reN/host, imN/host);
         let WLs_nm = range(fromWL, toWL, stepWL);
         var WL_points = WLs_nm.length;
         for (var i = 0; i < WL_points; i++) {
@@ -493,6 +494,7 @@
         this.simulationRuntime.Qabs = Qabs;
         this.simulationRuntime.Qsca_n = Qsca_n;
         this.simulationRuntime.Qabs_n = Qabs_n;
+        this.filterBug();  // TODO: fix the algorithm instead of filtering the final output
 
         let t1 = performance.now();
         this.ttime = ((t1 - t0) / 1000).toFixed(2);
@@ -506,6 +508,42 @@
 
         this.changes++;
 
+      },
+      filterBug: function () {
+        let Qsca = this.simulationRuntime.Qsca;
+        let Qabs = this.simulationRuntime.Qabs;
+        let Qsca_n = this.simulationRuntime.Qsca_n;
+        let Qabs_n = this.simulationRuntime.Qabs_n;
+        let total_mode_n = this.simulationSetup.total_mode_n;
+        for (let mode_type = 0; mode_type < 2; mode_type++) {
+          for (let n = 0; n < total_mode_n; n++){
+            this.filterMedian(Qsca_n[mode_type][n]);
+            this.filterMedian(Qabs_n[mode_type][n]);
+          }
+        }
+        this.filterMedian(Qsca);
+        this.filterMedian(Qabs);
+        this.simulationRuntime.Qsca = Qsca;
+        this.simulationRuntime.Qabs = Qabs;
+        this.simulationRuntime.Qsca_n = Qsca_n;
+        this.simulationRuntime.Qabs_n = Qabs_n;
+
+      },
+      filterMedian: function(spectra) {
+        let l = spectra.length;
+        let i;
+        for (i = 1; i < l-1; i++) {
+          let prev = spectra[i-1];
+          let curr = spectra[i];
+          let next = spectra[i+1];
+          let diff1 = Math.abs((prev-curr)/curr);
+          let diff2 = Math.abs((next-curr)/curr);
+          if (diff1 > 0.3 && diff2 > 0.3) {
+            spectra[i] = (prev+next)/2.0;
+          }
+           // console.log(spectra(i));
+        }
+        // return spectra;
       },
       setIsPlotMode: function () {
           let total_mode_n = this.simulationSetup.total_mode_n;
