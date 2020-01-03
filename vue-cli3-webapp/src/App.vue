@@ -22,36 +22,8 @@
                            @stepWLData="simulationSetup.stepWL=$event"
                            @source_unitsData="source_units=$event"
       />
-      <div class="field is-horizontal">
-        <div class="field-label is-normal">
-          <label class="label">Spherical particle</label>
-        </div>
-        <div class="field-body">
-          <div class="field is-grouped is-grouped-multiline">
-            <b-radio v-model="simulationSetup.particle" native-value="bulk"> bulk </b-radio>
-            <b-radio v-model="simulationSetup.particle" native-value="core-shell"> core-shell </b-radio>
-            <b-radio v-model="simulationSetup.particle" native-value="multilayer"> multilayer </b-radio>
-          </div>
-        </div>
-      </div>
-      <div class="field is-horizontal">
-        <div class="field-label is-normal">
-          <label class="label">Spherical particle</label>
-        </div>
-        <div class="field-body">
-          <div class="field is-grouped is-grouped-multiline">
-            <input-with-units title="R" v-bind:units="units"
-                              v-bind:value="simulationSetup.R"
-                              @newdata="simulationSetup.R=$event"/>
-            <input-with-units title="Re(n)" units=""
-                              v-bind:value="simulationSetup.reN"
-                              @newdata="simulationSetup.reN=$event"/>
-            <input-with-units title="Im(n)" units=""
-                              v-bind:value="simulationSetup.imN"
-                              @newdata="simulationSetup.imN=$event"/>
-          </div>
-        </div>
-      </div>
+      <GetParticleParameters v-bind:layers="simulationSetup.layers"
+                             v-bind:units="units" />
 
       <div  class="field is-horizontal">
         <div class="field-label is-normal">
@@ -173,19 +145,20 @@
     return [...Array(size).keys()].map(i => i + startAt);
   }
 
-  import InputWithUnits from "./components/InputWithUnits.vue";
   import ReactiveChart from "./components/ReactiveChart.vue";
   import ShowInfo from "./components/ShowInfo.vue";
   import GetHostIndex from "./components/GetHostIndex.vue";
   import GetUnits from "./components/GetUnits.vue";
   import GetSourceParameters from "./components/GetSourceParameters.vue";
+  import GetParticleParameters from "./components/GetParticleParameters.vue";
+
   export default {
     name: 'app',
     components: {
       GetHostIndex,
       GetSourceParameters,
+      GetParticleParameters,
       GetUnits,
-      InputWithUnits,
       ReactiveChart,
       ShowInfo
     },
@@ -201,15 +174,17 @@
           source_units: 'nm',
           isSourceOtherUnits: false,
           simulationSetup: {
-            particle: 'bulk',
-            layersNum: 1,
             hostIndex: 1,
             stepWL: 0.5,
             fromWL: 300.0,
             toWL: 1000.0,
-            R: 100.0,
-            reN: 4.0,
-            imN: 0.01,
+            layers: [
+              {
+                R: 100.0,
+                reN: 4.0,
+                imN: 0.01,
+              }
+            ],
             total_mode_n: 4
           },
           simulationRuntime: {
@@ -218,7 +193,13 @@
             stepWL: 0.5,
             fromWL: 300.0,
             toWL: 1000.0,
-            R: 100.0,
+            layers: [
+              {
+                R: 100.0,
+                reN: 4.0,
+                imN: 0.01,
+              }
+            ],
             mode_n: [],
             mode_n_names: [],
             mode_types: range(0, 2),
@@ -316,7 +297,7 @@
           }
           let u = this.units;
           let ru = this.simulationRuntime.r_units;
-          this.simulationSetup.R = this.convertUnits(ru, u,this.simulationRuntime.R);
+          this.simulationSetup.layers[0].R = this.convertUnits(ru, u,this.simulationRuntime.layers[0].R);
         }
       },
       source_units: {
@@ -450,15 +431,15 @@
         this.simulationRuntime.fromWL = this.simulationSetup.fromWL;
         this.simulationRuntime.toWL = this.simulationSetup.toWL;
         this.simulationRuntime.stepWL = this.simulationSetup.stepWL;
-        this.simulationRuntime.R = this.simulationSetup.R;
+        this.simulationRuntime.layers[0].R = this.simulationSetup.layers[0].R;
 
         let t0 = performance.now();
         let fromWL = parseFloat(this.simulationSetup.fromWL);
         let toWL = parseFloat(this.simulationSetup.toWL);
         let stepWL = parseFloat(this.simulationSetup.stepWL);
-        let R = parseFloat(this.simulationSetup.R);
-        let reN = parseFloat(this.simulationSetup.reN);
-        let imN = parseFloat(this.simulationSetup.imN);
+        let R = parseFloat(this.simulationSetup.layers[0].R);
+        let reN = parseFloat(this.simulationSetup.layers[0].reN);
+        let imN = parseFloat(this.simulationSetup.layers[0].imN);
         let host = parseFloat(this.simulationSetup.hostIndex);
 
 
