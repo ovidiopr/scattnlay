@@ -64,11 +64,19 @@
             // emit updated values
             fromWLLocal: {
                 handler: function () {
+                    this.fromWLLocal = parseFloat(this.fromWLLocal);
+                    // if (this.fromWLLocal > this.toWLLocal) {
+                    //     this.fromWLLocal = this.toWLLocal;
+                    // }
                     this.$emit('fromWLData',this.fromWLLocal);
                 }
             },
             toWLLocal: {
                 handler: function () {
+                    this.toWLLocal = parseFloat(this.toWLLocal);
+                    // if (this.toWLLocal < this.fromWLLocal) {
+                    //     this.toWLLocal = this.fromWLLocal;
+                    // }
                     this.$emit('toWLData',this.toWLLocal);
                 }
             },

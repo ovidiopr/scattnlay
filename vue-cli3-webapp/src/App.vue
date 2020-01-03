@@ -28,6 +28,18 @@
         </div>
         <div class="field-body">
           <div class="field is-grouped is-grouped-multiline">
+            <b-radio v-model="simulationSetup.particle" native-value="bulk"> bulk </b-radio>
+            <b-radio v-model="simulationSetup.particle" native-value="core-shell"> core-shell </b-radio>
+            <b-radio v-model="simulationSetup.particle" native-value="multilayer"> multilayer </b-radio>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Spherical particle</label>
+        </div>
+        <div class="field-body">
+          <div class="field is-grouped is-grouped-multiline">
             <input-with-units title="R" v-bind:units="units"
                               v-bind:value="simulationSetup.R"
                               @newdata="simulationSetup.R=$event"/>
@@ -45,8 +57,10 @@
         <div class="field-label is-normal">
           <label class="label">Modes to plot</label>
         </div>
-        <div class="field-body">
-          <b-input v-model="simulationSetup.total_mode_n" type='number' min=1 style="width:7rem"/>
+        <div class="field-body" >
+          <b-field label="">
+            <b-input v-model="simulationSetup.total_mode_n" type='number' min=1 style="width:7rem"/>
+          </b-field>
         </div>
       </div>
       <div>
@@ -187,8 +201,10 @@
           source_units: 'nm',
           isSourceOtherUnits: false,
           simulationSetup: {
-            hostIndex: 2,
-            stepWL: 20,
+            particle: 'bulk',
+            layersNum: 1,
+            hostIndex: 1,
+            stepWL: 0.5,
             fromWL: 300.0,
             toWL: 1000.0,
             R: 100.0,
