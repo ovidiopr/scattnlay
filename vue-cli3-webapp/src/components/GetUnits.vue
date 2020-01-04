@@ -16,7 +16,7 @@
                     </b-select>
                 </div>
                 <div class="column">
-                    <b-checkbox v-model="isSourceOtherUnitsLocal"> Use other units for source</b-checkbox>
+                    <b-checkbox v-model="isSourceOtherUnitsLocal"> use other units for source</b-checkbox>
                 </div>
                 <div class="column">
                     <div v-if="isSourceOtherUnitsLocal">
