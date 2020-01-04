@@ -18,11 +18,13 @@
                 </div>
             </div>
         </div>
-        <GetLayerParameters v-bind:layer="layers[0]"
+        <div v-for="layer in layers" v-bind:key="layer.index">
+        <GetLayerParameters v-bind:layer="layer"
                             v-bind:units="units"
                             v-bind:particle="particle"
-                            v-bind:index="index"
+                            v-bind:index="layer.index"
         />
+        </div>
     </div>
 </template>
 
@@ -49,6 +51,28 @@
                     if (this.particle === 'bulk') {this.layersNum = 1;}
                     if (this.particle === 'core-shell') {this.layersNum = 2;}
                     if (this.particle === 'multilayer') {this.layersNum = 3;}
+                }
+            },
+            layersNum: {
+                handler: function () {
+                    while (this.layersNum < this.layers.length) {
+                        this.layers.pop();
+                    }
+                    let r_prev = this.layers.slice(-1)[0].R;
+                    while (this.layersNum > this.layers.length) {
+                        r_prev = r_prev*1.1;
+                        this.layers.push(
+                            {
+                                R: r_prev,
+                                reN: 4.0,
+                                imN: 0.01,
+                                index: 1
+                            }
+                        );
+                    }
+                    for (let i = 0; i < this.layers.length; i++) {
+                        this.layers[i].index = i;
+                    }
                 }
             },
             deep: true

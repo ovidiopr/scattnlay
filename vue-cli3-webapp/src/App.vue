@@ -183,6 +183,7 @@
                 R: 100.0,
                 reN: 4.0,
                 imN: 0.01,
+                index: 0
               }
             ],
             total_mode_n: 4

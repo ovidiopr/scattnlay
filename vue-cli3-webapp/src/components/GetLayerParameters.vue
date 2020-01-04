@@ -1,10 +1,13 @@
 <template>
-    <div class="field is-horizontal">
+    <div class="field is-horizontal layer">
         <div class="field-label is-normal">
             <label class="label">
                 <div v-if="particle==='bulk'"> bulk </div>
-                <div v-else-if="particle==='core-shell'"> core </div>
-                <div v-else> multi </div>
+                <div v-else-if="particle==='core-shell'">
+                    <div v-if="index == 0"> core </div>
+                    <div v-else> shell </div>
+                </div>
+                <div v-else> layer {{index+1}} </div>
             </label>
         </div>
         <div class="field-body">
@@ -41,5 +44,8 @@
         align-items:center;
         margin-left: 1rem;
         width:5rem;
+    }
+    .layer {
+        margin: 0.5rem;
     }
 </style>
