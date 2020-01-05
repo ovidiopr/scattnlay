@@ -171,6 +171,7 @@
             height: 0
           },
           units: 'nm',
+          units_prev: 'nm',
           source_units: 'nm',
           isSourceOtherUnits: false,
           simulationSetup: {
@@ -297,12 +298,22 @@
             this.source_units = this.units;
           }
           let u = this.units;
-          let ru = this.simulationRuntime.r_units;
-          this.simulationSetup.layers[0].R = this.convertUnits(ru, u,this.simulationRuntime.layers[0].R);
+          let ru = this.units_prev;
+          let layers = this.simulationSetup.layers;
+          for (let i=0; i<layers.length; i++) {
+            layers[i].R = this.convertUnits(ru, u, layers[i].R);
+          }
+          this.units_prev = this.units;
         }
       },
       source_units: {
         handler: function () {
+          this.$buefy.notification.open({
+            duration: 4000,
+            message: 'Source parameters were restored from last simulation for correct plotting.',
+            type: 'is-info',
+            position: 'is-top',
+          });
           this.setXaxisTitle();
           let su = this.source_units;
           let rsu = this.simulationRuntime.r_source_units;
@@ -432,15 +443,12 @@
         this.simulationRuntime.fromWL = this.simulationSetup.fromWL;
         this.simulationRuntime.toWL = this.simulationSetup.toWL;
         this.simulationRuntime.stepWL = this.simulationSetup.stepWL;
-        this.simulationRuntime.layers[0].R = this.simulationSetup.layers[0].R;
+        this.simulationRuntime.layers = JSON.parse(JSON.stringify(this.simulationSetup.layers));
 
         let t0 = performance.now();
         let fromWL = parseFloat(this.simulationSetup.fromWL);
         let toWL = parseFloat(this.simulationSetup.toWL);
         let stepWL = parseFloat(this.simulationSetup.stepWL);
-        let R = parseFloat(this.simulationSetup.layers[0].R);
-        let reN = parseFloat(this.simulationSetup.layers[0].reN);
-        let imN = parseFloat(this.simulationSetup.layers[0].imN);
         let host = parseFloat(this.simulationSetup.hostIndex);
 
 
@@ -465,15 +473,24 @@
 
         // Provide all sizes (germetry and wavelengths) to nmie in same units [nm]
         const nmie = this.nmie;
-        nmie.ClearTarget();
-        nmie.AddTargetLayerReIm( this.convertUnits2nm(this.units, R)*host,
-                reN/host, imN/host);
+        // nmie.ClearTarget();
+        // nmie.AddTargetLayerReIm( this.convertUnits2nm(this.units, R)*host,
+        //         reN/host, imN/host);
         let WLs_nm = range(fromWL, toWL, stepWL);
-        var WL_points = WLs_nm.length;
-        for (var i = 0; i < WL_points; i++) {
-          WLs_nm[i] = this.convertUnits2nm(this.source_units, WLs[i]);
-        }
-        WLs_nm.forEach(function (WL) {
+        let WL_points = WLs_nm.length;
+        for (let i = 0; i < WL_points; i++) {
+          let WL = this.convertUnits2nm(this.source_units, WLs[i]);
+          nmie.ClearTarget();
+          for (let num_layer = 0;
+               num_layer < this.simulationRuntime.layers.length; 
+               num_layer++) {
+            let R = parseFloat(this.simulationRuntime.layers[num_layer].R);
+            let reN = parseFloat(this.simulationRuntime.layers[num_layer].reN);
+            let imN = parseFloat(this.simulationRuntime.layers[num_layer].imN);
+            nmie.AddTargetLayerReIm( this.convertUnits2nm(this.units, R)*host,
+                    reN/host, imN/host);
+            
+          }
           nmie.SetModeNmaxAndType(-1, -1);
           nmie.SetWavelength(WL);
           nmie.RunMieCalculation();
@@ -486,8 +503,8 @@
               Qsca_n[mode_type][n - 1].push(nmie.GetQsca());
               Qabs_n[mode_type][n - 1].push(nmie.GetQabs());
             });
-            });
-        });
+          });
+        }
         this.simulationRuntime.Qsca = Qsca;
         this.simulationRuntime.Qabs = Qabs;
         this.simulationRuntime.Qsca_n = Qsca_n;

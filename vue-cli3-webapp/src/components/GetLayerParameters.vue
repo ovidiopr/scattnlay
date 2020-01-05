@@ -1,20 +1,29 @@
 <template>
     <div class="field is-horizontal layer">
         <div class="field-label is-normal">
-            <label class="label">
+            <label class="label lnorm">
                 <div v-if="particle==='bulk'"> bulk </div>
                 <div v-else-if="particle==='core-shell'">
                     <div v-if="index == 0"> core </div>
                     <div v-else> shell </div>
                 </div>
-                <div v-else> layer {{index+1}} </div>
+                <div v-else>
+                    layer {{index+1}}
+                </div>
             </label>
         </div>
         <div class="field-body">
             <div class="field is-grouped is-grouped-multiline">
+                <div v-if="index == 0" class="rh-input">
                 <input-with-units title="R" v-bind:units="units"
                                   v-bind:value="layer.R"
                                   @newdata="layer.R=$event"/>
+                </div>
+                <div v-else  class="rh-input">
+                <input-with-units title="h" v-bind:units="units"
+                                  v-bind:value="layer.R"
+                                  @newdata="layer.R=$event"/>
+                </div>
                 <input-with-units title="Re(n)" units=""
                                   v-bind:value="layer.reN"
                                   @newdata="layer.reN=$event"/>
@@ -47,5 +56,11 @@
     }
     .layer {
         margin: 0.5rem;
+    }
+    .lnorm {
+        font-weight: normal;
+    }
+    .rh-input {
+        margin-right: 12px;
     }
 </style>

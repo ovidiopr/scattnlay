@@ -58,12 +58,12 @@
                     while (this.layersNum < this.layers.length) {
                         this.layers.pop();
                     }
-                    let r_prev = this.layers.slice(-1)[0].R;
+                    let r_prev = this.layers[0].R;
                     while (this.layersNum > this.layers.length) {
-                        r_prev = r_prev*1.1;
+                        // r_prev = r_prev*1.1;
                         this.layers.push(
                             {
-                                R: r_prev,
+                                R: r_prev*0.1,
                                 reN: 4.0,
                                 imN: 0.01,
                                 index: 1
