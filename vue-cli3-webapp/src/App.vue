@@ -173,6 +173,7 @@
           units: 'nm',
           units_prev: 'nm',
           source_units: 'nm',
+          source_units_prev: 'nm',
           isSourceOtherUnits: false,
           simulationSetup: {
             hostIndex: 1,
@@ -298,44 +299,50 @@
             this.source_units = this.units;
           }
           let u = this.units;
-          let ru = this.units_prev;
+          let u_prev = this.units_prev;
           let layers = this.simulationSetup.layers;
           for (let i=0; i<layers.length; i++) {
-            layers[i].R = this.convertUnits(ru, u, layers[i].R);
+            layers[i].R = this.convertUnits(u_prev, u, layers[i].R);
           }
           this.units_prev = this.units;
         }
       },
       source_units: {
         handler: function () {
-          this.$buefy.notification.open({
-            duration: 4000,
-            message: 'Source parameters were restored from last simulation for correct plotting.',
-            type: 'is-info',
-            position: 'is-top',
-          });
+          // this.$buefy.notification.open({
+          //   duration: 4000,
+          //   message: 'Source parameters were restored from last simulation for correct plotting.',
+          //   type: 'is-info',
+          //   position: 'is-top',
+          // });
           this.setXaxisTitle();
-          let su = this.source_units;
-          let rsu = this.simulationRuntime.r_source_units;
-          this.plotData.pWLs = this.simulationRuntime.WLs.slice();
-          this.simulationSetup.fromWL = this.simulationRuntime.fromWL;
-          this.simulationSetup.toWL = this.simulationRuntime.toWL;
-          this.simulationSetup.stepWL = this.simulationRuntime.stepWL;
-          if (su !== rsu) {
-            for (let i = 0; i < this.plotData.pWLs.length; ++i) {
-              this.plotData.pWLs[i] = this.convertUnits(rsu, su,
-                      this.plotData.pWLs[i]);
-            }
-            this.simulationSetup.fromWL = this.convertUnits(rsu, su, this.simulationRuntime.fromWL);
-            this.simulationSetup.toWL = this.convertUnits(rsu, su,this.simulationRuntime.toWL);
-            if (this.simulationSetup.fromWL > this.simulationSetup.toWL) {
-              let tmp = this.simulationSetup.fromWL;
-              this.simulationSetup.fromWL = this.simulationSetup.toWL;
-              this.simulationSetup.toWL = tmp;
-            }
-            this.simulationSetup.stepWL = (this.simulationSetup.toWL-this.simulationSetup.fromWL)/this.plotData.pWLs.length;
+
+          let u = this.source_units;
+          let u_prev = this.source_units_prev;
+          for (let i=0; i<this.plotData.pWLs.length; i++) {
+            this.plotData.pWLs[i] = this.convertUnits(u_prev, u,
+                    this.plotData.pWLs[i]);
           }
-          this.plotResults();
+          this.simulationSetup.fromWL = this.convertUnits(u_prev, u,
+                  this.simulationSetup.fromWL);
+          this.simulationSetup.toWL = this.convertUnits(u_prev, u,
+                  this.simulationSetup.toWL);
+          if (this.simulationSetup.fromWL > this.simulationSetup.toWL) {
+            let tmp = this.simulationSetup.fromWL;
+            this.simulationSetup.fromWL = this.simulationSetup.toWL;
+            this.simulationSetup.toWL = tmp;
+          }
+          this.simulationSetup.stepWL = (this.simulationSetup.toWL-this.simulationSetup.fromWL)
+                  /this.plotData.pWLs.length;
+          this.source_units_prev = this.source_units;
+
+          // Update plotting
+          this.plotSelector.isPlotQsca = !this.plotSelector.isPlotQsca
+          setTimeout(
+                  () => {
+                    this.plotSelector.isPlotQsca = !this.plotSelector.isPlotQsca
+                  }, 20);
+
         }
       },
       isSourceOtherUnits: {
@@ -424,18 +431,7 @@
             type: 'is-danger',
             position: 'is-top',
             });
-          setTimeout(
-                  () => {
-                    this.runMie();
-                    this.plotResults();
-                    this.$buefy.notification.open({
-                      duration: 3000,
-                      message: 'Finished! '+"It took " + this.ttime + " s.",
-                      type: 'is-success',
-                      position: 'is-top',
-                      })
-                    ;
-                  }, 20);
+
         },
       runMie: function () {
         this.simulationRuntime.r_units = this.units;
@@ -515,7 +511,7 @@
         this.ttime = ((t1 - t0) / 1000).toFixed(2);
         // console.log("It took " + this.ttime + " s.");
         
-        this.plotData.pWLs = WLs;
+        this.plotData.pWLs = WLs.slice();
         this.plotData.pQsca = Qsca;
         this.plotData.pQabs = Qabs;
         this.plotData.pQsca_n = Qsca_n;
