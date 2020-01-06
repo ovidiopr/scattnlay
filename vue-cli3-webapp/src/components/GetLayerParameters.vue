@@ -15,14 +15,17 @@
         <div class="field-body">
             <div class="field is-grouped is-grouped-multiline">
                 <div v-if="index == 0" class="rh-input">
-                <input-with-units title="R" v-bind:units="units"
-                                  v-bind:value="layer.R"
-                                  @newdata="layer.R=$event"/>
+                    <input-with-units title="R" v-bind:units="units"
+                                      v-bind:value="layer.R"
+                                      @newdata="layer.R=$event"/>
+                    <span class="tooltiptext">Core radius</span>
                 </div>
                 <div v-else  class="rh-input">
-                <input-with-units title="h" v-bind:units="units"
-                                  v-bind:value="layer.R"
-                                  @newdata="layer.R=$event"/>
+                    <input-with-units title="h" v-bind:units="units"
+                                      v-bind:value="layer.R"
+                                      @newdata="layer.R=$event"/>
+                    <span class="tooltiptext">Layer thickness</span>
+
                 </div>
                 <input-with-units title="Re(n)" units=""
                                   v-bind:value="layer.reN"
@@ -62,5 +65,29 @@
     }
     .rh-input {
         margin-right: 12px;
+        position: relative;
+        display: inline-block;
+    }
+    /* Tooltip text */
+    .rh-input .tooltiptext {
+        visibility: hidden;
+        width: 120px;
+        background-color: #7957d5;
+        color: white;
+        text-align: center;
+        padding: 5px 0;
+        border-radius: 6px;
+
+        /* Position the tooltip text - see examples below! */
+        position: absolute;
+        z-index: 1;
+
+        bottom: 120%;
+        left: 0%;
+    }
+
+    /* Show the tooltip text when you mouse over the tooltip container */
+    .rh-input:hover .tooltiptext {
+        visibility: visible;
     }
 </style>
