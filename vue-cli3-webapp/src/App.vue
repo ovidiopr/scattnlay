@@ -183,6 +183,7 @@
             layers: [
               {
                 R: 100.0,
+                material: 'nk',
                 reN: 4.0,
                 imN: 0.01,
                 index: 0
@@ -199,8 +200,10 @@
             layers: [
               {
                 R: 100.0,
+                material: 'nk',
                 reN: 4.0,
                 imN: 0.01,
+                index:0
               }
             ],
             mode_n: [],
@@ -341,7 +344,7 @@
           setTimeout(
                   () => {
                     this.plotSelector.isPlotQsca = !this.plotSelector.isPlotQsca
-                  }, 20);
+                  }, 2);
 
         }
       },
@@ -431,7 +434,18 @@
             type: 'is-danger',
             position: 'is-top',
             });
-
+          setTimeout(
+                  () => {
+                    this.runMie();
+                    this.plotResults();
+                    this.$buefy.notification.open({
+                      duration: 3000,
+                      message: 'Finished! '+"It took " + this.ttime + " s.",
+                      type: 'is-success',
+                      position: 'is-top',
+                      })
+                    ;
+                  }, 20);
         },
       runMie: function () {
         this.simulationRuntime.r_units = this.units;

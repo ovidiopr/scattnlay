@@ -41,7 +41,6 @@
                 particle: 'bulk',
                 layersNum: 1,
                 index: 1
-
             }
         },
         watch: {
@@ -64,6 +63,7 @@
                         this.layers.push(
                             {
                                 R: r_prev*0.1,
+                                material: 'nk',
                                 reN: 4.0,
                                 imN: 0.01,
                                 index: 1
