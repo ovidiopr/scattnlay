@@ -309,6 +309,8 @@
                     let data =  rows.map(function (row) {
                       return row.split(" ");
                     });
+                    data.pop();
+                    console.log(data);
                     let data_num = data.map(function(elem) {
                       return elem.map(function(elem2) {
                         return parseFloat(elem2);
