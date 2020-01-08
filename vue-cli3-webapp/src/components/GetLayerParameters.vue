@@ -31,7 +31,7 @@
                     <b-select v-model="layer.material">
                         <option value="nk">nk-constant</option>
                         <option value="popular">popular</option>
-                        <option value="web">refractiveindex.info</option>
+                        <option value="web" disabled>refractiveindex.info</option>
                     </b-select>
 
                 </div>
@@ -48,12 +48,11 @@
                     <input-with-units title="Re(n)" units=""
                                       v-bind:value="layer.reN"
                                       @newdata="layer.reN=$event"
-                                      v-bind:isDisabled="isDisabled"
-                    />
+                                      v-bind:isDisabled="isDisabled"/>
                     <input-with-units title="Im(n)" units=""
                                       v-bind:value="layer.imN"
-                                      @newdata="layer.imN=$event"/>
-
+                                      @newdata="layer.imN=$event"
+                                      v-bind:isDisabled="isDisabled"/>
                 </div>
             </div>
         </div>

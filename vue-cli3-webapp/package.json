@@ -11,6 +11,7 @@
     "buefy": "^0.8.0",
     "plotly.js": "^1.33.0",
     "core-js": "^3.4.3",
+    "js-yaml": "^3.13.1",
     "vue": "^2.6.10"
   },
   "devDependencies": {
