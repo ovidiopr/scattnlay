@@ -32,7 +32,7 @@
                         </tr>
                         </tfoot>
                         <tr v-for="material in materials" v-bind:key="material.name">
-                            <td><b-switch v-model="material.inUse"/>
+                            <td><b-switch v-model="material.isUsed"/>
 <!--                                <font-awesome-icon icon="check-circle" class="rh-input has-text-success" v-if="material.isLoaded">-->
 <!--                                    <span class="tooltiptext">test</span>-->
 <!--                                </font-awesome-icon>-->
@@ -75,7 +75,7 @@
                 this.materials.push({
                     fname: files[i],
                     name: names[i],
-                    isUse: true,
+                    isUsed: true,
                     isPlot: false,
                     isLoaded: false
                 });

@@ -75,7 +75,7 @@
         computed: {
             filteredMaterials: function () {
                 let tmp = []
-                for (const mat of this.materials) if (mat.inUse && mat.isLoaded) tmp.push(mat);
+                for (const mat of this.materials) if (mat.isUsed && mat.isLoaded) tmp.push(mat);
                 return tmp;
             }
         },
