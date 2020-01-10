@@ -52,6 +52,17 @@
                 <div class="chart-container">
                     <reactive-chart :chart="chart"/>
                 </div>
+                <div class="field is-horizontal add-margin">
+                    <div class="field-label is-normal">
+                        <label class="label"> Materials </label>
+                    </div>
+                    <div class="field-body">
+                        <b-switch v-model="isVisible">
+                            <div v-if="isVisible==true">Hide</div>
+                            <div v-else>Show</div>
+                        </b-switch>
+                    </div>
+                </div>
             </div>
         </transition>
     </div>
@@ -138,7 +149,7 @@
           },
           plot_height: {
               handler: function () {
-                  this.chart.layout.heigth = this.plot_height;
+                  this.chart.layout.height = this.plot_height;
               }
           },
         },
@@ -231,4 +242,7 @@
         visibility: visible;
     }
 
+    .add-margin {
+        padding-bottom: 1rem;
+    }
 </style>
