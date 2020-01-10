@@ -81,10 +81,54 @@
                 });
             }
             this.sortMaterials();
+            for (const material of this.materials) {
+                this.loadMaterialData(material.fname).then(
+                    data => material.data_nk = data
+                );
+            }
+        },
+        watch: {
+          materials: {
+              handler: function () {
+                  // console.log('update material');
+              },
+              deep:true
+          }
         },
         methods: {
+            transpose(array) {
+                return array[0].map((col, i) => array.map(row => row[i]));
+            },
             sortMaterials() {
                 this.materials.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+            },
+            async loadMaterialData(URL){
+                const yaml = require('js-yaml');
+                // Get document, or throw exception on error
+                let Ag_data;
+
+                try {
+                    let response = await fetch(URL);
+                    let Ag_data = await response.text();
+                    const doc = await yaml.safeLoad(Ag_data);
+                    if (doc.DATA[0].type == "tabulated nk") {
+                        let csv = doc.DATA[0].data;
+                        let rows = csv.split("\n");
+
+                        let data =  rows.map(function (row) {
+                            return row.split(" ");
+                        });
+                        data.pop();
+                        let data_num = data.map(function(elem) {
+                            return elem.map(function(elem2) {
+                                return parseFloat(elem2);
+                            });
+                        })
+                        return this.transpose(data_num);
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
             }
         },
         props: ['materials']

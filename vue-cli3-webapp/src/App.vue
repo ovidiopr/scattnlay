@@ -291,47 +291,7 @@
         this.isLoading = false;
       }
 
-      const yaml = require('js-yaml');
-      // const fs   = require('fs');
-      // Get document, or throw exception on error
-      let Ag_data;
-      // function csvToArray (csv) {
-      //   let rows = csv.split("\n");
-      //
-      //   return rows.map(function (row) {
-      //     return row.split(" ");
-      //   })
-      // }
 
-      try {
-        fetch('Ag-Johnson-1972.yml').then(response =>
-                response.text().then(function(text) {
-                  Ag_data = text;
-                  const doc = yaml.safeLoad(Ag_data);
-                  if (doc.DATA[0].type == "tabulated nk") {
-                    let csv = doc.DATA[0].data;
-                    let rows = csv.split("\n");
-
-                    let data =  rows.map(function (row) {
-                      return row.split(" ");
-                    });
-                    data.pop();
-                    console.log(data);
-                    let data_num = data.map(function(elem) {
-                      return elem.map(function(elem2) {
-                        return parseFloat(elem2);
-                      });
-                    })
-                    console.log( data_num
-                    );
-                  }
-                })
-        );
-        //
-        // console.log(doc);
-      } catch (e) {
-        console.log(e);
-      }
     },
     watch: {
       plotSelector: {
