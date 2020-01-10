@@ -66,8 +66,8 @@
             }
         },
         mounted() {
-            let files = ['Ag-Johnson-1972.yml','Au-Johnson-1972.yml'];
-            let names = ['Ag (Silver) Johnson', 'Au (Gold) Johnson'];
+            let files = ['Au-Johnson-1972.yml','Ag-Johnson-1972.yml'];
+            let names = ['Au (Gold) Johnson','Ag (Silver) Johnson'];
             let old_names=[];
             for (const mat of this.materials) old_names.push(mat.name);
             for (let i = 0; i < files.length; i++) {
@@ -80,7 +80,12 @@
                     isLoaded: false
                 });
             }
-            console.log(this.materials)
+            this.sortMaterials();
+        },
+        methods: {
+            sortMaterials() {
+                this.materials.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+            }
         },
         props: ['materials']
     }
