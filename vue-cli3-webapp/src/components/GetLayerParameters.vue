@@ -29,9 +29,9 @@
 
                     </div>
                     <b-select v-model="layer.material">
+                        <option v-if="index == 0" value="PEC" disabled> PEC</option>
                         <option value="nk">nk-constant</option>
-                        <option value="popular">popular</option>
-                        <option value="web" disabled>refractiveindex.info</option>
+                        <option v-for="material in filteredMaterials" v-bind:key="material.name" v-bind:value="material.name">{{material.name}}</option>
                     </b-select>
 
                 </div>
@@ -72,6 +72,13 @@
                 isDisabled: false
             }
         },
+        computed: {
+            filteredMaterials: function () {
+                let tmp = []
+                for (const mat of this.materials) if (mat.inUse && mat.isLoaded) tmp.push(mat);
+                return tmp;
+            }
+        },
         watch: {
             'layer.material': {
                 handler: function () {
@@ -84,7 +91,7 @@
                 }
             }
         },
-        props: ['layer', 'particle', 'index', 'units']
+        props: ['layer', 'particle', 'index', 'units', 'materials']
     }
 </script>
 

@@ -22,8 +22,11 @@
                            @stepWLData="simulationSetup.stepWL=$event"
                            @source_unitsData="source_units=$event"
       />
+      <GetMaterials v-bind:materials="materials"/>
       <GetParticleParameters v-bind:layers="simulationSetup.layers"
-                             v-bind:units="units" />
+                             v-bind:units="units"
+                             v-bind:materials="materials"
+      />
 
       <div  class="field is-horizontal">
         <div class="field-label is-normal">
@@ -147,6 +150,7 @@
 
   import ReactiveChart from "./components/ReactiveChart.vue";
   import ShowInfo from "./components/ShowInfo.vue";
+  import GetMaterials from "./components/GetMaterials.vue";
   import GetHostIndex from "./components/GetHostIndex.vue";
   import GetUnits from "./components/GetUnits.vue";
   import GetSourceParameters from "./components/GetSourceParameters.vue";
@@ -156,6 +160,7 @@
     name: 'app',
     components: {
       GetHostIndex,
+      GetMaterials,
       GetSourceParameters,
       GetParticleParameters,
       GetUnits,
@@ -174,6 +179,7 @@
           units_prev: 'nm',
           source_units: 'nm',
           source_units_prev: 'nm',
+          materials: [],
           isSourceOtherUnits: false,
           simulationSetup: {
             hostIndex: 1,

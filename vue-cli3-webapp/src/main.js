@@ -5,6 +5,14 @@ import 'buefy/dist/buefy.css'
 // import Plotly from 'plotly.js'
 Vue.use(Buefy)
 
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faCoffee, faCheckCircle, faBan } from '@fortawesome/free-solid-svg-icons'
+library.add(faCoffee, faCheckCircle, faBan)
+
+Vue.component('font-awesome-icon', FontAwesomeIcon)
+
+
 Vue.config.productionTip = false
 
 new Vue({

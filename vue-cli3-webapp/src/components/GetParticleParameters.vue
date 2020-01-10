@@ -23,6 +23,7 @@
                             v-bind:units="units"
                             v-bind:particle="particle"
                             v-bind:index="layer.index"
+                            v-bind:materials="materials"
         />
         </div>
     </div>
@@ -77,7 +78,7 @@
             },
             deep: true
         },
-        props: ['layers', 'units']
+        props: ['layers', 'units','materials']
     }
 </script>
 
