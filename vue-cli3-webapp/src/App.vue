@@ -22,7 +22,10 @@
                            @stepWLData="simulationSetup.stepWL=$event"
                            @source_unitsData="source_units=$event"
       />
-      <GetMaterials v-bind:materials="materials"/>
+      <GetMaterials v-bind:materials="materials"
+                    v-bind:plot_width="chart.layout.width"
+                    v-bind:plot_height="chart.layout.height"
+      />
       <GetParticleParameters v-bind:layers="simulationSetup.layers"
                              v-bind:units="units"
                              v-bind:materials="materials"
@@ -247,7 +250,7 @@
           // plotSelectorColumns: undefined,
           // plotSelectorNames: undefined,
           chart: {
-            uuid: "123",
+            uuid: "spectra",
             traces: [
               {
                 y: [],

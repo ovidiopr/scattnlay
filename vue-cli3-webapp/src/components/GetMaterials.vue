@@ -11,58 +11,78 @@
                     </b-switch>
             </div>
         </div>
-        <transition name="slide" class="list">
-            <transition name="slide">
-                <div class="list" v-if="isVisible">
-                    <table class="table is-striped is-narrow is-hoverable">
-                        <thead>
-                        <tr>
-                            <th>Use</th>
-                            <th>Name</th>
-                            <th>Plot</th>
-                            <th>File or URL</th>
-                        </tr>
-                        </thead>
-                        <tfoot>
-                        <tr>
-                            <th>Use</th>
-                            <th>Name</th>
-                            <th>Plot</th>
-                            <th>File or URL</th>
-                        </tr>
-                        </tfoot>
-                        <tr v-for="material in materials" v-bind:key="material.name">
-                            <td><b-switch v-model="material.isUsed"/>
+        <transition name="slide">
+            <div class="list" v-if="isVisible">
+                <table class="table is-striped is-narrow is-hoverable">
+                    <thead>
+                    <tr>
+                        <th>Use</th>
+                        <th>Name</th>
+                        <th>Plot</th>
+                        <th>File or URL</th>
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        <th>Use</th>
+                        <th>Name</th>
+                        <th>Plot</th>
+                        <th>File or URL</th>
+                    </tr>
+                    </tfoot>
+                    <tr v-for="material in materials" v-bind:key="material.name">
+                        <td><b-switch v-model="material.isUsed"/>
 <!--                                <font-awesome-icon icon="check-circle" class="rh-input has-text-success" v-if="material.isLoaded">-->
 <!--                                    <span class="tooltiptext">test</span>-->
 <!--                                </font-awesome-icon>-->
-                                <span class="rh-input"  v-if="material.isLoaded">
-                                    <font-awesome-icon icon="check-circle" class="has-text-success"/>
-                                    <span class="tooltiptext tip-success">Loaded.</span>
-                                </span>
-                                <span class="rh-input"  v-else>
-                                    <font-awesome-icon icon="ban" class="has-text-danger"/>
-                                    <span class="tooltiptext tip-danger">Failed to load.</span>
-                                </span>
-                            </td>
-                            <td>{{material.name}}</td>
-                            <td><b-checkbox v-model="material.isPlot"/></td>
-                            <td>{{material.fname}}</td>
-                        </tr>
-                    </table>
+                            <span class="rh-input"  v-if="material.isLoaded">
+                                <font-awesome-icon icon="check-circle" class="has-text-success"/>
+                                <span class="tooltiptext tip-success">Loaded.</span>
+                            </span>
+                            <span class="rh-input"  v-else>
+                                <font-awesome-icon icon="ban" class="has-text-danger"/>
+                                <span class="tooltiptext tip-danger">Failed to load.</span>
+                            </span>
+                        </td>
+                        <td>{{material.name}}</td>
+                        <td><b-checkbox v-model="material.isPlot"/></td>
+                        <td>{{material.fname}}</td>
+                    </tr>
+                </table>
+                <div class="chart-container">
+                    <reactive-chart :chart="chart"/>
                 </div>
-            </transition>
+            </div>
         </transition>
     </div>
 </template>
 
 <!--https://refractiveindex.info/database/data/main/Au/Johnson.yml-->
 <script>
+    import ReactiveChart from "./ReactiveChart.vue";
     export default {
         name: "GetMaterials",
+        components: {
+            ReactiveChart,
+        },
         data () {
             return {
                 isVisible: true,
+                chart: {
+                    uuid: "materials",
+                    traces: [],
+                    layout: {
+                        // title: 'reactive charts',
+                        xaxis: {
+                            // will be set on mount
+                            title: ''
+                        },
+                        yaxis: {
+                            title: 'refractive index'
+                        },
+                        width: this.plot_width,
+                        height: this.plot_height}
+                },
             }
         },
         mounted() {
@@ -82,18 +102,45 @@
             }
             this.sortMaterials();
             for (const material of this.materials) {
-                this.loadMaterialData(material.fname).then(
-                    data => material.data_nk = data
-                );
+                this.loadMaterial(material);
             }
         },
         watch: {
           materials: {
               handler: function () {
+                  this.chart.traces = [];
+                  for (const mat of this.materials) {
+                      if (mat.isPlot) {
+                          this.chart.traces.push({
+                              x: mat.data_nk[0],
+                              y: mat.data_nk[1],
+                              type: 'scatter',
+                              name: mat.name + ' data Re(n)'
+                          });
+                          this.chart.traces.push({
+                              x: mat.data_nk[0],
+                              y: mat.data_nk[2],
+                              type: 'scatter',
+                              name: mat.name + ' data Im(n)'
+                          });
+                      }
+
+                  }
+
                   // console.log('update material');
               },
               deep:true
-          }
+          },
+          plot_width: {
+              handler: function () {
+                  this.chart.layout.width = this.plot_width;
+              }
+          },
+          plot_height: {
+              handler: function () {
+                  this.chart.layout.heigth = this.plot_height;
+              }
+          },
         },
         methods: {
             transpose(array) {
@@ -101,6 +148,10 @@
             },
             sortMaterials() {
                 this.materials.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+            },
+            async loadMaterial(material) {
+                const data_nk = await this.loadMaterialData(material.fname);
+                material.data_nk = data_nk;
             },
             async loadMaterialData(URL){
                 const yaml = require('js-yaml');
@@ -131,7 +182,7 @@
                 }
             }
         },
-        props: ['materials']
+        props: ['materials', 'plot_width', 'plot_height']
     }
 </script>
 
