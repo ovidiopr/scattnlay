@@ -136,22 +136,53 @@
               handler: function () {
                   this.chart.traces = [];
                   for (const mat of this.materials) {
-                      if (mat.isPlot) {
-                          this.chart.traces.push({
-                              x: mat.data_nk[0],
-                              y: mat.data_nk[1],
-                              mode: 'markers',
-                              type: 'scatter',
-                              name: mat.name + ' data Re(n)'
-                          });
-                          this.chart.traces.push({
-                              x: mat.data_nk[0],
-                              y: mat.data_nk[2],
-                              mode: 'markers',
-                              type: 'scatter',
-                              name: mat.name + ' data Im(n)'
-                          });
+                      if (!mat.isPlot) continue;
+                      this.chart.traces.push({
+                          x: mat.data_nk[0],
+                          y: mat.data_nk[1],
+                          mode: 'markers',
+                          type: 'scatter',
+                          name: mat.name + ' data Re(n)'
+                      });
+                      this.chart.traces.push({
+                          x: mat.data_nk[0],
+                          y: mat.data_nk[2],
+                          mode: 'markers',
+                          type: 'scatter',
+                          name: mat.name + ' data Im(n)'
+                      });
+                      // blocks sline interpolation before sline objects are initialized
+                      if (!mat.isLoaded) continue;
+
+                      let x_nk = mat.spline_n.xs;
+                      let from_x = parseFloat(x_nk[0]);
+                      let to_x = parseFloat(x_nk[x_nk.length-1]);
+                      let steps = 1000;
+                      let step_x = Math.abs(to_x-from_x)/parseFloat(steps);
+                      console.log(x_nk, from_x, to_x,step_x);
+                      let spline_x = [];
+                      let spline_n =[];
+                      let spline_k = [];
+                      for (let i = 0; i<steps+1; i++) {
+                          let new_x = i * step_x+from_x;
+                          if (new_x > to_x) new_x = to_x;
+                          spline_x.push(new_x);
+                          spline_n.push(mat.spline_n.at(new_x));
+                          spline_k.push(mat.spline_k.at(new_x));
                       }
+                      this.chart.traces.push({
+                          x: spline_x,
+                          y: spline_n,
+                          type: 'scatter',
+                          name: mat.name + ' spline Re(n)'
+                      });
+                      this.chart.traces.push({
+                          x: spline_x,
+                          y: spline_k,
+                          mode: 'line',
+                          type: 'scatter',
+                          name: mat.name + ' spline Im(n)'
+                      });
 
                   }
 
@@ -188,10 +219,14 @@
                 const data_nk = await this.loadMaterialData(material.fname);
                 material.data_nk = data_nk;
                 const Spline = require('cubic-spline');
-
-                // const xs = [1, 2, 3, 4, 5];
-                // const ys = [9, 3, 6, 2, 4];
-                // // new a Spline object
+                const xs = data_nk[0];
+                const ys1 = data_nk[1];
+                const ys2 = data_nk[2];
+                const spline_n = new Spline(xs, ys1);
+                const spline_k = new Spline(xs, ys2);
+                material.spline_n = spline_n;
+                material.spline_k = spline_k;
+                material.isLoaded = true;
                 // const spline = new Spline(xs, ys);
                 // // get Y at arbitrary X
                 // console.log(spline.at(1.4));
