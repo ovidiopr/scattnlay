@@ -46,7 +46,14 @@
                         </td>
                         <td>{{material.name}}</td>
                         <td><b-checkbox v-model="material.isPlot"/></td>
-                        <td>{{material.fname}}</td>
+                        <td>{{material.fname}}
+                            <span class="rh-input">
+                                <b-button @click="deleteMaterial(material.fname);" class="is-danger is-small is-outlined">
+                                    <font-awesome-icon icon="trash"/>
+                                </b-button>
+                                <span class="tooltiptext tip-danger">Delete.</span>
+                            </span>
+                        </td>
                     </tr>
                 </table>
                 <div class="chart-container">
@@ -85,8 +92,7 @@
                     layout: {
                         // title: 'reactive charts',
                         xaxis: {
-                            // will be set on mount
-                            title: ''
+                            title: 'Wavelength, mkm'
                         },
                         yaxis: {
                             title: 'refractive index'
@@ -159,6 +165,13 @@
             },
             sortMaterials() {
                 this.materials.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+            },
+            deleteMaterial(fname) {
+                for (let i = 0; i < this.materials.length; i++) {
+                    if (this.materials[i].fname == fname) {
+                        this.materials.splice(i);
+                    }
+                }
             },
             async loadMaterial(material) {
                 const data_nk = await this.loadMaterialData(material.fname);

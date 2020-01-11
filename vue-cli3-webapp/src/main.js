@@ -7,8 +7,8 @@ Vue.use(Buefy)
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faCoffee, faCheckCircle, faBan } from '@fortawesome/free-solid-svg-icons'
-library.add(faCoffee, faCheckCircle, faBan)
+import { faCoffee, faCheckCircle, faBan, faTrash } from '@fortawesome/free-solid-svg-icons'
+library.add(faCoffee, faCheckCircle, faBan, faTrash)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
