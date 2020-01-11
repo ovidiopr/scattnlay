@@ -159,63 +159,27 @@
             }
         },
         watch: {
-          materials: {
-              handler: function () {
-                  this.chart.traces = [];
-                  for (const mat of this.materials) {
-                      if (!mat.isPlot) continue;
-                      this.chart.traces.push({
-                          x: mat.data_nk[0],
-                          y: mat.data_nk[1],
-                          mode: 'markers',
-                          type: 'scatter',
-                          name: mat.name + ' data Re(n)'
-                      });
-                      this.chart.traces.push({
-                          x: mat.data_nk[0],
-                          y: mat.data_nk[2],
-                          mode: 'markers',
-                          type: 'scatter',
-                          name: mat.name + ' data Im(n)'
-                      });
-                      // blocks sline interpolation before sline objects are initialized
-                      if (!mat.isLoaded) continue;
-
-                      let x_nk = mat.spline_n.xs;
-                      let from_x = parseFloat(x_nk[0]);
-                      let to_x = parseFloat(x_nk[x_nk.length-1]);
-                      let steps = 1000;
-                      let step_x = Math.abs(to_x-from_x)/parseFloat(steps);
-                      let spline_x = [];
-                      let spline_n =[];
-                      let spline_k = [];
-                      for (let i = 0; i<steps+1; i++) {
-                          let new_x = i * step_x+from_x;
-                          if (new_x > to_x) new_x = to_x;
-                          spline_x.push(new_x);
-                          spline_n.push(mat.spline_n.at(new_x));
-                          spline_k.push(mat.spline_k.at(new_x));
-                      }
-                      this.chart.traces.push({
-                          x: spline_x,
-                          y: spline_n,
-                          type: 'scatter',
-                          name: mat.name + ' spline Re(n)'
-                      });
-                      this.chart.traces.push({
-                          x: spline_x,
-                          y: spline_k,
-                          mode: 'line',
-                          type: 'scatter',
-                          name: mat.name + ' spline Im(n)'
-                      });
-
-                  }
-
-                  // console.log('update material');
-              },
-              deep:true
-          },
+            materials: {
+                handler: function () {
+                    this.updateChart();
+                },
+                deep:true
+            },
+            isPlot_n: {
+                handler: function () {
+                    this.updateChart();
+                }
+            },
+            isPlot_k: {
+                handler: function () {
+                    this.updateChart();
+                }
+            },
+            isPlot_spline: {
+                handler: function () {
+                    this.updateChart();
+                }
+            },
           plot_width: {
               handler: function () {
                   this.chart.layout.width = this.plot_width;
@@ -230,6 +194,63 @@
         methods: {
             transpose(array) {
                 return array[0].map((col, i) => array.map(row => row[i]));
+            },
+            updateChart() {
+                this.chart.traces = [];
+                for (const mat of this.materials) {
+                    if (!mat.isPlot) continue;
+                    if (this.isPlot_n) {
+                        this.chart.traces.push({
+                            x: mat.data_nk[0],
+                            y: mat.data_nk[1],
+                            mode: 'markers',
+                            type: 'scatter',
+                            name: mat.name + ' data Re(n)'
+                        });}
+                    if (this.isPlot_k) {
+                        this.chart.traces.push({
+                            x: mat.data_nk[0],
+                            y: mat.data_nk[2],
+                            mode: 'markers',
+                            type: 'scatter',
+                            name: mat.name + ' data Im(n)'
+                        });}
+                    // blocks sline interpolation before sline objects are initialized
+                    if (!mat.isLoaded) continue;
+                    if (!this.isPlot_spline) continue;
+
+                    let x_nk = mat.spline_n.xs;
+                    let from_x = parseFloat(x_nk[0]);
+                    let to_x = parseFloat(x_nk[x_nk.length-1]);
+                    let steps = 1000;
+                    let step_x = Math.abs(to_x-from_x)/parseFloat(steps);
+                    let spline_x = [];
+                    let spline_n =[];
+                    let spline_k = [];
+                    for (let i = 0; i<steps+1; i++) {
+                        let new_x = i * step_x+from_x;
+                        if (new_x > to_x) new_x = to_x;
+                        spline_x.push(new_x);
+                        spline_n.push(mat.spline_n.at(new_x));
+                        spline_k.push(mat.spline_k.at(new_x));
+                    }
+                    if (this.isPlot_n) {
+                        this.chart.traces.push({
+                            x: spline_x,
+                            y: spline_n,
+                            type: 'scatter',
+                            name: mat.name + ' spline Re(n)'
+                        });}
+                    if (this.isPlot_k) {
+                        this.chart.traces.push({
+                            x: spline_x,
+                            y: spline_k,
+                            mode: 'line',
+                            type: 'scatter',
+                            name: mat.name + ' spline Im(n)'
+                        });}
+
+                }
             },
             sortMaterials() {
                 this.materials.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
