@@ -93,7 +93,7 @@
                     layout: {
                         // title: 'reactive charts',
                         xaxis: {
-                            title: 'Wavelength, mkm'
+                            title: 'Wavelength, nm'
                         },
                         yaxis: {
                             title: 'refractive index'
@@ -159,7 +159,6 @@
                       let to_x = parseFloat(x_nk[x_nk.length-1]);
                       let steps = 1000;
                       let step_x = Math.abs(to_x-from_x)/parseFloat(steps);
-                      console.log(x_nk, from_x, to_x,step_x);
                       let spline_x = [];
                       let spline_n =[];
                       let spline_k = [];
@@ -257,7 +256,12 @@
                                 return parseFloat(elem2);
                             });
                         })
-                        return this.transpose(data_num);
+                        let data_columns = this.transpose(data_num);
+                        // Convert from default refractiveindex.info mkm to nm
+
+                        for (let i=0; i<data_columns[0].length; i++)
+                            data_columns[0][i] *= 1000;
+                        return data_columns;
                     }
                 } catch (e) {
                     console.log(e);
