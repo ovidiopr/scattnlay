@@ -262,6 +262,12 @@
               }
             ],
             layout: {
+              margin: {
+                l:0,
+                r:40,
+                b:50,
+                t:10
+              },
               // title: 'reactive charts',
               xaxis: {
                 // will be set on mount
@@ -378,8 +384,8 @@
       },
       window: {
         handler: function () {
-            this.chart.layout.width = this.window.width * 0.9;
-            this.chart.layout.height = this.window.height * 0.75;
+            this.chart.layout.width = this.window.width * 0.92;
+            this.chart.layout.height = this.window.height * 0.95;
             if (this.window.width < 600) this.chart.layout.width = this.window.width;
             if (this.window.height < 600) this.chart.layout.height = this.window.height;
 

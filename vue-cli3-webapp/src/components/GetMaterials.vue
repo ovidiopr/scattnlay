@@ -57,6 +57,24 @@
                         </td>
                     </tr>
                 </table>
+                <div class="field is-horizontal">
+                    <div class="field-label is-normal">
+                        <label class="label"> Plot options </label>
+                    </div>
+                    <div class="field-body">
+                        <div class="columns">
+                            <div class="column">
+                                <b-switch v-model="isPlot_n"> Re(n)</b-switch>
+                            </div>
+                            <div class="column">
+                                <b-switch v-model="isPlot_k"> Im(n)</b-switch>
+                            </div>
+                            <div class="column">
+                                <b-switch v-model="isPlot_spline"> Interpolation</b-switch>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="chart-container">
                     <reactive-chart :chart="chart"/>
                 </div>
@@ -91,6 +109,12 @@
                     uuid: "materials",
                     traces: [],
                     layout: {
+                        margin: {
+                            l:10,
+                            r:40,
+                            b:50,
+                            t:10
+                        },
                         // title: 'reactive charts',
                         xaxis: {
                             title: 'Wavelength, nm'
@@ -107,6 +131,9 @@
                         width: this.plot_width,
                         height: this.plot_height}
                 },
+                isPlot_n: true,
+                isPlot_k: true,
+                isPlot_spline: true,
             }
         },
         mounted() {
