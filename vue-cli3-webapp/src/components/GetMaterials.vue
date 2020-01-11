@@ -13,6 +13,7 @@
         </div>
         <transition name="slide">
             <div class="list" v-if="isVisible">
+                <p style="margin-left: 1rem">Data files were taken from <a href="https://refractiveindex.info" class="is-family-code">refractiveindex.info</a></p>
                 <table class="table is-striped is-narrow is-hoverable">
                     <thead>
                     <tr>
@@ -97,6 +98,12 @@
                         yaxis: {
                             title: 'refractive index'
                         },
+                        showlegend: true,
+                        legend: {
+                            orientation:"h",
+                            x: -.1,
+                            y: 1.2
+                        },
                         width: this.plot_width,
                         height: this.plot_height}
                 },
@@ -114,10 +121,12 @@
                     name: names[i],
                     isUsed: true,
                     isPlot: false,
-                    isLoaded: false
+                    isLoaded: false,
+                    data_nk: []
                 });
             }
             this.sortMaterials();
+            this.materials[0].isPlot= true;
             for (const material of this.materials) {
                 this.loadMaterial(material);
             }
@@ -131,12 +140,14 @@
                           this.chart.traces.push({
                               x: mat.data_nk[0],
                               y: mat.data_nk[1],
+                              mode: 'markers',
                               type: 'scatter',
                               name: mat.name + ' data Re(n)'
                           });
                           this.chart.traces.push({
                               x: mat.data_nk[0],
                               y: mat.data_nk[2],
+                              mode: 'markers',
                               type: 'scatter',
                               name: mat.name + ' data Im(n)'
                           });
@@ -176,6 +187,18 @@
             async loadMaterial(material) {
                 const data_nk = await this.loadMaterialData(material.fname);
                 material.data_nk = data_nk;
+                const Spline = require('cubic-spline');
+
+                // const xs = [1, 2, 3, 4, 5];
+                // const ys = [9, 3, 6, 2, 4];
+                // // new a Spline object
+                // const spline = new Spline(xs, ys);
+                // // get Y at arbitrary X
+                // console.log(spline.at(1.4));
+                // // interpolate a line at a higher resolution
+                // for (let i = 0; i < 50; i++) {
+                //     console.log(spline.at(i * 0.1));
+                // }
             },
             async loadMaterialData(URL){
                 const yaml = require('js-yaml');

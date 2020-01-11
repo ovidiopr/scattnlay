@@ -270,6 +270,12 @@
               yaxis: {
                 title: 'Normalized cross-sections'
               },
+              showlegend: true,
+              legend: {
+                orientation:"h",
+                x: -.1,
+                y: 1.2
+              },
               width: 100,
               height: 100
             }
