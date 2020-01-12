@@ -7,14 +7,14 @@ Vue.use(Buefy)
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faCoffee, faCheckCircle, faBan, faTrash } from '@fortawesome/free-solid-svg-icons'
-library.add(faCoffee, faCheckCircle, faBan, faTrash)
+import { faCoffee, faCheckCircle, faPlusCircle, faBan, faTrash } from '@fortawesome/free-solid-svg-icons'
+library.add(faCoffee, faCheckCircle, faPlusCircle, faBan, faTrash);
 
-Vue.component('font-awesome-icon', FontAwesomeIcon)
+Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 
 new Vue({
   render: h => h(App),
-}).$mount('#app')
+}).$mount('#app');

@@ -14,6 +14,8 @@
         <transition name="slide">
             <div class="list" v-if="isVisible">
                 <p style="margin-left: 1rem">Data files were taken from <a href="https://refractiveindex.info" class="is-family-code">refractiveindex.info</a></p>
+                <p style="margin-left: 1rem">Request at <a href="https://github.com/ovidiopr/scattnlay/issues/20" class="is-family-code">GitHub</a> to add new materails to the default list.</p>
+
                 <table class="table is-striped is-narrow is-hoverable">
                     <thead>
                     <tr>
@@ -23,14 +25,6 @@
                         <th>File or URL</th>
                     </tr>
                     </thead>
-                    <tfoot>
-                    <tr>
-                        <th>Use</th>
-                        <th>Name</th>
-                        <th>Plot</th>
-                        <th>File or URL</th>
-                    </tr>
-                    </tfoot>
                     <tr v-for="material in materials" v-bind:key="material.name">
                         <td><b-switch v-model="material.isUsed"/>
 <!--                                <font-awesome-icon icon="check-circle" class="rh-input has-text-success" v-if="material.isLoaded">-->
@@ -54,6 +48,19 @@
                                 </b-button>
                                 <span class="tooltiptext tip-danger">Delete.</span>
                             </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b-button @click="clickAdd()">
+                            <font-awesome-icon icon="plus-circle" class="has-text-success"/>
+                            Add</b-button>
+                        </td>
+                        <td><b-input v-model="new_name" placeholder="New name"/></td>
+                        <td></td>
+                        <td><b-field message="full database record from refractiveindex.info">
+                            <b-input v-model="new_fname" placeholder="New URL of *.yml file"/>
+
+                        </b-field>
                         </td>
                     </tr>
                 </table>
@@ -104,7 +111,7 @@
         },
         data () {
             return {
-                isVisible: true,
+                isVisible: false,
                 chart: {
                     uuid: "materials",
                     traces: [],
@@ -134,28 +141,33 @@
                 isPlot_n: true,
                 isPlot_k: true,
                 isPlot_spline: true,
+                new_name: '',
+                new_fname:'',
             }
         },
         mounted() {
-            let files = ['Au-Johnson-1972.yml','Ag-Johnson-1972.yml'];
-            let names = ['Au (Gold) Johnson','Ag (Silver) Johnson'];
-            let old_names=[];
-            for (const mat of this.materials) old_names.push(mat.name);
-            for (let i = 0; i < files.length; i++) {
-                if (old_names.includes(names[i])) continue; //Filter out reloads during development
-                this.materials.push({
-                    fname: files[i],
-                    name: names[i],
-                    isUsed: true,
-                    isPlot: false,
-                    isLoaded: false,
-                    data_nk: []
-                });
-            }
-            this.sortMaterials();
-            this.materials[0].isPlot= true;
-            for (const material of this.materials) {
-                this.loadMaterial(material);
+            let files = ['Ag-Johnson-1972.yml',
+                'Al-McPeak-2015.yml',
+                'Au-McPeak-2015.yml',
+                'Cu-McPeak-2015.yml',
+                'Si-Green-2008.yml',
+                'Ag-McPeak-2015.yml',
+                'Au-Johnson-1972.yml',
+                'Cu-Johnson-1972.yml',
+                'Si-Aspnes-1983.yml'];
+            let names = ['Ag (Silver) Johnson',
+                'Al (Aluminium) McPeak',
+                'Au (Gold) McPeak',
+                'Cu (Copper) McPeak',
+                'Si (Silicon) Green',
+                'Ag (Silver) McPeak',
+                'Au (Gold) Johnson',
+                'Cu (Copper) Johnson',
+                'Si (Silicon) Aspnes'];
+            this.addMaterial(files,names);
+            for (const mat of this.materials) {
+                if (mat.name.includes('Johnson')) mat.isUsed=false;
+                if (mat.name.includes('Aspnes')) mat.isUsed=false;
             }
         },
         watch: {
@@ -255,10 +267,33 @@
             sortMaterials() {
                 this.materials.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
             },
+            clickAdd() {
+                this.addMaterial([this.new_fname],[this.new_name])
+            },
+            addMaterial(files, names){
+                let old_names=[];
+                for (const mat of this.materials) old_names.push(mat.name);
+                for (let i = 0; i < files.length; i++) {
+                    if (old_names.includes(names[i])) continue; //Filter out reloads during development
+                    this.materials.push({
+                        fname: files[i],
+                        name: names[i],
+                        isUsed: true,
+                        isPlot: false,
+                        isLoaded: false,
+                        data_nk: []
+                    });
+                }
+                this.sortMaterials();
+                this.materials[0].isPlot= true;
+                for (const material of this.materials) {
+                    this.loadMaterial(material);
+                }
+            },
             deleteMaterial(fname) {
                 for (let i = 0; i < this.materials.length; i++) {
                     if (this.materials[i].fname == fname) {
-                        this.materials.splice(i);
+                        this.materials.splice(i,1);
                     }
                 }
             },
@@ -288,8 +323,11 @@
                 let Ag_data;
 
                 try {
+                    let proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                    if (URL.includes('https://refractiveindex.info')) URL = proxyUrl+URL;
                     let response = await fetch(URL);
                     let Ag_data = await response.text();
+
                     const doc = await yaml.safeLoad(Ag_data);
                     if (doc.DATA[0].type == "tabulated nk") {
                         let csv = doc.DATA[0].data;
