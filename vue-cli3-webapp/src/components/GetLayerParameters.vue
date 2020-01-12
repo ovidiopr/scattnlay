@@ -31,13 +31,18 @@
                     <b-select v-model="layer.material">
                         <option v-if="index == 0" value="PEC" disabled> PEC</option>
                         <option value="nk">nk-constant</option>
-                        <option v-for="material in filteredMaterials" v-bind:key="material.name" v-bind:value="material.name">{{material.name}}</option>
+                        <option v-for="material in filteredMaterials" v-bind:key="material.name"
+                                v-bind:value="material.name">
+                            {{material.name}} ({{material.spline_n.xs[0]}} -
+                                               {{material.spline_n.xs[material.spline_n.xs.length-1]}} nm)
+                        </option>
                     </b-select>
+                    <!--  TODO: convert to source units in b-select above-->
 
                 </div>
             </div>
         </div>
-        <div class="field is-horizontal layer">
+        <div class="field is-horizontal layer" v-if="!isDisabled">
             <div class="field-label is-normal">
                 <label class="label lnorm">
                     &nbsp;
