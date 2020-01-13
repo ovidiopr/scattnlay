@@ -39,7 +39,8 @@
                                 <span class="tooltiptext tip-danger">Failed to load.</span>
                             </span>
                         </td>
-                        <td>{{material.name}}</td>
+                        <td>{{material.name}}  ({{material.spline_n.xs[0]}} -
+                            {{material.spline_n.xs[material.spline_n.xs.length-1]}} nm)</td>
                         <td><b-checkbox v-model="material.isPlot"/></td>
                         <td>{{material.fname}}
                             <span class="rh-input">
