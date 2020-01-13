@@ -22,6 +22,7 @@ How to use scattnlay
 ====================
 
 **Table of contents:**
+- [Web application](#web-application)
 - [Compile code](#compile-code)
 - [Binary install](#binary-install)
 - [Use](#use)
@@ -29,7 +30,13 @@ How to use scattnlay
 - [Acknowledgment](#acknowledgment)
 - [License](#license)
 
-Compile Code:
+Web application
+---------------
+
+Limited web version is available at https://physics.ifmo.ru/mie/
+
+
+Compile Code
 -------------
 To compile the source you will need a C++11 capable compiler. To use
 MultiPrecision feature you need to install Boost.Multiprecision
@@ -60,7 +67,7 @@ Compilation options
  - **make clean** - Delete temporal files
   
 
-Binary install:
+Binary install
 --------------
 
 Binary files for Ubuntu and derivative distributions can be found at
@@ -81,7 +88,7 @@ sudo pip install python-scattnlay
 
 You can also ```git clone``` and ```pip install -e .``` to develop python package.
 
-Use:
+Use
 ----
 
 1. Python library

@@ -1,5 +1,6 @@
 <template>
     <div class="field">
+        <!--            Select particle type-->
         <div class="field is-horizontal">
             <div class="field-label is-normal">
                 <label class="label">Spherical particle</label>
@@ -19,7 +20,7 @@
             </div>
         </div>
         <div v-for="layer in layers" v-bind:key="layer.index">
-        <GetLayerParameters v-bind:layer="layer"
+            <GetLayerParameters v-bind:layer="layer"
                             v-bind:units="units"
                             v-bind:particle="particle"
                             v-bind:index="layer.index"
@@ -53,6 +54,14 @@
                     if (this.particle === 'multilayer') {this.layersNum = 3;}
                 }
             },
+            // layers: {
+            //     handler: function () {
+            //         if ( this.layers[0].spline_n === undefined ) return;
+            //         console.log('GPP1', Object.getOwnPropertyNames(this.layers[0].spline_n));
+            //         console.log('GPP2', this.layers[0].spline_n.at(500));
+            //     },
+            //     deep:true
+            // },
             layersNum: {
                 handler: function () {
                     while (this.layersNum < this.layers.length) {
@@ -65,9 +74,12 @@
                             {
                                 R: r_prev*0.1,
                                 material: 'nk',
+                                isMaterialLoaded:true,
                                 reN: 4.0,
                                 imN: 0.01,
-                                index: 1
+                                index: 1,
+                                spline_n: undefined,
+                                spline_k: undefined,
                             }
                         );
                     }

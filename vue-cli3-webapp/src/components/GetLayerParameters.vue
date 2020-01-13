@@ -37,6 +37,12 @@
                                                {{material.spline_n.xs[material.spline_n.xs.length-1]}} nm)
                         </option>
                     </b-select>
+                    <div v-if="layer.isMaterialLoaded">
+                        <font-awesome-icon icon="check-circle" class="has-text-success"/>
+                    </div>
+                    <div v-else>
+                        <font-awesome-icon icon="ban" class="has-text-danger"/>
+                    </div>
                     <!--  TODO: convert to source units in b-select above-->
 
                 </div>
@@ -87,11 +93,23 @@
         watch: {
             'layer.material': {
                 handler: function () {
-                    console.log('update');
+                    // console.log('update');
+                    this.layer.isMaterialLoaded = false;
                     if (this.layer.material == 'nk') {
                         this.isDisabled = false;
+                        this.layer.reN = 4;
+                        this.layer.imN = 0.01;
+                        this.layer.isMaterialLoaded = true;
                     } else {
                         this.isDisabled = true;
+                    }
+                    for (const mat of this.materials) {
+                        if (mat.name != this.layer.material) continue;
+                        this.layer.spline_n = mat.spline_n;
+                        this.layer.spline_k = mat.spline_k;
+                        console.log(mat.spline_n.at(500));
+                        console.log(this.layer.spline_n.at(500));
+                        this.layer.isMaterialLoaded = true;
                     }
                 }
             }

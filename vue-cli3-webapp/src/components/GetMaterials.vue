@@ -42,7 +42,7 @@
                         <td>{{material.name}}  ({{material.spline_n.xs[0]}} -
                             {{material.spline_n.xs[material.spline_n.xs.length-1]}} nm)</td>
                         <td><b-checkbox v-model="material.isPlot"/></td>
-                        <td>{{material.fname}}
+                        <td><a v-bind:href="material.fname">{{material.fname}}</a>
                             <span class="rh-input">
                                 <b-button @click="deleteMaterial(material.fname);" class="is-danger is-small is-outlined">
                                     <font-awesome-icon icon="trash"/>
@@ -310,13 +310,6 @@
                 material.spline_n = spline_n;
                 material.spline_k = spline_k;
                 material.isLoaded = true;
-                // const spline = new Spline(xs, ys);
-                // // get Y at arbitrary X
-                // console.log(spline.at(1.4));
-                // // interpolate a line at a higher resolution
-                // for (let i = 0; i < 50; i++) {
-                //     console.log(spline.at(i * 0.1));
-                // }
             },
             async loadMaterialData(URL){
                 const yaml = require('js-yaml');

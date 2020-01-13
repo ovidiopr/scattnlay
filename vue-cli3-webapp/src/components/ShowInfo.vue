@@ -23,6 +23,17 @@
                     <span style="font-weight: bold">Comp. Phys. Comm., vol. 214, pp. 225–230, 2017</span>
                 </article>
             </div>
+            <div class="message" style="padding: 2rem">
+                <span style="text-decoration: underline;text-emphasis: before;font-weight: bold;">Alternatives:</span>
+                <div class="content">
+                    <ul>
+                        <li><a href="https://nanocomposix.com/pages/mie-theory-calculator">Nanocomposix.</a>  Bulk or core-shell, only dipole and quadrupole contributions.</li>
+                        <li><a href="https://de.ifmo.ru/miecalculator/">Ivan Toftul.</a>  Only bulk particles.</li>
+                        <li>Lucien Saviot. <a href="https://saviot.cnrs.fr/mie/index.en.html">Bulk</a> and <a href="https://saviot.cnrs.fr/miecoat/index.en.html">core-shell</a> calculators.</li>
+                        <li><a href="https://omlc.org/calc/mie_calc.html">Scott Prahl.</a> Angle distribution. </li>
+                    </ul>
+                </div>
+            </div>
         </b-modal>
     </section>
 </template>

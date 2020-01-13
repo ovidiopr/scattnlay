@@ -54,6 +54,9 @@
         <b-switch v-model="plotSelector.isPlotQabs">
           Qabs
         </b-switch>
+        <b-switch v-model="plotSelector.isPlotQext">
+          Qext
+        </b-switch>
       </div>
       <!--        <b-table :data="plotSelectorData" :columns="plotSelectorColumns" :mobile-cards="isShowInfo"></b-table>-->
       <table class="table is-narrow">
@@ -193,6 +196,7 @@
               {
                 R: 100.0,
                 material: 'nk',
+                isMaterialLoaded:true,
                 reN: 4.0,
                 imN: 0.01,
                 index: 0
@@ -222,6 +226,7 @@
             WLs: [],
             Qsca: [],
             Qabs: [],
+            Qext: [],
             Qsca_n: [[], []],
             Qabs_n: [[], []],
             layout: {},
@@ -233,6 +238,7 @@
             pWLs: [],
             pQsca: [],
             pQabs: [],
+            pQext: [],
             pQsca_n: [[], []],
             pQabs_n: [[], []],
           },
@@ -244,7 +250,8 @@
             isPlotModeE: [],
             isPlotModeH: [],
             isPlotQabs: true,
-            isPlotQsca: true
+            isPlotQsca: true,
+            isPlotQext: false,
           },
           // plotSelectorData: undefined,
           // plotSelectorColumns: undefined,
@@ -476,7 +483,7 @@
         this.simulationRuntime.fromWL = this.simulationSetup.fromWL;
         this.simulationRuntime.toWL = this.simulationSetup.toWL;
         this.simulationRuntime.stepWL = this.simulationSetup.stepWL;
-        this.simulationRuntime.layers = JSON.parse(JSON.stringify(this.simulationSetup.layers));
+        this.simulationRuntime.layers =this.simulationSetup.layers; // TODO: not a copy, but we need spline_n.at() method in every layer.
 
         let t0 = performance.now();
         let fromWL = parseFloat(this.simulationSetup.fromWL);
@@ -485,7 +492,7 @@
         let host = parseFloat(this.simulationSetup.hostIndex);
 
 
-        let Qsca = [], Qabs = [];
+        let Qsca = [], Qabs = [], Qext = [];
         let Qsca_n = [[], []], Qabs_n = [[], []];
 
         let WLs = range(fromWL, toWL, stepWL);
@@ -517,9 +524,19 @@
           for (let num_layer = 0;
                num_layer < this.simulationRuntime.layers.length; 
                num_layer++) {
-            let R = parseFloat(this.simulationRuntime.layers[num_layer].R);
-            let reN = parseFloat(this.simulationRuntime.layers[num_layer].reN);
-            let imN = parseFloat(this.simulationRuntime.layers[num_layer].imN);
+            let layer = this.simulationRuntime.layers[num_layer];
+            let R = parseFloat(layer.R);
+            if (layer.material === 'PEC') {
+              //  TODO: set PEC layer
+              continue;
+            }
+            if (layer.material !== 'nk') {
+              if ( layer.spline_n === undefined ) return;
+              layer.reN = layer.spline_n.at(WL);
+              layer.imN = layer.spline_k.at(WL);
+            }
+            let reN = parseFloat(layer.reN);
+            let imN = parseFloat(layer.imN);
             nmie.AddTargetLayerReIm( this.convertUnits2nm(this.units, R)*host,
                     reN/host, imN/host);
             
@@ -529,6 +546,7 @@
           nmie.RunMieCalculation();
           Qsca.push(nmie.GetQsca());
           Qabs.push(nmie.GetQabs());
+          Qext.push(nmie.GetQsca()+nmie.GetQabs());
           mode_types.forEach(function (mode_type) {
             mode_n.forEach(function (n) {
               nmie.SetModeNmaxAndType(n, mode_type);
@@ -540,9 +558,11 @@
         }
         this.simulationRuntime.Qsca = Qsca;
         this.simulationRuntime.Qabs = Qabs;
+        this.simulationRuntime.Qext = Qext;
+
         this.simulationRuntime.Qsca_n = Qsca_n;
         this.simulationRuntime.Qabs_n = Qabs_n;
-        this.filterBug();  // TODO: fix the algorithm instead of filtering the final output
+        // this.filterBug();  // TODO: fix the algorithm instead of filtering the final output
 
         let t1 = performance.now();
         this.ttime = ((t1 - t0) / 1000).toFixed(2);
@@ -551,6 +571,7 @@
         this.plotData.pWLs = WLs.slice();
         this.plotData.pQsca = Qsca;
         this.plotData.pQabs = Qabs;
+        this.plotData.pQext = Qext;
         this.plotData.pQsca_n = Qsca_n;
         this.plotData.pQabs_n = Qabs_n;
 
@@ -560,6 +581,7 @@
       filterBug: function () {
         let Qsca = this.simulationRuntime.Qsca;
         let Qabs = this.simulationRuntime.Qabs;
+        let Qext = this.simulationRuntime.Qext;
         let Qsca_n = this.simulationRuntime.Qsca_n;
         let Qabs_n = this.simulationRuntime.Qabs_n;
         let total_mode_n = this.simulationSetup.total_mode_n;
@@ -571,8 +593,14 @@
         }
         this.filterMedian(Qsca);
         this.filterMedian(Qabs);
+        for (let i = 0; i < Qsca.length; i++) {
+          Qext[i] = Qsca[i] + Qabs[i];
+        }
+        // this.filterMedian(Qext);
+
         this.simulationRuntime.Qsca = Qsca;
         this.simulationRuntime.Qabs = Qabs;
+        this.simulationRuntime.Qext = Qext;
         this.simulationRuntime.Qsca_n = Qsca_n;
         this.simulationRuntime.Qabs_n = Qabs_n;
 
@@ -649,7 +677,7 @@
         this.simulationRuntime.mode_n_names = mode_n_names;
       },
       setQtotalChart: function () {
-        let traceQsca, traceQabs;
+        let traceQsca, traceQabs, traceQext;
         traceQsca = {
           x: this.plotData.pWLs,
           y: this.plotData.pQsca,
@@ -662,9 +690,16 @@
           type: 'scatter',
           name: 'Qabs'
         };
+        traceQext = {
+          x: this.plotData.pWLs,
+          y: this.plotData.pQext,
+          type: 'scatter',
+          name: 'Qext'
+        };
         this.chart.traces = [];
         if (this.plotSelector.isPlotQsca === true) this.chart.traces.push(traceQsca);
         if (this.plotSelector.isPlotQabs === true) this.chart.traces.push(traceQabs);
+        if (this.plotSelector.isPlotQext === true) this.chart.traces.push(traceQext);
       },
       plotResults: function () {
         this.setQtotalChart();
