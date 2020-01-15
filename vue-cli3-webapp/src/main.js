@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import Buefy from 'buefy'
-import 'buefy/dist/buefy.css'
+// import 'buefy/dist/buefy.css'
 // import Plotly from 'plotly.js'
 Vue.use(Buefy)
 

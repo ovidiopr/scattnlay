@@ -128,8 +128,10 @@
   import nmiejs from './nmiejs.js';
   const module = nmiejs({
     locateFile(path) {
-      // console.log(path);
-      return path;
+      // let deploy_path = '/themes/custom/physics/mie/';
+      let deploy_path = '';
+      console.log(deploy_path+path);
+      return deploy_path+path;
     }
   });
 
@@ -738,14 +740,37 @@
 
 </script>
 
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /*text-align: center;*/
-  /*color: #2c3e50;*/
-  /*margin-top: 60px;*/
-  margin: 0;
-}
+<style lang="scss">
+  // Import Bulma's core
+  @import "~bulma/sass/utilities/_all";
+
+  // $body-background-color: $green;
+  // Set your colors
+  $primary: #7957d5;
+  $twitter: #4099FF;
+  $twitter-invert: findColorInvert($twitter);
+
+  // Setup $colors to use as bulma classes (e.g. 'is-twitter')
+   $colors: (
+             "white": ($white, $black),
+             "black": ($black, $white),
+             "light": ($light, $light-invert),
+             "dark": ($dark, $dark-invert),
+             "primary": ($primary, $primary-invert),
+             "info": ($info, $info-invert),
+             "success": ($success, $success-invert),
+             "warning": ($warning, $warning-invert),
+             "danger": ($danger, $danger-invert),
+             "twitter": ($twitter, $twitter-invert)
+   );
+
+  // Links
+  // $link: $primary;
+  // $link-invert: $primary-invert;
+  // $link-focus-border: $primary;
+
+  // Import Bulma and Buefy styles
+  @import "~bulma";
+  @import "~buefy/src/scss/buefy";
+
 </style>

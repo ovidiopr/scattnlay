@@ -147,15 +147,18 @@
             }
         },
         mounted() {
-            let files = ['Ag-Johnson-1972.yml',
-                'Al-McPeak-2015.yml',
-                'Au-McPeak-2015.yml',
-                'Cu-McPeak-2015.yml',
-                'Si-Green-2008.yml',
-                'Ag-McPeak-2015.yml',
-                'Au-Johnson-1972.yml',
-                'Cu-Johnson-1972.yml',
-                'Si-Aspnes-1983.yml'];
+            // let deploy_path = deploy_path+'';
+            let deploy_path = '';
+
+            let files = [deploy_path+'Ag-Johnson-1972.yml',
+                deploy_path+'Al-McPeak-2015.yml',
+                deploy_path+'Au-McPeak-2015.yml',
+                deploy_path+'Cu-McPeak-2015.yml',
+                deploy_path+'Si-Green-2008.yml',
+                deploy_path+'Ag-McPeak-2015.yml',
+                deploy_path+'Au-Johnson-1972.yml',
+                deploy_path+'Cu-Johnson-1972.yml',
+                deploy_path+'Si-Aspnes-1983.yml'];
             let names = ['Ag (Silver) Johnson',
                 'Al (Aluminium) McPeak',
                 'Au (Gold) McPeak',

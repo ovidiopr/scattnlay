@@ -22,7 +22,7 @@ How to use scattnlay
 ====================
 
 **Table of contents:**
-- [Mie calculator web application](#mie-calculator-web-application)
+- [Mie theory calculator web application](#mie-theory-calculator-web-application)
 - [Compile code](#compile-code)
 - [Binary install](#binary-install)
 - [Use](#use)
@@ -30,7 +30,7 @@ How to use scattnlay
 - [Acknowledgment](#acknowledgment)
 - [License](#license)
 
-Mie calculator web application
+Mie theory calculator web application
 ---------------
 
 Limited web version is available at https://physics.ifmo.ru/mie/

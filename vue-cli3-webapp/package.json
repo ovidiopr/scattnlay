@@ -19,6 +19,8 @@
     "vue": "^2.6.10"
   },
   "devDependencies": {
+    "node-sass": "^4.13.0",
+    "sass-loader": "^8.0.2",
     "ify-loader": "^1.1.0",
     "transform-loader": "^0.2.4",
     "@vue/cli-plugin-babel": "^4.1.0",
