@@ -3,7 +3,7 @@ Section: science
 Priority: optional
 Maintainer: Ovidio Peña Rodríguez <ovidio@bytesfall.com>
 Build-Depends: debhelper (>=7.0.0), dh-python, cdbs (>= 0.4.49), libboost-all-dev (>= 1.58.0), python-numpy (>= 1.0), python-all-dev, python-numpy-dev
-X-Python-Version: >=2.4
+X-Python-Version: >=2.7
 Standards-Version: 3.8.3
 
 Package: python-scattnlay
