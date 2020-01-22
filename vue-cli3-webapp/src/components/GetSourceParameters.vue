@@ -51,6 +51,9 @@
                 isStep: true
             }
         },
+        methods: {
+
+        },
         watch: {
             isStep: {
                 handler: function () {

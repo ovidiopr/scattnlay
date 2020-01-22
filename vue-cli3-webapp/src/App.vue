@@ -459,6 +459,14 @@
         if (fromU === toU) return val;
         return this.convertUnitsFrom_nm(toU, this.convertUnits2nm(fromU, val));
       },
+      notifyDanger: function(message) {
+        this.$buefy.notification.open({
+          duration: 3000,
+          message: message,
+          type: 'is-danger',
+          position: 'is-top',
+        });
+      },
       runSimulation: function() {
           this.$buefy.notification.open({
             duration: 200,
@@ -533,7 +541,15 @@
               continue;
             }
             if (layer.material !== 'nk') {
-              if ( layer.spline_n === undefined ) return;
+              if ( layer.spline_n === undefined ) {
+                this.notifyDanger('Failed to load material!');
+                return;
+              }
+              if (layer.spline_n.xs[0] > WL
+                      || layer.spline_n.xs[layer.spline_n.xs.length-1] < WL) {
+                this.notifyDanger('ERROR!!! Source parameters are out of material spectral range!');
+                return;
+              }
               layer.reN = layer.spline_n.at(WL);
               layer.imN = layer.spline_k.at(WL);
             }
@@ -743,7 +759,7 @@
 <style lang="scss">
   // Import Bulma's core
   @import "~bulma/sass/utilities/_all";
-
+  // https://bulma.io/documentation/customize/variables/
   // $body-background-color: $green;
   // Set your colors
   $primary: #7957d5;
