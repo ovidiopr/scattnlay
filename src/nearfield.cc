@@ -48,7 +48,8 @@ const double PI=3.14159265358979323846;
 // This is the main function of 'scattnlay', here we read the parameters as          //
 // arguments passed to the program which should be executed with the following       //
 // syntaxis:                                                                         //
-// ./scattnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...] [-t ti tf nt] [-c comment]  //
+// ./fieldnlay -l Layers x1 m1.r m1.i [x2 m2.r m2.i ...]                             //
+//             -p xi xf nx yi yf ny zi zf nz [-c comment]                            //
 //                                                                                   //
 // When all the parameters were correctly passed we setup the integer L (the         //
 // number of layers) and the arrays x and m, containing the size parameters and      //
@@ -56,11 +57,8 @@ const double PI=3.14159265358979323846;
 // If the calculation is successful the results are printed with the following       //
 // format:                                                                           //
 //                                                                                   //
-//    * If no comment was passed:                                                    //
-//        'Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo'                                    //
+// 'X, Y, Z, Ex.r, Ex.i, Ey.r, Ey.i, Ez.r, Ez.i, Hx.r, Hx.i, Hy.r, Hy.i, Hz.r, Hz.i' //
 //                                                                                   //
-//    * If a comment was passed:                                                     //
-//        'comment, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo'                           //
 //***********************************************************************************//
 int main(int argc, char *argv[]) {
   try {
