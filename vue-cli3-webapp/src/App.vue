@@ -128,8 +128,10 @@
   import nmiejs from './nmiejs.js';
   const module = nmiejs({
     locateFile(path) {
-      // let deploy_path = '/themes/custom/physics/mie/';
-      let deploy_path = '';
+      let deploy_path = process.env.BASE_URL;
+      // '/themes/custom/physics/mie/';
+      // console.log();
+      // // let deploy_path = '';
       console.log(deploy_path+path);
       return deploy_path+path;
     }

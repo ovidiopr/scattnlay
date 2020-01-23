@@ -23,6 +23,7 @@
                         <th>Name</th>
                         <th>Plot</th>
                         <th>File or URL</th>
+                        <th></th>
                     </tr>
                     </thead>
                     <tr v-for="material in materials" v-bind:key="material.name">
@@ -42,7 +43,8 @@
                         <td>{{material.name}}  ({{material.spline_n.xs[0]}} -
                             {{material.spline_n.xs[material.spline_n.xs.length-1]}} nm)</td>
                         <td><b-checkbox v-model="material.isPlot"/></td>
-                        <td><a v-bind:href="material.fname">{{material.fname}}</a>
+                        <td><a v-bind:href="material.fname">{{material.display_fname}}</a></td>
+                        <td>
                             <span class="rh-input">
                                 <b-button @click="deleteMaterial(material.fname);" class="is-danger is-small is-outlined">
                                     <font-awesome-icon icon="trash"/>
@@ -147,9 +149,12 @@
             }
         },
         mounted() {
-            // let deploy_path = deploy_path+'';
-            let deploy_path = '';
+            // let deploy_path = '/themes/custom/physics/mie/';
+            // let deploy_path = '';
+            // let deploy_path = window.location.pathname;
+            let deploy_path = process.env.BASE_URL;
 
+            // console.log('materials path', deploy_path);
             let files = [deploy_path+'Ag-Johnson-1972.yml',
                 deploy_path+'Al-McPeak-2015.yml',
                 deploy_path+'Au-McPeak-2015.yml',
@@ -276,11 +281,14 @@
             },
             addMaterial(files, names){
                 let old_names=[];
+                let deploy_path = process.env.BASE_URL;
+
                 for (const mat of this.materials) old_names.push(mat.name);
                 for (let i = 0; i < files.length; i++) {
                     if (old_names.includes(names[i])) continue; //Filter out reloads during development
                     this.materials.push({
                         fname: files[i],
+                        display_fname: files[i].replace(process.env.BASE_URL,""),
                         name: names[i],
                         isUsed: true,
                         isPlot: false,

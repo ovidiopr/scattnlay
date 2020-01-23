@@ -1,4 +1,5 @@
 module.exports = {
-    // publicPath: '/themes/custom/physics/mie/'
-    publicPath: ''
+    publicPath: process.env.NODE_ENV === 'production'
+        ? '/themes/custom/physics/mie/' //deploy path in Drupal setup at physics.ifmo.ru
+        : '/'
 }
