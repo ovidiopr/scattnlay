@@ -41,13 +41,13 @@
           </b-field>
         </div>
       </div>
-      <div>
+      <div class="add_padding">
         <b-button class="is-primary is-medium" @click="runSimulation();">
           Run simulation
         </b-button><br>
         It took {{ ttime }} s.
       </div>
-      <div class="field is-grouped is-grouped-multiline">
+      <div class="field is-grouped is-grouped-multiline add_padding">
         <b-switch v-model="plotSelector.isPlotQsca">
           Qsca
         </b-switch>
@@ -59,7 +59,7 @@
         </b-switch>
       </div>
       <!--        <b-table :data="plotSelectorData" :columns="plotSelectorColumns" :mobile-cards="isShowInfo"></b-table>-->
-      <table class="table is-narrow">
+      <table class="table is-narrow add_padding">
         <thead>
         <tr>
           <th v-for="mode_name in simulationRuntime.mode_n_names" v-bind:key="mode_name.name">
@@ -788,7 +788,24 @@
   // $link-focus-border: $primary;
 
   // Import Bulma and Buefy styles
-  @import "~bulma";
+  @charset "utf-8";
+  /*! bulma.io v0.7.5 | MIT License | github.com/jgthms/bulma */
+  @import "~bulma/sass/utilities/_all";
+  @import "~bulma/sass/base/_all";
+  @import "~bulma/sass/elements/_all";
+  @import "~bulma/sass/form/_all";
+  /*@import "~bulma/sass/components/_all";*/
+  @import "~bulma/sass/components/dropdown";
+  @import "~bulma/sass/components/tabs";
+
+  @import "~bulma/sass/grid/_all";
+  /*@import "~bulma/sass/layout/_all";*/
+
+  // @import "~bulma";
   @import "~buefy/src/scss/buefy";
+
+  .add_padding {
+    padding: 1rem;
+  }
 
 </style>
