@@ -466,7 +466,7 @@
           duration: 3000,
           message: message,
           type: 'is-danger',
-          position: 'is-top',
+          position: 'is-bottom-left',
         });
       },
       runSimulation: function() {
@@ -474,7 +474,7 @@
             duration: 200,
             message: 'Simulation was started!',
             type: 'is-danger',
-            position: 'is-top',
+            position: 'is-bottom-left',
             });
           setTimeout(
                   () => {
@@ -484,7 +484,7 @@
                       duration: 3000,
                       message: 'Finished! '+"It took " + this.ttime + " s.",
                       type: 'is-success',
-                      position: 'is-top',
+                      position: 'is-bottom-left',
                       })
                     ;
                   }, 20);
@@ -792,11 +792,27 @@
   /*! bulma.io v0.7.5 | MIT License | github.com/jgthms/bulma */
   @import "~bulma/sass/utilities/_all";
   @import "~bulma/sass/base/_all";
-  @import "~bulma/sass/elements/_all";
+  /*@import "~bulma/sass/elements/_all";*/
+  @import "~bulma/sass/elements/box.sass";
+  @import "~bulma/sass/elements/button.sass";
+  @import "~bulma/sass/elements/container.sass";
+  @import "~bulma/sass/elements/content.sass";
+  /*@import "~bulma/sass/elements/icon.sass";*/
+  @import "~bulma/sass/elements/image.sass";
+  @import "~bulma/sass/elements/notification.sass";
+  @import "~bulma/sass/elements/progress.sass";
+  @import "~bulma/sass/elements/table.sass";
+  @import "~bulma/sass/elements/tag.sass";
+  @import "~bulma/sass/elements/title.sass";
+  @import "~bulma/sass/elements/other.sass";
+
+
   @import "~bulma/sass/form/_all";
   /*@import "~bulma/sass/components/_all";*/
   @import "~bulma/sass/components/dropdown";
   @import "~bulma/sass/components/tabs";
+  @import "~bulma/sass/components/modal";
+  @import "~bulma/sass/components/message";
 
   @import "~bulma/sass/grid/_all";
   /*@import "~bulma/sass/layout/_all";*/
