@@ -138,8 +138,9 @@
                             x: -.1,
                             y: 1.2
                         },
-                        width: this.plot_width,
-                        height: this.plot_height}
+                        // width: this.plot_width,
+                        height: this.plot_height
+                    }
                 },
                 isPlot_n: true,
                 isPlot_k: true,

@@ -105,4 +105,7 @@
 </script>
 
 <style scoped>
+    .checkbox {
+        margin-top: 0px;
+    }
 </style>

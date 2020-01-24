@@ -293,7 +293,7 @@
                 x: -.1,
                 y: 1.2
               },
-              width: 100,
+              // width: 100,
               height: 100
             }
           }
@@ -395,9 +395,9 @@
       },
       window: {
         handler: function () {
-            this.chart.layout.width = this.window.width * 0.92;
+            // this.chart.layout.width = this.window.width * 0.92;
             this.chart.layout.height = this.window.height * 0.95;
-            if (this.window.width < 600) this.chart.layout.width = this.window.width;
+            // if (this.window.width < 600) this.chart.layout.width = this.window.width;
             if (this.window.height < 600) this.chart.layout.height = this.window.height;
 
           },
@@ -823,5 +823,17 @@
   .add_padding {
     padding: 1rem;
   }
-
+  // Custom styles to build into the design of physics.ifmo.ru
+  .content table {
+    width: auto;
+  }
+  ul {
+    padding-left: 1.5em;
+  }
+  body {
+    line-height: 1.42857;
+  }
+  .block-views-blockmessages-header-message-block {
+    top: 25px;
+  }
 </style>

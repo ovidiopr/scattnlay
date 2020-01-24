@@ -101,4 +101,8 @@
         margin-left: 1rem;
         width:5rem;
     }
+    .b-radio.radio {
+        /*margin-left: .5em;*/
+        margin-top: 0px;
+    }
 </style>
