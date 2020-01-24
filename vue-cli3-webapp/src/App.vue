@@ -2,7 +2,7 @@
   <div id="app">
     <b-loading :active.sync="isLoading" :can-cancel="isLoading"/>
     <ShowInfo/>
-    <section>
+    <section class="add_padding">
       <GetUnits v-bind:units="units"
                 v-bind:source_units="source_units"
                 v-bind:isSourceOtherUnits="isSourceOtherUnits"
@@ -277,8 +277,10 @@
                 l:0,
                 r:40,
                 b:50,
-                t:10
+                t:0
               },
+              // paper_bgcolor: '#7f7f7f',
+              // plot_bgcolor: '#c7c7c7',
               // title: 'reactive charts',
               xaxis: {
                 // will be set on mount
@@ -291,7 +293,7 @@
               legend: {
                 orientation:"h",
                 x: -.1,
-                y: 1.2
+                y: 1.05
               },
               // width: 100,
               height: 100
@@ -824,6 +826,7 @@
     padding: 1rem;
   }
   // Custom styles to build into the design of physics.ifmo.ru
+  // npm run build && ./deploy.sh  && xclip -sel c < dist/index.html
   .content table {
     width: auto;
   }
