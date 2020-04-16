@@ -30,6 +30,11 @@
 # Binary
 *.bin
 
+# CLion files
+.idea
+cmake-build-debug
+CMakeLists.txt
+
 # Temp
 *~
 oprofiletmp
