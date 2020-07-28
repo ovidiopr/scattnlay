@@ -40,6 +40,7 @@
 #include <boost/math/constants/constants.hpp>
 namespace nmie {
   int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn);
+  int ExpanCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, const int li, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn, std::vector<std::complex<double> >& cn, std::vector<std::complex<double> >& dn);
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
@@ -59,6 +60,7 @@ namespace nmie {
     void RunMieCalculation();
     void RunFieldCalculation();
     void calcScattCoeffs();
+    void calcExpanCoeffs();
 
     // Return calculation results
     FloatType GetQext();
@@ -73,6 +75,11 @@ namespace nmie {
 
     std::vector<std::complex<FloatType> > GetAn(){return an_;};
     std::vector<std::complex<FloatType> > GetBn(){return bn_;};
+
+    std::vector< std::vector<std::complex<FloatType> > > GetLayerAn(){return aln_;};
+    std::vector< std::vector<std::complex<FloatType> > > GetLayerBn(){return bln_;};
+    std::vector< std::vector<std::complex<FloatType> > > GetLayerCn(){return cln_;};
+    std::vector< std::vector<std::complex<FloatType> > > GetLayerDn(){return dln_;};
 
     // Problem definition
     // Modify size of all layers
@@ -124,7 +131,6 @@ namespace nmie {
     // Scattering coefficients
     std::vector<std::complex<FloatType> > an_, bn_;
     std::vector< std::vector<std::complex<FloatType> > > aln_, bln_, cln_, dln_;
-    void calcExpanCoeffs();
     // Points for field evaluation
     std::vector< std::vector<FloatType> > coords_;
 

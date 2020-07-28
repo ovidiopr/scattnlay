@@ -117,6 +117,22 @@ py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::arra
 }
 
 
+py::tuple py_ExpanCoeffs(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
+                         const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
+                         const int li=-1, const int nmax=-1, const int pl=-1) {
+
+  auto c_x = Py2Vector<double>(py_x);
+  auto c_m = Py2Vector< std::complex<double> >(py_m);
+
+  int terms = 0;
+  std::vector<std::complex<double> > c_an, c_bn, c_cn, c_dn;
+  int L = py_x.size();
+  terms = nmie::ExpanCoeffs(L, pl, c_x, c_m, li, nmax, c_an, c_bn, c_cn, c_dn);
+  
+  return py::make_tuple(terms, VectorComplex2Py(c_an), VectorComplex2Py(c_bn), VectorComplex2Py(c_cn), VectorComplex2Py(c_dn));
+}
+
+
 py::tuple py_scattnlay(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
                        const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_theta,
