@@ -126,7 +126,11 @@ def expancoeffs(x, m, li=-1, nmax=-1, pl=-1, mp=False):
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return expancoeffs_(x, m, nmax=nmax, pl=pl)
+            terms, an, bn, cn, dn = expancoeffs_(x, m, nmax=nmax, pl=pl)
+            if li >= 0 and li <= x.shape:
+                return terms, an[li], bn[li], cn[li], dn[li]
+            else:
+                return terms, an, bn, cn, dn
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -142,27 +146,30 @@ def expancoeffs(x, m, li=-1, nmax=-1, pl=-1, mp=False):
         nstore = nmax
 
     terms = np.zeros((x.shape[0]), dtype=int)
-    an = np.zeros((0, nstore), dtype=complex)
-    bn = np.zeros((0, nstore), dtype=complex)
-    cn = np.zeros((0, nstore), dtype=complex)
-    dn = np.zeros((0, nstore), dtype=complex)
+    an = np.zeros((0, x.shape[1], nstore), dtype=complex)
+    bn = np.zeros((0, x.shape[1], nstore), dtype=complex)
+    cn = np.zeros((0, x.shape[1], nstore), dtype=complex)
+    dn = np.zeros((0, x.shape[1], nstore), dtype=complex)
 
     for i, xi in enumerate(x):
         terms[i], a, b, c, d = expancoeffs_(xi, m[i], li=li, nmax=nmax, pl=pl)
 
         if terms[i] > nstore:
             nstore = terms[i]
-            an.resize((an.shape[0], nstore))
-            bn.resize((bn.shape[0], nstore))
-            cn.resize((cn.shape[0], nstore))
-            dn.resize((dn.shape[0], nstore))
+            an.resize((an.shape[0], an.shape[1], nstore))
+            bn.resize((bn.shape[0], bn.shape[1], nstore))
+            cn.resize((cn.shape[0], cn.shape[1], nstore))
+            dn.resize((dn.shape[0], dn.shape[1], nstore))
 
         an = np.vstack((an, a))
         bn = np.vstack((bn, b))
         cn = np.vstack((cn, c))
         dn = np.vstack((dn, d))
 
-    return terms, an, bn, cn, dn
+    if li >= 0 and li <= x.shape:
+        return terms, an[:, li, :], bn[:, li, :], cn[:, li, :], dn[:, li, :]
+    else:
+        return terms, an, bn, cn, dn
 #expancoeffs()
 
 

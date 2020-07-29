@@ -104,7 +104,7 @@ namespace nmie {
     }
     return 0;
   }
-  
+
   //**********************************************************************************//
   // This function emulates a C call to calculate the expansion coefficients          //
   // required to calculate both the near- and far-field parameters.                   //
@@ -114,21 +114,19 @@ namespace nmie {
   //   pl: Index of PEC layer. If there is none just send -1                          //
   //   x: Array containing the size parameters of the layers [0..L-1]                 //
   //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
-  //   li: Index of layer to get expansion coefficients. -1 means outside the sphere  //
   //   nmax: Maximum number of multipolar expansion terms to be used for the          //
   //         calculations. Only use it if you know what you are doing, otherwise      //
   //         set this parameter to -1 and the function will calculate it.             //
   //                                                                                  //
   // Output parameters:                                                               //
-  //   an[li], bn[li], cn[li], dn[li]: Complex expansion coefficients of ith layer    //
+  //   an, bn, cn, dn: Complex expansion coefficients                                 //
   //                                                                                  //
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int ExpanCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
-                  const int li, const int nmax,
-                  std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn,
-                  std::vector<std::complex<double> >& cn, std::vector<std::complex<double> >& dn) {
+  int ExpanCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
+                  std::vector<std::vector<std::complex<double> > >& an, std::vector<std::vector<std::complex<double> > >& bn,
+                  std::vector<std::vector<std::complex<double> > >& cn, std::vector<std::vector<std::complex<double> > >& dn) {
 
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -144,17 +142,10 @@ namespace nmie {
     // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
       ml_mie.calcExpanCoeffs();
 
-      if (li >= L || li < 0) { // Just return the scattering coefficients
-        an = ConvertComplexVector<double>(ml_mie.GetLayerAn()[L]);
-        bn = ConvertComplexVector<double>(ml_mie.GetLayerBn()[L]);
-        cn = ConvertComplexVector<double>(ml_mie.GetLayerCn()[L]);
-        dn = ConvertComplexVector<double>(ml_mie.GetLayerDn()[L]);
-      } else { // Return the expansion coefficients for ith layer
-        an = ConvertComplexVector<double>(ml_mie.GetLayerAn()[li]);
-        bn = ConvertComplexVector<double>(ml_mie.GetLayerBn()[li]);
-        cn = ConvertComplexVector<double>(ml_mie.GetLayerCn()[li]);
-        dn = ConvertComplexVector<double>(ml_mie.GetLayerDn()[li]);
-      }
+      an = ConvertComplexVectorVector<double>(ml_mie.GetLayerAn());
+      bn = ConvertComplexVectorVector<double>(ml_mie.GetLayerBn());
+      cn = ConvertComplexVectorVector<double>(ml_mie.GetLayerCn());
+      dn = ConvertComplexVectorVector<double>(ml_mie.GetLayerDn());
 
       return ml_mie.GetMaxTerms();
     } catch(const std::invalid_argument& ia) {
