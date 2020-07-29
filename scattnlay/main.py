@@ -95,16 +95,15 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     return terms, an, bn
 #scattcoeffs()
 
-def expancoeffs(x, m, li=-1, nmax=-1, pl=-1, mp=False):
+def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
     """
-    expancoeffs(x, m[, li, nmax, pl, mp])
+    expancoeffs(x, m[, nmax, pl, mp])
 
     Calculate the scattering coefficients required to calculate both the
     near- and far-field parameters.
 
         x: Size parameters (1D or 2D ndarray)
         m: Relative refractive indices (1D or 2D ndarray)
-        li: Index of layer to get expansion coefficients. -1 means outside the sphere.
         nmax: Maximum number of multipolar expansion terms to be used for the
               calculations. Only use it if you know what you are doing, otherwise
               set this parameter to -1 and the function will calculate it.
@@ -114,7 +113,7 @@ def expancoeffs(x, m, li=-1, nmax=-1, pl=-1, mp=False):
     Returns: (terms, an, bn, cn, dn)
     with
         terms: Number of multipolar expansion terms used for the calculations
-        an, bn, cn, dn: Complex expansion coefficients of ith layer
+        an, bn, cn, dn: Complex expansion coefficients of each layer
     """
 
     if mp:
@@ -126,11 +125,7 @@ def expancoeffs(x, m, li=-1, nmax=-1, pl=-1, mp=False):
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            terms, an, bn, cn, dn = expancoeffs_(x, m, nmax=nmax, pl=pl)
-            if li >= 0 and li <= x.shape:
-                return terms, an[li], bn[li], cn[li], dn[li]
-            else:
-                return terms, an, bn, cn, dn
+            return expancoeffs_(x, m, nmax=nmax, pl=pl)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -152,7 +147,7 @@ def expancoeffs(x, m, li=-1, nmax=-1, pl=-1, mp=False):
     dn = np.zeros((0, x.shape[1], nstore), dtype=complex)
 
     for i, xi in enumerate(x):
-        terms[i], a, b, c, d = expancoeffs_(xi, m[i], li=li, nmax=nmax, pl=pl)
+        terms[i], a, b, c, d = expancoeffs_(xi, m[i], nmax=nmax, pl=pl)
 
         if terms[i] > nstore:
             nstore = terms[i]
@@ -166,10 +161,7 @@ def expancoeffs(x, m, li=-1, nmax=-1, pl=-1, mp=False):
         cn = np.vstack((cn, c))
         dn = np.vstack((dn, d))
 
-    if li >= 0 and li <= x.shape:
-        return terms, an[:, li, :], bn[:, li, :], cn[:, li, :], dn[:, li, :]
-    else:
-        return terms, an, bn, cn, dn
+    return terms, an, bn, cn, dn
 #expancoeffs()
 
 
