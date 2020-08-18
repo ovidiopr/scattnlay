@@ -91,9 +91,10 @@ factor=2.2
 flow_total = 21
 
 
-crossplane='XZ'
+#crossplane='XZ'
 #crossplane='YZ'
 #crossplane='XY'
+crossplane='XYZ'
 
 # Options to plot: Eabs, Habs, Pabs, angleEx, angleHy
 field_to_plot='Eabs'
@@ -105,9 +106,9 @@ import matplotlib.pyplot as plt
 fig, axs = plt.subplots(1,1)#, sharey=True, sharex=True)
 fig.tight_layout()
 fieldplot(fig, axs, x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
-          subplot_label=' ',is_flow_extend=False, outline_width=1.5)
+          subplot_label=' ', outline_width=1.5, draw_shell=True)
 
-#fieldplot(x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total, is_flow_extend=False)
+#fieldplot(x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total)
 
 # for ax in axs:
 #     ax.locator_params(axis='x',nbins=5)
