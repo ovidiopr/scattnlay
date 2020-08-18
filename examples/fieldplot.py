@@ -116,7 +116,9 @@ def GetField(crossplane, npts, factor, x, m, pl):
 
 
 def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
-              field_to_plot='Pabs', npts=101, factor=2.1, flow_total=11,
+              field_to_plot='Pabs', npts=101, factor=2.1,
+              flow_total=11, density=20, minlength=0.1, maxlength=4.0,
+              arrowstyle='-|>', arrowsize=1.0,
               pl=-1, draw_shell=False, outline_width=1, subplot_label=' '):
 
     E, H, S, scan, Sx, Sy = GetField(crossplane, npts, factor, x, m, pl)
@@ -213,9 +215,9 @@ def fieldplot(fig, ax, x, m, WL, comment='', WL_units=' ', crossplane='XZ',
             # Plot the streamlines with an appropriate colormap and arrow style
             ax.streamplot(scale, scale, Sx, Sy,
                           start_points=points, integration_direction='both',
-                          density=20.0,
+                          density=density, minlength=minlength, maxlength=maxlength,
                           linewidth=outline_width, color='white',
-                          arrowstyle='-|>', arrowsize=1.0)
+                          arrowstyle=arrowstyle, arrowsize=arrowsize)
     finally:
         terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(x, m)
         print("Qsca = " + str(Qsca))
