@@ -7,3 +7,8 @@ set(${HEADERS} nmie.hpp nmie-impl.cc nmie-precision.hpp)
 
 add_executable(scattnlay-dp farfield.cc nmie.cc ${HEADERS})
 add_executable(fieldnlay-dp ${HEADERS} nearfield.cc nmie.cc)
+
+find_package(boost)
+
+add_executable(scattnlay-mp farfield.cc nmie.cc ${HEADERS})
+add_executable(fieldnlay-mp ${HEADERS} nearfield.cc nmie.cc)
