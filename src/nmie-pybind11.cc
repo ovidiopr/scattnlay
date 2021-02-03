@@ -28,17 +28,10 @@
 //    You should have received a copy of the GNU General Public License             //
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
-#include "nmie.hpp"
-#include "nmie-precision.hpp"
-#include <array>
-#include <tuple>
-#include <algorithm>
 #include <cstdio>
-#include <cstdlib>
-#include <stdexcept>
-#include <iostream>
-#include <iomanip>
 #include <vector>
+
+#include "nmie.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -51,7 +44,7 @@ namespace py = pybind11;
 py::array_t< std::complex<double>> VectorComplex2Py(const std::vector<std::complex<double> > &c_x) {
   auto py_x = py::array_t< std::complex<double>>(c_x.size());
   auto py_x_buffer = py_x.request();
-  std::complex<double> *py_x_ptr = (std::complex<double> *) py_x_buffer.ptr;
+  auto *py_x_ptr = (std::complex<double> *) py_x_buffer.ptr;
   std::memcpy(py_x_ptr, c_x.data(), c_x.size()*sizeof(std::complex<double>));
   return py_x;
 }

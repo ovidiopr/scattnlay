@@ -47,16 +47,13 @@
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
-#include "nmie.hpp"
-#include "nmie-precision.hpp"
-#include <array>
-#include <algorithm>
-#include <cstdio>
-#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
 #include <vector>
+
+#include "nmie.hpp"
+#include "nmie-precision.hpp"
 
 namespace nmie {
   //helper functions
@@ -1018,7 +1015,7 @@ namespace nmie {
 
     for (int n = nmax_ - 2; n >= 0; n--) {
       int n1 = n + 1;
-      FloatType rn = static_cast<FloatType>(n1);
+      auto rn = static_cast<FloatType>(n1);
 
       // using BH 4.12 and 4.50
       calcSpherHarm(Rho*ml, Theta, Phi, Psi[n1], D1n[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);

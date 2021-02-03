@@ -45,17 +45,13 @@
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
+#include <stdexcept>
+#include <iostream>
+#include <vector>
+
 #include "nmie.hpp"
 #include "nmie-precision.hpp"
 #include "nmie-impl.cc"
-#include <array>
-#include <algorithm>
-#include <cstdio>
-#include <cstdlib>
-#include <stdexcept>
-#include <iostream>
-#include <iomanip>
-#include <vector>
 
 namespace nmie {
   
@@ -100,9 +96,7 @@ namespace nmie {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return -1;
     }
-    return 0;
   }
 
   //**********************************************************************************//
@@ -152,9 +146,7 @@ namespace nmie {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return -1;
     }
-    return 0;
   }
 
   //**********************************************************************************//
@@ -226,9 +218,7 @@ namespace nmie {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return -1;
     }
-    return 0;
   }
 
 
@@ -370,10 +360,10 @@ namespace nmie {
     if (Xp_vec.size() != ncoord || Yp_vec.size() != ncoord || Zp_vec.size() != ncoord
         || E.size() != ncoord || H.size() != ncoord)
       throw std::invalid_argument("Declared number of coords do not fit Xp, Yp, Zp, E, or H!");
-    for (auto f:E)
+    for (const auto& f:E)
       if (f.size() != 3)
         throw std::invalid_argument("Field E is not 3D!");
-    for (auto f:H)
+    for (const auto& f:H)
       if (f.size() != 3)
         throw std::invalid_argument("Field H is not 3D!");
     try {
@@ -393,8 +383,6 @@ namespace nmie {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return - 1;
     }
-    return 0;
   }
 }  // end of namespace nmie

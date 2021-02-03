@@ -29,17 +29,13 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 
-#include <algorithm>
 #include <complex>
-#include <functional>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
+#include <cstdio>
+
 #include "nmie.hpp"
 
 const double PI=3.14159265358979323846;
@@ -84,7 +80,7 @@ int main(int argc, char *argv[]) {
 
     int mode = -1;
     double tmp_mr;
-    for (auto arg : args) {
+    for (const auto& arg : args) {
       // For each arg in args list we detect the change of the current
       // read mode or read the arg. The reading args algorithm works
       // as a finite-state machine.
@@ -130,7 +126,7 @@ int main(int argc, char *argv[]) {
       }
 
       if (mode == read_mi) {
-        m.push_back(std::complex<double>( tmp_mr,std::stod(arg) ));
+        m.emplace_back( tmp_mr,std::stod(arg) );
         mode = read_x;
         continue;
       }
@@ -164,7 +160,7 @@ int main(int argc, char *argv[]) {
 
     if ( (x.size() != m.size()) || (L != x.size()) )
       throw std::invalid_argument(std::string("Broken structure!\n") + error_msg);
-    if ( (0 == m.size()) || ( 0 == x.size()) )
+    if ( (m.empty()) || ( x.empty()) )
       throw std::invalid_argument(std::string("Empty structure!\n") + error_msg);
 
     if (nt < 0) {
