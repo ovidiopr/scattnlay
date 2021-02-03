@@ -52,3 +52,9 @@ examples/Egor*
 examples/egor*
 examples/*.txt
 examples/*.pyc
+fieldnlay-dp
+fieldnlay-mp
+nmiejs.js
+nmiejs.wasm
+scattnlay-dp
+scattnlay-mp
