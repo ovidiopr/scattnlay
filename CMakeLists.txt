@@ -86,6 +86,16 @@ if (PYBIND11_NOT_FOUND)
     message(FATAL_ERROR "PyBind11 headers not found")
 endif ()
 
+# Determine correct extension suffix
+exec_program(${Python_EXECUTABLE}
+        ARGS "-c \"import distutils.sysconfig; print(distutils.sysconfig.get_config_var('EXT_SUFFIX'))\""
+        OUTPUT_VARIABLE EXT_SUFFIX
+        RETURN_VALUE SUFFIX_NOT_FOUND
+        )
+if (SUFFIX_NOT_FOUND)
+    message(FATAL_ERROR "Extension suffix not found")
+endif ()
+
 #include_directories(src)
 add_subdirectory(src)
 

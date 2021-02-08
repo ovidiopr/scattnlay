@@ -18,7 +18,8 @@ set_target_properties(
         python3-scattnlay
         PROPERTIES
         PREFIX ""
-        OUTPUT_NAME "python3-scattnlay"
+        OUTPUT_NAME "scattnlay"
+        SUFFIX "${EXT_SUFFIX}"
         LINKER_LANGUAGE C
 )
 
@@ -50,7 +51,7 @@ if (${ENABLE_MP})
     set_property(TARGET farfield APPEND_STRING PROPERTY OUTPUT_NAME "farfield-mp")
     set_property(TARGET nearfield APPEND_STRING PROPERTY OUTPUT_NAME "nearfield-mp")
 else ()
-    set_property(TARGET python3-scattnlay APPEND_STRING PROPERTY OUTPUT_NAME "_sp")
-    set_property(TARGET farfield APPEND_STRING PROPERTY OUTPUT_NAME "farfield-sp")
-    set_property(TARGET nearfield APPEND_STRING PROPERTY OUTPUT_NAME "nearfield-sp")
+    set_property(TARGET python3-scattnlay APPEND_STRING PROPERTY OUTPUT_NAME "_dp")
+    set_property(TARGET farfield APPEND_STRING PROPERTY OUTPUT_NAME "farfield-dp")
+    set_property(TARGET nearfield APPEND_STRING PROPERTY OUTPUT_NAME "nearfield-dp")
 endif ()
