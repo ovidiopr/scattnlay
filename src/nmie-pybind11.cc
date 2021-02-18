@@ -28,17 +28,10 @@
 //    You should have received a copy of the GNU General Public License             //
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
-#include "nmie.hpp"
-#include "nmie-precision.hpp"
-#include <array>
-#include <tuple>
-#include <algorithm>
 #include <cstdio>
-#include <cstdlib>
-#include <stdexcept>
-#include <iostream>
-#include <iomanip>
 #include <vector>
+
+#include "nmie.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -51,7 +44,7 @@ namespace py = pybind11;
 py::array_t< std::complex<double>> VectorComplex2Py(const std::vector<std::complex<double> > &c_x) {
   auto py_x = py::array_t< std::complex<double>>(c_x.size());
   auto py_x_buffer = py_x.request();
-  std::complex<double> *py_x_ptr = (std::complex<double> *) py_x_buffer.ptr;
+  auto *py_x_ptr = (std::complex<double> *) py_x_buffer.ptr;
   std::memcpy(py_x_ptr, c_x.data(), c_x.size()*sizeof(std::complex<double>));
   return py_x;
 }
@@ -72,7 +65,7 @@ std::vector<T> flatten(const std::vector<std::vector<T>>& v) {
 
 
 template <typename T>
-py::array VectorVector2Py(const std::vector<std::vector<T > > &x) {
+py::array Vector2DComplex2Py(const std::vector<std::vector<T > > &x) {
   size_t dim1 = x.size();
   size_t dim2 = x[0].size();
   auto result = flatten(x);
@@ -117,6 +110,24 @@ py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::arra
 }
 
 
+py::tuple py_ExpanCoeffs(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
+                         const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
+                         const int nmax=-1, const int pl=-1) {
+
+  auto c_x = Py2Vector<double>(py_x);
+  auto c_m = Py2Vector< std::complex<double> >(py_m);
+
+  int terms = 0;
+  int L = py_x.size();
+
+  std::vector<std::vector<std::complex<double> > > c_an(L + 1), c_bn(L + 1), c_cn(L + 1), c_dn(L + 1);
+
+  terms = nmie::ExpanCoeffs(L, pl, c_x, c_m, nmax, c_an, c_bn, c_cn, c_dn);
+  
+  return py::make_tuple(terms, Vector2DComplex2Py(c_an), Vector2DComplex2Py(c_bn), Vector2DComplex2Py(c_cn), Vector2DComplex2Py(c_dn));
+}
+
+
 py::tuple py_scattnlay(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
                        const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_theta,
@@ -155,9 +166,11 @@ py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array:
   for (auto& f : E) f.resize(3);
   for (auto& f : H) f.resize(3);
   int L = py_x.size(), terms;
+
   terms = nmie::nField(L, pl, c_x, c_m, nmax, nmie::Modes::kAll, nmie::Modes::kAll, ncoord, c_Xp, c_Yp, c_Zp, E, H);
-  auto py_E = VectorVector2Py<std::complex<double> >(E);
-  auto py_H = VectorVector2Py<std::complex<double> >(H);
+  auto py_E = Vector2DComplex2Py<std::complex<double> >(E);
+  auto py_H = Vector2DComplex2Py<std::complex<double> >(H);
+
   return py::make_tuple(terms, py_E, py_H);
 }
 

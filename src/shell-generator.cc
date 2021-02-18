@@ -30,18 +30,15 @@
 //**********************************************************************************//
 //   @brief  Generates points for integration on sphere surface
 
-#include <algorithm>
 #include <cmath>
 #include <complex>
-#include <cstdio>
-#include <fstream>
 #include <iostream>
 #include <set>
-#include <sstream>
 #include <stdexcept>
-#include <string>
 #include <vector>
+
 #include "shell-generator.hpp"
+
 namespace shell_generator {
   template<class T> inline T pow2(const T value) {return value*value;}
   // ********************************************************************** //

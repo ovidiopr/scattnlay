@@ -68,6 +68,10 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     elif len(x.shape) != 2:
         raise ValueError('The size parameter (x) should be a 1-D or 2-D NumPy array.')
 
+    # Repeat the same m for all wavelengths
+    if len(m.shape) == 1:
+        m = np.repeat(m[np.newaxis, :], x.shape[0], axis=0)
+
     if nmax == -1:
         nstore = 0
     else:
@@ -78,12 +82,7 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     bn = np.zeros((0, nstore), dtype=complex)
 
     for i, xi in enumerate(x):
-        if len(m.shape) == 1:
-            mi = m
-        else:
-            mi = m[i]
-
-        terms[i], a, b = scattcoeffs_(xi, mi, nmax=nmax, pl=pl)
+        terms[i], a, b = scattcoeffs_(xi, m[i], nmax=nmax, pl=pl)
 
         if terms[i] > nstore:
             nstore = terms[i]
@@ -95,6 +94,75 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
 
     return terms, an, bn
 #scattcoeffs()
+
+def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
+    """
+    expancoeffs(x, m[, nmax, pl, mp])
+
+    Calculate the scattering coefficients required to calculate both the
+    near- and far-field parameters.
+
+        x: Size parameters (1D or 2D ndarray)
+        m: Relative refractive indices (1D or 2D ndarray)
+        nmax: Maximum number of multipolar expansion terms to be used for the
+              calculations. Only use it if you know what you are doing, otherwise
+              set this parameter to -1 and the function will calculate it.
+        pl: Index of PEC layer. If there is none just send -1.
+        mp: Use multiple (True) or double (False) precision.
+
+    Returns: (terms, an, bn, cn, dn)
+    with
+        terms: Number of multipolar expansion terms used for the calculations
+        an, bn, cn, dn: Complex expansion coefficients of each layer
+    """
+
+    if mp:
+        from scattnlay_mp import expancoeffs as expancoeffs_
+    else:
+        from scattnlay_dp import expancoeffs as expancoeffs_
+
+    if len(m.shape) != 1 and len(m.shape) != 2:
+        raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
+    if len(x.shape) == 1:
+        if len(m.shape) == 1:
+            return expancoeffs_(x, m, nmax=nmax, pl=pl)
+        else:
+            raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
+    elif len(x.shape) != 2:
+        raise ValueError('The size parameter (x) should be a 1-D or 2-D NumPy array.')
+
+    # Repeat the same m for all wavelengths
+    if len(m.shape) == 1:
+        m = np.repeat(m[np.newaxis, :], x.shape[0], axis=0)
+
+    if nmax == -1:
+        nstore = 0
+    else:
+        nstore = nmax
+
+    terms = np.zeros((x.shape[0]), dtype=int)
+    an = np.zeros((0, x.shape[1], nstore), dtype=complex)
+    bn = np.zeros((0, x.shape[1], nstore), dtype=complex)
+    cn = np.zeros((0, x.shape[1], nstore), dtype=complex)
+    dn = np.zeros((0, x.shape[1], nstore), dtype=complex)
+
+    for i, xi in enumerate(x):
+        terms[i], a, b, c, d = expancoeffs_(xi, m[i], nmax=nmax, pl=pl)
+
+        if terms[i] > nstore:
+            nstore = terms[i]
+            an.resize((an.shape[0], an.shape[1], nstore))
+            bn.resize((bn.shape[0], bn.shape[1], nstore))
+            cn.resize((cn.shape[0], cn.shape[1], nstore))
+            dn.resize((dn.shape[0], dn.shape[1], nstore))
+
+        an = np.vstack((an, a))
+        bn = np.vstack((bn, b))
+        cn = np.vstack((cn, c))
+        dn = np.vstack((dn, d))
+
+    return terms, an, bn, cn, dn
+#expancoeffs()
 
 
 def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
@@ -142,6 +210,10 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     if len(theta.shape) != 1:
         raise ValueError('The scattering angles (theta) should be a 1-D NumPy array.')
 
+    # Repeat the same m for all wavelengths
+    if len(m.shape) == 1:
+        m = np.repeat(m[np.newaxis, :], x.shape[0], axis=0)
+
     terms = np.zeros((x.shape[0]), dtype=int)
     Qext = np.zeros((x.shape[0]), dtype=float)
     Qsca = np.zeros((x.shape[0]), dtype=float)
@@ -154,12 +226,7 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     S2 = np.zeros((x.shape[0], theta.shape[0]), dtype=complex)
 
     for i, xi in enumerate(x):
-        if len(m.shape) == 1:
-            mi = m
-        else:
-            mi = m[i]
-
-        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(xi, mi, theta, nmax=nmax, pl=pl)
+        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(xi, m[i], theta, nmax=nmax, pl=pl)
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 #scattnlay()
@@ -174,11 +241,11 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
         x: Size parameters (1D or 2D ndarray)
         m: Relative refractive indices (1D or 2D ndarray)
         xp: Array containing all X coordinates to calculate the complex
-            electric and magnetic fields (1D ndarray)
+            electric and magnetic fields (1D* ndarray)
         yp: Array containing all Y coordinates to calculate the complex
-            electric and magnetic fields (1D ndarray)
+            electric and magnetic fields (1D* ndarray)
         zp: Array containing all Z coordinates to calculate the complex
-            electric and magnetic fields (1D ndarray)
+            electric and magnetic fields (1D* ndarray)
         nmax: Maximum number of multipolar expansion terms to be used for the
               calculations. Only use it if you know what you are doing.
         pl: Index of PEC layer. If there is none just send -1.
@@ -188,6 +255,9 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     with
         terms: Number of multipolar expansion terms used for the calculations
         E, H: Complex electric and magnetic field at the provided coordinates
+
+    *Note: We assume that the coordinates are referred to the first wavelength
+           (or structure) and correct it for the following ones
     """
 
     if mp:
@@ -205,17 +275,18 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     elif len(x.shape) != 2:
         raise ValueError('The size parameter (x) should be a 1-D or 2-D NumPy array.')
 
+    # Repeat the same m for all wavelengths
+    if len(m.shape) == 1:
+        m = np.repeat(m[np.newaxis, :], x.shape[0], axis=0)
+
     terms = np.zeros((x.shape[0]), dtype=int)
     E = np.zeros((x.shape[0], xp.shape[0], 3), dtype=complex)
     H = np.zeros((x.shape[0], xp.shape[0], 3), dtype=complex)
 
     for i, xi in enumerate(x):
-        if len(m.shape) == 1:
-            mi = m
-        else:
-            mi = m[i]
-
-        terms[i], E[i], H[i] = fieldnlay_(xi, mi, xp, yp, zp, nmax=nmax, pl=pl)
+        # (2020/05/12) We assume that the coordinates are referred to the first wavelength
+        #              (or structure) and correct it for the following ones
+        terms[i], E[i], H[i] = fieldnlay_(xi, m[i], xp*xi[-1]/x[0, -1], yp*xi[-1]/x[0, -1], zp*xi[-1]/x[0, -1], nmax=nmax, pl=pl)
 
     return terms, E, H
 #fieldnlay()

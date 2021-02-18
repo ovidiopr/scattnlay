@@ -76,7 +76,7 @@ comment = 'bulk-WL' + str(WL) + 'nm_r' + str(core_r) + 'nm_epsilon' + str(epsilo
 WL_units = 'nm'
 npts = 251
 factor = 2.1
-flow_total = 9
+flow_total = 41
 # flow_total = 21
 # flow_total = 0
 crossplane = 'XZ'
@@ -92,8 +92,9 @@ import matplotlib.pyplot as plt
 
 fig, axs = plt.subplots(1, 1)  # , sharey=True, sharex=True)
 fig.tight_layout()
-fieldplot(fig, axs, x, m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
-          subplot_label=' ', is_flow_extend=False)
+fieldplot(fig, axs, x, m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor,
+          flow_total, density=50.0, maxlength=40.0, arrowstyle='-',
+          subplot_label=' ', draw_shell=True)
 
 # fieldplot(x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total, is_flow_extend=False)
 

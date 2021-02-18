@@ -43,6 +43,11 @@ py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::arra
                          const int nmax=-1, const int pl=-1);
 
 
+py::tuple py_ExpanCoeffs(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
+                         const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
+                         const int nmax=-1, const int pl=-1);
+
+
 py::tuple py_scattnlay(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
                        const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_theta,

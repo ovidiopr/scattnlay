@@ -30,6 +30,10 @@
 # Binary
 *.bin
 
+# CLion files
+.idea
+cmake-build-*
+
 # Temp
 *~
 oprofiletmp
@@ -83,3 +87,7 @@ yarn-error.log*
 # end of web vue cli section
 ###########################################
 
+fieldnlay-dp
+fieldnlay-mp
+scattnlay-dp
+scattnlay-mp

@@ -31,15 +31,12 @@
 //    @brief  Wrapper class around nMie function for ease of use                    //
 //                                                                                  //
 //**********************************************************************************//
+#include <stdexcept>
+#include <vector>
+
 #include "nmie-applied.hpp"
 #include "nmie-applied-impl.hpp"
 #include "nmie-precision.hpp"
-#include <array>
-#include <algorithm>
-#include <cstdio>
-#include <cstdlib>
-#include <stdexcept>
-#include <vector>
 
 namespace nmie {  
   //**********************************************************************************//
@@ -102,9 +99,7 @@ namespace nmie {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return -1;
     }
-    return 0;
   }
   int nMieApplied(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nmie::nMieApplied(L, -1, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);

@@ -45,17 +45,13 @@
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
+#include <stdexcept>
+#include <iostream>
+#include <vector>
+
 #include "nmie.hpp"
 #include "nmie-precision.hpp"
 #include "nmie-impl.cc"
-#include <array>
-#include <algorithm>
-#include <cstdio>
-#include <cstdlib>
-#include <stdexcept>
-#include <iostream>
-#include <iomanip>
-#include <vector>
 
 namespace nmie {
   
@@ -100,9 +96,57 @@ namespace nmie {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return -1;
     }
-    return 0;
+  }
+
+  //**********************************************************************************//
+  // This function emulates a C call to calculate the expansion coefficients          //
+  // required to calculate both the near- and far-field parameters.                   //
+  //                                                                                  //
+  // Input parameters:                                                                //
+  //   L: Number of layers                                                            //
+  //   pl: Index of PEC layer. If there is none just send -1                          //
+  //   x: Array containing the size parameters of the layers [0..L-1]                 //
+  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
+  //         calculations. Only use it if you know what you are doing, otherwise      //
+  //         set this parameter to -1 and the function will calculate it.             //
+  //                                                                                  //
+  // Output parameters:                                                               //
+  //   an, bn, cn, dn: Complex expansion coefficients                                 //
+  //                                                                                  //
+  // Return value:                                                                    //
+  //   Number of multipolar expansion terms used for the calculations                 //
+  //**********************************************************************************//
+  int ExpanCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
+                  std::vector<std::vector<std::complex<double> > >& an, std::vector<std::vector<std::complex<double> > >& bn,
+                  std::vector<std::vector<std::complex<double> > >& cn, std::vector<std::vector<std::complex<double> > >& dn) {
+
+    if (x.size() != L || m.size() != L)
+        throw std::invalid_argument("Declared number of layers do not fit x and m!");
+    try {
+      MultiLayerMie<FloatType> ml_mie;
+      ml_mie.SetLayersSize(ConvertVector<FloatType>(x));
+      ml_mie.SetLayersIndex(ConvertComplexVector<FloatType>(m));
+      ml_mie.SetPECLayer(pl);
+      ml_mie.SetMaxTerms(nmax);
+
+    // Calculate scattering coefficients an_ and bn_
+      ml_mie.calcScattCoeffs();
+    // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
+      ml_mie.calcExpanCoeffs();
+
+      an = ConvertComplexVectorVector<double>(ml_mie.GetLayerAn());
+      bn = ConvertComplexVectorVector<double>(ml_mie.GetLayerBn());
+      cn = ConvertComplexVectorVector<double>(ml_mie.GetLayerCn());
+      dn = ConvertComplexVectorVector<double>(ml_mie.GetLayerDn());
+
+      return ml_mie.GetMaxTerms();
+    } catch(const std::invalid_argument& ia) {
+      // Will catch if  ml_mie fails or other errors.
+      std::cerr << "Invalid argument: " << ia.what() << std::endl;
+      throw std::invalid_argument(ia);
+    }
   }
 
   //**********************************************************************************//
@@ -224,9 +268,7 @@ namespace nmie {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return -1;
     }
-    return 0;
   }
 
 
@@ -404,10 +446,10 @@ namespace nmie {
     if (Xp_vec.size() != ncoord || Yp_vec.size() != ncoord || Zp_vec.size() != ncoord
         || E.size() != ncoord || H.size() != ncoord)
       throw std::invalid_argument("Declared number of coords do not fit Xp, Yp, Zp, E, or H!");
-    for (auto f:E)
+    for (const auto& f:E)
       if (f.size() != 3)
         throw std::invalid_argument("Field E is not 3D!");
-    for (auto f:H)
+    for (const auto& f:H)
       if (f.size() != 3)
         throw std::invalid_argument("Field H is not 3D!");
     try {
@@ -430,8 +472,6 @@ namespace nmie {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return - 1;
     }
-    return 0;
   }
 }  // end of namespace nmie

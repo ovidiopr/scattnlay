@@ -16,6 +16,10 @@ PYBIND11_MODULE(scattnlay_dp, m)
         "Calculate the scattering coefficients, required to calculate both the near- and far-field parameters.",
         py::arg("x"), py::arg("m"), py::arg("nmax") = -1, py::arg("pl") = -1);
 
+  m.def("expancoeffs", &py_ExpanCoeffs,
+        "Calculate the expansion coefficients, required to calculate the near-field parameters.",
+        py::arg("x"), py::arg("m"), py::arg("nmax") = -1, py::arg("pl") = -1);
+
   m.def("scattnlay", &py_scattnlay,
         "Calculate the scattering parameters and amplitudes.",
         py::arg("x"), py::arg("m"), py::arg("theta") = py::array_t<double>(0), py::arg("nmax") = -1, py::arg("pl") = -1);

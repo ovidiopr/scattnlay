@@ -43,33 +43,32 @@ from setuptools.extension import Extension
 import numpy as np
 import pybind11 as pb
 
-setup(name = __mod__,
-      version = __version__,
-      description = __title__,
-      long_description="""The Python version of scattnlay, a computer implementation of the algorithm for the calculation of electromagnetic \
-radiation scattering by a multilayered sphere developed by Yang. It has been shown that the program is effective, \
-resulting in very accurate values of scattering efficiencies for a wide range of size parameters, which is a \
-considerable improvement over previous implementations of similar algorithms. For details see: \
-O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
-      author = __author__,
-      author_email = __email__,
-      maintainer = __author__,
-      maintainer_email = __email__,
-      keywords = ['Mie scattering', 'Multilayered sphere', 'Efficiency factors', 'Cross-sections'],
-      url = __url__,
-      download_url = __download_url__,
-      license = 'GPL',
-      platforms = 'any',
-      packages = ['scattnlay'],#, 'scattnlay_dp', 'scattnlay_mp'],
-      ext_modules = [Extension("scattnlay_dp",
-                               ["src/nmie.cc", "src/nmie-pybind11.cc", "src/pb11_wrapper.cc"],
-                               language = "c++",
-                               include_dirs = [np.get_include(), pb.get_include()],
-                               extra_compile_args=['-std=c++11']),
-                     Extension("scattnlay_mp",
-                               ["src/nmie.cc", "src/nmie-pybind11.cc", "src/pb11_wrapper.cc"],
-                               language = "c++",
-                               include_dirs = [np.get_include(), pb.get_include()],
-                               extra_compile_args=['-std=c++11', '-DMULTI_PRECISION=100'])]
-)
-
+setup(name=__mod__,
+      version=__version__,
+      description=__title__,
+      long_description="""The Python version of scattnlay, a computer implementation of the algorithm for the \
+calculation of electromagnetic radiation scattering by a multilayered sphere developed by Yang. It has been \
+shown that the program is effective, resulting in very accurate values of scattering efficiencies for a wide \
+range of size parameters, which is a considerable improvement over previous implementations of similar algorithms. \
+For details see: O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
+      author=__author__,
+      author_email=__email__,
+      maintainer=__author__,
+      maintainer_email=__email__,
+      keywords=['Mie scattering', 'Multilayered sphere', 'Efficiency factors', 'Cross-sections'],
+      url=__url__,
+      download_url=__download_url__,
+      license='GPL',
+      platforms='any',
+      packages=['scattnlay'],  # , 'scattnlay_dp', 'scattnlay_mp'],
+      ext_modules=[Extension("scattnlay_dp",
+                             ["src/nmie.cc", "src/nmie-pybind11.cc", "src/pb11_wrapper.cc"],
+                             language="c++",
+                             include_dirs=[np.get_include(), pb.get_include()],
+                             extra_compile_args=['-std=c++11']),
+                   Extension("scattnlay_mp",
+                             ["src/nmie.cc", "src/nmie-pybind11.cc", "src/pb11_wrapper.cc"],
+                             language="c++",
+                             include_dirs=[np.get_include(), pb.get_include()],
+                             extra_compile_args=['-std=c++11', '-DMULTI_PRECISION=100'])]
+      )
