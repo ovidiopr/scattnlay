@@ -45,20 +45,16 @@
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
+#include <stdexcept>
+#include <iostream>
+#include <vector>
+
 #include "nmie.hpp"
 #include "nmie-precision.hpp"
 #include "nmie-impl.cc"
-#include <array>
-#include <algorithm>
-#include <cstdio>
-#include <cstdlib>
-#include <stdexcept>
-#include <iostream>
-#include <iomanip>
-#include <vector>
 
 namespace nmie {
-  
+
   //**********************************************************************************//
   // This function emulates a C call to calculate the scattering coefficients         //
   // required to calculate both the near- and far-field parameters.                   //
@@ -100,13 +96,11 @@ namespace nmie {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return -1;
     }
-    return 0;
   }
 
   //**********************************************************************************//
-  // This function emulates a C call to calculate the scattering coefficients         //
+  // This function emulates a C call to calculate the expansion coefficients          //
   // required to calculate both the near- and far-field parameters.                   //
   //                                                                                  //
   // Input parameters:                                                                //
@@ -119,12 +113,14 @@ namespace nmie {
   //         set this parameter to -1 and the function will calculate it.             //
   //                                                                                  //
   // Output parameters:                                                               //
-  //   aln, bln ,cln, dln : Complex scattering amplitudes                             //
+  //   aln, bln, cln, dln: Complex expansion coefficients                             //
   //                                                                                  //
   // Return value:                                                                    //
-  //   Number of multipolar expansion terms used for the calculations in each layer   //
+  //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int ExpansionCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::vector<std::complex<double> > >& aln, std::vector<std::vector<std::complex<double> > >& bln, std::vector<std::vector<std::complex<double> > >& cln, std::vector<std::vector<std::complex<double> > >& dln) {
+  int ExpanCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
+                  std::vector<std::vector<std::complex<double> > >& aln, std::vector<std::vector<std::complex<double> > >& bln,
+                  std::vector<std::vector<std::complex<double> > >& cln, std::vector<std::vector<std::complex<double> > >& dln) {
 
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -135,23 +131,24 @@ namespace nmie {
       ml_mie.SetPECLayer(pl);
       ml_mie.SetMaxTerms(nmax);
 
+    // Calculate scattering coefficients an_ and bn_
       ml_mie.calcScattCoeffs();
+    // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
       ml_mie.calcExpanCoeffs();
 
-      aln = ConvertComplexVectorVector<double>(ml_mie.GetAln());
-      bln = ConvertComplexVectorVector<double>(ml_mie.GetBln());
-      cln = ConvertComplexVectorVector<double>(ml_mie.GetCln());
-      dln = ConvertComplexVectorVector<double>(ml_mie.GetDln());
+      aln = ConvertComplexVectorVector<double>(ml_mie.GetLayerAn());
+      bln = ConvertComplexVectorVector<double>(ml_mie.GetLayerBn());
+      cln = ConvertComplexVectorVector<double>(ml_mie.GetLayerCn());
+      dln = ConvertComplexVectorVector<double>(ml_mie.GetLayerDn());
 
       return ml_mie.GetMaxTerms();
     } catch(const std::invalid_argument& ia) {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return -1;
     }
-    return 0;
   }
+
 
   //**********************************************************************************//
   // This function emulates a C call to calculate the actual scattering parameters    //
@@ -208,7 +205,7 @@ namespace nmie {
       // 	<< "Qext = "
       // 	<< ml_mie.GetQext()
       // 	<< std::endl;
-      
+
       *Qext = static_cast<double>(ml_mie.GetQext());
       *Qsca = static_cast<double>(ml_mie.GetQsca());
       *Qabs = static_cast<double>(ml_mie.GetQabs());
@@ -224,9 +221,7 @@ namespace nmie {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return -1;
     }
-    return 0;
   }
 
 
@@ -404,10 +399,10 @@ namespace nmie {
     if (Xp_vec.size() != ncoord || Yp_vec.size() != ncoord || Zp_vec.size() != ncoord
         || E.size() != ncoord || H.size() != ncoord)
       throw std::invalid_argument("Declared number of coords do not fit Xp, Yp, Zp, E, or H!");
-    for (auto f:E)
+    for (const auto& f:E)
       if (f.size() != 3)
         throw std::invalid_argument("Field E is not 3D!");
-    for (auto f:H)
+    for (const auto& f:H)
       if (f.size() != 3)
         throw std::invalid_argument("Field H is not 3D!");
     try {
@@ -430,8 +425,6 @@ namespace nmie {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
-      return - 1;
     }
-    return 0;
   }
 }  // end of namespace nmie

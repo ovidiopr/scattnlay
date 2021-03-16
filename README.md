@@ -76,11 +76,11 @@ Binary files for Ubuntu and derivative distributions can be found at
 To install it you must configure the repository:
 ``` bash
 sudo add-apt-repository ppa:ovidio/scattering
-sudo apt-get update
+sudo apt update
 ```
 and then you simply install the package:
 ``` bash
-sudo apt-get install python-scattnlay
+sudo apt install python-scattnlay
 ```
 You can also install it from PyPi via
 ```bash

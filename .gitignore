@@ -27,8 +27,17 @@
 *.out
 *.app
 
+fieldnlay-dp
+fieldnlay-mp
+scattnlay-dp
+scattnlay-mp
+
 # Binary
 *.bin
+
+# CLion files
+.idea
+cmake-build-*
 
 # Temp
 *~
@@ -72,7 +81,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # Editor directories and files
-.idea
 .vscode
 *.suo
 *.ntvs*
@@ -82,4 +90,3 @@ yarn-error.log*
 
 # end of web vue cli section
 ###########################################
-

@@ -42,9 +42,13 @@
 #endif
 namespace nmie {
   int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn);
-  int ExpansionCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::vector<std::complex<double> > >& an, std::vector<std::vector<std::complex<double> > >& bn, std::vector<std::vector<std::complex<double> > >& cn, std::vector<std::vector<std::complex<double> > >& dn);
+
+  int ExpanCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
+                std::vector<std::vector<std::complex<double> > >& an, std::vector<std::vector<std::complex<double> > >& bn,
+                std::vector<std::vector<std::complex<double> > >& cn, std::vector<std::vector<std::complex<double> > >& dn) {
+
   // pl, nmax, mode_n, mode_type
-  int nMie(const unsigned int L,
+    int nMie(const unsigned int L,
            const int pl,
            std::vector<double>& x, std::vector<std::complex<double> >& m,
            const unsigned int nTheta, std::vector<double>& Theta,
@@ -54,7 +58,7 @@ namespace nmie {
            std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2,
            int mode_n, int mode_type);
   // pl and nmax
-  int nMie(const unsigned int L,
+    int nMie(const unsigned int L,
            const int pl,
            std::vector<double>& x, std::vector<std::complex<double> >& m,
            const unsigned int nTheta, std::vector<double>& Theta,
@@ -85,18 +89,17 @@ namespace nmie {
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
            double *g, double *Albedo,
            std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
-  int nField(const unsigned int L, const int pl, const std::vector<double>& x,
-          const std::vector<std::complex<double> >& m, const int nmax,
-          const int mode_n, const int mode_type,
-          const unsigned int ncoord,
-          const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp,
-          std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
+  int nField(const unsigned int L, const int pl,
+             const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax,
+             const int mode_n, const int mode_type, const unsigned int ncoord,
+             const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp,
+             std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
 
   // constants for per mode evaluation
   enum Modes {kAll = -1, kElectric = 0, kMagnetic = 1};
 
   template <typename FloatType = double>
-  class MultiLayerMie {    
+  class MultiLayerMie {
    public:
     //Used constants TODO! Change to boost PI
     const double PI_=3.14159265358979323846;
@@ -124,10 +127,10 @@ namespace nmie {
     std::vector<std::complex<FloatType> > GetAn(){return an_;};
     std::vector<std::complex<FloatType> > GetBn(){return bn_;};
 
-    std::vector<std::vector<std::complex<FloatType> > > GetAln(){return aln_;};
-    std::vector<std::vector<std::complex<FloatType> > > GetBln(){return bln_;};
-    std::vector<std::vector<std::complex<FloatType> > > GetCln(){return cln_;};
-    std::vector<std::vector<std::complex<FloatType> > > GetDln(){return dln_;};
+    std::vector< std::vector<std::complex<FloatType> > > GetLayerAn(){return aln_;};
+    std::vector< std::vector<std::complex<FloatType> > > GetLayerBn(){return bln_;};
+    std::vector< std::vector<std::complex<FloatType> > > GetLayerCn(){return cln_;};
+    std::vector< std::vector<std::complex<FloatType> > > GetLayerDn(){return dln_;};
 
     // Problem definition
     // Modify size of all layers
@@ -209,7 +212,7 @@ namespace nmie {
     void calcSpherHarm(const std::complex<FloatType> Rho, const FloatType Theta, const FloatType Phi,
                        const std::complex<FloatType>& rn, const std::complex<FloatType>& Dn,
                        const FloatType& Pi, const FloatType& Tau, const FloatType& n,
-                       std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n, 
+                       std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n,
                        std::vector<std::complex<FloatType> >& No1n, std::vector<std::complex<FloatType> >& Ne1n);
 
     void calcFieldByComponents(const FloatType Rho, const FloatType Theta, const FloatType Phi,
