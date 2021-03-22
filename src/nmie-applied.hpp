@@ -37,7 +37,7 @@
 #include <iostream>
 #include <vector>
 #include "nmie.hpp"
-#include "nmie-impl.hpp"
+#include "nmie-impl.cc"
 
 
 namespace nmie {
@@ -65,11 +65,15 @@ namespace nmie {
       } while (false);
     }
     // Set parameters in applied units 
-    void SetWavelength(FloatType wavelength) {wavelength_ = wavelength;};
+    void SetWavelength(FloatType wavelength) {
+      this->MultiLayerMie<FloatType>::MarkUncalculated();
+      wavelength_ = wavelength;};
     // It is possible to set only a multilayer target to run calculaitons.
     // For many runs it can be convenient to separate target and coating layers.
     // Per layer
     void AddTargetLayer(FloatType layer_width, std::complex<FloatType> layer_index);
+    void AddTargetLayerReIm(FloatType layer_width,
+            FloatType re_layer_index, FloatType im_layer_index);
     void AddCoatingLayer(FloatType layer_width, std::complex<FloatType> layer_index);
     // For all layers
     void SetTargetWidth(std::vector<FloatType> width);
@@ -85,6 +89,8 @@ namespace nmie {
     void SetFieldPointsSP(const std::vector< std::vector<FloatType> >& coords_sp);
 
     // Set common parameters
+    void SetModeNmaxAndType(int mode_n, int mode_type) {
+        this->MultiLayerMie<FloatType>::SetModeNmaxAndType(mode_n, mode_type);};
     void SetAnglesForPattern(FloatType from_angle, FloatType to_angle, int samples);
     std::vector<FloatType> GetAngles();
     
@@ -111,6 +117,10 @@ namespace nmie {
     std::vector<FloatType> GetPatternHk();
     std::vector<FloatType> GetPatternUnpolarized();
 
+    // Dimensionless
+    FloatType GetQsca(){ return this->MultiLayerMie<FloatType>::GetQsca();};
+    FloatType GetQabs(){ return this->MultiLayerMie<FloatType>::GetQabs();};
+    FloatType GetQext(){ return this->MultiLayerMie<FloatType>::GetQext();};
     // Size parameter units
     std::vector<FloatType> GetLayerWidthSP();
     // Same as to get target and coating index

@@ -69,7 +69,7 @@ py::array Vector2DComplex2Py(const std::vector<std::vector<T > > &x) {
   size_t dim1 = x.size();
   size_t dim2 = x[0].size();
   auto result = flatten(x);
-  // https://github.com/tdegeus/pybind11_examples/blob/master/04_numpy-2D_cpp-vector/example.cpp 
+  // https://github.com/tdegeus/pybind11_examples/blob/master/04_numpy-2D_cpp-vector/example.cpp
   size_t              ndim    = 2;
   std::vector<size_t> shape   = {dim1, dim2};
   std::vector<size_t> strides = {sizeof(T)*dim2, sizeof(T)};
@@ -105,7 +105,7 @@ py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::arra
   std::vector<std::complex<double> > c_an, c_bn;
   int L = py_x.size();
   terms = nmie::ScattCoeffs(L, pl, c_x, c_m, nmax, c_an, c_bn);
-  
+
   return py::make_tuple(terms, VectorComplex2Py(c_an), VectorComplex2Py(c_bn));
 }
 
@@ -123,7 +123,7 @@ py::tuple py_ExpanCoeffs(const py::array_t<double, py::array::c_style | py::arra
   std::vector<std::vector<std::complex<double> > > c_an(L + 1), c_bn(L + 1), c_cn(L + 1), c_dn(L + 1);
 
   terms = nmie::ExpanCoeffs(L, pl, c_x, c_m, nmax, c_an, c_bn, c_cn, c_dn);
-  
+
   return py::make_tuple(terms, Vector2DComplex2Py(c_an), Vector2DComplex2Py(c_bn), Vector2DComplex2Py(c_cn), Vector2DComplex2Py(c_dn));
 }
 
@@ -142,7 +142,7 @@ py::tuple py_scattnlay(const py::array_t<double, py::array::c_style | py::array:
   std::vector<std::complex<double> > c_S1, c_S2;
 
   terms = nmie::nMie(L, pl, c_x, c_m, nTheta, c_theta, nmax, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, c_S1, c_S2);
-  
+
   return py::make_tuple(terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo,
                         VectorComplex2Py(c_S1), VectorComplex2Py(c_S2));
 }
@@ -166,7 +166,7 @@ py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array:
   for (auto& f : E) f.resize(3);
   for (auto& f : H) f.resize(3);
   int L = py_x.size(), terms;
-  terms = nmie::nField(L, pl, c_x, c_m, nmax, ncoord, c_Xp, c_Yp, c_Zp, E, H);
+  terms = nmie::nField(L, pl, c_x, c_m, nmax, nmie::Modes::kAll, nmie::Modes::kAll, ncoord, c_Xp, c_Yp, c_Zp, E, H);
   auto py_E = Vector2DComplex2Py<std::complex<double> >(E);
   auto py_H = Vector2DComplex2Py<std::complex<double> >(H);
   return py::make_tuple(terms, py_E, py_H);

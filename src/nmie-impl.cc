@@ -47,6 +47,14 @@
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
+//<<<<<<< HEAD TODO
+//#include <array>
+//#include <algorithm>
+//#include <cstdio>
+//#include <cstdlib>
+//#include <cmath>
+//=======
+//>>>>>>> master
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
@@ -765,10 +773,10 @@ namespace nmie {
 
     const std::vector<FloatType>& x = size_param_;
 
-    MarkUncalculated();
+    //MarkUncalculated();
 
     // Calculate scattering coefficients
-    calcScattCoeffs();
+    if (!isScaCoeffsCalc_) calcScattCoeffs();
 
     // Initialize the scattering parameters
     Qext_ = 0.0;
@@ -784,6 +792,11 @@ namespace nmie {
     std::vector<std::complex<FloatType> > tmp1(theta_.size(),std::complex<FloatType>(0.0, 0.0));
     S1_.swap(tmp1);
     S2_ = S1_;
+    // Precalculate cos(theta) - gives about 5% speed up.
+    std::vector<FloatType> costheta(theta_.size(), 0.0);
+    for (unsigned int t = 0; t < theta_.size(); t++) {
+      costheta[t] = nmm::cos(theta_[t]);
+    }
 
     std::vector<FloatType> Pi(nmax_), Tau(nmax_);
 
@@ -792,30 +805,50 @@ namespace nmie {
     // By using downward recurrence we avoid loss of precision due to float rounding errors
     // See: https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
     //      http://en.wikipedia.org/wiki/Loss_of_significance
-    for (int i = nmax_ - 2; i >= 0; i--) {
-      const int n = i + 1;
-      // Equation (27)
-      Qext_ += (n + n + 1.0)*(an_[i].real() + bn_[i].real());
-      // Equation (28)
-      Qsca_ += (n + n + 1.0)*(an_[i].real()*an_[i].real() + an_[i].imag()*an_[i].imag()
-                            + bn_[i].real()*bn_[i].real() + bn_[i].imag()*bn_[i].imag());
-      // Equation (29)
-      Qpr_ += ((n*(n + 2.0)/(n + 1.0))*((an_[i]*std::conj(an_[n]) + bn_[i]*std::conj(bn_[n])).real())
-               + ((n + n + 1.0)/(n*(n + 1.0)))*(an_[i]*std::conj(bn_[i])).real());
-      // Equation (33)
-      Qbktmp += (FloatType)(n + n + 1.0)*(1.0 - 2.0*(n % 2))*(an_[i]- bn_[i]);
-      // Calculate the scattering amplitudes (S1 and S2)    //
-      // Precalculate cos(theta) - gives about 5% speed up.
-      std::vector<FloatType> costheta(theta_.size(), 0.0);
-      for (unsigned int t = 0; t < theta_.size(); t++) {
-        costheta[t] = nmm::cos(theta_[t]);
+    for (int n = nmax_ - 2; n >= 0; n--) {
+      const int n1 = n + 1;
+      if (mode_n_ == Modes::kAll) {
+        // Equation (27)
+        Qext_ += (n1 + n1 + 1.0) * (an_[n].real() + bn_[n].real());
+        // Equation (28)
+        Qsca_ += (n1 + n1 + 1.0) * (an_[n].real() * an_[n].real() + an_[n].imag() * an_[n].imag()
+            + bn_[n].real() * bn_[n].real() + bn_[n].imag() * bn_[n].imag());
+        // Equation (29)
+        Qpr_ += ((n1 * (n1 + 2.0) / (n1 + 1.0)) * ((an_[n] * std::conj(an_[n1]) + bn_[n] * std::conj(bn_[n1])).real())
+            + ((n1 + n1 + 1.0) / (n1 * (n1 + 1.0))) * (an_[n] * std::conj(bn_[n])).real());
+        // Equation (33)
+        Qbktmp += (FloatType) (n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (an_[n] - bn_[n]);
+        // Calculate the scattering amplitudes (S1 and S2) Equations (25a) - (25b)
+        for (unsigned int t = 0; t < theta_.size(); t++) {
+          calcPiTau(costheta[t], Pi, Tau);
+          S1_[t] += calc_S1(n1, an_[n], bn_[n], Pi[n], Tau[n]);
+          S2_[t] += calc_S2(n1, an_[n], bn_[n], Pi[n], Tau[n]);
+        }
+        continue;
       }
-      // Equations (25a) - (25b)                            //
-      for (unsigned int t = 0; t < theta_.size(); t++) {
-        calcPiTau(costheta[t], Pi, Tau);
-
-        S1_[t] += calc_S1(n, an_[i], bn_[i], Pi[i], Tau[i]);
-        S2_[t] += calc_S2(n, an_[i], bn_[i], Pi[i], Tau[i]);
+      if (n1 == mode_n_) {
+        if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
+          Qext_ += (n1 + n1 + 1.0) * (an_[n].real());
+          Qsca_ += (n1 + n1 + 1.0) * (an_[n].real() * an_[n].real() + an_[n].imag() * an_[n].imag());
+          Qpr_ += std::nan("");
+          Qbktmp += (FloatType) (n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (an_[n]);
+          for (unsigned int t = 0; t < theta_.size(); t++) {
+            calcPiTau(costheta[t], Pi, Tau);
+            S1_[t] += calc_S1(n1, an_[n], static_cast<std::complex<FloatType>>(0), Pi[n], Tau[n]);
+            S2_[t] += calc_S2(n1, an_[n], static_cast<std::complex<FloatType>>(0), Pi[n], Tau[n]);
+          }
+        }
+        if (mode_type_ == Modes::kMagnetic || mode_type_ == Modes::kAll) {
+          Qext_ += (n1 + n1 + 1.0) * (bn_[n].real());
+          Qsca_ += (n1 + n1 + 1.0) * (bn_[n].real() * bn_[n].real() + bn_[n].imag() * bn_[n].imag());
+          Qpr_ += std::nan("");
+          Qbktmp += (FloatType) (n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (bn_[n]);
+          for (unsigned int t = 0; t < theta_.size(); t++) {
+            calcPiTau(costheta[t], Pi, Tau);
+            S1_[t] += calc_S1(n1, static_cast<std::complex<FloatType>>(0), bn_[n], Pi[n], Tau[n]);
+            S2_[t] += calc_S2(n1, static_cast<std::complex<FloatType>>(0), bn_[n], Pi[n], Tau[n]);
+          }
+        }
       }
     }
     FloatType x2 = pow2(x.back());
@@ -969,16 +1002,28 @@ namespace nmie {
   //   Rho: Radial distance                                                           //
   //   Phi: Azimuthal angle                                                           //
   //   Theta: Polar angle                                                             //
+  //   mode_n: mode order.                                                            //
+  //          -1 - use all modes (all_)                                               //
+  //           1 - use dipole mode only                                               //
+  //           2 - use quadrupole mode only                                           //
+  //           ...                                                                    //
+  //   mode_type: only used when mode_n != -1                                         //
+  //          0 - electric only                                                       //
+  //          1 - magnetic only                                                       //
+  //                                                                                  //
   //                                                                                  //
   // Output parameters:                                                               //
   //   E, H: Complex electric and magnetic fields                                     //
   //**********************************************************************************//
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcField(const FloatType Rho, const FloatType Theta, const FloatType Phi,
-                                std::vector<std::complex<FloatType> >& E, std::vector<std::complex<FloatType> >& H)  {
+  void MultiLayerMie<FloatType>::calcFieldByComponents(const FloatType Rho,
+                                const FloatType Theta, const FloatType Phi,
+                                std::vector<std::complex<FloatType> >& E,
+                                std::vector<std::complex<FloatType> >& H)  {
 
     std::complex<FloatType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
-    std::vector<std::complex<FloatType> > ipow = {c_one, c_i, -c_one, -c_i}; // Vector containing precomputed integer powers of i to avoid computation
+    // Vector containing precomputed integer powers of i to avoid computation
+    std::vector<std::complex<FloatType> > ipow = {c_one, c_i, -c_one, -c_i};
     std::vector<std::complex<FloatType> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
     std::vector<std::complex<FloatType> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
     std::vector<std::complex<FloatType> > Psi(nmax_ + 1), D1n(nmax_ + 1), Zeta(nmax_ + 1), D3n(nmax_ + 1);
@@ -1025,12 +1070,35 @@ namespace nmie {
       std::complex<FloatType> En = ipow[n1 % 4]
       *static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
       for (int i = 0; i < 3; i++) {
-        // electric field E [V m - 1] = EF*E0
-        E[i] += En*(cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
-              + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
+        if (mode_n_ == Modes::kAll) {
+          // electric field E [V m - 1] = EF*E0
+          E[i] += En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
+                      + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
 
-        H[i] += En*(-dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
-              +  c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
+          H[i] += En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
+                      + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
+          continue;
+        }
+        if (n1 == mode_n_) {
+          if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
+            E[i] += En*( -c_i*dln_[l][n]*N1e1n[i]
+                        + c_i*aln_[l][n]*N3e1n[i]);
+
+            H[i] += En*(-dln_[l][n]*M1e1n[i]
+                        +aln_[l][n]*M3e1n[i]);
+            //std::cout << mode_n_;
+          }
+          if (mode_type_ == Modes::kMagnetic  || mode_type_ == Modes::kAll) {
+            E[i] += En*(  cln_[l][n]*M1o1n[i]
+                        - bln_[l][n]*M3o1n[i]);
+
+            H[i] += En*( -c_i*cln_[l][n]*N1o1n[i]
+                        + c_i*bln_[l][n]*N3o1n[i]);
+            //std::cout << mode_n_;
+          }
+          //std::cout << std::endl;
+        }
+        //throw std::invalid_argument("Error! Unexpected mode for field evaluation!\n mode_n="+std::to_string(mode_n)+", mode_type="+std::to_string(mode_type)+"\n=====*****=====");
       }
     }  // end of for all n
 
@@ -1039,7 +1107,7 @@ namespace nmie {
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
     }
-   }  // end of MultiLayerMie::calcField(...)
+   }  // end of MultiLayerMie::calcFieldByComponents(...)
 
 
   //**********************************************************************************//
@@ -1057,6 +1125,14 @@ namespace nmie {
   //   ncoord: Number of coordinate points                                            //
   //   Coords: Array containing all coordinates where the complex electric and        //
   //           magnetic fields will be calculated                                     //
+  //   mode_n: mode order.                                                            //
+  //          -1 - use all modes (all_)                                               //
+  //           1 - use dipole mode only                                               //
+  //           2 - use quadrupole mode only                                           //
+  //           ...                                                                    //
+  //   mode_type: only used when mode_n != -1                                         //
+  //          0 - electric only                                                       //
+  //          1 - magnetic only                                                       //
   //                                                                                  //
   // Output parameters:                                                               //
   //   E, H: Complex electric and magnetic field at the provided coordinates          //
@@ -1113,7 +1189,7 @@ namespace nmie {
       std::vector<std::complex<FloatType> > Es(3), Hs(3);
 
       // Do the actual calculation of electric and magnetic field
-      calcField(Rho, Theta, Phi, Es, Hs);
+      calcFieldByComponents(Rho, Theta, Phi, Es, Hs);
       for (int sph_coord = 0; sph_coord<3; ++sph_coord) {
         Es_[point][sph_coord] = Es[sph_coord];
         Hs_[point][sph_coord] = Hs[sph_coord];

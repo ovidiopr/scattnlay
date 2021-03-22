@@ -27,6 +27,11 @@
 *.out
 *.app
 
+fieldnlay-dp
+fieldnlay-mp
+scattnlay-dp
+scattnlay-mp
+
 # Binary
 *.bin
 
@@ -52,9 +57,36 @@ examples/Egor*
 examples/egor*
 examples/*.txt
 examples/*.pyc
-fieldnlay-dp
-fieldnlay-mp
-nmiejs.js
+
+backup*
+
+###########################################
+# Web vue cli section
+
+.DS_Store
+node_modules
+dist
+surma-ashley-test
+
 nmiejs.wasm
-scattnlay-dp
-scattnlay-mp
+nmiejs.js
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# end of web vue cli section
+###########################################
