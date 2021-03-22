@@ -45,7 +45,7 @@ namespace nmie {
 
   int ExpanCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
                 std::vector<std::vector<std::complex<double> > >& an, std::vector<std::vector<std::complex<double> > >& bn,
-                std::vector<std::vector<std::complex<double> > >& cn, std::vector<std::vector<std::complex<double> > >& dn) {
+                std::vector<std::vector<std::complex<double> > >& cn, std::vector<std::vector<std::complex<double> > >& dn);
 
   // pl, nmax, mode_n, mode_type
     int nMie(const unsigned int L,
