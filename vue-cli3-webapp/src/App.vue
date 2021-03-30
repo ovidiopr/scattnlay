@@ -137,20 +137,29 @@
     }
   });
 
-  // // Test nmiejs if working
-  // module.onRuntimeInitialized = () => {
-  //   const nmie = new module.nmie();
-  //   nmie.ClearTarget();
-  //   let R = 100.0;
-  //   let reN = 4.0;
-  //   let imN = 0.01;
-  //   nmie.AddTargetLayerReIm(R, reN, imN)
-  //   nmie.SetModeNmaxAndType(-1, -1);
-  //   let WL = 800;
-  //   nmie.SetWavelength(WL);
-  //   nmie.RunMieCalculation();
-  //   console.log(nmie.GetQsca());
-  // }
+  // // This is our recommended way of loading WebAssembly.
+  // (async () => {
+  //   const fetchPromise = fetch('nmiejs.wasm');
+  //   const { instance } = await WebAssembly.instantiateStreaming(fetchPromise);
+  //   // const result = instance.exports.fibonacci(42);
+  //   console.log(instance);
+  // })();
+
+
+  // Test nmiejs if working
+  module.onRuntimeInitialized = () => {
+    const nmie = new module.nmie();
+    nmie.ClearTarget();
+    let R = 100.0;
+    let reN = 4.0;
+    let imN = 0.01;
+    nmie.AddTargetLayerReIm(R, reN, imN)
+    nmie.SetModeNmaxAndType(-1, -1);
+    let WL = 800;
+    nmie.SetWavelength(WL);
+    nmie.RunMieCalculation();
+    console.log(nmie.GetQsca());
+  }
 
   const range = (start, stop, step = 1) => Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
 
@@ -536,7 +545,7 @@
           let WL = this.convertUnits2nm(this.source_units, WLs[i]);
           nmie.ClearTarget();
           for (let num_layer = 0;
-               num_layer < this.simulationRuntime.layers.length; 
+               num_layer < this.simulationRuntime.layers.length;
                num_layer++) {
             let layer = this.simulationRuntime.layers[num_layer];
             let R = parseFloat(layer.R);
@@ -561,7 +570,7 @@
             let imN = parseFloat(layer.imN);
             nmie.AddTargetLayerReIm( this.convertUnits2nm(this.units, R)*host,
                     reN/host, imN/host);
-            
+
           }
           nmie.SetModeNmaxAndType(-1, -1);
           nmie.SetWavelength(WL);
@@ -589,7 +598,7 @@
         let t1 = performance.now();
         this.ttime = ((t1 - t0) / 1000).toFixed(2);
         // console.log("It took " + this.ttime + " s.");
-        
+
         this.plotData.pWLs = WLs.slice();
         this.plotData.pQsca = Qsca;
         this.plotData.pQabs = Qabs;
@@ -753,7 +762,6 @@
             }
           }
         }
-
       }
     },
   };
@@ -835,6 +843,13 @@
   }
   body {
     line-height: 1.42857;
+  }
+  /*.container {*/
+  /*  width: 750px;*/
+  /*}*/
+  h1 {
+    font-size: 34px;
+    font-weight: bold;
   }
   .block-views-blockmessages-header-message-block {
     top: 25px;
