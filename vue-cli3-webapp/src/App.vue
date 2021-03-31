@@ -135,31 +135,36 @@
       console.log(deploy_path+path);
       return deploy_path+path;
     }
+  }).then(function (module){
+    const nmie = new module.nmie();
+      nmie.ClearTarget();
+      let R = 100.0;
+      let reN = 4.0;
+      let imN = 0.01;
+      nmie.AddTargetLayerReIm(R, reN, imN)
+      nmie.SetModeNmaxAndType(-1, -1);
+      let WL = 800;
+      nmie.SetWavelength(WL);
+      nmie.RunMieCalculation();
+      console.log(nmie.GetQsca());
   });
 
-  // // This is our recommended way of loading WebAssembly.
-  // (async () => {
-  //   const fetchPromise = fetch('nmiejs.wasm');
-  //   const { instance } = await WebAssembly.instantiateStreaming(fetchPromise);
-  //   // const result = instance.exports.fibonacci(42);
-  //   console.log(instance);
-  // })();
 
+  // // Test nmiejs if working
+  // module.onRuntimeInitialized = () => {
+  //   const nmie = new module.nmie();
+  //   nmie.ClearTarget();
+  //   let R = 100.0;
+  //   let reN = 4.0;
+  //   let imN = 0.01;
+  //   nmie.AddTargetLayerReIm(R, reN, imN)
+  //   nmie.SetModeNmaxAndType(-1, -1);
+  //   let WL = 800;
+  //   nmie.SetWavelength(WL);
+  //   nmie.RunMieCalculation();
+  //   console.log(nmie.GetQsca());
+  // };
 
-  // Test nmiejs if working
-  module.onRuntimeInitialized = () => {
-    const nmie = new module.nmie();
-    nmie.ClearTarget();
-    let R = 100.0;
-    let reN = 4.0;
-    let imN = 0.01;
-    nmie.AddTargetLayerReIm(R, reN, imN)
-    nmie.SetModeNmaxAndType(-1, -1);
-    let WL = 800;
-    nmie.SetWavelength(WL);
-    nmie.RunMieCalculation();
-    console.log(nmie.GetQsca());
-  }
 
   const range = (start, stop, step = 1) => Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
 
