@@ -16,8 +16,7 @@
     "cubic-spline": "^3.0.3",
     "js-yaml": "^3.14.1",
     "plotly.js": "^1.58.4",
-    "vue": "^2.6.12",
-    "wasi": "^0.0.6"
+    "vue": "^2.6.12"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.5.12",

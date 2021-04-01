@@ -126,45 +126,31 @@
   // );
 
   import nmiejs from './nmiejs.js';
-  const module = nmiejs({
-    locateFile(path) {
-      let deploy_path = process.env.BASE_URL;
-      // '/themes/custom/physics/mie/';
-      // console.log();
-      // // let deploy_path = '';
-      console.log(deploy_path+path);
-      return deploy_path+path;
-    }
-  }).then(function (module){
-    const nmie = new module.nmie();
-      nmie.ClearTarget();
-      let R = 100.0;
-      let reN = 4.0;
-      let imN = 0.01;
-      nmie.AddTargetLayerReIm(R, reN, imN)
-      nmie.SetModeNmaxAndType(-1, -1);
-      let WL = 800;
-      nmie.SetWavelength(WL);
-      nmie.RunMieCalculation();
-      console.log(nmie.GetQsca());
-  });
-
-
   // // Test nmiejs if working
-  // module.onRuntimeInitialized = () => {
-  //   const nmie = new module.nmie();
-  //   nmie.ClearTarget();
-  //   let R = 100.0;
-  //   let reN = 4.0;
-  //   let imN = 0.01;
-  //   nmie.AddTargetLayerReIm(R, reN, imN)
-  //   nmie.SetModeNmaxAndType(-1, -1);
-  //   let WL = 800;
-  //   nmie.SetWavelength(WL);
-  //   nmie.RunMieCalculation();
-  //   console.log(nmie.GetQsca());
-  // };
-
+  // (async () => {
+  //   const module = await nmiejs({
+  //     locateFile(path) {
+  //       let deploy_path = process.env.BASE_URL;
+  //       // '/themes/custom/physics/mie/';
+  //       // console.log();
+  //       // // let deploy_path = '';
+  //       console.log(deploy_path + path);
+  //       return deploy_path + path;
+  //     }
+  //   })
+  //     const nmie = new module.nmie();
+  //       nmie.ClearTarget();
+  //       let R = 100.0;
+  //       let reN = 4.0;
+  //       let imN = 0.01;
+  //       nmie.AddTargetLayerReIm(R, reN, imN)
+  //       nmie.SetModeNmaxAndType(-1, -1);
+  //       let WL = 800;
+  //       nmie.SetWavelength(WL);
+  //       nmie.RunMieCalculation();
+  //       console.log(nmie.GetQsca());
+  //
+  // })();
 
   const range = (start, stop, step = 1) => Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
 
@@ -207,7 +193,7 @@
           isSourceOtherUnits: false,
           simulationSetup: {
             hostIndex: 1,
-            stepWL: 0.5,
+            stepWL: 2,
             fromWL: 300.0,
             toWL: 1000.0,
             layers: [
@@ -225,7 +211,7 @@
           simulationRuntime: {
             r_units: 'nm',
             r_source_units: 'nm',
-            stepWL: 0.5,
+            stepWL: 2,
             fromWL: 300.0,
             toWL: 1000.0,
             layers: [
@@ -324,14 +310,24 @@
       },
     mounted() {
       this.setXaxisTitle();
-      module.onRuntimeInitialized = () => {
+      (async () => {
+        const module = await nmiejs({
+          locateFile(path) {
+            let deploy_path = process.env.BASE_URL;
+            // '/themes/custom/physics/mie/';
+            // console.log();
+            // // let deploy_path = '';
+            console.log(deploy_path + path);
+            return deploy_path + path;
+          }
+        })
         this.nmie = new module.nmie();
+        this.isLoading = false;
         this.runMie();
         this.setIsPlotMode();
         this.setModeNNames();
         this.plotResults();
-        this.isLoading = false;
-      }
+      })();
 
 
     },
