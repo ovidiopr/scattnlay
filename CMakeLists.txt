@@ -98,7 +98,7 @@ endif ()
 
 #include_directories(src)
 add_subdirectory(src)
-
+add_subdirectory(examples)
 #
 # Copy all python scripts to the build directory.
 #
@@ -111,3 +111,6 @@ foreach (_script ${Python_SCRIPTS})
             COPYONLY
     )
 endforeach ()
+
+enable_testing()
+add_subdirectory(tests)

@@ -37,7 +37,7 @@
 #include <iostream>
 #include <vector>
 #include "nmie.hpp"
-#include "nmie-impl.cc"
+#include "nmie-impl.hpp"
 
 
 namespace nmie {
@@ -60,11 +60,11 @@ namespace nmie {
       do {
 	if (!output) break;
 	++iformat;
-	printf("%23.13e",var);	     
+	printf("%23.13e",var);
 	if (iformat%4 == 0) printf("\n");
       } while (false);
     }
-    // Set parameters in applied units 
+    // Set parameters in applied units
     void SetWavelength(FloatType wavelength) {
       this->MultiLayerMie<FloatType>::MarkUncalculated();
       wavelength_ = wavelength;};
@@ -93,7 +93,7 @@ namespace nmie {
         this->MultiLayerMie<FloatType>::SetModeNmaxAndType(mode_n, mode_type);};
     void SetAnglesForPattern(FloatType from_angle, FloatType to_angle, int samples);
     std::vector<FloatType> GetAngles();
-    
+
     void ClearTarget();
     void ClearCoating();
     void ClearLayers();
@@ -124,7 +124,7 @@ namespace nmie {
     // Size parameter units
     std::vector<FloatType> GetLayerWidthSP();
     // Same as to get target and coating index
-    std::vector< std::complex<FloatType> > GetLayerIndex();  
+    std::vector< std::complex<FloatType> > GetLayerIndex();
     std::vector< std::array<FloatType,3> > GetFieldPointsSP();
     // Do we need normalize field to size parameter?
     /* std::vector<std::vector<std::complex<FloatType> > >  GetFieldESP(); */
@@ -163,7 +163,7 @@ namespace nmie {
     void sphericalBessel(std::complex<FloatType> z, std::vector<std::complex<FloatType> >& bj,
 			             std::vector<std::complex<FloatType> >& by, std::vector<std::complex<FloatType> >& bd);
     std::complex<FloatType> calcD1confra(int N, const std::complex<FloatType> z);
-    
+
     FloatType wavelength_ = 1.0;
     FloatType total_radius_ = 0.0;
     /// Width and index for each layer of the structure

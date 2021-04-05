@@ -51,7 +51,7 @@
 
 #include "nmie.hpp"
 #include "nmie-precision.hpp"
-#include "nmie-impl.cc"
+#include "nmie-impl.hpp"
 
 namespace nmie {
 
