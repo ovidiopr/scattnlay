@@ -12,7 +12,7 @@ target_link_libraries("test_bulk_sphere" ${LIBS})
 add_test(NAME "test_bulk_sphere"
         COMMAND "test_bulk_sphere")
 
-add_executable("test_bulk_sphere_multi_precision" test_bulk_sphere_multi_precision.cc)
+add_executable("test_bulk_sphere_multi_precision" test_bulk_sphere.cc)
 target_compile_options("test_bulk_sphere_multi_precision"
         PRIVATE -DMULTI_PRECISION=100)
 target_link_libraries("test_bulk_sphere_multi_precision" ${LIBS})

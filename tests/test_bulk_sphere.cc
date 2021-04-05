@@ -1,7 +1,8 @@
 #include "gtest/gtest.h"
 #include "../src/nmie-impl.hpp"
+#include "../src/nmie-precision.hpp"
 TEST(BulkSphere, HandlesInput) {
-  nmie::MultiLayerMie<double> nmie;
+  nmie::MultiLayerMie<nmie::FloatType> nmie;
   // A list of tests for a bulk sphere from
   // Hong Du, "Mie-scattering calculation," Appl. Opt. 43, 1951-1956 (2004)
   // table 1: sphere size and refractive index
@@ -28,8 +29,8 @@ TEST(BulkSphere, HandlesInput) {
     nmie.SetLayersSize({std::get<0>(data)});
     nmie.SetLayersIndex({std::get<1>(data)});
     nmie.RunMieCalculation();
-    double Qext = nmie.GetQext();
-    double Qsca = nmie.GetQsca();
+    double Qext = static_cast<double>(nmie.GetQext());
+    double Qsca = static_cast<double>(nmie.GetQsca());
     EXPECT_FLOAT_EQ(std::get<2>(data), Qext)
               << "Extinction of the bulk sphere, test case:" << std::get<4>(data);
     EXPECT_FLOAT_EQ(std::get<3>(data), Qsca)
