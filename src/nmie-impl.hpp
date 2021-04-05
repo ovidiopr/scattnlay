@@ -350,7 +350,8 @@ namespace nmie {
   // Calculate an - equation (5)                                            //
   // ********************************************************************** //
   template <typename FloatType>
-  std::complex<FloatType> MultiLayerMie<FloatType>::calc_an(int n, FloatType XL, std::complex<FloatType> Ha, std::complex<FloatType> mL,
+  std::complex<FloatType> MultiLayerMie<FloatType>::
+      calc_an(int n, FloatType XL, std::complex<FloatType> Ha, std::complex<FloatType> mL,
                                               std::complex<FloatType> PsiXL, std::complex<FloatType> ZetaXL,
                                               std::complex<FloatType> PsiXLM1, std::complex<FloatType> ZetaXLM1) {
 
