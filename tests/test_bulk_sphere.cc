@@ -15,7 +15,7 @@ TEST(BulkSphere, HandlesInput) {
           {0.101, {0.75,0}, 8.033538e-06, 8.033538e-06, 'b'},
           {10,    {0.75,0},     2.232265, 2.232265, 'c'},
           {1000,  {0.75,0},     1.997908, 1.997908, 'd'},
-//          {100,   {1.33,-1e-5}, 2.101321, 2.096594, 'e'},
+          {100,   {1.33,-1e-5}, 2.101321, 2.096594, 'e'},
 //          {10000, {1.33,-1e-5}, 2.004089, 1.723857, 'f'},
 //          {0.055, {1.5, -1},    0.101491, 1.131687e-05, 'g'},
 //          {0.056, {1.5, -1},   0.1033467, 1.216311e-05, 'h'},
@@ -28,11 +28,13 @@ TEST(BulkSphere, HandlesInput) {
   for (const auto &data : parameters_and_results) {
     nmie.SetLayersSize({std::get<0>(data)});
     nmie.SetLayersIndex({std::get<1>(data)});
+//    nmie.SetMaxTerms(150);
     nmie.RunMieCalculation();
     double Qext = static_cast<double>(nmie.GetQext());
     double Qsca = static_cast<double>(nmie.GetQsca());
     EXPECT_FLOAT_EQ(std::get<2>(data), Qext)
-              << "Extinction of the bulk sphere, test case:" << std::get<4>(data);
+              << "Extinction of the bulk sphere, test case:" << std::get<4>(data)
+              << "\nnmax_ = " << nmie.GetMaxTerms();
     EXPECT_FLOAT_EQ(std::get<3>(data), Qsca)
               << "Scattering of the bulk sphere, test case:" << std::get<4>(data);
   }

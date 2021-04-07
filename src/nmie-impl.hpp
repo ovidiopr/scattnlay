@@ -47,42 +47,16 @@
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2]                                   //
 //**********************************************************************************//
-//<<<<<<< HEAD TODO
-//#include <array>
-//#include <algorithm>
-//#include <cstdio>
-//#include <cstdlib>
-//#include <cmath>
-//=======
-//>>>>>>> master
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
 #include <vector>
 
+#include "special-functions-impl.hpp"
 #include "nmie.hpp"
 #include "nmie-precision.hpp"
 
 namespace nmie {
-  //helper functions
-
-
-  template<class T> inline T pow2(const T value) {return value*value;}
-
-  template<class T> inline T cabs(const std::complex<T> value)
-  {return nmm::sqrt(pow2(value.real()) + pow2(value.imag()));}
-
-  template <typename FloatType>
-  int newround(FloatType x) {
-    return x >= 0 ? static_cast<int>(x + 0.5):static_cast<int>(x - 0.5);
-    //return x >= 0 ? (x + 0.5).convert_to<int>():(x - 0.5).convert_to<int>();
-  }
-  template<typename T>
-  inline std::complex<T> my_exp(const std::complex<T>& x) {
-    using std::exp; // use ADL
-    T const& r = exp(x.real());
-    return std::polar(r, x.imag());
-  }
 
 
   //class implementation
@@ -418,14 +392,20 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcD1D3(const std::complex<FloatType> z,
                                std::vector<std::complex<FloatType> >& D1,
                                std::vector<std::complex<FloatType> >& D3) {
-
-    // Downward recurrence for D1 - equations (16a) and (16b)
-    D1[nmax_] = std::complex<FloatType>(0.0, 0.0);
-    std::complex<FloatType> c_one(1.0, 0.0);
-    const std::complex<FloatType> zinv = std::complex<FloatType>(1.0, 0.0)/z;
-    for (int n = nmax_; n > 0; n--) {
-      D1[n - 1] = static_cast<FloatType>(n)*zinv - c_one/(D1[n] + static_cast<FloatType>(n)*zinv);
+    evalDownwardD1(z, D1);
+    int lnmx = evalKapteynNumberOfLostSignificantDigits(nmax_, z);
+    std::vector<std::complex<FloatType> > r;
+    if (lnmx < 4) {
+      r.resize(nmax_+1);
+      evalForwardR(z, r);
+    } else {
+      int valid_digits = 6;
+      int nstar = getNStar(nmax_, z, valid_digits);
+      r.resize(nstar);
+      evalBackwardR(z,r);
     }
+    convertRtoD1(z, r, D1);
+
     // TODO: Do we need this check?
     // if (cabs(D1[0]) > 1.0e15) {
     //   throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
@@ -436,7 +416,7 @@ namespace nmie {
     PsiZeta_[0] = static_cast<FloatType>(0.5)*(static_cast<FloatType>(1.0) - std::complex<FloatType>(nmm::cos(2.0*z.real()), nmm::sin(2.0*z.real()))
                  *static_cast<FloatType>(nmm::exp(-2.0*z.imag())));
     D3[0] = std::complex<FloatType>(0.0, 1.0);
-
+    const std::complex<FloatType> zinv = std::complex<FloatType>(1.0, 0.0)/z;
     for (int n = 1; n <= nmax_; n++) {
       PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<FloatType>(n)*zinv - D1[n - 1])
                                    *(static_cast<FloatType>(n)*zinv - D3[n - 1]);
