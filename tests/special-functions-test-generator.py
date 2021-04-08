@@ -61,7 +61,7 @@ def D1(n,z):
 
 
 def main ():
-    mp.mp.dps = 15
+    mp.mp.dps = 30
     output_dps = 10
     elements_of_n_list = 15
     out_filename = 'test_spec_functions_data.h'
