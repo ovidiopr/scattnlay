@@ -79,9 +79,9 @@ for (int i = 0; i < Dtest_n.size(); i++) {
               abs_tol) << "b at n=" << n;
   if (n < Dold.size()-15) {
     EXPECT_NEAR(std::real(Dold[n]), std::real(Dtest_D1[i]),
-             abs_tol) << "old at n=" << n;
+                abs_tol) << "old at n=" << n;
     EXPECT_NEAR(std::imag(Dold[n]), std::imag(Dtest_D1[i]),
-               abs_tol) << "old at n=" << n;
+                abs_tol) << "old at n=" << n;
   }
 
 }
