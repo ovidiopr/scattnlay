@@ -16,7 +16,7 @@ Du_test = [
 # [1,     [10,  -10],   2.532993, 2.049405, 'k'],
 # [100,   [10,  -10,],  2.071124, 1.836785, 'l'],
 [10000, [10,  -10],   2.005914, 1.795393, 'm'],
-[80, [1.05,  1],   0, 0, 'du'],
+[80, [1.05,  1],   0, 0, 'Yang'],
 ]
 # // Dtest refractive index is m={1.05,1}, the size parameter is x = 80
 n_list = [0,1,30,50,60,70,75,80,85,90,99,116,130];
@@ -50,6 +50,7 @@ def main ():
     for z in zlist:
         print(z)
         for n in n_list:
-            print(n, mp.nstr(D1(n,z), output_dps))
+            print('{',mp.nstr(D1(n,z).real, output_dps),',',
+                  mp.nstr(D1(n,z).imag, output_dps),'}')
 
 main()

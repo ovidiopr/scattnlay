@@ -59,7 +59,8 @@ namespace nmie {
 ////helper functions
 //template<class T> inline T pow2(const T value) {return value*value;}
 
-
+// Note, that Kapteyn seems to be too optimistic (at least by 3 digits
+// in some cases) for forward recurrence, see D1test with WYang_data
 int evalKapteynNumberOfLostSignificantDigits(const int ni,
                                              const std::complex<FloatType> z) {
   using nmm::abs, nmm::imag, nmm::real, nmm::log, nmm::sqrt, nmm::round;

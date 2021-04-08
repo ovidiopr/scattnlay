@@ -4,13 +4,25 @@
 // Dtest refractive index is m={1.05,1}, the size parameter is x = 80
 std::vector<int> Dtest_n({0,1,30,50,60,70,75,80,85,90,99,116,130});
 std::vector< std::complex<double>>
-    Dtest_D1({{0.11449e-15 ,-0.10000e+01 },{0.74646e-04 ,-0.10000e+01 },
-              {0.34764e-01 ,-0.99870},{0.95292e-01 ,-0.99935},
-              {0.13645,-0.10019e+01 },{0.18439,-0.10070e+01 },
-              {0.21070,-0.10107e+01 },{0.23845,-0.10154e+01 },
-              {0.26752,-0.10210e+01 },{0.29777,-0.10278e+01 },
-              {0.35481,-0.10426e+01 },{0.46923,-0.10806e+01 },
-              {0.17656,-0.13895e+01 }});
+    Dtest_D1({
+      //Orig
+//                 {0.11449e-15 ,-0.10000e+01 },{0.74646e-04 ,-0.10000e+01 },
+//                 {0.34764e-01 ,-0.99870},{0.95292e-01 ,-0.99935},
+//                 {0.13645,-0.10019e+01 },{0.18439,-0.10070e+01 },
+//                 {0.21070,-0.10107e+01 },{0.23845,-0.10154e+01 },
+//                 {0.26752,-0.10210e+01 },{0.29777,-0.10278e+01 },
+//                 {0.35481,-0.10426e+01 },{0.46923,-0.10806e+01 },
+//                 {0.17656,-0.13895e+01 }
+      // mod (from Python mpmath)
+                 {0.0,-1.0}, {7.464603828e-5,-0.9999958865},
+                 {0.03476380918,-0.9986960672},{0.09529213152,-0.999347654},
+                 {0.1364513887,-1.001895883},{0.184388335,-1.006979164},
+                 {0.2107044267,-1.01072099},{0.2384524295,-1.015382914},
+                 {0.2675164524,-1.021040337},{0.2977711192,-1.027753418},
+                 {0.3548096904,-1.042622957},{0.4692294405,-1.080629479},
+                 {0.5673827836,-1.121108944},
+             });
+
 std::vector< std::complex<double>>
     Dtest_D2({{0.64966e-69 ,-0.10000e+01 },{0.74646e-04 ,-0.10000e+01 },
               {0.34764e-01 ,-0.99870},{0.95292e-01 ,-0.99935},
@@ -29,18 +41,23 @@ std::vector< std::complex<double>>
               {-0.56047,0.11206e+01 }});
 
 
-//TEST(Dtest, DISABLED_WYang_data){
-TEST(Dtest, WYang_data){
-  double rel_tol = 1e-6;
+//TEST(D1test, DISABLED_WYang_data){
+TEST(D1test, WYang_data){
+  double abs_tol = 1e-9;
+  int test_loss_digits = std::round(15 - std::log10(1/abs_tol));
   int Nstop = 131;
-  std::vector<std::complex<nmie::FloatType>> Df(Nstop), Db(Nstop), r;
+  std::vector<std::complex<nmie::FloatType>> Df(Nstop), Db(Nstop),Dold(Nstop), r;
   std::complex<nmie::FloatType> z(1.05,1);
   z = z*80.0;
-  nmie::evalForwardD1(z, Df);
+// eval D1 directly from backward recurrence
+  nmie::evalDownwardD1(z, Dold);
+
+//  eval forward recurrence
   r.resize(Nstop+1);
   nmie::evalForwardR(z, r);
   nmie::convertRtoD1(z, r, Df);
-  int valid_digits = 6;
+// eval backward recurrence
+  int valid_digits = 1;
   int nstar = nmie::getNStar(Nstop, z, valid_digits);
   r.resize(nstar);
   nmie::evalBackwardR(z,r);
@@ -48,42 +65,28 @@ TEST(Dtest, WYang_data){
 
 for (int i = 0; i < Dtest_n.size(); i++) {
   int n = Dtest_n[i];
-//  EXPECT_FLOAT_EQ(std::real(Df[n]), std::real(Dtest_D1[i])) << "f at n=" << n;
-//  EXPECT_FLOAT_EQ(std::imag(Df[n]), std::imag(Dtest_D1[i])) << "f at n=" << n;
+  int forward_loss_digits = nmie::evalKapteynNumberOfLostSignificantDigits(n, z);
+  forward_loss_digits += 3; // Kapteyn is too optimistic
+  if (test_loss_digits > forward_loss_digits ) {
+    EXPECT_NEAR(std::real(Df[n]), std::real(Dtest_D1[i]),
+                abs_tol) << "f at n=" << n << " lost digits = " << forward_loss_digits;
+    EXPECT_NEAR(std::imag(Df[n]), std::imag(Dtest_D1[i]),
+                abs_tol) << "f at n=" << n << " lost digits = " << forward_loss_digits;
+  }
   EXPECT_NEAR(std::real(Db[n]), std::real(Dtest_D1[i]),
-              rel_tol*std::real(Db[n])) << "b at n=" << n;
+              abs_tol) << "b at n=" << n;
   EXPECT_NEAR(std::imag(Db[n]), std::imag(Dtest_D1[i]),
-              rel_tol*std::imag(Db[n])) << "b at n=" << n;
-//  EXPECT_FLOAT_EQ(std::real(Df[n]), std::real(Db[n])) << "f-b at n=" << n;
-//  EXPECT_FLOAT_EQ(std::imag(Df[n]), std::imag(Db[n])) << "f-b at n=" << n;
+              abs_tol) << "b at n=" << n;
+  if (n < Dold.size()-15) {
+    EXPECT_NEAR(std::real(Dold[n]), std::real(Dtest_D1[i]),
+             abs_tol) << "old at n=" << n;
+    EXPECT_NEAR(std::imag(Dold[n]), std::imag(Dtest_D1[i]),
+               abs_tol) << "old at n=" << n;
   }
+
+}
 }
 
-TEST(ratio_funcion_forward_vs_backward_recurrence, compare){
-  int Nstop = 131;
-  std::vector<std::complex<nmie::FloatType>> rf(Nstop), rb;
-//  std::complex<nmie::FloatType> z(1.05,1);
-//  z = z*80.0;
-
-  std::complex<nmie::FloatType> z(1.3,-2.1);
-// rb[49] in Wolfram Alpha
-// n=49, z=1.3-2.1i,  SphericalBesselJ[n-1,z]/SphericalBesselJ[n,z]
-  nmie::evalForwardR(z, rf);
-  int valid_digits = 20;
-  int nstar = nmie::getNStar(Nstop, z, valid_digits);
-  rb.resize(nstar);
-  nmie::evalBackwardR(z,rb);
-
-  for (int i = 0; i < Dtest_n.size(); i++) {
-    int n = Dtest_n[i];
-    EXPECT_FLOAT_EQ(std::real(rf[n]), std::real(rb[i]))
-              << "at n=" << n
-              << " expected forward loss="<<nmie::evalKapteynNumberOfLostSignificantDigits(n,z);
-    EXPECT_FLOAT_EQ(std::imag(rf[n]), std::imag(rb[i]))
-              << "at n=" << n
-              << " expected forward loss="<<nmie::evalKapteynNumberOfLostSignificantDigits(n,z);
-  }
-}
 
 
 TEST(KaptyenTest, HandlesInput) {
@@ -93,6 +96,7 @@ TEST(KaptyenTest, HandlesInput) {
   std::complex<double> z(10000,0);
   l = nmie::evalKapteynNumberOfLostSignificantDigits(5070, z);
   EXPECT_EQ(l, 0)<<"Should be equal";
+  // find NStar such that l_nstar(z) - l_nmax(z) >= valid_digits
   int NStar = nmie::getNStar(5070, z,6);
   EXPECT_GE(NStar, 10130);
 }
