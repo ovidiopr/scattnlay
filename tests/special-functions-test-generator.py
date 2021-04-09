@@ -120,7 +120,7 @@ def get_test_data(Du_test, output_dps, max_num_elements_of_n_list):
 
 
 def main ():
-    output_dps = 10
+    output_dps = 12
     max_num_elements_of_nlist = 15
 
     out_filename = 'test_spec_functions_data.h'

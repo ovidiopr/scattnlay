@@ -141,8 +141,8 @@ void evalDownwardD1 (const std::complex<FloatType> z,
         (D1[n] + static_cast<FloatType>(n)*zinv);
   }
  //   r0 = cot(z)
-  std::complex<FloatType> r0 = nmm::cos(z)/nmm::sin(z);
-  D1[0] = r0; // - n/mx;
+//  std::complex<FloatType> r0 = nmm::cos(z)/nmm::sin(z);
+//  D1[0] = r0; // - n/mx;
 }
 
 // ********************************************************************** //

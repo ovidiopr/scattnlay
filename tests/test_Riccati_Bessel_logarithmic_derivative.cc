@@ -61,7 +61,7 @@ TEST(D1test, mpmath_generated_input) {
     re_abs_tol *= std::abs(std::round(std::real(D1_mpmath))) + 11;
     im_abs_tol *= std::abs(std::round(std::imag(D1_mpmath))) + 11;
     auto Nstop = LeRu_cutoff(z)+1;
-    std::vector<std::complex<nmie::FloatType>> Df(Nstop), Db(Nstop),Dold(Nstop), r;
+    std::vector<std::complex<nmie::FloatType>> Db(Nstop),Dold(Nstop+25), r;
     int valid_digits = 6;
     int nstar = nmie::getNStar(Nstop, z, valid_digits);
     r.resize(nstar);
@@ -72,6 +72,13 @@ TEST(D1test, mpmath_generated_input) {
               << "b at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
     EXPECT_NEAR(std::imag(Db[n]), std::imag(D1_mpmath), im_abs_tol)
               << "b at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
+    nmie::evalDownwardD1(z, Dold);
+    if (n > Dold.size()) continue;
+    EXPECT_NEAR(std::real(Dold[n]), std::real(D1_mpmath), re_abs_tol)
+              << "b at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
+    EXPECT_NEAR(std::imag(Dold[n]), std::imag(D1_mpmath), im_abs_tol)
+              << "b at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
+
   }
 }
 
