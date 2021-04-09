@@ -41,8 +41,38 @@ std::vector< std::complex<double>>
               {-0.34969,0.10437e+01 },{-0.46296,0.10809e+01 },
               {-0.56047,0.11206e+01 }});
 
-TEST(D1test, mpmath_generated_input) {
 
+int LeRu_cutoff(std::complex<double> z) {
+  auto x = std::abs(z);
+  return std::round(x + 11 * std::pow(x, (1.0 / 3.0)) + 1);
+}
+
+
+TEST(D1test, mpmath_generated_input) {
+  double min_abs_tol = 1e-13;
+  for (const auto &data : D1_test_10digits) {
+    auto z = std::get<0>(data);
+    auto n = std::get<1>(data);
+    auto D1_mpmath = std::get<2>(data);
+    auto re_abs_tol = (std::get<3>(data)>min_abs_tol) ? std::get<3>(data) : min_abs_tol;
+    auto im_abs_tol = (std::get<4>(data)>min_abs_tol) ? std::get<4>(data) : min_abs_tol;
+    // if re(D1) < 0.5 then round will give 0. To avoid zero tolerance add one.
+    // To
+    re_abs_tol *= std::abs(std::round(std::real(D1_mpmath))) + 11;
+    im_abs_tol *= std::abs(std::round(std::imag(D1_mpmath))) + 11;
+    auto Nstop = LeRu_cutoff(z)+1;
+    std::vector<std::complex<nmie::FloatType>> Df(Nstop), Db(Nstop),Dold(Nstop), r;
+    int valid_digits = 6;
+    int nstar = nmie::getNStar(Nstop, z, valid_digits);
+    r.resize(nstar);
+    nmie::evalBackwardR(z,r);
+    nmie::convertRtoD1(z, r, Db);
+    if (n > Db.size()) continue;
+    EXPECT_NEAR(std::real(Db[n]), std::real(D1_mpmath), re_abs_tol)
+              << "b at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
+    EXPECT_NEAR(std::imag(Db[n]), std::imag(D1_mpmath), im_abs_tol)
+              << "b at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
+  }
 }
 
 
@@ -62,7 +92,7 @@ TEST(D1test, WYang_data){
   nmie::evalForwardR(z, r);
   nmie::convertRtoD1(z, r, Df);
 // eval backward recurrence
-  int valid_digits = 1;
+  int valid_digits = 6;
   int nstar = nmie::getNStar(Nstop, z, valid_digits);
   r.resize(nstar);
   nmie::evalBackwardR(z,r);

@@ -112,7 +112,7 @@ void evalBackwardR (const std::complex<FloatType> z,
     r[n] = -static_cast<FloatType>(1)/r[n+1] + static_cast<FloatType>(2*n+1)/z;
   }
 //  r[0] = nmm::cos(z)/nmm::sin(z);
-  nmm::cout << "R0 = " << r[0] <<" at arg = "<<z<<'\n';
+//  nmm::cout << "R0 = " << r[0] <<" at arg = "<<z<<'\n';
 }
 
 void convertRtoD1(const std::complex<FloatType> z,
