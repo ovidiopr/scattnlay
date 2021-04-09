@@ -34,7 +34,7 @@
 int main(int argc, char *argv[]) {
   try {
     nmie::MultiLayerMieApplied<double> multi_layer_mie;
-    const std::complex<double> index_Si(4, 0.01);
+    const std::complex<double> index_Si(4, -1);
     double delta = 1e-5;
     double core_r = 100; //nm Si
     double host = 2.;

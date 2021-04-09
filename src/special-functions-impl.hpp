@@ -111,6 +111,8 @@ void evalBackwardR (const std::complex<FloatType> z,
   for (int n = nmax -1; n >= 0; n--) {
     r[n] = -static_cast<FloatType>(1)/r[n+1] + static_cast<FloatType>(2*n+1)/z;
   }
+//  r[0] = nmm::cos(z)/nmm::sin(z);
+  nmm::cout << "R0 = " << r[0] <<" at arg = "<<z<<'\n';
 }
 
 void convertRtoD1(const std::complex<FloatType> z,
@@ -138,9 +140,9 @@ void evalDownwardD1 (const std::complex<FloatType> z,
     D1[n - 1] = static_cast<FloatType>(n)*zinv - c_one/
         (D1[n] + static_cast<FloatType>(n)*zinv);
   }
-// //   r0 = cot(z)
-//  std::complex<FloatType> r0 = nmm::cos(z)/nmm::sin(z);
-//  D1[0] = r0; // - n/mx;
+ //   r0 = cot(z)
+  std::complex<FloatType> r0 = nmm::cos(z)/nmm::sin(z);
+  D1[0] = r0; // - n/mx;
 }
 
 // ********************************************************************** //
