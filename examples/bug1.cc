@@ -34,25 +34,26 @@
 int main(int argc, char *argv[]) {
   try {
     nmie::MultiLayerMieApplied<double> multi_layer_mie;
-    const std::complex<double> index_Si(4, 0.01);
+    const std::complex<double> index_Si(4, 0.0);
     double delta = 1e-5;
-    double core_r = 100; //nm Si
+    double core_r = 100.; //nm Si
     double host = 2.;
+    double WL = 200.;
     multi_layer_mie.AddTargetLayer(core_r*host, index_Si/host);
-    multi_layer_mie.SetWavelength(400-delta);
+    multi_layer_mie.SetWavelength(WL-delta);
     multi_layer_mie.RunMieCalculation();
-    double Qsca = multi_layer_mie.GetQsca();
-    printf("at WL = 400-(%g) the result is (Qsca - ref)=%15.14g\n", delta, Qsca-2.382076221);
+    double Qabs = multi_layer_mie.GetQabs();
+    printf("at WL = %g-(%g) the result is Qabs = %15.14g\n", WL, delta, Qabs);
 
-    multi_layer_mie.SetWavelength(400);
+    multi_layer_mie.SetWavelength(WL);
     multi_layer_mie.RunMieCalculation();
-    Qsca = multi_layer_mie.GetQsca();
-    printf("at WL = 400 the result is (Qsca - ref)=%15.14g\n", Qsca-2.382076221);
+    Qabs = multi_layer_mie.GetQabs();
+    printf("at WL = %g the result is Qabs = %15.14g\n", WL, Qabs);
 
-//    multi_layer_mie.SetWavelength(400+delta);
-//    multi_layer_mie.RunMieCalculation();
-//    Qsca = multi_layer_mie.GetQsca();
-//    printf("Qsca = %15.14g\n", Qsca-2.382076221);
+    multi_layer_mie.SetWavelength(WL+delta);
+    multi_layer_mie.RunMieCalculation();
+    Qabs = multi_layer_mie.GetQabs();
+    printf("at WL = %g+(%g) the result is Qabs = %15.14g\n", WL, delta, Qabs);
   } catch( const std::invalid_argument& ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
