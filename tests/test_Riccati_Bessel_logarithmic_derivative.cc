@@ -142,6 +142,11 @@ TEST(KaptyenTest, HandlesInput) {
   // find NStar such that l_nstar(z) - l_nmax(z) >= valid_digits
   int NStar = nmie::getNStar(5070, z,6);
   EXPECT_GE(NStar, 10130);
+//  const double pi=3.14159265358979323846;
+//  z = std::complex<double>(100,100);
+//  l = nmie::evalKapteynNumberOfLostSignificantDigits(1, z);
+//  EXPECT_EQ(l, 0)<<"Should be equal";
+
 }
 
 

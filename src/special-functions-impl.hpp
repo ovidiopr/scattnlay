@@ -87,13 +87,32 @@ int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
   return nstar;
 }
 
+// Custom implementation of complex cot function to avoid overflow
+// if Im(z) < 0, then it evaluates cot(z) as conj(cot(conj(z)))
+const std::complex<FloatType>
+complex_cot(const std::complex<FloatType> z) {
+  auto Remx = z.real();
+  auto Immx = z.imag();
+  int sign = (Immx>0) ? 1: -1; // use complex conj if needed for exp and return
+  auto exp = nmm::exp(-2*sign*Immx);
+  auto tan = nmm::tan(Remx);
+  auto a = tan -  exp*tan;
+  auto b =  1 + exp;
+  auto c = -1 + exp;
+  auto d = tan + exp* tan;
+  auto c_one = std::complex<FloatType>(0, 1);
+  return (a*c + b*d)/(pow2(c) + pow2(d)) +
+      c_one * (sign* (b*c - a*d)/(pow2(c) + pow2(d)));
+}
+
 // Forward iteration for evaluation of ratio of the Riccati–Bessel functions
 void evalForwardR (const std::complex<FloatType> z,
                    std::vector<std::complex<FloatType> >& r) {
   if (r.size() < 1) throw std::invalid_argument(
       "We need non-zero evaluations of ratio of the Riccati–Bessel functions.\n");
   // r0 = cot(z)
-  r[0] = nmm::cos(z)/nmm::sin(z);
+//  r[0] = nmm::cos(z)/nmm::sin(z);
+  r[0] = complex_cot(z);
   for (unsigned int n = 0; n < r.size() - 1; n++) {
     r[n+1] = static_cast<FloatType>(1)/( static_cast<FloatType>(2*n+1)/z - r[n] );
   }
@@ -141,9 +160,8 @@ void evalDownwardD1 (const std::complex<FloatType> z,
         (D1[n] + static_cast<FloatType>(n)*zinv);
   }
  //   r0 = cot(z)
-//  std::complex<FloatType> r0 = nmm::cos(z)/nmm::sin(z);
-//  D1[0] = r0; // - n/mx;
-  //
+ D1[0] = complex_cot(z); // - n/mx;
+
 //  printf("D1[0] = (%16.15g, %16.15g) z=(%16.15g,%16.15g)\n", D1[0].real(),D1[0].imag(),
 //         z.real(),z.imag());
 }
