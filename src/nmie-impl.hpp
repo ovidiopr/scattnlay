@@ -393,18 +393,18 @@ namespace nmie {
                                std::vector<std::complex<FloatType> >& D1,
                                std::vector<std::complex<FloatType> >& D3) {
     evalDownwardD1(z, D1);
-    int lnmx = evalKapteynNumberOfLostSignificantDigits(nmax_, z);
-    std::vector<std::complex<FloatType> > r;
-    if (lnmx < 4) {
-      r.resize(nmax_+1);
-      evalForwardR(z, r);
-    } else {
-      int valid_digits = 6;
-      int nstar = getNStar(nmax_, z, valid_digits);
-      r.resize(nstar);
-      evalBackwardR(z,r);
-    }
-    convertRtoD1(z, r, D1);
+//    int lnmx = evalKapteynNumberOfLostSignificantDigits(nmax_, z);
+//    std::vector<std::complex<FloatType> > r;
+//    if (lnmx < 4) {
+//      r.resize(nmax_+1);
+//      evalForwardR(z, r);
+//    } else {
+//      int valid_digits = 6;
+//      int nstar = getNStar(nmax_, z, valid_digits);
+//      r.resize(nstar);
+//      evalBackwardR(z,r);
+//    }
+//    convertRtoD1(z, r, D1);
 
     // TODO: Do we need this check?
     // if (cabs(D1[0]) > 1.0e15) {

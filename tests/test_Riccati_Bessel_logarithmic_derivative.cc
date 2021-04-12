@@ -49,35 +49,36 @@ int LeRu_cutoff(std::complex<double> z) {
 
 
 TEST(D1test, mpmath_generated_input) {
-  double min_abs_tol = 1e-13;
-  for (const auto &data : D1_test_10digits) {
+  double min_abs_tol = 2e-11;
+  for (const auto &data : D1_test_16digits) {
     auto z = std::get<0>(data);
     auto n = std::get<1>(data);
-    auto D1_mpmath = std::get<2>(data);
-    auto re_abs_tol = (std::get<3>(data)>min_abs_tol) ? std::get<3>(data) : min_abs_tol;
-    auto im_abs_tol = (std::get<4>(data)>min_abs_tol) ? std::get<4>(data) : min_abs_tol;
+    auto D1_mp = std::get<2>(data);
+    auto re_abs_tol = ( std::get<3>(data) > min_abs_tol && std::real(D1_mp) < min_abs_tol)
+        ? std::get<3>(data) : min_abs_tol;
+    auto im_abs_tol = ( std::get<4>(data) > min_abs_tol && std::imag(D1_mp) < min_abs_tol)
+        ? std::get<4>(data) : min_abs_tol;
     // if re(D1) < 0.5 then round will give 0. To avoid zero tolerance add one.
-    // To
-    re_abs_tol *= std::abs(std::round(std::real(D1_mpmath))) + 11;
-    im_abs_tol *= std::abs(std::round(std::imag(D1_mpmath))) + 11;
+    re_abs_tol *= std::abs(std::round(std::real(D1_mp))) + 1;
+    im_abs_tol *= std::abs(std::round(std::imag(D1_mp))) + 1;
     auto Nstop = LeRu_cutoff(z)+1;
-    std::vector<std::complex<nmie::FloatType>> Db(Nstop),Dold(Nstop+25), r;
+    std::vector<std::complex<nmie::FloatType>> Db(Nstop),Dold(Nstop+35), r;
     int valid_digits = 6;
     int nstar = nmie::getNStar(Nstop, z, valid_digits);
     r.resize(nstar);
     nmie::evalBackwardR(z,r);
     nmie::convertRtoD1(z, r, Db);
     if (n > Db.size()) continue;
-    EXPECT_NEAR(std::real(Db[n]), std::real(D1_mpmath), re_abs_tol)
-              << "b at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
-    EXPECT_NEAR(std::imag(Db[n]), std::imag(D1_mpmath), im_abs_tol)
-              << "b at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
+    EXPECT_NEAR(std::real(Db[n]), std::real(D1_mp), re_abs_tol)
+              << "Db at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
+    EXPECT_NEAR(std::imag(Db[n]), std::imag(D1_mp), im_abs_tol)
+              << "Db at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
     nmie::evalDownwardD1(z, Dold);
     if (n > Dold.size()) continue;
-    EXPECT_NEAR(std::real(Dold[n]), std::real(D1_mpmath), re_abs_tol)
-              << "b at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
-    EXPECT_NEAR(std::imag(Dold[n]), std::imag(D1_mpmath), im_abs_tol)
-              << "b at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
+    EXPECT_NEAR(std::real(Dold[n]), std::real(D1_mp), re_abs_tol)
+              << "Dold at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
+    EXPECT_NEAR(std::imag(Dold[n]), std::imag(D1_mp), im_abs_tol)
+              << "Dold at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
 
   }
 }

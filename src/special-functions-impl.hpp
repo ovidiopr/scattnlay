@@ -143,6 +143,9 @@ void evalDownwardD1 (const std::complex<FloatType> z,
  //   r0 = cot(z)
 //  std::complex<FloatType> r0 = nmm::cos(z)/nmm::sin(z);
 //  D1[0] = r0; // - n/mx;
+  //
+//  printf("D1[0] = (%16.15g, %16.15g) z=(%16.15g,%16.15g)\n", D1[0].real(),D1[0].imag(),
+//         z.real(),z.imag());
 }
 
 // ********************************************************************** //

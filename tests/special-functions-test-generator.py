@@ -23,6 +23,8 @@ Du_test = [
 [1, [2*mp.pi,  -1],   0, 0, 'pi'],
 [1, [2*mp.pi,  mp.pi],   0, 0, 'pi'],
 [1, [2*mp.pi,  1],   0, 0, 'pi'],
+[1, [mp.pi,  0],   0, 0, 'pi'],
+[1, [np.pi,  0],   0, 0, 'pi'],
 ]
 # // Dtest refractive index is m={1.05,1}, the size parameter is x = 80
 n_list = [0,1,30,50,60,70,75,80,85,90,99,116,130];
@@ -120,8 +122,8 @@ def get_test_data(Du_test, output_dps, max_num_elements_of_n_list):
 
 
 def main ():
-    output_dps = 12
-    max_num_elements_of_nlist = 15
+    output_dps = 16
+    max_num_elements_of_nlist = 51
 
     out_filename = 'test_spec_functions_data.h'
     output_str = get_test_data(Du_test, output_dps, max_num_elements_of_nlist)
