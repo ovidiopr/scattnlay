@@ -37,6 +37,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include "nmie-precision.hpp"
 #ifdef MULTI_PRECISION
 #include <boost/math/constants/constants.hpp>
 #endif
@@ -47,7 +48,27 @@ namespace nmie {
                 std::vector<std::vector<std::complex<double> > >& an, std::vector<std::vector<std::complex<double> > >& bn,
                 std::vector<std::vector<std::complex<double> > >& cn, std::vector<std::vector<std::complex<double> > >& dn);
 
-  // pl, nmax, mode_n, mode_type
+//helper functions
+
+
+template<class T> inline T pow2(const T value) {return value*value;}
+
+template<class T> inline T cabs(const std::complex<T> value)
+{return nmm::sqrt(pow2(value.real()) + pow2(value.imag()));}
+
+template <typename FloatType>
+int newround(FloatType x) {
+  return x >= 0 ? static_cast<int>(x + 0.5):static_cast<int>(x - 0.5);
+  //return x >= 0 ? (x + 0.5).convert_to<int>():(x - 0.5).convert_to<int>();
+}
+template<typename T>
+inline std::complex<T> my_exp(const std::complex<T>& x) {
+  using std::exp; // use ADL
+  T const& r = exp(x.real());
+  return std::polar(r, x.imag());
+}
+
+// pl, nmax, mode_n, mode_type
     int nMie(const unsigned int L,
            const int pl,
            std::vector<double>& x, std::vector<std::complex<double> >& m,
