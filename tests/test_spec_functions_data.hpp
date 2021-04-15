@@ -1,5 +1,7 @@
 // complex(z), n, complex(D1(n,z)), abs_err_real, abs_err_imag
-std::vector< std::tuple< std::complex<double>, int, std::complex<double>, double, double > >D1_test_16digits = {
+std::vector< std::tuple< std::complex<double>, int, std::complex<double>, double, double > >
+D1_test_16digits
+= {
 {{0.07425,0.0},0,{13.44325436668153,0.0},1.3e-15,0.0},
 {{0.07425,0.0},1,{26.92117459633998,0.0},2.7e-15,0.0},
 {{0.07425,0.0},2,{40.39343233283062,0.0},4.0e-15,0.0},
@@ -562,10 +564,4 @@ std::vector< std::tuple< std::complex<double>, int, std::complex<double>, double
 {{3.141592653589793,0.0},17,{5.644081624955091,0.0},5.6e-16,0.0},
 {{3.141592653589793,0.0},18,{5.966831036716779,0.0},6.0e-16,0.0},
 {{3.141592653589793,0.0},20,{6.611070983143533,0.0},6.6e-16,0.0},
-};
-
-// complex(z), n, complex(D1(n,z)), abs_err_real, abs_err_imag
-std::vector< std::tuple< std::complex<double>, int, std::complex<double>, double, double > >D1_test_5digits = {
-    {{0.07425, 0.0}, 0, {13.443, 0.0}, 1.3e-3, 0.0},
-    {{7.5, 0.0}, 0, {0.36954, 0.0}, 3.7e-5, 0.0},
 };

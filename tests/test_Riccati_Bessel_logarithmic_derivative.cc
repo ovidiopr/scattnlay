@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "../src/nmie-impl.hpp"
-#include "test_spec_functions_data.h"
+#include "test_spec_functions_data.hpp"
 // From W. Yang APPLIED OPTICS Vol. 42, No. 9,  20 March 2003
 // Dtest refractive index is m={1.05,1}, the size parameter is x = 80
 std::vector<int> Dtest_n({0,1,30,50,60,70,75,80,85,90,99,116,130});
