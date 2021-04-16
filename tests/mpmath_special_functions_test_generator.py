@@ -15,7 +15,6 @@ class TestData:
 
     def cpp_parse(self, list_to_parse):
         self.comment = list_to_parse[0]
-        print(self.comment)
         if self.comment[:2] != '//': raise ValueError('Not a comment')
         self.typeline = list_to_parse[1]
         if 'std::vector' not in self.typeline: raise ValueError('Unexpected C++ container')
@@ -112,7 +111,7 @@ class UpdateSpecialFunctionsEvaluations:
         return z_str
 
     def get_test_data(self, Du_test, output_dps, max_num_elements_of_n_list, func, funcname):
-        output_list = ['// complex(z), n, complex(D1(n,z)), abs_err_real, abs_err_imag',
+        output_list = ['// complex(z), n, complex(f(n,z)), abs_err_real, abs_err_imag',
         'std::vector< std::tuple< std::complex<double>, int, std::complex<double>, double, double > >',
         str(funcname)+'_test_' + str(output_dps) + 'digits','= {']
         for z_record in Du_test:
@@ -122,7 +121,9 @@ class UpdateSpecialFunctionsEvaluations:
             mp.mp.dps = 20
             z = mp.mpf(x) * mp.mpc(mr, mi)
             n_list = self.get_n_list(z, max_num_elements_of_n_list)
+            if z_record[4] == 'Yang': n_list = [0,1,30,50,60,70,75,80,85,90,99,116,130]
             print(z, n_list)
+            failed_evaluations = 0
             for n in n_list:
                 mp.mp.dps = 20
                 old_z_string = self.get_test_data_nlist(z_record, output_dps, n, func)
@@ -139,7 +140,9 @@ class UpdateSpecialFunctionsEvaluations:
                 if new_z_string != '':
                     output_list.append(new_z_string)
                 else:
-                    break
+                    failed_evaluations += 1
+                #     break
+            print("\nFailed evaluations ", failed_evaluations, ' of ', len(n_list))
         output_list.append('};')
         return output_list
 
@@ -156,8 +159,12 @@ def main():
     sf_evals = UpdateSpecialFunctionsEvaluations(filename='test_spec_functions_data.hpp',
                                                  complex_arguments=mia.complex_arguments,
                                                  output_dps=16, max_num_elements_of_nlist=51)
-                                                 # output_dps=3, max_num_elements_of_nlist=3)
+                                                 # output_dps=5, max_num_elements_of_nlist=3)
     # sf_evals.run_test(mrb.D1, 'D1')
+    sf_evals.run_test(mrb.D2, 'D2')
+    # sf_evals.run_test(mrb.D3, 'D3')
+    # sf_evals.run_test(mrb.psi_div_ksi, 'psi_div_ksi')
+    # sf_evals.run_test(mrb.psi_div_xi, 'psi_div_xi')
     with open(sf_evals.filename, 'w') as out_file:
         out_file.write(sf_evals.get_file_content())
 
