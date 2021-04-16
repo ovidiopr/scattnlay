@@ -393,24 +393,7 @@ namespace nmie {
                                std::vector<std::complex<FloatType> >& D1,
                                std::vector<std::complex<FloatType> >& D3) {
     evalDownwardD1(z, D1);
-//    int lnmx = evalKapteynNumberOfLostSignificantDigits(nmax_, z);
-//    std::vector<std::complex<FloatType> > r;
-//    if (lnmx < 4) {
-//      r.resize(nmax_+1);
-//      evalForwardR(z, r);
-//    } else {
-//      int valid_digits = 6;
-//      int nstar = getNStar(nmax_, z, valid_digits);
-//      r.resize(nstar);
-//      evalBackwardR(z,r);
-//    }
-//    convertRtoD1(z, r, D1);
 
-    // TODO: Do we need this check?
-    // if (cabs(D1[0]) > 1.0e15) {
-    //   throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
-    // //printf("Warning: Potentially unstable D1! Please, try to change input parameters!\n");
-    // }
 
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
     PsiZeta_[0] = static_cast<FloatType>(0.5)*(static_cast<FloatType>(1.0) - std::complex<FloatType>(nmm::cos(2.0*z.real()), nmm::sin(2.0*z.real()))

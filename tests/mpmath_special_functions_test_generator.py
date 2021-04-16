@@ -90,6 +90,7 @@ class UpdateSpecialFunctionsEvaluations:
         return sorted(n_set)
 
     def get_test_data_nlist(self, z_record, output_dps, n, func):
+        isNeedMoreDPS = False
         x = str(z_record[0])
         mr = str(z_record[1][0])
         mi = str(z_record[1][1])
@@ -106,9 +107,12 @@ class UpdateSpecialFunctionsEvaluations:
                      mp.nstr(mp.fabs(D1nz.real * 10 ** -output_dps), 2) + ',' +
                      mp.nstr(mp.fabs(D1nz.imag * 10 ** -output_dps), 2) +
                      '},')
+            if mp.nstr(D1nz.real, output_dps) == '0.0' \
+                or mp.nstr(D1nz.imag, output_dps) == '0.0':
+                isNeedMoreDPS = True
         except:
-            pass
-        return z_str
+            isNeedMoreDPS = True
+        return z_str, isNeedMoreDPS
 
     def get_test_data(self, Du_test, output_dps, max_num_elements_of_n_list, func, funcname):
         output_list = ['// complex(z), n, complex(f(n,z)), abs_err_real, abs_err_imag',
@@ -126,16 +130,17 @@ class UpdateSpecialFunctionsEvaluations:
             failed_evaluations = 0
             for n in n_list:
                 mp.mp.dps = 20
-                old_z_string = self.get_test_data_nlist(z_record, output_dps, n, func)
+                old_z_string, isNeedMoreDPS = self.get_test_data_nlist(z_record, output_dps, n, func,)
                 mp.mp.dps = 37
-                new_z_string = self.get_test_data_nlist(z_record, output_dps, n, func)
-                while old_z_string != new_z_string:
+                new_z_string, isNeedMoreDPS = self.get_test_data_nlist(z_record, output_dps, n, func)
+                while old_z_string != new_z_string \
+                        or isNeedMoreDPS:
                     new_dps = int(mp.mp.dps * 1.41)
                     if new_dps > 300: break
                     mp.mp.dps = new_dps
                     print("New dps = ", mp.mp.dps, 'n =', n, ' (max ',n_list[-1],') for z =', z, '     ', end='')
                     old_z_string = new_z_string
-                    new_z_string = self.get_test_data_nlist(z_record, output_dps, n, func)
+                    new_z_string, isNeedMoreDPS = self.get_test_data_nlist(z_record, output_dps, n, func)
 
                 if new_z_string != '':
                     output_list.append(new_z_string)
@@ -161,9 +166,10 @@ def main():
                                                  output_dps=16, max_num_elements_of_nlist=51)
                                                  # output_dps=5, max_num_elements_of_nlist=3)
     # sf_evals.run_test(mrb.D1, 'D1')
-    sf_evals.run_test(mrb.D2, 'D2')
-    # sf_evals.run_test(mrb.D3, 'D3')
+    # sf_evals.run_test(mrb.D2, 'D2')
+    sf_evals.run_test(mrb.D3, 'D3')
     # sf_evals.run_test(mrb.psi_div_ksi, 'psi_div_ksi')
+    # sf_evals.run_test(mrb.psi_mul_ksi, 'psi_mul_ksi')
     # sf_evals.run_test(mrb.psi_div_xi, 'psi_div_xi')
     with open(sf_evals.filename, 'w') as out_file:
         out_file.write(sf_evals.get_file_content())

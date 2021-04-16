@@ -23,6 +23,9 @@ def ksi(n,z):
 def psi_div_ksi(n,z):
     return psi(n,z)/ksi(n,z)
 
+def psi_mul_ksi(n,z):
+    return psi(n,z)*ksi(n,z)
+
 def psi_div_xi(n,z):
     return psi(n,z)/xi(n,z)
 
