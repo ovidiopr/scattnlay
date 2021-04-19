@@ -260,12 +260,6 @@ inline std::complex<T> my_exp(const std::complex<T>& x) {
     std::vector<std::vector< std::complex<FloatType> > > E_, H_;  // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<FloatType> > > Es_, Hs_;  // {X[], Y[], Z[]}
     std::vector<std::complex<FloatType> > S1_, S2_;
-
-
-    //Temporary variables
-    std::vector<std::complex<FloatType> > PsiZeta_;
-
-
   };  // end of class MultiLayerMie
 
 }  // end of namespace nmie

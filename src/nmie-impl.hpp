@@ -393,18 +393,7 @@ namespace nmie {
                                std::vector<std::complex<FloatType> >& D1,
                                std::vector<std::complex<FloatType> >& D3) {
     evalDownwardD1(z, D1);
-
-
-    // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
-    PsiZeta_[0] = static_cast<FloatType>(0.5)*(static_cast<FloatType>(1.0) - std::complex<FloatType>(nmm::cos(2.0*z.real()), nmm::sin(2.0*z.real()))
-                 *static_cast<FloatType>(nmm::exp(-2.0*z.imag())));
-    D3[0] = std::complex<FloatType>(0.0, 1.0);
-    const std::complex<FloatType> zinv = std::complex<FloatType>(1.0, 0.0)/z;
-    for (int n = 1; n <= nmax_; n++) {
-      PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<FloatType>(n)*zinv - D1[n - 1])
-                                   *(static_cast<FloatType>(n)*zinv - D3[n - 1]);
-      D3[n] = D1[n] + std::complex<FloatType>(0.0, 1.0)/PsiZeta_[n];
-    }
+    evalUpwardD3 (z, D1, D3);
   }
 
 
@@ -424,20 +413,12 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcPsiZeta(std::complex<FloatType> z,
                                   std::vector<std::complex<FloatType> >& Psi,
                                   std::vector<std::complex<FloatType> >& Zeta) {
-
-    std::complex<FloatType> c_i(0.0, 1.0);
     std::vector<std::complex<FloatType> > D1(nmax_ + 1), D3(nmax_ + 1);
-
     // First, calculate the logarithmic derivatives
     calcD1D3(z, D1, D3);
-
     // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
-    Psi[0] = std::sin(z);
-    Zeta[0] = std::sin(z) - c_i*std::cos(z);
-    for (int n = 1; n <= nmax_; n++) {
-      Psi[n]  =  Psi[n - 1]*(std::complex<FloatType>(n,0.0)/z - D1[n - 1]);
-      Zeta[n] = Zeta[n - 1]*(std::complex<FloatType>(n,0.0)/z - D3[n - 1]);
-    }
+    evalUpwardPsi(z,  D1, Psi);
+    evalUpwardZeta(z, D3, Zeta);
   }
 
 
@@ -584,7 +565,6 @@ namespace nmie {
 
     an_.resize(nmax_);
     bn_.resize(nmax_);
-    PsiZeta_.resize(nmax_ + 1);
 
     std::vector<std::complex<FloatType> > PsiXL(nmax_ + 1), ZetaXL(nmax_ + 1);
 

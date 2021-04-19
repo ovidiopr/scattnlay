@@ -68,9 +68,8 @@ class UpdateSpecialFunctionsEvaluations:
         if len(new_record) < 6: raise ValueError('Not enough lines in record:', new_record)
         self.evaluated_data.append(TestData(new_record, self.filetype))
 
-
     def get_file_content(self):
-        self.evaluated_data.sort(key=lambda x: x.testname)#, reverse=True)
+        self.evaluated_data.sort(key=lambda x: x.testname)  # , reverse=True)
         out_string = ''
         for record in self.evaluated_data:
             out_string += record.get_string() + '\n'
@@ -97,6 +96,7 @@ class UpdateSpecialFunctionsEvaluations:
         z_str = ''
         try:
             z = mp.mpf(x) * mp.mpc(mr, mi)
+            if self.is_only_x: z = mp.mpf(x)
             D1nz = func(n, z)
             z_str = ('{{' +
                      mp.nstr(z.real, output_dps * 2) + ',' +
@@ -108,7 +108,7 @@ class UpdateSpecialFunctionsEvaluations:
                      mp.nstr(mp.fabs(D1nz.imag * 10 ** -output_dps), 2) +
                      '},')
             if mp.nstr(D1nz.real, output_dps) == '0.0' \
-                or mp.nstr(D1nz.imag, output_dps) == '0.0':
+                    or mp.nstr(D1nz.imag, output_dps) == '0.0':
                 isNeedMoreDPS = True
         except:
             isNeedMoreDPS = True
@@ -116,8 +116,8 @@ class UpdateSpecialFunctionsEvaluations:
 
     def get_test_data(self, Du_test, output_dps, max_num_elements_of_n_list, func, funcname):
         output_list = ['// complex(z), n, complex(f(n,z)), abs_err_real, abs_err_imag',
-        'std::vector< std::tuple< std::complex<double>, int, std::complex<double>, double, double > >',
-        str(funcname)+'_test_' + str(output_dps) + 'digits','= {']
+                       'std::vector< std::tuple< std::complex<double>, int, std::complex<double>, double, double > >',
+                       str(funcname) + '_test_' + str(output_dps) + 'digits', '= {']
         for z_record in Du_test:
             x = str(z_record[0])
             mr = str(z_record[1][0])
@@ -125,12 +125,12 @@ class UpdateSpecialFunctionsEvaluations:
             mp.mp.dps = 20
             z = mp.mpf(x) * mp.mpc(mr, mi)
             n_list = self.get_n_list(z, max_num_elements_of_n_list)
-            if z_record[4] == 'Yang': n_list = [0,1,30,50,60,70,75,80,85,90,99,116,130]
+            if z_record[4] == 'Yang': n_list = [0, 1, 30, 50, 60, 70, 75, 80, 85, 90, 99, 116, 130]
             print(z, n_list)
             failed_evaluations = 0
             for n in n_list:
                 mp.mp.dps = 20
-                old_z_string, isNeedMoreDPS = self.get_test_data_nlist(z_record, output_dps, n, func,)
+                old_z_string, isNeedMoreDPS = self.get_test_data_nlist(z_record, output_dps, n, func, )
                 mp.mp.dps = 37
                 new_z_string, isNeedMoreDPS = self.get_test_data_nlist(z_record, output_dps, n, func)
                 while old_z_string != new_z_string \
@@ -138,7 +138,7 @@ class UpdateSpecialFunctionsEvaluations:
                     new_dps = int(mp.mp.dps * 1.41)
                     if new_dps > 300: break
                     mp.mp.dps = new_dps
-                    print("New dps = ", mp.mp.dps, 'n =', n, ' (max ',n_list[-1],') for z =', z, '     ', end='')
+                    print("New dps = ", mp.mp.dps, 'n =', n, ' (max ', n_list[-1], ') for z =', z, '     ', end='')
                     old_z_string = new_z_string
                     new_z_string, isNeedMoreDPS = self.get_test_data_nlist(z_record, output_dps, n, func)
 
@@ -147,27 +147,59 @@ class UpdateSpecialFunctionsEvaluations:
                 else:
                     failed_evaluations += 1
                 #     break
-            print("\nFailed evaluations ", failed_evaluations, ' of ', len(n_list))
+            result_str = "All done!"
+            if failed_evaluations > 0: result_str = " FAILED!"
+            print("\n", result_str, "Failed evaluations ", failed_evaluations, ' of ', len(n_list))
         output_list.append('};')
         return output_list
 
-    def run_test(self, func, funcname):
-        out_list_result = self.get_test_data(mia.complex_arguments, self.output_dps,
+    def run_test(self, func, funcname, is_only_x=False):
+        self.is_only_x = is_only_x
+        self.remove_argument_duplicates()
+        out_list_result = self.get_test_data(self.complex_arguments, self.output_dps,
                                              self.max_num_elements_of_nlist,
                                              func, funcname)
-        testname = str(funcname)+'_test_' + str(self.output_dps) + 'digits'
+        testname = str(funcname) + '_test_' + str(self.output_dps) + 'digits'
         self.remove(testname)
         self.add_record(out_list_result)
+
+    def remove_argument_duplicates(self):
+        print("Arguments in input: ", len(self.complex_arguments))
+        mp.mp.dps = 20
+        self.complex_arguments.sort()
+        filtered_list = []
+        filtered_list.append(self.complex_arguments[0])
+        for i in range(1, len(self.complex_arguments)):
+            # if x and m are the same: continue
+            if (filtered_list[-1][0] == self.complex_arguments[i][0] and
+                    filtered_list[-1][1] == self.complex_arguments[i][1]):
+                continue
+            # argument list is sorted, so when only x is needed
+            # the record with the largest m
+            if (self.is_only_x
+                    and filtered_list[-1][0] == self.complex_arguments[i][0]):
+                # continue
+                del filtered_list[-1]
+            filtered_list.append(self.complex_arguments[i])
+        self.complex_arguments = filtered_list
+        # print(self.complex_arguments)
+        print("Arguments after filtering: ", len(self.complex_arguments))
+        # exit(0)
 
 
 def main():
     sf_evals = UpdateSpecialFunctionsEvaluations(filename='test_spec_functions_data.hpp',
                                                  complex_arguments=mia.complex_arguments,
                                                  output_dps=16, max_num_elements_of_nlist=51)
-                                                 # output_dps=5, max_num_elements_of_nlist=3)
+    # output_dps=5, max_num_elements_of_nlist=3)
     # sf_evals.run_test(mrb.D1, 'D1')
     # sf_evals.run_test(mrb.D2, 'D2')
-    sf_evals.run_test(mrb.D3, 'D3')
+    # sf_evals.run_test(mrb.D3, 'D3')
+    # sf_evals.run_test(mrb.psi, 'psi', is_only_x=True)
+    # # In literature Zeta or Ksi denote the Riccati-Bessel function of third kind.
+    sf_evals.run_test(mrb.ksi, 'zeta', is_only_x=True)
+
+    # sf_evals.run_test(mrb.psi, 'psi')
     # sf_evals.run_test(mrb.psi_div_ksi, 'psi_div_ksi')
     # sf_evals.run_test(mrb.psi_mul_ksi, 'psi_mul_ksi')
     # sf_evals.run_test(mrb.psi_div_xi, 'psi_div_xi')

@@ -148,25 +148,6 @@ void convertRtoD1(const std::complex<FloatType> z,
 }
 
 // ********************************************************************** //
-void evalDownwardD1 (const std::complex<FloatType> z,
-               std::vector<std::complex<FloatType> >& D1) {
-  int nmax = D1.size() - 1;
-  // Downward recurrence for D1 - equations (16a) and (16b)
-  D1[nmax] = std::complex<FloatType>(0.0, 0.0);
-  std::complex<FloatType> c_one(1.0, 0.0);
-  const std::complex<FloatType> zinv = std::complex<FloatType>(1.0, 0.0)/z;
-  for (unsigned int n = nmax; n > 0; n--) {
-    D1[n - 1] = static_cast<FloatType>(n)*zinv - c_one/
-        (D1[n] + static_cast<FloatType>(n)*zinv);
-  }
- //   r0 = cot(z)
- D1[0] = complex_cot(z); // - n/mx;
-
-//  printf("D1[0] = (%16.15g, %16.15g) z=(%16.15g,%16.15g)\n", D1[0].real(),D1[0].imag(),
-//         z.real(),z.imag());
-}
-
-// ********************************************************************** //
 void evalForwardD (const std::complex<FloatType> z,
                      std::vector<std::complex<FloatType> >& D) {
   int nmax = D.size();
@@ -185,18 +166,6 @@ void evalForwardD1 (const std::complex<FloatType> z,
   evalForwardD(z,D);
 }
 
-  //**********************************************************************************//
-  // This function calculates the logarithmic derivatives of the Riccati-Bessel       //
-  // functions (D1 and D3) for a complex argument (z).                                //
-  // Equations (16a), (16b) and (18a) - (18d)                                         //
-  //                                                                                  //
-  // Input parameters:                                                                //
-  //   z: Complex argument to evaluate D1 and D3                                      //
-  //   nmax_: Maximum number of terms to calculate D1 and D3                          //
-  //                                                                                  //
-  // Output parameters:                                                               //
-  //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions                //
-  //**********************************************************************************//
 //  template <typename FloatType>
 //  void MultiLayerMie<FloatType>::calcD1D3(const std::complex<FloatType> z,
 //                               std::vector<std::complex<FloatType> >& D1,
@@ -334,6 +303,80 @@ void evalForwardD1 (const std::complex<FloatType> z,
 //    Ne1n[2] = -sin(Phi)*Pi*Dn*rn/Rho;
 //  }  // end of MultiLayerMie::calcSpherHarm(...)
 //
+
+//**********************************************************************************//
+// This functions calculate the logarithmic derivatives of the Riccati-Bessel       //
+// functions (D1 and D3) for a complex argument (z).                                //
+// Equations (16a), (16b) and (18a) - (18d)                                         //
+//                                                                                  //
+// Input parameters:                                                                //
+//   z: Complex argument to evaluate D1 and D3                                      //
+//   nmax_: Maximum number of terms to calculate D1 and D3                          //
+//                                                                                  //
+// Output parameters:                                                               //
+//   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions                //
+//**********************************************************************************//
+void evalDownwardD1 (const std::complex<FloatType> z,
+                     std::vector<std::complex<FloatType> >& D1) {
+  int nmax = D1.size() - 1;
+  // Downward recurrence for D1 - equations (16a) and (16b)
+  D1[nmax] = std::complex<FloatType>(0.0, 0.0);
+  std::complex<FloatType> c_one(1.0, 0.0);
+  const std::complex<FloatType> zinv = std::complex<FloatType>(1.0, 0.0)/z;
+  for (unsigned int n = nmax; n > 0; n--) {
+    D1[n - 1] = static_cast<FloatType>(n)*zinv - c_one/
+        (D1[n] + static_cast<FloatType>(n)*zinv);
+  }
+  // Use D1[0] from upward recurrence
+  D1[0] = complex_cot(z);
+
+//  printf("D1[0] = (%16.15g, %16.15g) z=(%16.15g,%16.15g)\n", D1[0].real(),D1[0].imag(),
+//         z.real(),z.imag());
+}
+
+
+void evalUpwardD3 (const std::complex<FloatType> z,
+                   const std::vector<std::complex<FloatType> >& D1,
+                   std::vector<std::complex<FloatType> >& D3) {
+  int nmax = D1.size()-1;
+  std::vector<std::complex<FloatType> > PsiZeta(nmax+1);
+
+  // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
+  PsiZeta[0] = static_cast<FloatType>(0.5)*(static_cast<FloatType>(1.0) - std::complex<FloatType>(nmm::cos(2.0*z.real()), nmm::sin(2.0*z.real()))
+      *static_cast<FloatType>(nmm::exp(-2.0*z.imag())));
+  D3[0] = std::complex<FloatType>(0.0, 1.0);
+  const std::complex<FloatType> zinv = std::complex<FloatType>(1.0, 0.0)/z;
+  for (int n = 1; n <= nmax; n++) {
+    PsiZeta[n] = PsiZeta[n - 1]*(static_cast<FloatType>(n)*zinv - D1[n - 1])
+        *(static_cast<FloatType>(n)*zinv - D3[n - 1]);
+    D3[n] = D1[n] + std::complex<FloatType>(0.0, 1.0)/PsiZeta[n];
+  }
+}
+
+void evalUpwardPsi (const std::complex<FloatType> z,
+                    const std::vector<std::complex<FloatType> > D1,
+                   std::vector<std::complex<FloatType> >& Psi) {
+  int nmax = Psi.size() - 1;
+  std::complex<FloatType> c_i(0.0, 1.0);
+  // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
+  Psi[0] = std::sin(z);
+  for (int n = 1; n <= nmax; n++) {
+    Psi[n]  =  Psi[n - 1]*(std::complex<FloatType>(n,0.0)/z - D1[n - 1]);
+  }
+}
+
+// Sometimes in literature Zeta is also denoted as Ksi, it is a Riccati-Bessel function of third kind.
+void evalUpwardZeta (const std::complex<FloatType> z,
+                    const std::vector<std::complex<FloatType> > D3,
+                    std::vector<std::complex<FloatType> >& Zeta) {
+  int nmax = Zeta.size() - 1;
+  std::complex<FloatType> c_i(0.0, 1.0);
+  // Now, use the upward recurrence to calculate Zeta and Zeta - equations (20a) - (21b)
+  Zeta[0] = std::sin(z) - c_i*std::cos(z);
+  for (int n = 1; n <= nmax; n++) {
+    Zeta[n]  =  Zeta[n - 1]*(std::complex<FloatType>(n, 0.0)/z - D3[n - 1]);
+  }
+}
 
 }  // end of namespace nmie
 #endif  // SRC_SPECIAL_FUNCTIONS_IMPL_HPP_
