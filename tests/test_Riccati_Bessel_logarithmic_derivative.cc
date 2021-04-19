@@ -63,6 +63,29 @@ void parse_mpmath_data(const double min_abs_tol, const std::tuple< std::complex<
 }
 
 
+//TEST(zeta_test, DISABLED_mpmath_generated_input) {
+TEST(zeta_test, mpmath_generated_input) {
+  double min_abs_tol = 2e-11;
+  std::complex<double> z, zeta_mp;
+  int n;
+  double re_abs_tol,  im_abs_tol;
+  for (const auto &data : zeta_test_16digits) {
+    parse_mpmath_data(min_abs_tol, data, z, n, zeta_mp, re_abs_tol, im_abs_tol);
+    auto Nstop = LeRu_cutoff(z)+1000;
+    if (n > Nstop) continue;
+    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+35), D3(Nstop+35), zeta(Nstop);
+    nmie::evalDownwardD1(z, D1dr);
+    nmie::evalUpwardD3(z, D1dr, D3);
+    nmie::evalUpwardZeta(z, D3, zeta);
+
+    EXPECT_NEAR(std::real(zeta[n]), std::real(zeta_mp), re_abs_tol)
+              << "zeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
+    EXPECT_NEAR(std::imag(zeta[n]), std::imag(zeta_mp), im_abs_tol)
+              << "zeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
+  }
+}
+
+
 //TEST(psi_test, DISABLED_mpmath_generated_input) {
 TEST(psi_test, mpmath_generated_input) {
   double min_abs_tol = 2e-11;
@@ -71,7 +94,7 @@ TEST(psi_test, mpmath_generated_input) {
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : psi_test_16digits) {
     parse_mpmath_data(min_abs_tol, data, z, n, Psi_mp, re_abs_tol, im_abs_tol);
-    auto Nstop = LeRu_cutoff(z)+1;
+    auto Nstop = LeRu_cutoff(z)+10000;
     if (n > Nstop) continue;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+35), Psi(Nstop);
     nmie::evalDownwardD1(z, D1dr);
@@ -81,12 +104,12 @@ TEST(psi_test, mpmath_generated_input) {
               << "Psi at n=" << n << " Nstop="<< Nstop<<" z="<<z;
     EXPECT_NEAR(std::imag(Psi[n]), std::imag(Psi_mp), im_abs_tol)
               << "Psi at n=" << n << " Nstop="<< Nstop<<" z="<<z;
-
   }
 }
 
 
-TEST(D3test, mpmath_generated_input) {
+TEST(D3test, DISABLED_mpmath_generated_input) {
+//TEST(D3test, mpmath_generated_input) {
   double min_abs_tol = 2e-11;
   std::complex<double> z, D3_mp;
   int n;
@@ -107,7 +130,8 @@ TEST(D3test, mpmath_generated_input) {
 }
 
 
-TEST(D1test, mpmath_generated_input) {
+TEST(D1test, DISABLED_mpmath_generated_input) {
+//  TEST(D1test, mpmath_generated_input) {
   double min_abs_tol = 2e-11;
   std::complex<double> z, D1_mp;
   int n;
