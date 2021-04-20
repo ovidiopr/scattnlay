@@ -64,8 +64,8 @@ void parse_mpmath_data(const double min_abs_tol, const std::tuple< std::complex<
 
 template<class T> inline T pow2(const T value) {return value*value;}
 
-//TEST(zeta_test, DISABLED_mpmath_generated_input) {
-TEST(zeta_test, mpmath_generated_input) {
+//TEST(zeta_psizeta_test, DISABLED_mpmath_generated_input) {
+TEST(zeta_psizeta_test, mpmath_generated_input) {
   double min_abs_tol = 2e-5;
   std::complex<double> z, zeta_mp;
   int n;
@@ -74,10 +74,10 @@ TEST(zeta_test, mpmath_generated_input) {
     parse_mpmath_data(min_abs_tol, data, z, n, zeta_mp, re_abs_tol, im_abs_tol);
     auto Nstop = LeRu_cutoff(z)+10000;
     if (n > Nstop) continue;
-    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+135),
+    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+135), D3(Nstop+135),
         PsiZeta(Nstop+135), Psi(Nstop);
     nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardPsiZeta(z, D1dr, PsiZeta);
+    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
     nmie::evalUpwardPsi(z, D1dr, Psi);
     auto a = std::real(PsiZeta[n]);
     auto b = std::imag(PsiZeta[n]);
@@ -86,8 +86,8 @@ TEST(zeta_test, mpmath_generated_input) {
     auto c_one = std::complex<nmie::FloatType>(0, 1);
     auto zeta = (a*c + b*d)/(pow2(c) + pow2(d)) +
         c_one * ((b*c - a*d)/(pow2(c) + pow2(d)));
+//    zeta = PsiZeta[n]/Psi[n];
     if (std::isnan(std::real(zeta)) || std::isnan(std::imag(zeta))) continue;
-//    std::complex<nmie::FloatType > zeta = PsiZeta[n]/Psi[n];
 //    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+35), D3(Nstop+35), zeta(Nstop);
 //    nmie::evalDownwardD1(z, D1dr);
 //    nmie::evalUpwardD3(z, D1dr, D3);
@@ -96,6 +96,31 @@ TEST(zeta_test, mpmath_generated_input) {
     EXPECT_NEAR(std::real(zeta), std::real(zeta_mp), re_abs_tol)
               << "zeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
     EXPECT_NEAR(std::imag(zeta), std::imag(zeta_mp), im_abs_tol)
+              << "zeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
+  }
+}
+
+// Old way to evaluate Zeta
+TEST(zeta_test, DISABLED_mpmath_generated_input) {
+//TEST(zeta_test, mpmath_generated_input) {
+  double min_abs_tol = 2e-5;
+  std::complex<double> z, zeta_mp;
+  int n;
+  double re_abs_tol,  im_abs_tol;
+  for (const auto &data : zeta_test_16digits) {
+    parse_mpmath_data(min_abs_tol, data, z, n, zeta_mp, re_abs_tol, im_abs_tol);
+    auto Nstop = LeRu_cutoff(z)+10000;
+    if (n > Nstop) continue;
+    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop),
+        PsiZeta(Nstop), zeta(Nstop);
+    nmie::evalDownwardD1(z, D1dr);
+    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
+    nmie::evalUpwardZeta(z, D3, zeta);
+    if (std::isnan(std::real(zeta[n])) || std::isnan(std::imag(zeta[n]))) continue;
+
+    EXPECT_NEAR(std::real(zeta[n]), std::real(zeta_mp), re_abs_tol)
+              << "zeta[n] at n=" << n << " Nstop="<< Nstop<<" z="<<z;
+    EXPECT_NEAR(std::imag(zeta[n]), std::imag(zeta_mp), im_abs_tol)
               << "zeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
   }
 }
@@ -110,9 +135,9 @@ TEST(psizeta_test, mpmath_generated_input) {
     parse_mpmath_data(min_abs_tol, data, z, n, PsiZeta_mp, re_abs_tol, im_abs_tol);
     auto Nstop = LeRu_cutoff(z)+10000;
     if (n > Nstop) continue;
-    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+135), PsiZeta(Nstop+135);
+    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop), PsiZeta(Nstop);
     nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardPsiZeta(z, D1dr, PsiZeta);
+    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
 
     EXPECT_NEAR(std::real(PsiZeta[n]), std::real(PsiZeta_mp), re_abs_tol)
               << "PsiZeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
@@ -155,10 +180,10 @@ TEST(D3test, mpmath_generated_input) {
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : D3_test_16digits) {
     parse_mpmath_data(min_abs_tol, data, z, n, D3_mp, re_abs_tol, im_abs_tol);
-    auto Nstop = LeRu_cutoff(z)+1;
-    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+35), D3(Nstop+35);
+    auto Nstop = LeRu_cutoff(z)+35;
+    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop), PsiZeta(Nstop);
     nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardD3(z, D1dr, D3);
+    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
 
     EXPECT_NEAR(std::real(D3[n]), std::real(D3_mp), re_abs_tol)
               << "D3 at n=" << n << " Nstop="<< Nstop<<" z="<<z;

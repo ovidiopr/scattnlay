@@ -392,8 +392,9 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcD1D3(const std::complex<FloatType> z,
                                std::vector<std::complex<FloatType> >& D1,
                                std::vector<std::complex<FloatType> >& D3) {
+    std::vector<std::complex<FloatType> > PsiZeta(nmax_+1);
     evalDownwardD1(z, D1);
-    evalUpwardD3 (z, D1, D3);
+    evalUpwardD3 (z, D1, D3, PsiZeta);
   }
 
 
@@ -413,12 +414,18 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcPsiZeta(std::complex<FloatType> z,
                                   std::vector<std::complex<FloatType> >& Psi,
                                   std::vector<std::complex<FloatType> >& Zeta) {
-    std::vector<std::complex<FloatType> > D1(nmax_ + 1), D3(nmax_ + 1);
+    std::vector<std::complex<FloatType> > D1(nmax_ + 1), D3(nmax_ + 1),
+        PsiZeta(nmax_+1);
     // First, calculate the logarithmic derivatives
-    calcD1D3(z, D1, D3);
-    // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
+    evalDownwardD1(z, D1);
+    // Now, use the upward recurrence to calculate Psi equations (20ab)
     evalUpwardPsi(z,  D1, Psi);
-    evalUpwardZeta(z, D3, Zeta);
+    // Now, use the upward recurrence to calculate Psi*Zeta equations (18ad)
+    evalUpwardD3 (z, D1, D3, PsiZeta);
+    for (int i = 0; i < Zeta.size(); i++) {
+      Zeta[i] = PsiZeta[i]/Psi[i];
+    }
+//    evalUpwardZeta(z, D3, Zeta);
   }
 
 

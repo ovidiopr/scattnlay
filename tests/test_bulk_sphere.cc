@@ -57,10 +57,12 @@ TEST(BulkSphere, HandlesInput) {
     nmie.RunMieCalculation();
     double Qext = static_cast<double>(nmie.GetQext());
     double Qsca = static_cast<double>(nmie.GetQsca());
-    EXPECT_FLOAT_EQ(std::get<2>(data), Qext)
+    double Qext_Du =  std::get<2>(data);
+    double Qsca_Du =  std::get<3>(data);
+    EXPECT_FLOAT_EQ(Qext_Du, Qext)
               << "Extinction of the bulk sphere, test case:" << std::get<4>(data)
               << "\nnmax_ = " << nmie.GetMaxTerms();
-    EXPECT_FLOAT_EQ(std::get<3>(data), Qsca)
+    EXPECT_FLOAT_EQ(Qsca_Du, Qsca)
               << "Scattering of the bulk sphere, test case:" << std::get<4>(data);
   }
 
