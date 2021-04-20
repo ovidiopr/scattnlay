@@ -353,6 +353,24 @@ void evalUpwardD3 (const std::complex<FloatType> z,
   }
 }
 
+void evalUpwardPsiZeta (const std::complex<FloatType> z,
+                   const std::vector<std::complex<FloatType> >& D1,
+                   std::vector<std::complex<FloatType> >& PsiZeta) {
+  int nmax = D1.size()-1;
+  std::vector<std::complex<FloatType> > D3(nmax+1);
+
+  // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
+  PsiZeta[0] = static_cast<FloatType>(0.5)*(static_cast<FloatType>(1.0) - std::complex<FloatType>(nmm::cos(2.0*z.real()), nmm::sin(2.0*z.real()))
+      *static_cast<FloatType>(nmm::exp(-2.0*z.imag())));
+  D3[0] = std::complex<FloatType>(0.0, 1.0);
+  const std::complex<FloatType> zinv = std::complex<FloatType>(1.0, 0.0)/z;
+  for (int n = 1; n <= nmax; n++) {
+    PsiZeta[n] = PsiZeta[n - 1]*(static_cast<FloatType>(n)*zinv - D1[n - 1])
+        *(static_cast<FloatType>(n)*zinv - D3[n - 1]);
+    D3[n] = D1[n] + std::complex<FloatType>(0.0, 1.0)/PsiZeta[n];
+  }
+}
+
 void evalUpwardPsi (const std::complex<FloatType> z,
                     const std::vector<std::complex<FloatType> > D1,
                    std::vector<std::complex<FloatType> >& Psi) {
@@ -375,6 +393,37 @@ void evalUpwardZeta (const std::complex<FloatType> z,
   Zeta[0] = std::sin(z) - c_i*std::cos(z);
   for (int n = 1; n <= nmax; n++) {
     Zeta[n]  =  Zeta[n - 1]*(std::complex<FloatType>(n, 0.0)/z - D3[n - 1]);
+  }
+}
+
+void evalForwardRiccatiBessel(const FloatType x, const FloatType first, const FloatType second,
+                              std::vector<FloatType> &values) {
+  values[0] = first;
+  values[1] = second;
+  int nmax = values.size();
+  for (int i = 1; i < nmax-1; i++) {
+    values[i+1] = (1 + 2*i) * values[i]/x - values[i-1];
+  }
+}
+
+void evalChi(const FloatType x, std::vector<FloatType> &Chi) {
+  auto first = nmm::cos(x);
+  auto second = first/x + nmm::sin(x);
+  evalForwardRiccatiBessel(x, first, second, Chi);
+}
+
+void evalPsi(const FloatType x, std::vector<FloatType> &Psi) {
+  auto first = nmm::sin(x);
+  auto second = first/x - nmm::cos(x);
+  evalForwardRiccatiBessel(x, first, second, Psi);
+}
+
+void composeZeta(const std::vector<FloatType> &Psi,
+                 const std::vector<FloatType> &Chi,
+                 std::vector< std::complex<FloatType>> &Zeta) {
+  int nmax = Zeta.size();
+  for (int i = 0; i < nmax; i++) {
+    Zeta[i] = std::complex<FloatType > (Psi[i], Chi[i]);
   }
 }
 

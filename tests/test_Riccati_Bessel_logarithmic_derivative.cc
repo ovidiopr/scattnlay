@@ -62,33 +62,72 @@ void parse_mpmath_data(const double min_abs_tol, const std::tuple< std::complex<
   im_abs_tol *= std::abs(std::round(std::imag(func_mp))) + 1;
 }
 
+template<class T> inline T pow2(const T value) {return value*value;}
 
 //TEST(zeta_test, DISABLED_mpmath_generated_input) {
 TEST(zeta_test, mpmath_generated_input) {
-  double min_abs_tol = 2e-11;
+  double min_abs_tol = 2e-5;
   std::complex<double> z, zeta_mp;
   int n;
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : zeta_test_16digits) {
     parse_mpmath_data(min_abs_tol, data, z, n, zeta_mp, re_abs_tol, im_abs_tol);
-    auto Nstop = LeRu_cutoff(z)+1000;
+    auto Nstop = LeRu_cutoff(z)+10000;
     if (n > Nstop) continue;
-    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+35), D3(Nstop+35), zeta(Nstop);
+    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+135),
+        PsiZeta(Nstop+135), Psi(Nstop);
     nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardD3(z, D1dr, D3);
-    nmie::evalUpwardZeta(z, D3, zeta);
+    nmie::evalUpwardPsiZeta(z, D1dr, PsiZeta);
+    nmie::evalUpwardPsi(z, D1dr, Psi);
+    auto a = std::real(PsiZeta[n]);
+    auto b = std::imag(PsiZeta[n]);
+    auto c = std::real(Psi[n]);
+    auto d = std::imag(Psi[n]);
+    auto c_one = std::complex<nmie::FloatType>(0, 1);
+    auto zeta = (a*c + b*d)/(pow2(c) + pow2(d)) +
+        c_one * ((b*c - a*d)/(pow2(c) + pow2(d)));
+    if (std::isnan(std::real(zeta)) || std::isnan(std::imag(zeta))) continue;
+//    std::complex<nmie::FloatType > zeta = PsiZeta[n]/Psi[n];
+//    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+35), D3(Nstop+35), zeta(Nstop);
+//    nmie::evalDownwardD1(z, D1dr);
+//    nmie::evalUpwardD3(z, D1dr, D3);
+//    nmie::evalUpwardZeta(z, D3, zeta);
 
-    EXPECT_NEAR(std::real(zeta[n]), std::real(zeta_mp), re_abs_tol)
+    EXPECT_NEAR(std::real(zeta), std::real(zeta_mp), re_abs_tol)
               << "zeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
-    EXPECT_NEAR(std::imag(zeta[n]), std::imag(zeta_mp), im_abs_tol)
+    EXPECT_NEAR(std::imag(zeta), std::imag(zeta_mp), im_abs_tol)
               << "zeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
   }
 }
 
 
-//TEST(psi_test, DISABLED_mpmath_generated_input) {
+TEST(psizeta_test, mpmath_generated_input) {
+  double min_abs_tol = 9e-11;
+  std::complex<double> z, PsiZeta_mp;
+  int n;
+  double re_abs_tol,  im_abs_tol;
+  for (const auto &data : psi_mul_zeta_test_16digits) {
+    parse_mpmath_data(min_abs_tol, data, z, n, PsiZeta_mp, re_abs_tol, im_abs_tol);
+    auto Nstop = LeRu_cutoff(z)+10000;
+    if (n > Nstop) continue;
+    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+135), PsiZeta(Nstop+135);
+    nmie::evalDownwardD1(z, D1dr);
+    nmie::evalUpwardPsiZeta(z, D1dr, PsiZeta);
+
+    EXPECT_NEAR(std::real(PsiZeta[n]), std::real(PsiZeta_mp), re_abs_tol)
+              << "PsiZeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
+    EXPECT_NEAR(std::imag(PsiZeta[n]), std::imag(PsiZeta_mp), im_abs_tol)
+              << "PsiZeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
+//    std::vector<nmie::FloatType> PsiUp(Nstop);
+//    nmie::evalPsi(std::real(z), PsiUp);
+//    EXPECT_NEAR(((PsiUp[n])), std::real(PsiZeta_mp), re_abs_tol)
+//              << "PsiZeta(up) at n=" << n << " z="<<z;
+  }
+}
+
+
 TEST(psi_test, mpmath_generated_input) {
-  double min_abs_tol = 2e-11;
+  double min_abs_tol = 1e-12;
   std::complex<double> z, Psi_mp;
   int n;
   double re_abs_tol,  im_abs_tol;
@@ -108,8 +147,8 @@ TEST(psi_test, mpmath_generated_input) {
 }
 
 
-TEST(D3test, DISABLED_mpmath_generated_input) {
-//TEST(D3test, mpmath_generated_input) {
+//TEST(D3test, DISABLED_mpmath_generated_input) {
+TEST(D3test, mpmath_generated_input) {
   double min_abs_tol = 2e-11;
   std::complex<double> z, D3_mp;
   int n;
@@ -130,8 +169,8 @@ TEST(D3test, DISABLED_mpmath_generated_input) {
 }
 
 
-TEST(D1test, DISABLED_mpmath_generated_input) {
-//  TEST(D1test, mpmath_generated_input) {
+//TEST(D1test, DISABLED_mpmath_generated_input) {
+  TEST(D1test, mpmath_generated_input) {
   double min_abs_tol = 2e-11;
   std::complex<double> z, D1_mp;
   int n;

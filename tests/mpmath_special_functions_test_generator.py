@@ -197,11 +197,12 @@ def main():
     # sf_evals.run_test(mrb.D3, 'D3')
     # sf_evals.run_test(mrb.psi, 'psi', is_only_x=True)
     # # In literature Zeta or Ksi denote the Riccati-Bessel function of third kind.
-    sf_evals.run_test(mrb.ksi, 'zeta', is_only_x=True)
+    # sf_evals.run_test(mrb.xi, 'xi', is_only_x=True)
+    # sf_evals.run_test(mrb.ksi, 'zeta', is_only_x=True)
 
     # sf_evals.run_test(mrb.psi, 'psi')
     # sf_evals.run_test(mrb.psi_div_ksi, 'psi_div_ksi')
-    # sf_evals.run_test(mrb.psi_mul_ksi, 'psi_mul_ksi')
+    sf_evals.run_test(mrb.psi_mul_ksi, 'psi_mul_zeta', is_only_x=True)
     # sf_evals.run_test(mrb.psi_div_xi, 'psi_div_xi')
     with open(sf_evals.filename, 'w') as out_file:
         out_file.write(sf_evals.get_file_content())
