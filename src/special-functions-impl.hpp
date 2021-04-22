@@ -62,27 +62,28 @@ namespace nmie {
 // Note, that Kapteyn seems to be too optimistic (at least by 3 digits
 // in some cases) for forward recurrence, see D1test with WYang_data
 int evalKapteynNumberOfLostSignificantDigits(const int ni,
-                                             const std::complex<FloatType> z) {
-  using nmm::abs, nmm::imag, nmm::real, nmm::log, nmm::sqrt, nmm::round;
-  auto n = static_cast<FloatType>(ni);
-  auto one = std::complex<FloatType> (1, 0);
+                                             const std::complex<double> z) {
+  using std::abs;  using std::imag; using std::real; using std::log; using std::sqrt; using std::round;
+  auto n = static_cast<double>(ni);
+  auto one = std::complex<double> (1, 0);
   return round((
-      abs(imag(z)) - log(2) - n * ( real( log( z/n) + sqrt(one
+      abs(imag(z)) - log(2.) - n * ( real( log( z/n) + sqrt(one
       - pow2(z/n)) - log (one + sqrt (one
       - pow2(z/n)))
-      )))/ log(10));
+      )))/ log(10.));
 }
 
 int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
   int nstar = nmax;
-  int forwardLoss = evalKapteynNumberOfLostSignificantDigits(nmax, z);
+  auto z_dp = ConvertComplex<double>(z);
+  int forwardLoss = evalKapteynNumberOfLostSignificantDigits(nmax, z_dp);
   int increment = static_cast<int>(std::ceil(
-      std::max(4* std::pow(std::abs(z), 1/3.0), 5.0)
+      std::max(4* std::pow(std::abs( z_dp), 1/3.0), 5.0)
       ));
-  int backwardLoss =evalKapteynNumberOfLostSignificantDigits(nstar, z);
+  int backwardLoss =evalKapteynNumberOfLostSignificantDigits(nstar, z_dp);
   while ( backwardLoss - forwardLoss < valid_digits) {
     nstar += increment;
-    backwardLoss = evalKapteynNumberOfLostSignificantDigits(nstar,z);
+    backwardLoss = evalKapteynNumberOfLostSignificantDigits(nstar,z_dp);
   };
   return nstar;
 }

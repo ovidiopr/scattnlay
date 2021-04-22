@@ -202,10 +202,28 @@ def main():
 
     # sf_evals.run_test(mrb.psi, 'psi')
     # sf_evals.run_test(mrb.psi_div_ksi, 'psi_div_ksi')
-    sf_evals.run_test(mrb.psi_mul_ksi, 'psi_mul_zeta', is_only_x=True)
+    # sf_evals.run_test(mrb.psi_mul_ksi, 'psi_mul_zeta', is_only_x=True)
     # sf_evals.run_test(mrb.psi_div_xi, 'psi_div_xi')
     with open(sf_evals.filename, 'w') as out_file:
         out_file.write(sf_evals.get_file_content())
 
+    for record in mia.complex_arguments:
+        mp.mp.dps = 20
+        output_dps = 7
+        x = mp.mpf(str(record[0]))
+        mr = str(record[1][0])
+        mi = str(record[1][1])
+        m = mp.mpc(mr, mi)
+        Qext_ref = record[2]
+        Qsca_ref = record[3]
+        test_case = record[4]
+        nmax = int(x + 4.05*x**(1./3.) + 2)+2+28
+        print(f"\n ===== test case: {test_case} =====", flush=True)
+        print(f"x={x}, m={m}, N={nmax} \nQsca_ref = {Qsca_ref}    \tQext_ref = {Qext_ref}", flush=True)
+        Qext_mp = mrb.Qext(x,m,nmax, output_dps)
+        Qsca_mp = mrb.Qsca(x,m,nmax, output_dps)
+        print(f"Qsca_mp  = {mp.nstr(Qsca_mp[-1],output_dps)}    \tQext_mp  = {mp.nstr(Qext_mp[-1],output_dps)}", flush=True)
+        print(mp.nstr(Qsca_mp,output_dps))
+        print(mp.nstr(Qext_mp,output_dps))
 
 main()

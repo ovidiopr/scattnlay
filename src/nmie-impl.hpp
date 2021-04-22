@@ -422,7 +422,7 @@ namespace nmie {
     evalUpwardPsi(z,  D1, Psi);
     // Now, use the upward recurrence to calculate Psi*Zeta equations (18ad)
     evalUpwardD3 (z, D1, D3, PsiZeta);
-    for (int i = 0; i < Zeta.size(); i++) {
+    for (unsigned int i = 0; i < Zeta.size(); i++) {
       Zeta[i] = PsiZeta[i]/Psi[i];
     }
 //    evalUpwardZeta(z, D3, Zeta);

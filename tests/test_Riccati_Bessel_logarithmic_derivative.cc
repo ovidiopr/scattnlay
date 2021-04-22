@@ -66,7 +66,7 @@ template<class T> inline T pow2(const T value) {return value*value;}
 
 //TEST(zeta_psizeta_test, DISABLED_mpmath_generated_input) {
 TEST(zeta_psizeta_test, mpmath_generated_input) {
-  double min_abs_tol = 2e-5;
+  double min_abs_tol = 2e-10;
   std::complex<double> z, zeta_mp;
   int n;
   double re_abs_tol,  im_abs_tol;

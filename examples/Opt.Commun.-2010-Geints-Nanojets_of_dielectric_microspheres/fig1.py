@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 #
 #    Copyright (C) 2009-2015 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
@@ -41,9 +41,10 @@ factor = 3. # plot extent compared to sphere radius
 index_H2O = 1.33+0.j
 
 WL = 0.532 #mkm
-total_r = 3 #mkm
-
-nm = 1.0 # host medium
+total_r = 1 #mkm
+isMP = False
+# isMP = True
+nm = 1.0 # pihost medium
 x = 2.0 * np.pi * np.array([total_r / 4.0 * 3.0, total_r], dtype=np.float64) / WL
 m = np.array((index_H2O, index_H2O), dtype=np.complex128) / nm
 
@@ -67,7 +68,7 @@ coordY = zero
 terms, E, H = fieldnlay(
     np.array([x]), np.array([m]),
     coordX, coordY, coordZ,
-    mp=True
+    mp=isMP
 )
 Ec = E[0, :, :]
 Er = np.absolute(Ec)
@@ -80,5 +81,7 @@ plt.imshow(Eabs_data,
 
            )
 print(np.min(Eabs_data), np.max(Eabs_data))
-plt.savefig("R"+str(total_r)+"mkm_mp.jpg")
+mp = ''
+if isMP: mp = '_mp'
+plt.savefig("R"+str(total_r)+"mkm"+mp+".jpg")
 # plt.show()

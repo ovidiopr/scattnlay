@@ -52,3 +52,63 @@ def D2(n,z):
 def D3(n,z):
     if n == 0: return 1j
     return D(n, z, ksi)
+
+
+# bulk sphere
+# Ovidio
+def an(n, x, m):
+    return (
+            ( ( D1(n, m*x)/m + n/x )*psi(n,x) - psi(n-1,x) ) /
+            ( ( D1(n, m*x)/m + n/x )*ksi(n,x) - ksi(n-1,x) )
+    )
+def bn(n, x, m):
+    return (
+            ( ( D1(n, m*x)*m + n/x ) * psi(n,x) - psi(n-1,x) ) /
+            ( ( D1(n, m*x)*m + n/x ) * ksi(n,x) - ksi(n-1,x) )
+    )
+
+# # Du
+# def an(n, x, m):
+#     mx = m*x
+#     return (
+#         ((r(n,mx)/m + n*(1-1/m**2)/x)*psi(n,x)-psi(n-1,x))/
+#         ((r(n,mx)/m + n*(1-1/m**2)/x)*ksi(n,x)-ksi(n-1,x))
+#     )
+# def bn(n,x,m):
+#     mx = m*x
+#     return (
+#         (r(n,mx)*m*psi(n,x)-psi(n-1,x))/
+#         (r(n,mx)*m*ksi(n,x)-ksi(n-1,x))
+#     )
+
+def Qext_diff(n,x,m):
+    return ((2*n +1)*2/x**2) * (an(n,x,m) + bn(n,x,m)).real
+
+def Qsca_diff(n,x,m):
+    return ((2*n +1)*2/x**2) * (abs(an(n,x,m))**2 + abs(bn(n,x,m))**2)
+
+def Qany(x, m, nmax, output_dps, Qdiff):
+    Qany = 0
+    Qlist = []
+    Qprev=""
+    convergence_max_length = 35
+    i = 0
+    for n in range(1, nmax+1):
+        diff = Qdiff(n,x,m)
+        Qany += diff
+        Qnext = mp.nstr(Qany, output_dps)
+        Qlist.append(diff)
+        i += 1
+        if Qprev !=Qnext: i = 0
+        Qprev = Qnext
+        print(n, ' ', end='', flush=True)
+        if i >= convergence_max_length: break
+    print('')
+    Qlist.append(Qany)
+    return Qlist
+
+def Qsca(x, m, nmax, output_dps):
+    return Qany(x, m, nmax, output_dps, Qsca_diff)
+
+def Qext(x, m, nmax, output_dps):
+    return Qany(x, m, nmax, output_dps, Qext_diff)
