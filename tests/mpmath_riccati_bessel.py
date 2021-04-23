@@ -57,17 +57,23 @@ def D3(n,z):
 # bulk sphere
 # Ovidio
 def an(n, x, m):
-    print(f'D1 = {D1(n, m*x)}\n\
-    psi_n = {psi(n,x)}\n\
-    psi_nm1 = {psi(n-1,x)}\n\
-    ksi_n = {ksi(n,x)}\n\
-    ksi_nm1 = {ksi(n-1,x)}\n\
-    ')
+    # print(f'D1 = {D1(n, m*x)}\n\
+    # psi_n = {psi(n,x)}\n\
+    # psi_nm1 = {psi(n-1,x)}\n\
+    # ksi_n = {ksi(n,x)}\n\
+    # ksi_nm1 = {ksi(n-1,x)}\n\
+    # ')
     return (
             ( ( D1(n, m*x)/m + n/x )*psi(n,x) - psi(n-1,x) ) /
             ( ( D1(n, m*x)/m + n/x )*ksi(n,x) - ksi(n-1,x) )
     )
 def bn(n, x, m):
+    # print(f'D1 = {D1(n, m*x)}\n\
+    # psi_n = {psi(n,x)}\n\
+    # psi_nm1 = {psi(n-1,x)}\n\
+    # ksi_n = {ksi(n,x)}\n\
+    # ksi_nm1 = {ksi(n-1,x)}\n\
+    # ')
     return (
             ( ( D1(n, m*x)*m + n/x ) * psi(n,x) - psi(n-1,x) ) /
             ( ( D1(n, m*x)*m + n/x ) * ksi(n,x) - ksi(n-1,x) )
@@ -103,7 +109,7 @@ def Qany(x, m, nmax, output_dps, Qdiff):
         diff = Qdiff(n,x,m)
         Qany += diff
         Qnext = mp.nstr(Qany, output_dps)
-        Qlist.append(diff)
+        Qlist.append(Qany)
         i += 1
         if Qprev !=Qnext: i = 0
         Qprev = Qnext

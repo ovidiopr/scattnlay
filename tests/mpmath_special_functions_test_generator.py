@@ -212,6 +212,7 @@ def main():
     # sf_evals.run_test(mrb.ksi, 'zeta', is_only_x=True)
 
     # sf_evals.run_test(mrb.an, 'an', is_xm=True)
+    # sf_evals.run_test(mrb.bn, 'bn', is_xm=True)
 
     # sf_evals.run_test(mrb.psi, 'psi')
     # sf_evals.run_test(mrb.psi_div_ksi, 'psi_div_ksi')
@@ -233,12 +234,13 @@ def main():
         nmax = int(x + 4.05*x**(1./3.) + 2)+2+28
         print(f"\n ===== test case: {test_case} =====", flush=True)
         print(f"x={x}, m={m}, N={nmax} \nQsca_ref = {Qsca_ref}    \tQext_ref = {Qext_ref}", flush=True)
-        # Qext_mp = mrb.Qext(x,m,nmax, output_dps)
-        # Qsca_mp = mrb.Qsca(x,m,nmax, output_dps)
-        # print(f"Qsca_mp  = {mp.nstr(Qsca_mp[-1],output_dps)}    \tQext_mp  = {mp.nstr(Qext_mp[-1],output_dps)}", flush=True)
-        # print(mp.nstr(Qsca_mp,output_dps))
-        # print(mp.nstr(Qext_mp,output_dps))
+        Qext_mp = mrb.Qext(x,m,nmax, output_dps)
+        Qsca_mp = mrb.Qsca(x,m,nmax, output_dps)
+        print(f"Qsca_mp  = {mp.nstr(Qsca_mp[-1],output_dps)}    \tQext_mp  = {mp.nstr(Qext_mp[-1],output_dps)}", flush=True)
+        print(mp.nstr(Qsca_mp,output_dps))
+        print(mp.nstr(Qext_mp,output_dps))
+
         # n=1
-        # print(f'n={n}, x={x}, m={m}\nan[{n}]={mp.nstr(mrb.an(n,x,m), output_dps)}')
+        # print(f'n={n}, x={x}, m={m}\nbn[{n}]={mp.nstr(mrb.bn(n,x,m), output_dps)}')
 
 main()
