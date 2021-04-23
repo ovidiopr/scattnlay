@@ -319,7 +319,10 @@ namespace nmie {
         riM1 = 0;
       nmax_ = std::max(nmax_, riM1);
     }
-    nmax_ += 25;  // Final nmax_ value
+    nmax_ += 100;  // Final nmax_ value
+#ifdef MULTI_PRECISION
+    nmax_ += MULTI_PRECISION; //TODO we may need to use more terms that this for MP computations.
+#endif
     // nmax_ *= nmax_;
     // printf("using nmax %i\n", nmax_);
   }
@@ -687,6 +690,15 @@ namespace nmie {
         an_[n] = calc_an(n + 1, x[L - 1], std::complex<FloatType>(0.0, 0.0), std::complex<FloatType>(1.0, 0.0), PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
         bn_[n] = PsiXL[n + 1]/ZetaXL[n + 1];
       }
+      if (nmm::isnan(an_[n].real()) || nmm::isnan(an_[n].imag()) ||
+          nmm::isnan(bn_[n].real()) || nmm::isnan(bn_[n].imag())
+          ) {
+        nmax_ = n;
+        // TODO somehow notify Python users about it
+        std::cout << "nmax value was chaned due to unexpected error. New values is "<<nmax_<<std::endl;
+        break;
+      }
+
     }  // end of for an and bn terms
     isScaCoeffsCalc_ = true;
   }  // end of MultiLayerMie::calcScattCoeffs()

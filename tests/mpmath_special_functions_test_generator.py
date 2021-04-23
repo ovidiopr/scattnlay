@@ -211,8 +211,8 @@ def main():
     # # In literature Zeta or Ksi denote the Riccati-Bessel function of third kind.
     # sf_evals.run_test(mrb.ksi, 'zeta', is_only_x=True)
 
-    # sf_evals.run_test(mrb.an, 'an', is_xm=True)
-    # sf_evals.run_test(mrb.bn, 'bn', is_xm=True)
+    sf_evals.run_test(mrb.an, 'an', is_xm=True)
+    sf_evals.run_test(mrb.bn, 'bn', is_xm=True)
 
     # sf_evals.run_test(mrb.psi, 'psi')
     # sf_evals.run_test(mrb.psi_div_ksi, 'psi_div_ksi')
