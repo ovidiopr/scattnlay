@@ -275,9 +275,10 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
 
-  int LeRu_cutoff(std::complex<FloatType> z) {
-    auto x = std::abs(static_cast<std::complex<double>>(z));
+  int LeRu_cutoff(std::complex<double> z) {
+    auto x = std::abs(z);
     return std::round(x + 11 * std::pow(x, (1.0 / 3.0)) + 1);
+//    return 10000;
   }
 
   // ********************************************************************** //
@@ -318,7 +319,7 @@ namespace nmie {
         riM1 = 0;
       nmax_ = std::max(nmax_, riM1);
     }
-    nmax_ += 15;  // Final nmax_ value
+    nmax_ += 25;  // Final nmax_ value
     // nmax_ *= nmax_;
     // printf("using nmax %i\n", nmax_);
   }
@@ -760,16 +761,15 @@ namespace nmie {
     // By using downward recurrence we avoid loss of precision due to float rounding errors
     // See: https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
     //      http://en.wikipedia.org/wiki/Loss_of_significance
-//    for (int n = nmax_ - 2; n >= 0; n--) {
-    FloatType x2 = pow2(x.back());
-      for (int n = 0; n < nmax_; n++) {
+    for (int n = nmax_ - 2; n >= 0; n--) {
+//      for (int n = 0; n < nmax_; n++) {
       const int n1 = n + 1;
       if (mode_n_ == Modes::kAll) {
         // Equation (27)
-        Qext_ += (n1 + n1 + 1.0) * (an_[n].real() + bn_[n].real())*2.0/x2;
+        Qext_ += (n1 + n1 + 1.0) * (an_[n].real() + bn_[n].real());
         // Equation (28)
         Qsca_ += (n1 + n1 + 1.0) * (an_[n].real() * an_[n].real() + an_[n].imag() * an_[n].imag()
-            + bn_[n].real() * bn_[n].real() + bn_[n].imag() * bn_[n].imag())*2.0/x2;
+            + bn_[n].real() * bn_[n].real() + bn_[n].imag() * bn_[n].imag());
 //        std::cout<<"n ="<< n1 << " ext:"<<Qext_ <<" sca:"<<Qsca_<<std::endl;
         // Equation (29)
         Qpr_ += ((n1 * (n1 + 2.0) / (n1 + 1.0)) * ((an_[n] * std::conj(an_[n1]) + bn_[n] * std::conj(bn_[n1])).real())
@@ -809,9 +809,9 @@ namespace nmie {
         }
       }
     }
-//    FloatType x2 = pow2(x.back());
-//    Qext_ = 2.0*(Qext_)/x2;                                 // Equation (27)
-//    Qsca_ = 2.0*(Qsca_)/x2;                                 // Equation (28)
+    FloatType x2 = pow2(x.back());
+    Qext_ = 2.0*(Qext_)/x2;                                 // Equation (27)
+    Qsca_ = 2.0*(Qsca_)/x2;                                 // Equation (28)
     Qpr_ = Qext_ - 4.0*(Qpr_)/x2;                           // Equation (29)
     Qabs_ = Qext_ - Qsca_;                                  // Equation (30)
     albedo_ = Qsca_/Qext_;                                  // Equation (31)

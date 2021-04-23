@@ -76,8 +76,8 @@ void parse2_mpmath_data(const nmie::FloatType min_abs_tol,
 
 template<class T> inline T pow2(const T value) {return value*value;}
 
-TEST(an_test, DISABLED_mpmath_generated_input) {
-//TEST(an_test, mpmath_generated_input) {
+//TEST(an_test, DISABLED_mpmath_generated_input) {
+TEST(an_test, mpmath_generated_input) {
   double min_abs_tol = 3e-14, x;
   std::complex<double> m, an_mp;
   int n;
@@ -130,8 +130,8 @@ TEST(bn_test, mpmath_generated_input) {
   }
 }
 
-TEST(zeta_psizeta_test, DISABLED_mpmath_generated_input) {
-//TEST(zeta_psizeta_test, mpmath_generated_input) {
+//TEST(zeta_psizeta_test, DISABLED_mpmath_generated_input) {
+TEST(zeta_psizeta_test, mpmath_generated_input) {
   double min_abs_tol = 2e-10;
   std::complex<double> z, zeta_mp;
   int n;
@@ -166,34 +166,34 @@ TEST(zeta_psizeta_test, DISABLED_mpmath_generated_input) {
   }
 }
 
-// Old way to evaluate Zeta
-TEST(zeta_test, DISABLED_mpmath_generated_input) {
-//TEST(zeta_test, mpmath_generated_input) {
-  double min_abs_tol = 2e-5;
-  std::complex<double> z, zeta_mp;
-  int n;
-  double re_abs_tol,  im_abs_tol;
-  for (const auto &data : zeta_test_16digits) {
-    parse_mpmath_data(min_abs_tol, data, z, n, zeta_mp, re_abs_tol, im_abs_tol);
-    auto Nstop = nmie::LeRu_cutoff(z)+10000;
-    if (n > Nstop) continue;
-    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop),
-        PsiZeta(Nstop), zeta(Nstop);
-    nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
-    nmie::evalUpwardZeta(z, D3, zeta);
-    if (std::isnan(std::real(zeta[n])) || std::isnan(std::imag(zeta[n]))) continue;
+// // Old way to evaluate Zeta
+// TEST(zeta_test, DISABLED_mpmath_generated_input) {
+// //TEST(zeta_test, mpmath_generated_input) {
+//  double min_abs_tol = 2e-5;
+//  std::complex<double> z, zeta_mp;
+//  int n;
+//  double re_abs_tol,  im_abs_tol;
+//  for (const auto &data : zeta_test_16digits) {
+//    parse_mpmath_data(min_abs_tol, data, z, n, zeta_mp, re_abs_tol, im_abs_tol);
+//    auto Nstop = nmie::LeRu_cutoff(z)+10000;
+//    if (n > Nstop) continue;
+//    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop),
+//        PsiZeta(Nstop), zeta(Nstop);
+//    nmie::evalDownwardD1(z, D1dr);
+//    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
+//    nmie::evalUpwardZeta(z, D3, zeta);
+//    if (std::isnan(std::real(zeta[n])) || std::isnan(std::imag(zeta[n]))) continue;
+//
+//    EXPECT_NEAR(std::real(zeta[n]), std::real(zeta_mp), re_abs_tol)
+//              << "zeta[n] at n=" << n << " Nstop="<< Nstop<<" z="<<z;
+//    EXPECT_NEAR(std::imag(zeta[n]), std::imag(zeta_mp), im_abs_tol)
+//              << "zeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
+//  }
+//}
 
-    EXPECT_NEAR(std::real(zeta[n]), std::real(zeta_mp), re_abs_tol)
-              << "zeta[n] at n=" << n << " Nstop="<< Nstop<<" z="<<z;
-    EXPECT_NEAR(std::imag(zeta[n]), std::imag(zeta_mp), im_abs_tol)
-              << "zeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
-  }
-}
 
-
-TEST(psizeta_test, DISABLED_mpmath_generated_input) {
-//TEST(psizeta_test, mpmath_generated_input) {
+//TEST(psizeta_test, DISABLED_mpmath_generated_input) {
+TEST(psizeta_test, mpmath_generated_input) {
   double min_abs_tol = 9e-11;
   std::complex<double> z, PsiZeta_mp;
   int n;
@@ -239,8 +239,8 @@ TEST(psi_test, mpmath_generated_input) {
 }
 
 
-TEST(D3test, DISABLED_mpmath_generated_input) {
-//TEST(D3test, mpmath_generated_input) {
+//TEST(D3test, DISABLED_mpmath_generated_input) {
+TEST(D3test, mpmath_generated_input) {
   double min_abs_tol = 2e-11;
   std::complex<double> z, D3_mp;
   int n;
