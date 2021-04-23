@@ -88,6 +88,18 @@ class UpdateSpecialFunctionsEvaluations:
         n_set = set(n_list)
         return sorted(n_set)
 
+    def compose_result_string(self, mpf_x, mpf_m, n, mpf_value, output_dps):
+        return ('{'+
+                 mp.nstr(mpf_x, output_dps * 2) + ',{' +
+                 mp.nstr(mpf_m.real, output_dps * 2) + ',' +
+                 mp.nstr(mpf_m.imag, output_dps * 2) + '},' +
+                 str(n) + ',{' +
+                 mp.nstr(mpf_value.real, output_dps) + ',' +
+                 mp.nstr(mpf_value.imag, output_dps) + '},' +
+                 mp.nstr(mp.fabs(mpf_value.real * 10 ** -output_dps), 2) + ',' +
+                 mp.nstr(mp.fabs(mpf_value.imag * 10 ** -output_dps), 2) +
+                 '},')
+
     def get_test_data_nlist(self, z_record, output_dps, n, func):
         isNeedMoreDPS = False
         x = str(z_record[0])
@@ -95,28 +107,22 @@ class UpdateSpecialFunctionsEvaluations:
         mi = str(z_record[1][1])
         z_str = ''
         try:
-            z = mp.mpf(x) * mp.mpc(mr, mi)
+            mpf_x = mp.mpf(x)
+            mpf_m = mp.mpc(mr, mi)
+            z = mpf_x*mpf_m
             if self.is_only_x: z = mp.mpf(x)
-            D1nz = func(n, z)
-            z_str = ('{{' +
-                     mp.nstr(z.real, output_dps * 2) + ',' +
-                     mp.nstr(z.imag, output_dps * 2) + '},' +
-                     str(n) + ',{' +
-                     mp.nstr(D1nz.real, output_dps) + ',' +
-                     mp.nstr(D1nz.imag, output_dps) + '},' +
-                     mp.nstr(mp.fabs(D1nz.real * 10 ** -output_dps), 2) + ',' +
-                     mp.nstr(mp.fabs(D1nz.imag * 10 ** -output_dps), 2) +
-                     '},')
-            if mp.nstr(D1nz.real, output_dps) == '0.0' \
-                    or mp.nstr(D1nz.imag, output_dps) == '0.0':
+            mpf_value = func(n, z)
+            z_str = self.compose_result_string(mpf_x, mpf_m, n, mpf_value, output_dps)
+            if mp.nstr(mpf_value.real, output_dps) == '0.0' \
+                    or mp.nstr(mpf_value.imag, output_dps) == '0.0':
                 isNeedMoreDPS = True
         except:
             isNeedMoreDPS = True
         return z_str, isNeedMoreDPS
 
     def get_test_data(self, Du_test, output_dps, max_num_elements_of_n_list, func, funcname):
-        output_list = ['// complex(z), n, complex(f(n,z)), abs_err_real, abs_err_imag',
-                       'std::vector< std::tuple< std::complex<double>, int, std::complex<double>, double, double > >',
+        output_list = ['// x, complex(m), n, complex(f(n,z)), abs_err_real, abs_err_imag',
+                       'std::vector< std::tuple< nmie::FloatType, std::complex<nmie::FloatType>, int, std::complex<nmie::FloatType>, nmie::FloatType, nmie::FloatType > >',
                        str(funcname) + '_test_' + str(output_dps) + 'digits', '= {']
         for z_record in Du_test:
             x = str(z_record[0])
@@ -129,9 +135,9 @@ class UpdateSpecialFunctionsEvaluations:
             print(z, n_list)
             failed_evaluations = 0
             for n in n_list:
-                mp.mp.dps = 20
+                mp.mp.dps = output_dps
                 old_z_string, isNeedMoreDPS = self.get_test_data_nlist(z_record, output_dps, n, func, )
-                mp.mp.dps = 37
+                mp.mp.dps = int(output_dps*1.41)
                 new_z_string, isNeedMoreDPS = self.get_test_data_nlist(z_record, output_dps, n, func)
                 while old_z_string != new_z_string \
                         or isNeedMoreDPS:
@@ -190,9 +196,9 @@ class UpdateSpecialFunctionsEvaluations:
 def main():
     sf_evals = UpdateSpecialFunctionsEvaluations(filename='test_spec_functions_data.hpp',
                                                  complex_arguments=mia.complex_arguments,
-                                                 output_dps=16, max_num_elements_of_nlist=51)
-    # output_dps=5, max_num_elements_of_nlist=3)
-    # sf_evals.run_test(mrb.D1, 'D1')
+                                                 output_dps=30, max_num_elements_of_nlist=51)
+                                                 # output_dps=5, max_num_elements_of_nlist=3)
+    sf_evals.run_test(mrb.D1, 'D1')
     # sf_evals.run_test(mrb.D2, 'D2')
     # sf_evals.run_test(mrb.D3, 'D3')
     # sf_evals.run_test(mrb.psi, 'psi', is_only_x=True)
@@ -207,23 +213,23 @@ def main():
     with open(sf_evals.filename, 'w') as out_file:
         out_file.write(sf_evals.get_file_content())
 
-    for record in mia.complex_arguments:
-        mp.mp.dps = 20
-        output_dps = 7
-        x = mp.mpf(str(record[0]))
-        mr = str(record[1][0])
-        mi = str(record[1][1])
-        m = mp.mpc(mr, mi)
-        Qext_ref = record[2]
-        Qsca_ref = record[3]
-        test_case = record[4]
-        nmax = int(x + 4.05*x**(1./3.) + 2)+2+28
-        print(f"\n ===== test case: {test_case} =====", flush=True)
-        print(f"x={x}, m={m}, N={nmax} \nQsca_ref = {Qsca_ref}    \tQext_ref = {Qext_ref}", flush=True)
-        Qext_mp = mrb.Qext(x,m,nmax, output_dps)
-        Qsca_mp = mrb.Qsca(x,m,nmax, output_dps)
-        print(f"Qsca_mp  = {mp.nstr(Qsca_mp[-1],output_dps)}    \tQext_mp  = {mp.nstr(Qext_mp[-1],output_dps)}", flush=True)
-        print(mp.nstr(Qsca_mp,output_dps))
-        print(mp.nstr(Qext_mp,output_dps))
+    # for record in mia.complex_arguments:
+    #     mp.mp.dps = 20
+    #     output_dps = 7
+    #     x = mp.mpf(str(record[0]))
+    #     mr = str(record[1][0])
+    #     mi = str(record[1][1])
+    #     m = mp.mpc(mr, mi)
+    #     Qext_ref = record[2]
+    #     Qsca_ref = record[3]
+    #     test_case = record[4]
+    #     nmax = int(x + 4.05*x**(1./3.) + 2)+2+28
+    #     print(f"\n ===== test case: {test_case} =====", flush=True)
+    #     print(f"x={x}, m={m}, N={nmax} \nQsca_ref = {Qsca_ref}    \tQext_ref = {Qext_ref}", flush=True)
+    #     Qext_mp = mrb.Qext(x,m,nmax, output_dps)
+    #     Qsca_mp = mrb.Qsca(x,m,nmax, output_dps)
+    #     print(f"Qsca_mp  = {mp.nstr(Qsca_mp[-1],output_dps)}    \tQext_mp  = {mp.nstr(Qext_mp[-1],output_dps)}", flush=True)
+    #     print(mp.nstr(Qsca_mp,output_dps))
+    #     print(mp.nstr(Qext_mp,output_dps))
 
 main()

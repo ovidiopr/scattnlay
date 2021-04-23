@@ -61,11 +61,27 @@ void parse_mpmath_data(const double min_abs_tol, const std::tuple< std::complex<
   re_abs_tol *= std::abs(std::round(std::real(func_mp))) + 1;
   im_abs_tol *= std::abs(std::round(std::imag(func_mp))) + 1;
 }
+void parse2_mpmath_data(const nmie::FloatType min_abs_tol,
+                        const std::tuple< nmie::FloatType, std::complex<nmie::FloatType>, int, std::complex<nmie::FloatType>, nmie::FloatType, nmie::FloatType > data,
+                        nmie::FloatType &x, std::complex<nmie::FloatType> &m, int &n, std::complex<nmie::FloatType> &func_mp,
+                        nmie::FloatType &re_abs_tol, nmie::FloatType &im_abs_tol){
+  x = std::get<0>(data);
+  m = std::get<1>(data);
+  n = std::get<2>(data);
+  func_mp = std::get<3>(data);
+  re_abs_tol = ( std::get<4>(data) > min_abs_tol && std::real(func_mp) < min_abs_tol)
+               ? std::get<4>(data) : min_abs_tol;
+  im_abs_tol = ( std::get<5>(data) > min_abs_tol && std::imag(func_mp) < min_abs_tol)
+               ? std::get<5>(data) : min_abs_tol;
+  // if re(func_mp) < 0.5 then round will give 0. To avoid zero tolerance add one.
+  re_abs_tol *= std::abs(std::round(std::real(func_mp))) + 1;
+  im_abs_tol *= std::abs(std::round(std::imag(func_mp))) + 1;
+}
 
 template<class T> inline T pow2(const T value) {return value*value;}
 
-//TEST(zeta_psizeta_test, DISABLED_mpmath_generated_input) {
-TEST(zeta_psizeta_test, mpmath_generated_input) {
+TEST(zeta_psizeta_test, DISABLED_mpmath_generated_input) {
+//TEST(zeta_psizeta_test, mpmath_generated_input) {
   double min_abs_tol = 2e-10;
   std::complex<double> z, zeta_mp;
   int n;
@@ -126,7 +142,8 @@ TEST(zeta_test, DISABLED_mpmath_generated_input) {
 }
 
 
-TEST(psizeta_test, mpmath_generated_input) {
+TEST(psizeta_test, DISABLED_mpmath_generated_input) {
+//TEST(psizeta_test, mpmath_generated_input) {
   double min_abs_tol = 9e-11;
   std::complex<double> z, PsiZeta_mp;
   int n;
@@ -172,8 +189,8 @@ TEST(psi_test, mpmath_generated_input) {
 }
 
 
-//TEST(D3test, DISABLED_mpmath_generated_input) {
-TEST(D3test, mpmath_generated_input) {
+TEST(D3test, DISABLED_mpmath_generated_input) {
+//TEST(D3test, mpmath_generated_input) {
   double min_abs_tol = 2e-11;
   std::complex<double> z, D3_mp;
   int n;
@@ -196,15 +213,16 @@ TEST(D3test, mpmath_generated_input) {
 
 //TEST(D1test, DISABLED_mpmath_generated_input) {
   TEST(D1test, mpmath_generated_input) {
-  double min_abs_tol = 2e-11;
-  std::complex<double> z, D1_mp;
+  double min_abs_tol = 2e-11, x;
+  std::complex<double> m, z, D1_mp;
   int n;
   double re_abs_tol,  im_abs_tol;
-  for (const auto &data : D1_test_16digits) {
-    parse_mpmath_data(min_abs_tol, data, z, n, D1_mp, re_abs_tol, im_abs_tol);
+  for (const auto &data : D1_test_30digits) {
+    parse2_mpmath_data(min_abs_tol, data, x, m, n, D1_mp, re_abs_tol, im_abs_tol);
+    z = m*x;
     auto Nstop = LeRu_cutoff(z)+1;
-    std::vector<std::complex<nmie::FloatType>> Db(Nstop),Dold(Nstop+35), r;
-    int valid_digits = 6;
+    std::vector<std::complex<nmie::FloatType>> Db(Nstop),Dold(Nstop+135), r;
+    int valid_digits = 14;
     int nstar = nmie::getNStar(Nstop, z, valid_digits);
     r.resize(nstar);
     nmie::evalBackwardR(z,r);
