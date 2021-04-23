@@ -74,7 +74,7 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
+  int ScattCoeffs(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m,
                   const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
 
     if (x.size() != L || m.size() != L)
@@ -118,7 +118,7 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int ExpanCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
+  int ExpanCoeffs(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax,
                   std::vector<std::vector<std::complex<double> > >& aln, std::vector<std::vector<std::complex<double> > >& bln,
                   std::vector<std::vector<std::complex<double> > >& cln, std::vector<std::vector<std::complex<double> > >& dln) {
 

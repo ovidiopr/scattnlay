@@ -111,7 +111,10 @@ class UpdateSpecialFunctionsEvaluations:
             mpf_m = mp.mpc(mr, mi)
             z = mpf_x*mpf_m
             if self.is_only_x: z = mp.mpf(x)
-            mpf_value = func(n, z)
+            if self.is_xm:
+                mpf_value = func(n, mpf_x, mpf_m)
+            else:
+                mpf_value = func(n, z)
             z_str = self.compose_result_string(mpf_x, mpf_m, n, mpf_value, output_dps)
             if mp.nstr(mpf_value.real, output_dps) == '0.0' \
                     or mp.nstr(mpf_value.imag, output_dps) == '0.0':
@@ -159,8 +162,9 @@ class UpdateSpecialFunctionsEvaluations:
         output_list.append('};')
         return output_list
 
-    def run_test(self, func, funcname, is_only_x=False):
+    def run_test(self, func, funcname, is_only_x=False, is_xm=False):
         self.is_only_x = is_only_x
+        self.is_xm = is_xm
         self.remove_argument_duplicates()
         out_list_result = self.get_test_data(self.complex_arguments, self.output_dps,
                                              self.max_num_elements_of_nlist,
@@ -181,7 +185,7 @@ class UpdateSpecialFunctionsEvaluations:
                     filtered_list[-1][1] == self.complex_arguments[i][1]):
                 continue
             # argument list is sorted, so when only x is needed
-            # the record with the largest m
+            # keep the record with the largest m
             if (self.is_only_x
                     and filtered_list[-1][0] == self.complex_arguments[i][0]):
                 # continue
@@ -197,14 +201,17 @@ def main():
     sf_evals = UpdateSpecialFunctionsEvaluations(filename='test_spec_functions_data.hpp',
                                                  complex_arguments=mia.complex_arguments,
                                                  output_dps=30, max_num_elements_of_nlist=51)
+                                                 # output_dps=7, max_num_elements_of_nlist=51)
                                                  # output_dps=5, max_num_elements_of_nlist=3)
-    sf_evals.run_test(mrb.D1, 'D1')
+    # sf_evals.run_test(mrb.D1, 'D1')
     # sf_evals.run_test(mrb.D2, 'D2')
     # sf_evals.run_test(mrb.D3, 'D3')
     # sf_evals.run_test(mrb.psi, 'psi', is_only_x=True)
-    # # In literature Zeta or Ksi denote the Riccati-Bessel function of third kind.
     # sf_evals.run_test(mrb.xi, 'xi', is_only_x=True)
+    # # In literature Zeta or Ksi denote the Riccati-Bessel function of third kind.
     # sf_evals.run_test(mrb.ksi, 'zeta', is_only_x=True)
+
+    # sf_evals.run_test(mrb.an, 'an', is_xm=True)
 
     # sf_evals.run_test(mrb.psi, 'psi')
     # sf_evals.run_test(mrb.psi_div_ksi, 'psi_div_ksi')
@@ -213,23 +220,25 @@ def main():
     with open(sf_evals.filename, 'w') as out_file:
         out_file.write(sf_evals.get_file_content())
 
-    # for record in mia.complex_arguments:
-    #     mp.mp.dps = 20
-    #     output_dps = 7
-    #     x = mp.mpf(str(record[0]))
-    #     mr = str(record[1][0])
-    #     mi = str(record[1][1])
-    #     m = mp.mpc(mr, mi)
-    #     Qext_ref = record[2]
-    #     Qsca_ref = record[3]
-    #     test_case = record[4]
-    #     nmax = int(x + 4.05*x**(1./3.) + 2)+2+28
-    #     print(f"\n ===== test case: {test_case} =====", flush=True)
-    #     print(f"x={x}, m={m}, N={nmax} \nQsca_ref = {Qsca_ref}    \tQext_ref = {Qext_ref}", flush=True)
-    #     Qext_mp = mrb.Qext(x,m,nmax, output_dps)
-    #     Qsca_mp = mrb.Qsca(x,m,nmax, output_dps)
-    #     print(f"Qsca_mp  = {mp.nstr(Qsca_mp[-1],output_dps)}    \tQext_mp  = {mp.nstr(Qext_mp[-1],output_dps)}", flush=True)
-    #     print(mp.nstr(Qsca_mp,output_dps))
-    #     print(mp.nstr(Qext_mp,output_dps))
+    for record in mia.complex_arguments:
+        mp.mp.dps = 20
+        output_dps = 16
+        x = mp.mpf(str(record[0]))
+        mr = str(record[1][0])
+        mi = str(record[1][1])
+        m = mp.mpc(mr, mi)
+        Qext_ref = record[2]
+        Qsca_ref = record[3]
+        test_case = record[4]
+        nmax = int(x + 4.05*x**(1./3.) + 2)+2+28
+        print(f"\n ===== test case: {test_case} =====", flush=True)
+        print(f"x={x}, m={m}, N={nmax} \nQsca_ref = {Qsca_ref}    \tQext_ref = {Qext_ref}", flush=True)
+        # Qext_mp = mrb.Qext(x,m,nmax, output_dps)
+        # Qsca_mp = mrb.Qsca(x,m,nmax, output_dps)
+        # print(f"Qsca_mp  = {mp.nstr(Qsca_mp[-1],output_dps)}    \tQext_mp  = {mp.nstr(Qext_mp[-1],output_dps)}", flush=True)
+        # print(mp.nstr(Qsca_mp,output_dps))
+        # print(mp.nstr(Qext_mp,output_dps))
+        # n=1
+        # print(f'n={n}, x={x}, m={m}\nan[{n}]={mp.nstr(mrb.an(n,x,m), output_dps)}')
 
 main()

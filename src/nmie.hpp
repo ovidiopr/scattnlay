@@ -42,11 +42,19 @@
 #include <boost/math/constants/constants.hpp>
 #endif
 namespace nmie {
-  int ScattCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn);
+  int ScattCoeffs(const unsigned int L, const int pl,
+                  const std::vector<double>& x, const std::vector<std::complex<double> >& m,
+                  const int nmax,
+                  std::vector<std::complex<double> >& an,
+                  std::vector<std::complex<double> >& bn);
 
-  int ExpanCoeffs(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const int nmax,
-                std::vector<std::vector<std::complex<double> > >& an, std::vector<std::vector<std::complex<double> > >& bn,
-                std::vector<std::vector<std::complex<double> > >& cn, std::vector<std::vector<std::complex<double> > >& dn);
+  int ExpanCoeffs(const unsigned int L, const int pl,
+                  const std::vector<double>& x, const std::vector<std::complex<double> >& m,
+                  const int nmax,
+                  std::vector<std::vector<std::complex<double> > >& an,
+                  std::vector<std::vector<std::complex<double> > >& bn,
+                  std::vector<std::vector<std::complex<double> > >& cn,
+                  std::vector<std::vector<std::complex<double> > >& dn);
 
 //helper functions
 

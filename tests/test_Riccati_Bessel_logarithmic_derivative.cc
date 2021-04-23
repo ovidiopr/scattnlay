@@ -80,6 +80,33 @@ void parse2_mpmath_data(const nmie::FloatType min_abs_tol,
 
 template<class T> inline T pow2(const T value) {return value*value;}
 
+//TEST(an_test, DISABLED_mpmath_generated_input) {
+TEST(an_test, mpmath_generated_input) {
+  double min_abs_tol = 3e-14, x;
+  std::complex<double> m, an_mp;
+  int n;
+  double re_abs_tol,  im_abs_tol;
+  for (const auto &data : an_test_30digits) {
+    parse2_mpmath_data(min_abs_tol, data, x, m, n, an_mp, re_abs_tol, im_abs_tol);
+    auto Nstop = LeRu_cutoff(m*x)+1;
+
+    nmie::MultiLayerMie<nmie::FloatType> ml_mie;
+    ml_mie.SetLayersSize({x});
+    ml_mie.SetLayersIndex({m});
+    ml_mie.SetMaxTerms(Nstop);
+    ml_mie.calcScattCoeffs();
+    auto an = ml_mie.GetAn();
+//    auto bn = ml_mie.GetBn();
+
+    if (n > an.size()) continue;
+    if (n == 0) continue;
+    EXPECT_NEAR(std::real(an[n-1]), std::real(an_mp), re_abs_tol)
+              << "Db at n=" << n << " Nstop="<< Nstop<<" m="<<m<<" x="<<x;
+    EXPECT_NEAR(std::imag(an[n-1]), std::imag(an_mp), im_abs_tol)
+              << "Db at n=" << n << " Nstop="<< Nstop<<" m="<<m<<" x="<<x;
+  }
+}
+
 TEST(zeta_psizeta_test, DISABLED_mpmath_generated_input) {
 //TEST(zeta_psizeta_test, mpmath_generated_input) {
   double min_abs_tol = 2e-10;
