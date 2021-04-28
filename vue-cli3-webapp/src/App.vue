@@ -594,7 +594,6 @@
 
         this.simulationRuntime.Qsca_n = Qsca_n;
         this.simulationRuntime.Qabs_n = Qabs_n;
-        // this.filterBug();  // TODO: fix the algorithm instead of filtering the final output
 
         let t1 = performance.now();
         this.ttime = ((t1 - t0) / 1000).toFixed(2);

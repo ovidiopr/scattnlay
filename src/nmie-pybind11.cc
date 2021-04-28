@@ -37,9 +37,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/complex.h>
 
-
 namespace py = pybind11;
-
 
 py::array_t< std::complex<double>> VectorComplex2Py(const std::vector<std::complex<double> > &c_x) {
   auto py_x = py::array_t< std::complex<double>>(c_x.size());
@@ -141,6 +139,7 @@ py::tuple py_scattnlay(const py::array_t<double, py::array::c_style | py::array:
   double Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo;
   std::vector<std::complex<double> > c_S1, c_S2;
 
+
   terms = nmie::nMie(L, pl, c_x, c_m, nTheta, c_theta, nmax, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, c_S1, c_S2);
 
   return py::make_tuple(terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo,
@@ -171,4 +170,3 @@ py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array:
   auto py_H = Vector2DComplex2Py<std::complex<double> >(H);
   return py::make_tuple(terms, py_E, py_H);
 }
-

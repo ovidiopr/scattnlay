@@ -68,6 +68,12 @@ namespace nmie {
   }
 
   template <typename ToFloatType, typename FromFloatType>
+  std::complex<ToFloatType> ConvertComplex(std::complex<FromFloatType> z) {
+    return std::complex<ToFloatType>(static_cast<ToFloatType>(z.real()),
+                                     static_cast<ToFloatType>(z.imag()));
+  }
+
+ template <typename ToFloatType, typename FromFloatType>
   std::vector<std::complex<ToFloatType> > ConvertComplexVector(std::vector<std::complex<FromFloatType> > x) {
     std::vector<std::complex<ToFloatType> > new_x;
     for (auto element : x) {

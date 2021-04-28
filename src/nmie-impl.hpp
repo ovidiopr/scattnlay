@@ -275,12 +275,18 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
 
+  int LeRu_cutoff(std::complex<double> z) {
+    auto x = std::abs(z);
+    return std::round(x + 11 * std::pow(x, (1.0 / 3.0)) + 1);
+//    return 10000;
+  }
 
   // ********************************************************************** //
   // Calculate calcNstop - equation (17)                                    //
   // ********************************************************************** //
   template <typename FloatType>
   void MultiLayerMie<FloatType>::calcNstop() {
+    //Wiscombe
     const FloatType& xL = size_param_.back();
     if (xL <= 8) {
       nmax_ = newround(xL + 4.0*pow(xL, 1.0/3.0) + 1);
@@ -289,6 +295,9 @@ namespace nmie {
     } else {
       nmax_ = newround(xL + 4.0*pow(xL, 1.0/3.0) + 2);
     }
+    //Le Ru
+    auto Nstop = nmie::LeRu_cutoff(static_cast<double>(xL))+1;
+    if (Nstop > nmax_) nmax_ = Nstop;
   }
 
 
@@ -314,7 +323,10 @@ namespace nmie {
         riM1 = 0;
       nmax_ = std::max(nmax_, riM1);
     }
-    nmax_ += 15;  // Final nmax_ value
+    nmax_ += 100;  // Final nmax_ value
+#ifdef MULTI_PRECISION
+    nmax_ += MULTI_PRECISION; //TODO we may need to use more terms that this for MP computations.
+#endif
     // nmax_ *= nmax_;
     // printf("using nmax %i\n", nmax_);
   }
@@ -392,36 +404,9 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcD1D3(const std::complex<FloatType> z,
                                std::vector<std::complex<FloatType> >& D1,
                                std::vector<std::complex<FloatType> >& D3) {
+    std::vector<std::complex<FloatType> > PsiZeta(nmax_+1);
     evalDownwardD1(z, D1);
-//    int lnmx = evalKapteynNumberOfLostSignificantDigits(nmax_, z);
-//    std::vector<std::complex<FloatType> > r;
-//    if (lnmx < 4) {
-//      r.resize(nmax_+1);
-//      evalForwardR(z, r);
-//    } else {
-//      int valid_digits = 6;
-//      int nstar = getNStar(nmax_, z, valid_digits);
-//      r.resize(nstar);
-//      evalBackwardR(z,r);
-//    }
-//    convertRtoD1(z, r, D1);
-
-    // TODO: Do we need this check?
-    // if (cabs(D1[0]) > 1.0e15) {
-    //   throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
-    // //printf("Warning: Potentially unstable D1! Please, try to change input parameters!\n");
-    // }
-
-    // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
-    PsiZeta_[0] = static_cast<FloatType>(0.5)*(static_cast<FloatType>(1.0) - std::complex<FloatType>(nmm::cos(2.0*z.real()), nmm::sin(2.0*z.real()))
-                 *static_cast<FloatType>(nmm::exp(-2.0*z.imag())));
-    D3[0] = std::complex<FloatType>(0.0, 1.0);
-    const std::complex<FloatType> zinv = std::complex<FloatType>(1.0, 0.0)/z;
-    for (int n = 1; n <= nmax_; n++) {
-      PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<FloatType>(n)*zinv - D1[n - 1])
-                                   *(static_cast<FloatType>(n)*zinv - D3[n - 1]);
-      D3[n] = D1[n] + std::complex<FloatType>(0.0, 1.0)/PsiZeta_[n];
-    }
+    evalUpwardD3 (z, D1, D3, PsiZeta);
   }
 
 
@@ -441,20 +426,18 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcPsiZeta(std::complex<FloatType> z,
                                   std::vector<std::complex<FloatType> >& Psi,
                                   std::vector<std::complex<FloatType> >& Zeta) {
-
-    std::complex<FloatType> c_i(0.0, 1.0);
-    std::vector<std::complex<FloatType> > D1(nmax_ + 1), D3(nmax_ + 1);
-
+    std::vector<std::complex<FloatType> > D1(nmax_ + 1), D3(nmax_ + 1),
+        PsiZeta(nmax_+1);
     // First, calculate the logarithmic derivatives
-    calcD1D3(z, D1, D3);
-
-    // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
-    Psi[0] = std::sin(z);
-    Zeta[0] = std::sin(z) - c_i*std::cos(z);
-    for (int n = 1; n <= nmax_; n++) {
-      Psi[n]  =  Psi[n - 1]*(std::complex<FloatType>(n,0.0)/z - D1[n - 1]);
-      Zeta[n] = Zeta[n - 1]*(std::complex<FloatType>(n,0.0)/z - D3[n - 1]);
+    evalDownwardD1(z, D1);
+    // Now, use the upward recurrence to calculate Psi equations (20ab)
+    evalUpwardPsi(z,  D1, Psi);
+    // Now, use the upward recurrence to calculate Psi*Zeta equations (18ad)
+    evalUpwardD3 (z, D1, D3, PsiZeta);
+    for (unsigned int i = 0; i < Zeta.size(); i++) {
+      Zeta[i] = PsiZeta[i]/Psi[i];
     }
+//    evalUpwardZeta(z, D3, Zeta);
   }
 
 
@@ -601,7 +584,6 @@ namespace nmie {
 
     an_.resize(nmax_);
     bn_.resize(nmax_);
-    PsiZeta_.resize(nmax_ + 1);
 
     std::vector<std::complex<FloatType> > PsiXL(nmax_ + 1), ZetaXL(nmax_ + 1);
 
@@ -712,6 +694,16 @@ namespace nmie {
         an_[n] = calc_an(n + 1, x[L - 1], std::complex<FloatType>(0.0, 0.0), std::complex<FloatType>(1.0, 0.0), PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
         bn_[n] = PsiXL[n + 1]/ZetaXL[n + 1];
       }
+      if (nmm::isnan(an_[n].real()) || nmm::isnan(an_[n].imag()) ||
+          nmm::isnan(bn_[n].real()) || nmm::isnan(bn_[n].imag())
+          ) {
+        // TODO somehow notify Python users about it
+        std::cout << "nmax value was chaned due to unexpected error. New values is "<< n
+                  << " (was "<<nmax_<<")"<<std::endl;
+        nmax_ = n;
+        break;
+      }
+
     }  // end of for an and bn terms
     isScaCoeffsCalc_ = true;
   }  // end of MultiLayerMie::calcScattCoeffs()
@@ -787,6 +779,7 @@ namespace nmie {
     // See: https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
     //      http://en.wikipedia.org/wiki/Loss_of_significance
     for (int n = nmax_ - 2; n >= 0; n--) {
+//      for (int n = 0; n < nmax_; n++) {
       const int n1 = n + 1;
       if (mode_n_ == Modes::kAll) {
         // Equation (27)
@@ -794,6 +787,7 @@ namespace nmie {
         // Equation (28)
         Qsca_ += (n1 + n1 + 1.0) * (an_[n].real() * an_[n].real() + an_[n].imag() * an_[n].imag()
             + bn_[n].real() * bn_[n].real() + bn_[n].imag() * bn_[n].imag());
+//        std::cout<<"n ="<< n1 << " ext:"<<Qext_ <<" sca:"<<Qsca_<<std::endl;
         // Equation (29)
         Qpr_ += ((n1 * (n1 + 2.0) / (n1 + 1.0)) * ((an_[n] * std::conj(an_[n1]) + bn_[n] * std::conj(bn_[n1])).real())
             + ((n1 + n1 + 1.0) / (n1 * (n1 + 1.0))) * (an_[n] * std::conj(bn_[n])).real());
@@ -1039,7 +1033,8 @@ namespace nmie {
     // Calculate angular functions Pi and Tau
     calcPiTau(nmm::cos(Theta), Pi, Tau);
 
-    for (int n = nmax_ - 2; n >= 0; n--) {
+//    for (int n = nmax_ - 2; n >= 0; n--) {
+    for (int n = 0; n < nmax_-1; n++) {
       int n1 = n + 1;
       auto rn = static_cast<FloatType>(n1);
 
@@ -1051,13 +1046,17 @@ namespace nmie {
       std::complex<FloatType> En = ipow[n1 % 4]
       *static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
       for (int i = 0; i < 3; i++) {
+        auto Ediff = En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
+                         + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
+        auto Hdiff = En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
+                         + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
+        if (nmm::isnan(Ediff.real()) || nmm::isnan(Ediff.imag()) ||
+            nmm::isnan(Hdiff.real()) || nmm::isnan(Hdiff.imag())
+            ) break;
         if (mode_n_ == Modes::kAll) {
           // electric field E [V m - 1] = EF*E0
-          E[i] += En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
-                      + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
-
-          H[i] += En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
-                      + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
+          E[i] += Ediff;
+          H[i] += Hdiff;
           continue;
         }
         if (n1 == mode_n_) {
