@@ -271,10 +271,12 @@ TEST(D3test, mpmath_generated_input) {
     parse2_mpmath_data(min_abs_tol, data, x, m, n, D1_mp, re_abs_tol, im_abs_tol);
     z = m*x;
     auto Nstop = nmie::LeRu_cutoff(z)+1;
-    std::vector<std::complex<nmie::FloatType>> Db(Nstop),Dold(Nstop+135), r;
-    int valid_digits = 14;
-    int nstar = nmie::getNStar(Nstop, z, valid_digits);
+//    auto Nstop = n;
+    std::vector<std::complex<nmie::FloatType>> Db(Nstop),Dold(Nstop), r;
+    int valid_digits = 10;
+    int nstar = nmie::getNStar(n, z, valid_digits);
     r.resize(nstar);
+    Db.resize(nstar);
     nmie::evalBackwardR(z,r);
     nmie::convertRtoD1(z, r, Db);
     if (n > Db.size()) continue;
@@ -295,7 +297,7 @@ TEST(D3test, mpmath_generated_input) {
 
 //TEST(D1test, DISABLED_WYang_data){
 TEST(D1test, WYang_data){
-  double abs_tol = 1e-9;
+  double abs_tol = 4e-10;
   int test_loss_digits = std::round(15 - std::log10(1/abs_tol));
   int Nstop = 131;
   std::vector<std::complex<nmie::FloatType>> Df(Nstop), Db(Nstop),Dold(Nstop), r;
@@ -308,12 +310,6 @@ TEST(D1test, WYang_data){
   r.resize(Nstop+1);
   nmie::evalForwardR(z, r);
   nmie::convertRtoD1(z, r, Df);
-// eval backward recurrence
-  int valid_digits = 6;
-  int nstar = nmie::getNStar(Nstop, z, valid_digits);
-  r.resize(nstar);
-  nmie::evalBackwardR(z,r);
-  nmie::convertRtoD1(z, r, Db);
 
 for (int i = 0; i < Dtest_n.size(); i++) {
   int n = Dtest_n[i];
@@ -325,6 +321,14 @@ for (int i = 0; i < Dtest_n.size(); i++) {
     EXPECT_NEAR(std::imag(Df[n]), std::imag(Dtest_D1[i]),
                 abs_tol) << "f at n=" << n << " lost digits = " << forward_loss_digits;
   }
+// eval backward recurrence
+  int valid_digits = 6;
+  int nstar = nmie::getNStar(n, z, valid_digits);
+  r.resize(nstar);
+  Db.resize(nstar);
+  nmie::evalBackwardR(z,r);
+  nmie::convertRtoD1(z, r, Db);
+
   EXPECT_NEAR(std::real(Db[n]), std::real(Dtest_D1[i]),
               abs_tol) << "b at n=" << n;
   EXPECT_NEAR(std::imag(Db[n]), std::imag(Dtest_D1[i]),

@@ -20,7 +20,7 @@ all:
 source:
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 
-ext: $(SRCDIR)/nmie.cc $(SRCDIR)/nmie-pybind11.cc $(SRCDIR)/pb11_wrapper.cc
+ext: $(SRCDIR)/nmie.cc $(SRCDIR)/nmie-pybind11.cc $(SRCDIR)/pb11_wrapper.cc $(CXX_NMIE_HEADERS)
 	$(PYTHON) setup.py build_ext --inplace
 
 install:

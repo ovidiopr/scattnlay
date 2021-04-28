@@ -62,8 +62,9 @@ namespace nmie {
 // Note, that Kapteyn seems to be too optimistic (at least by 3 digits
 // in some cases) for forward recurrence, see D1test with WYang_data
 int evalKapteynNumberOfLostSignificantDigits(const int ni,
-                                             const std::complex<double> z) {
+                                             const std::complex<FloatType> zz) {
   using std::abs;  using std::imag; using std::real; using std::log; using std::sqrt; using std::round;
+  std::complex<double> z = ConvertComplex<double>(zz);
   auto n = static_cast<double>(ni);
   auto one = std::complex<double> (1, 0);
   return round((
@@ -74,6 +75,7 @@ int evalKapteynNumberOfLostSignificantDigits(const int ni,
 }
 
 int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
+  if (nmax == 0) nmax = 1;
   int nstar = nmax;
   auto z_dp = ConvertComplex<double>(z);
   int forwardLoss = evalKapteynNumberOfLostSignificantDigits(nmax, z_dp);
@@ -320,17 +322,23 @@ void evalForwardD1 (const std::complex<FloatType> z,
 void evalDownwardD1 (const std::complex<FloatType> z,
                      std::vector<std::complex<FloatType> >& D1) {
   int nmax = D1.size() - 1;
+  int valid_digits = 10;
+#ifdef MULTI_PRECISION
+  valid_digits += MULTI_PRECISION;
+#endif
+  int nstar = nmie::getNStar(nmax, z, valid_digits);
+  D1.resize(nstar+1);
   // Downward recurrence for D1 - equations (16a) and (16b)
-  D1[nmax] = std::complex<FloatType>(0.0, 0.0);
+  D1[nstar] = std::complex<FloatType>(0.0, 0.0);
   std::complex<FloatType> c_one(1.0, 0.0);
   const std::complex<FloatType> zinv = std::complex<FloatType>(1.0, 0.0)/z;
-  for (unsigned int n = nmax; n > 0; n--) {
+  for (unsigned int n = nstar; n > 0; n--) {
     D1[n - 1] = static_cast<FloatType>(n)*zinv - c_one/
         (D1[n] + static_cast<FloatType>(n)*zinv);
   }
   // Use D1[0] from upward recurrence
   D1[0] = complex_cot(z);
-
+  D1.resize(nmax+1);
 //  printf("D1[0] = (%16.15g, %16.15g) z=(%16.15g,%16.15g)\n", D1[0].real(),D1[0].imag(),
 //         z.real(),z.imag());
 }

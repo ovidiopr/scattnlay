@@ -286,6 +286,7 @@ namespace nmie {
   // ********************************************************************** //
   template <typename FloatType>
   void MultiLayerMie<FloatType>::calcNstop() {
+    //Wiscombe
     const FloatType& xL = size_param_.back();
     if (xL <= 8) {
       nmax_ = newround(xL + 4.0*pow(xL, 1.0/3.0) + 1);
@@ -294,6 +295,9 @@ namespace nmie {
     } else {
       nmax_ = newround(xL + 4.0*pow(xL, 1.0/3.0) + 2);
     }
+    //Le Ru
+    auto Nstop = nmie::LeRu_cutoff(static_cast<double>(xL))+1;
+    if (Nstop > nmax_) nmax_ = Nstop;
   }
 
 
@@ -693,9 +697,10 @@ namespace nmie {
       if (nmm::isnan(an_[n].real()) || nmm::isnan(an_[n].imag()) ||
           nmm::isnan(bn_[n].real()) || nmm::isnan(bn_[n].imag())
           ) {
-        nmax_ = n;
         // TODO somehow notify Python users about it
-        std::cout << "nmax value was chaned due to unexpected error. New values is "<<nmax_<<std::endl;
+        std::cout << "nmax value was chaned due to unexpected error. New values is "<< n
+                  << " (was "<<nmax_<<")"<<std::endl;
+        nmax_ = n;
         break;
       }
 
@@ -1028,7 +1033,8 @@ namespace nmie {
     // Calculate angular functions Pi and Tau
     calcPiTau(nmm::cos(Theta), Pi, Tau);
 
-    for (int n = nmax_ - 2; n >= 0; n--) {
+//    for (int n = nmax_ - 2; n >= 0; n--) {
+    for (int n = 0; n < nmax_-1; n++) {
       int n1 = n + 1;
       auto rn = static_cast<FloatType>(n1);
 
@@ -1040,13 +1046,17 @@ namespace nmie {
       std::complex<FloatType> En = ipow[n1 % 4]
       *static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
       for (int i = 0; i < 3; i++) {
+        auto Ediff = En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
+                         + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
+        auto Hdiff = En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
+                         + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
+        if (nmm::isnan(Ediff.real()) || nmm::isnan(Ediff.imag()) ||
+            nmm::isnan(Hdiff.real()) || nmm::isnan(Hdiff.imag())
+            ) break;
         if (mode_n_ == Modes::kAll) {
           // electric field E [V m - 1] = EF*E0
-          E[i] += En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
-                      + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
-
-          H[i] += En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
-                      + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
+          E[i] += Ediff;
+          H[i] += Hdiff;
           continue;
         }
         if (n1 == mode_n_) {
