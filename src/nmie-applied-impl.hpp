@@ -33,8 +33,6 @@
 //    @brief  Wrapper class around nMie function for ease of use                    //
 //                                                                                  //
 //**********************************************************************************//
-#include "nmie-applied.hpp"
-#include "nmie-precision.hpp"
 #include <array>
 #include <algorithm>
 #include <cstdio>
@@ -42,7 +40,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace nmie {  
+namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -66,8 +64,8 @@ namespace nmie {
     printf("Faild D1[0] from continued fraction (z = %16.14f): %g\n", faild_x,
            calcD1confra(0,z).real());
     //D1[nmax_] = calcD1confra(nmax_, z);
-  
-    
+
+
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -113,7 +111,7 @@ namespace nmie {
     this->MarkUncalculated();
     coating_index_.clear();
     for (auto value : index) coating_index_.push_back(value);
-  }  // end of void MultiLayerMieApplied<FloatType>::SetCoatingIndex(std::vector<complex> index);  
+  }  // end of void MultiLayerMieApplied<FloatType>::SetCoatingIndex(std::vector<complex> index);
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -138,7 +136,7 @@ namespace nmie {
     for (auto layer_size_parameter : size_parameter) {
       if (layer_size_parameter <= 0.0)
         throw std::invalid_argument("Size parameter should be positive!");
-      if (prev_size_parameter > layer_size_parameter) 
+      if (prev_size_parameter > layer_size_parameter)
         throw std::invalid_argument
           ("Size parameter for next layer should be larger than the previous one!");
       prev_size_parameter = layer_size_parameter;
@@ -155,7 +153,7 @@ namespace nmie {
     //refractive_index_.clear();
     this->refractive_index_ = index;
     // for (auto value : index) refractive_index_.push_back(value);
-  }  // end of void MultiLayerMieApplied<FloatType>::SetIndexSP(...);  
+  }  // end of void MultiLayerMieApplied<FloatType>::SetIndexSP(...);
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -206,7 +204,7 @@ namespace nmie {
   template <typename FloatType>
   FloatType MultiLayerMieApplied<FloatType>::GetTotalRadius() {
     if (!this->isMieCalculated())  GenerateSizeParameter();
-    return this->total_radius_;      
+    return this->total_radius_;
   }  // end of FloatType MultiLayerMieApplied<FloatType>::GetTotalRadius();
   // ********************************************************************** //
   // ********************************************************************** //
@@ -336,7 +334,7 @@ c    MM + 1  and - 1, alternately
     std::complex<FloatType> ZINV = one/z;
 // c                                 ** Eq. R25a
     std::complex<FloatType> CONFRA = static_cast<std::complex<FloatType> >(N + 1)*ZINV;   //debug ZINV
-    MM = - 1; 
+    MM = - 1;
     KK = 2*N +3; //debug 3
 // c                                 ** Eq. R25b, k=2
     CAK    = static_cast<std::complex<FloatType> >(MM*KK)*ZINV; //debug -3 ZINV
@@ -381,7 +379,7 @@ c    MM + 1  and - 1, alternately
        }  // end of if < eps2
       }
       break;
-    } while(1);    
+    } while(1);
     //if (N == 0)  printf(" return confra for z=(%g,%g)\n", ZINV.real(), ZINV.imag());
     return CONFRA;
   }
@@ -404,7 +402,7 @@ c    MM + 1  and - 1, alternately
   template <typename FloatType>
   void MultiLayerMieApplied<FloatType>::RunMieCalculation() {
     ConvertToSP();
-    this->MultiLayerMie<FloatType>::RunMieCalculation(); 
+    this->MultiLayerMie<FloatType>::RunMieCalculation();
   }
   // ********************************************************************** //
   // ********************************************************************** //
@@ -420,7 +418,7 @@ c    MM + 1  and - 1, alternately
     bln = this->bln_;
     cln = this->cln_;
     dln = this->dln_;
-    
+
   }  // end of void MultiLayerMieApplied<FloatType>::GetExpanCoeffs( ...)
   // ********************************************************************** //
   // ********************************************************************** //

@@ -36,8 +36,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+
 #include "nmie.hpp"
-#include "nmie-impl.hpp"
+#include "nmie-basic.hpp"
 
 
 namespace nmie {
