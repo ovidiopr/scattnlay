@@ -366,7 +366,6 @@ void evalUpwardPsi (const std::complex<FloatType> z,
                     const std::vector<std::complex<FloatType> > D1,
                    std::vector<std::complex<FloatType> >& Psi) {
   int nmax = Psi.size() - 1;
-  std::complex<FloatType> c_i(0.0, 1.0);
   // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
   Psi[0] = std::sin(z);
   for (int n = 1; n <= nmax; n++) {

@@ -51,7 +51,7 @@ isMP = False
 # nmax = 230
 nmax = -1
 
-nm = 1.0 # pihost medium
+nm = 1.0  # host medium
 x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / WL
 m = np.array((index_H2O), dtype=np.complex128) / nm
 

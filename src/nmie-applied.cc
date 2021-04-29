@@ -36,9 +36,8 @@
 
 #include "nmie-applied.hpp"
 #include "nmie-applied-impl.hpp"
-#include "nmie-precision.hpp"
 
-namespace nmie {  
+namespace nmie {
   //**********************************************************************************//
   // This function emulates a C call to calculate the actual scattering parameters    //
   // and amplitudes.                                                                  //

@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../src/nmie-impl.hpp"
+#include "../src/nmie-basic.hpp"
 #include "test_spec_functions_data.hpp"
 // From W. Yang APPLIED OPTICS Vol. 42, No. 9,  20 March 2003
 // Dtest refractive index is m={1.05,1}, the size parameter is x = 80
@@ -59,7 +59,7 @@ void parse_mpmath_data(const double min_abs_tol, const std::tuple< std::complex<
 }
 void parse2_mpmath_data(const nmie::FloatType min_abs_tol,
                         const std::tuple< nmie::FloatType, std::complex<nmie::FloatType>, int, std::complex<nmie::FloatType>, nmie::FloatType, nmie::FloatType > data,
-                        nmie::FloatType &x, std::complex<nmie::FloatType> &m, int &n, std::complex<nmie::FloatType> &func_mp,
+                        nmie::FloatType &x, std::complex<nmie::FloatType> &m, unsigned int &n, std::complex<nmie::FloatType> &func_mp,
                         nmie::FloatType &re_abs_tol, nmie::FloatType &im_abs_tol){
   x = std::get<0>(data);
   m = std::get<1>(data);
@@ -80,7 +80,7 @@ template<class T> inline T pow2(const T value) {return value*value;}
 TEST(an_test, mpmath_generated_input) {
   double min_abs_tol = 3e-14, x;
   std::complex<double> m, an_mp;
-  int n;
+  unsigned int n;
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : an_test_30digits) {
     parse2_mpmath_data(min_abs_tol, data, x, m, n, an_mp, re_abs_tol, im_abs_tol);
@@ -107,7 +107,7 @@ TEST(an_test, mpmath_generated_input) {
 TEST(bn_test, mpmath_generated_input) {
   double min_abs_tol = 3e-14, x;
   std::complex<double> m, bn_mp;
-  int n;
+  unsigned int n;
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : bn_test_30digits) {
     parse2_mpmath_data(min_abs_tol, data, x, m, n, bn_mp, re_abs_tol, im_abs_tol);
@@ -265,7 +265,7 @@ TEST(D3test, mpmath_generated_input) {
   TEST(D1test, mpmath_generated_input) {
   double min_abs_tol = 2e-11, x;
   std::complex<double> m, z, D1_mp;
-  int n;
+  unsigned int n;
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : D1_test_30digits) {
     parse2_mpmath_data(min_abs_tol, data, x, m, n, D1_mp, re_abs_tol, im_abs_tol);
@@ -311,8 +311,8 @@ TEST(D1test, WYang_data){
   nmie::evalForwardR(z, r);
   nmie::convertRtoD1(z, r, Df);
 
-for (int i = 0; i < Dtest_n.size(); i++) {
-  int n = Dtest_n[i];
+for (unsigned int i = 0; i < Dtest_n.size(); i++) {
+  unsigned int n = Dtest_n[i];
   int forward_loss_digits = nmie::evalKapteynNumberOfLostSignificantDigits(n, z);
   forward_loss_digits += 3; // Kapteyn is too optimistic
   if (test_loss_digits > forward_loss_digits ) {

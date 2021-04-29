@@ -50,8 +50,8 @@
 #include <vector>
 
 #include "nmie.hpp"
-#include "nmie-precision.hpp"
-#include "nmie-impl.hpp"
+#include "nmie-basic.hpp"
+#include "nmie-nearfield.hpp"
 
 namespace nmie {
 
@@ -257,7 +257,7 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
-    return nmie::nMie(L, -1, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2, -1, -1);
+    return nmie::nMie(L, pl, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2, -1, -1);
 
   }
   //**********************************************************************************//
