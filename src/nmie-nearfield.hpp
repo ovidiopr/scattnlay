@@ -405,5 +405,60 @@ namespace nmie {
       }
     }  // end of for all field coordinates
   }  //  end of MultiLayerMie::RunFieldCalculation()
+
+template <typename FloatType>
+int ceil_to_2_pow_n(const int input_n) {
+  int n = 2;
+  while (input_n > n) n *= 2;
+  return n;
+}
+
+
+template <typename FloatType>
+double eval_delta(const int steps, const double from_value, const double to_value) {
+  auto delta = std::abs((from_value - to_value)/static_cast<double>(steps));
+  // We have a limited double precision evaluation of special functions, typically it is 1e-10.
+  if ( (2.*delta)/std::abs(from_value+to_value) < 1e-9)
+    throw std::invalid_argument("Error! The step is too fine, not supported!");
+  return delta;
+}
+
+
+// input parameters:
+//         in_outer_perimeter_points: will be increased to the nearest power of 2.
+template <typename FloatType>
+void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int in_outer_perimeter_points,
+                                                        const int radius_points,
+                                                        const double from_Rho, const double to_Rho,
+                                                        const double from_Theta, const double to_Theta,
+                                                        const double from_Phi, const double to_Phi) {
+//  double Rho, Theta, Phi;
+  if (from_Rho > to_Rho || from_Theta > to_Theta || from_Phi > to_Phi
+      || in_outer_perimeter_points < 1 || radius_points < 1)
+    throw std::invalid_argument("Error! Invalid argument for RunFieldCalculationPolar() !");
+  int outer_perimeter_points = in_outer_perimeter_points;
+  if (outer_perimeter_points != 1) outer_perimeter_points = ceil_to_2_pow_n<FloatType>(in_outer_perimeter_points);
+//  double delta_Rho = eval_delta<FloatType>(radius_points, from_Rho, to_Rho);
+//  double delta_Phi = eval_delta<FloatType>(radius_points, from_Phi, to_Phi);
+  double delta_Theta = eval_delta<FloatType>(radius_points, from_Theta, to_Theta);
+
+  auto near_field_nmax = LeRu_cutoff(std::complex<FloatType>(to_Rho, 0));
+
+  std::vector<std::vector<FloatType> >  Pi(outer_perimeter_points), Tau(outer_perimeter_points);
+  for (auto &val:Pi) val.resize(near_field_nmax);
+  for (auto &val:Tau) val.resize(near_field_nmax);
+  for (int i=0; i < outer_perimeter_points; i++) {
+    auto Theta = static_cast<FloatType>(from_Theta + i*delta_Theta);
+    // Calculate angular functions Pi and Tau
+    calcPiTau(nmm::cos(Theta), Pi[i], Tau[i]);
+  }
+
+
+
+  // Calculate scattering coefficients an_ and bn_
+//  calcScattCoeffs();
+  // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
+//  calcExpanCoeffs();
+}
 }  // end of namespace nmie
 #endif  // SRC_NMIE_NEARFIELD_HPP_

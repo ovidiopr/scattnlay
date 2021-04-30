@@ -274,7 +274,9 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
 
-  int LeRu_cutoff(std::complex<double> z) {
+  template <typename FloatType>
+  int LeRu_cutoff(const std::complex<FloatType> zz) {
+    std::complex<double> z = ConvertComplex<double>(zz);
     auto x = std::abs(z);
     return std::round(x + 11 * std::pow(x, (1.0 / 3.0)) + 1);
 //    return 10000;
@@ -295,7 +297,7 @@ namespace nmie {
       nmax_ = newround(xL + 4.0*pow(xL, 1.0/3.0) + 2);
     }
     //Le Ru
-    auto Nstop = nmie::LeRu_cutoff(static_cast<double>(xL))+1;
+    auto Nstop = nmie::LeRu_cutoff(std::complex<FloatType>(xL,0))+1;
     if (Nstop > nmax_) nmax_ = Nstop;
   }
 

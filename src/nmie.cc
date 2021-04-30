@@ -97,7 +97,7 @@ namespace nmie {
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
     }
-  }
+  }  //end of int ScattCoeffs(...)
 
   //**********************************************************************************//
   // This function emulates a C call to calculate the expansion coefficients          //
@@ -147,7 +147,7 @@ namespace nmie {
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
     }
-  }
+  }  // end of int ExpanCoeffs(...)
 
 
   //**********************************************************************************//
@@ -222,8 +222,7 @@ namespace nmie {
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
     }
-  }
-
+  }  // end of int nMie(...)
 
   //**********************************************************************************//
   // This function is just a wrapper to call the full 'nMie' function with fewer      //
@@ -256,9 +255,12 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int nMie(const unsigned int L, const int pl,
+           std::vector<double>& x, std::vector<std::complex<double> >& m,
+           const unsigned int nTheta, std::vector<double>& Theta, const int nmax,
+           double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
+           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
     return nmie::nMie(L, pl, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2, -1, -1);
-
   }
   //**********************************************************************************//
   // This function is just a wrapper to call the full 'nMie' function with fewer      //
@@ -426,5 +428,5 @@ namespace nmie {
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
     }
-  }
+  }  // end of int nField(...)
 }  // end of namespace nmie

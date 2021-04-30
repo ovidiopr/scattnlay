@@ -8,6 +8,13 @@ set(LIBS ${LIBS} pthread)
 
 # -- Output tests in directory
 
+add_executable("test_near_field"
+        test_near_field.cc)
+target_link_libraries("test_near_field" ${LIBS})
+add_test(NAME "test_near_field"
+        COMMAND "test_near_field")
+
+
 # In included file test_spec_functions_data.hpp there are results of multiple
 # precision computation that may overflow double precision at compile time.
 set_source_files_properties(test_Riccati_Bessel_logarithmic_derivative.cc
