@@ -425,24 +425,24 @@ double eval_delta(const int steps, const double from_value, const double to_valu
 
 
 // input parameters:
-//         in_outer_perimeter_points: will be increased to the nearest power of 2.
+//         input_outer_perimeter_points: will be increased to the nearest power of 2.
 template <typename FloatType>
-void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int in_outer_perimeter_points,
+void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int input_outer_perimeter_points,
                                                         const int radius_points,
                                                         const double from_Rho, const double to_Rho,
                                                         const double from_Theta, const double to_Theta,
                                                         const double from_Phi, const double to_Phi) {
 //  double Rho, Theta, Phi;
   if (from_Rho > to_Rho || from_Theta > to_Theta || from_Phi > to_Phi
-      || in_outer_perimeter_points < 1 || radius_points < 1)
+      || input_outer_perimeter_points < 1 || radius_points < 1)
     throw std::invalid_argument("Error! Invalid argument for RunFieldCalculationPolar() !");
-  int outer_perimeter_points = in_outer_perimeter_points;
-  if (outer_perimeter_points != 1) outer_perimeter_points = ceil_to_2_pow_n<FloatType>(in_outer_perimeter_points);
+  int outer_perimeter_points = input_outer_perimeter_points;
+  if (outer_perimeter_points != 1) outer_perimeter_points = ceil_to_2_pow_n<FloatType>(input_outer_perimeter_points);
 //  double delta_Rho = eval_delta<FloatType>(radius_points, from_Rho, to_Rho);
 //  double delta_Phi = eval_delta<FloatType>(radius_points, from_Phi, to_Phi);
   double delta_Theta = eval_delta<FloatType>(radius_points, from_Theta, to_Theta);
-
-  auto near_field_nmax = LeRu_cutoff(std::complex<FloatType>(to_Rho, 0));
+  auto near_field_nmax = calcNmax(to_Rho);
+  SetMaxTerms(near_field_nmax);
 
   std::vector<std::vector<FloatType> >  Pi(outer_perimeter_points), Tau(outer_perimeter_points);
   for (auto &val:Pi) val.resize(near_field_nmax);
@@ -452,7 +452,6 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int in_outer_perim
     // Calculate angular functions Pi and Tau
     calcPiTau(nmm::cos(Theta), Pi[i], Tau[i]);
   }
-
 
 
   // Calculate scattering coefficients an_ and bn_

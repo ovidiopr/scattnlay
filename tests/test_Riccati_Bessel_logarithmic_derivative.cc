@@ -44,7 +44,7 @@ std::vector< std::complex<double>>
 
 
 void parse_mpmath_data(const double min_abs_tol, const std::tuple< std::complex<double>, int, std::complex<double>, double, double > data,
-                       std::complex<double> &z, int &n, std::complex<double> &func_mp,
+                       std::complex<double> &z, unsigned int &n, std::complex<double> &func_mp,
                        double &re_abs_tol, double &im_abs_tol){
   z = std::get<0>(data);
   n = std::get<1>(data);
@@ -134,7 +134,7 @@ TEST(bn_test, mpmath_generated_input) {
 TEST(zeta_psizeta_test, mpmath_generated_input) {
   double min_abs_tol = 2e-10;
   std::complex<double> z, zeta_mp;
-  int n;
+  unsigned int n;
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : zeta_test_16digits) {
     parse_mpmath_data(min_abs_tol, data, z, n, zeta_mp, re_abs_tol, im_abs_tol);
@@ -196,7 +196,7 @@ TEST(zeta_psizeta_test, mpmath_generated_input) {
 TEST(psizeta_test, mpmath_generated_input) {
   double min_abs_tol = 9e-11;
   std::complex<double> z, PsiZeta_mp;
-  int n;
+  unsigned int n;
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : psi_mul_zeta_test_16digits) {
     parse_mpmath_data(min_abs_tol, data, z, n, PsiZeta_mp, re_abs_tol, im_abs_tol);
@@ -221,7 +221,7 @@ TEST(psizeta_test, mpmath_generated_input) {
 TEST(psi_test, mpmath_generated_input) {
   double min_abs_tol = 1e-12;
   std::complex<double> z, Psi_mp;
-  int n;
+  unsigned int n;
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : psi_test_16digits) {
     parse_mpmath_data(min_abs_tol, data, z, n, Psi_mp, re_abs_tol, im_abs_tol);
@@ -243,7 +243,7 @@ TEST(psi_test, mpmath_generated_input) {
 TEST(D3test, mpmath_generated_input) {
   double min_abs_tol = 2e-11;
   std::complex<double> z, D3_mp;
-  int n;
+  unsigned int n;
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : D3_test_16digits) {
     parse_mpmath_data(min_abs_tol, data, z, n, D3_mp, re_abs_tol, im_abs_tol);

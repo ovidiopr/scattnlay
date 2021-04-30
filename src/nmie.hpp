@@ -138,7 +138,7 @@ inline std::complex<T> my_exp(const std::complex<T>& x) {
     // Run calculation
     void RunMieCalculation();
     void RunFieldCalculation();
-    void RunFieldCalculationPolar(const int in_outer_perimeter_points = 1,
+    void RunFieldCalculationPolar(const int input_outer_perimeter_points = 1,
                                   const int radius_points=1,
                                   const double from_Rho=0, const double to_Rho=static_cast<double>(1.),
                                   const double from_Theta=0, const double to_Theta=static_cast<double>(3.14159265358979323),
@@ -222,8 +222,8 @@ inline std::complex<T> my_exp(const std::complex<T>& x) {
     std::vector< std::vector<FloatType> > coords_;
 
   private:
-    void calcNstop();
-    void calcNmax(unsigned int first_layer);
+    unsigned int calcNstop(FloatType xL = -1);
+    unsigned int calcNmax(FloatType xL = -1);
 
     std::complex<FloatType> calc_an(int n, FloatType XL, std::complex<FloatType> Ha, std::complex<FloatType> mL,
                                  std::complex<FloatType> PsiXL, std::complex<FloatType> ZetaXL,

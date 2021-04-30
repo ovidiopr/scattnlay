@@ -275,7 +275,7 @@ namespace nmie {
   // ********************************************************************** //
 
   template <typename FloatType>
-  int LeRu_cutoff(const std::complex<FloatType> zz) {
+  unsigned int LeRu_cutoff(const std::complex<FloatType> zz) {
     std::complex<double> z = ConvertComplex<double>(zz);
     auto x = std::abs(z);
     return std::round(x + 11 * std::pow(x, (1.0 / 3.0)) + 1);
@@ -286,19 +286,21 @@ namespace nmie {
   // Calculate calcNstop - equation (17)                                    //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcNstop() {
+  unsigned int MultiLayerMie<FloatType>::calcNstop(FloatType xL) {
+    unsigned int nmax = 0;
     //Wiscombe
-    const FloatType& xL = size_param_.back();
+    if (xL < size_param_.back()) xL = size_param_.back();
     if (xL <= 8) {
-      nmax_ = newround(xL + 4.0*pow(xL, 1.0/3.0) + 1);
+      nmax = newround(xL + 4.0*pow(xL, 1.0/3.0) + 1);
     } else if (xL <= 4200) {
-      nmax_ = newround(xL + 4.05*pow(xL, 1.0/3.0) + 2);
+      nmax = newround(xL + 4.05*pow(xL, 1.0/3.0) + 2);
     } else {
-      nmax_ = newround(xL + 4.0*pow(xL, 1.0/3.0) + 2);
+      nmax = newround(xL + 4.0*pow(xL, 1.0/3.0) + 2);
     }
     //Le Ru
     auto Nstop = nmie::LeRu_cutoff(std::complex<FloatType>(xL,0))+1;
-    if (Nstop > nmax_) nmax_ = Nstop;
+    if (Nstop > nmax) nmax = Nstop;
+    return nmax;
   }
 
 
@@ -306,30 +308,33 @@ namespace nmie {
   // Maximum number of terms required for the calculation                   //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcNmax(unsigned int first_layer) {
-    int ri, riM1;
+  unsigned int MultiLayerMie<FloatType>::calcNmax(FloatType xL) {
+    const int pl = PEC_layer_position_;
+    const unsigned int first_layer = (pl > 0) ? pl : 0;
+    unsigned int ri, riM1, nmax = 0;
     const std::vector<FloatType>& x = size_param_;
     const std::vector<std::complex<FloatType> >& m = refractive_index_;
-    calcNstop();  // Set initial nmax_ value
+    nmax = calcNstop(xL);
     for (unsigned int i = first_layer; i < x.size(); i++) {
       if (static_cast<int>(i) > PEC_layer_position_)  // static_cast used to avoid warning
         ri = newround(cabs(x[i]*m[i]));
       else
         ri = 0;
-      nmax_ = std::max(nmax_, ri);
+      nmax = std::max(nmax, ri);
       // first layer is pec, if pec is present
       if ((i > first_layer) && (static_cast<int>(i - 1) > PEC_layer_position_))
         riM1 = newround(cabs(x[i - 1]* m[i]));
       else
         riM1 = 0;
-      nmax_ = std::max(nmax_, riM1);
+      nmax = std::max(nmax, riM1);
     }
-    nmax_ += 100;  // Final nmax_ value
+    nmax += 15;  // Final nmax value
 #ifdef MULTI_PRECISION
-    nmax_ += MULTI_PRECISION; //TODO we may need to use more terms that this for MP computations.
+    nmax += MULTI_PRECISION; //TODO we may need to use more terms that this for MP computations.
 #endif
-    // nmax_ *= nmax_;
-    // printf("using nmax %i\n", nmax_);
+    // nmax *= nmax;
+    // printf("using nmax %i\n", nmax);
+    return nmax;
   }
 
 
@@ -459,7 +464,10 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcPiTau(const FloatType& costheta,
                                 std::vector<FloatType>& Pi, std::vector<FloatType>& Tau) {
 
-    int i;
+    int nmax = Pi.size();
+    if (Pi.size() != Tau.size())
+      throw std::invalid_argument("Error! Pi and Tau vectors should have the same size!");
+
     //****************************************************//
     // Equations (26a) - (26c)                            //
     //****************************************************//
@@ -467,10 +475,10 @@ namespace nmie {
     Pi[0] = 1.0;  // n=1
     Tau[0] = costheta;
     // Calculate the actual values
-    if (nmax_ > 1) {
+    if (nmax > 1) {
       Pi[1] = 3*costheta*Pi[0]; //n=2
       Tau[1] = 2*costheta*Pi[1] - 3*Pi[0];
-      for (i = 2; i < nmax_; i++) { //n=[3..nmax_]
+      for (int i = 2; i < nmax; i++) { //n=[3..nmax_]
         Pi[i] = ((i + i + 1)*costheta*Pi[i - 1] - (i + 1)*Pi[i - 2])/i;
         Tau[i] = (i + 1)*costheta*Pi[i] - (i + 2)*Pi[i - 1];
       }
@@ -560,7 +568,7 @@ namespace nmie {
     // below the PEC are discarded.                                           //
     // ***********************************************************************//
     int fl = (pl > 0) ? pl : 0;
-    if (nmax_preset_ <= 0) calcNmax(fl);
+    if (nmax_preset_ <= 0) nmax_ = calcNmax();
     else nmax_ = nmax_preset_;
 
     std::complex<FloatType> z1, z2;
