@@ -45,12 +45,12 @@ namespace shell_generator {
   // ********************************************************************** //
   // ********************************************************************** //
   template<typename T, typename A> inline
-  T dot(std::vector<T,A> const& a,
-        std::vector<T,A> const& b) {
+  T dot(std::vector<T,A> const &a,
+        std::vector<T,A> const &b) {
     return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
     // return std::inner_product(begin(a), end(a), begin(b),
     //                           static_cast<T>(0.0));
-  }  
+  }
   template<typename T, typename A> inline
   std::vector<T> cross(std::vector<T,A> const& a,
         std::vector<T,A> const& b) {
@@ -60,7 +60,7 @@ namespace shell_generator {
       a[0]*b[1]-a[1]*b[0]
     };
     return c;
-  }  
+  }
   // template<typename T, typename A> inline
   // std::vector<std::vector<T> > dyadic(std::vector<T,A> const& a,
   //       std::vector<T,A> const& b) {
@@ -70,7 +70,7 @@ namespace shell_generator {
   //     {a[2]*b[0], a[2]*b[1], a[2]*b[2]}
   //   };
   //   return c;
-  // }  
+  // }
   // template<typename T, typename A> inline
   // std::vector<std::vector<T>,A >
   // operator+(std::vector<std::vector<T>,A > const& a,
@@ -81,7 +81,7 @@ namespace shell_generator {
   //     {a[2][0]+b[2][0], a[2][1]+b[2][1], a[2][2]+b[2][2]}
   //   };
   //   return c;
-  // }  
+  // }
   template<typename T, typename A> inline
   std::vector<T,A >
   operator+(std::vector<T,A > const& a,
@@ -90,7 +90,7 @@ namespace shell_generator {
                            a[1]+b[1],
                            a[2]+b[2]};
     return c;
-  }  
+  }
   template<typename T, typename A> inline
   std::vector<T,A >
   operator-(std::vector<T,A > const& a,
@@ -99,7 +99,7 @@ namespace shell_generator {
                            a[1]-b[1],
                            a[2]-b[2]};
     return c;
-  }  
+  }
 
   // template<typename T, typename A> inline
   // std::vector<std::vector<T>,A >
@@ -111,7 +111,7 @@ namespace shell_generator {
   //     {a[2][0]-b[2][0], a[2][1]-b[2][1], a[2][2]-b[2][2]}
   //   };
   //   return c;
-  // }  
+  // }
   // template<typename T, typename A> inline
   // std::vector<std::vector<T>,A >
   // real(std::vector<std::vector<T>,A > const& a) {
@@ -121,7 +121,7 @@ namespace shell_generator {
   //     {a[2][0].real(), a[2][1].real(), a[2][2].real()}
   //   };
   //   return c;
-  // }  
+  // }
   template<typename T, typename A> inline
   std::vector<T>
   real(std::vector<std::complex<T>,A > const& a) {
@@ -129,12 +129,12 @@ namespace shell_generator {
                         a[1].real(),
                         a[2].real()};
     return c;
-  }  
+  }
   template<typename T, typename A> inline
-  T  real(std::complex<T> const& a) {    
+  T  real(std::complex<T> const& a) {
     return a.real();
-  }  
-  template<typename T, typename A> 
+  }
+  template<typename T, typename A>
   std::vector< std::complex<T>,A > vconj(std::vector< std::complex<T>,A > const& a) {
     std::vector< std::complex<T>,A > b = {std::conj(a[0]),
                                           std::conj(a[1]),
@@ -142,8 +142,8 @@ namespace shell_generator {
     // for (auto elem : a)
     //   b.push_back(std::conj(elem));
     return b;
-  }  
-  template<typename T1, typename T2, typename A> 
+  }
+  template<typename T1, typename T2, typename A>
   std::vector<T2,A> operator*(T1 const& a, std::vector< T2,A > const& b) {
     std::vector<T2,A > c = {a*b[0],
                             a*b[1],
@@ -151,8 +151,8 @@ namespace shell_generator {
     // for (auto elem : b)
     //   c.push_back(a*elem);
     return c;
-  }  
-  template<typename T1, typename T2, typename A> 
+  }
+  template<typename T1, typename T2, typename A>
   std::vector<T2,A> operator/(std::vector< T2,A > const& b, T1 const& a) {
     std::vector<T2,A > c = {b[0]/a,
                             b[1]/a,
@@ -160,10 +160,10 @@ namespace shell_generator {
     // for (auto elem : b)
     //   c.push_back(a*elem);
     return c;
-  }  
+  }
 
-  
-  
+
+
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
@@ -241,7 +241,7 @@ namespace shell_generator {
       std::vector<double> field = {ampl*(p[0]-shift)/r, ampl*(p[1])/r, ampl*(p[2])/r};
       return field;
     };
-    //simple 
+    //simple
     // for (auto vert :vertices_) {
     for (long unsigned int i = 0; i<face_centers_.size(); ++i) {
       auto vert = face_centers_[i];
@@ -253,7 +253,7 @@ namespace shell_generator {
       double r = norm(vert);
       std::vector<double> unit = { vert[0]/r, vert[1]/r, vert[2]/r};
       // std::cout << norm(unit) << std::endl;
-      for (int j =0; j < 3; ++j) 
+      for (int j =0; j < 3; ++j)
         integral += per_face_area_[i]*unit[j]*E0[j];
     }
     return integral;
@@ -269,11 +269,11 @@ namespace shell_generator {
     auto field = [](double charge, double shift, std::vector<double> p){
       double r = std::sqrt(pow2(p[0]-shift) + pow2(p[1]) + pow2(p[2]) );
       const double pi = 3.1415926535897932384626433832795;
-      double ampl = charge/(4.0*pi*pow2(r));      
+      double ampl = charge/(4.0*pi*pow2(r));
       std::vector<double> field = {ampl*(p[0]-shift)/r, ampl*(p[1])/r, ampl*(p[2])/r};
       return field;
     };
-    
+
     for(const auto face : faces_){
       std::vector<double> mean_vector = {0.0, 0.0, 0.0}, mean_point = {0.0, 0.0, 0.0};
       //Get mean
@@ -289,7 +289,7 @@ namespace shell_generator {
       double r = norm(mean_point);
       std::vector<double> unit = { mean_point[0]/r, mean_point[1]/r, mean_point[2]/r};
       // std::cout << norm(unit) << std::endl;
-      for (int i =0; i < 3; ++i) 
+      for (int i =0; i < 3; ++i)
         integral += face_area_*
           unit[i]*mean_vector[i];
     }
@@ -299,7 +299,7 @@ namespace shell_generator {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  
+
   std::vector<double> ShellGenerator::IntegrateByComp() {
     std::vector<double> integral = {0.0, 0.0, 0.0};
     for (unsigned int i=0; i<E_.size(); ++i) {
@@ -311,7 +311,7 @@ namespace shell_generator {
       const std::vector< std::vector<double> > d = {{1.0, 0.0, 0.0},
                                                     {0.0, 1.0, 0.0},
                                                     {0.0, 0.0, 1.0}};
-      
+
       std::vector<double> F = {0.0, 0.0, 0.0};
       std::complex<double> S(0.0);
       for (int ii = 0; ii < 3; ++ii)
@@ -327,14 +327,14 @@ namespace shell_generator {
           F[i] += (1/(2.0/* *4.0*pi */))*real(T[i][j]*n[j]);
         }
       }
-      integral = integral + per_face_area_[i]*F;      
+      integral = integral + per_face_area_[i]*F;
     }
     return integral;
   }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  
+
   std::vector<double> ShellGenerator::IntegrateByCompReal() {
     std::vector<double> integral = {0.0, 0.0, 0.0};
     for (unsigned int i=0; i<E_.size(); ++i) {
@@ -346,7 +346,7 @@ namespace shell_generator {
       const std::vector< std::vector<double> > d = {{1.0, 0.0, 0.0},
                                                     {0.0, 1.0, 0.0},
                                                     {0.0, 0.0, 1.0}};
-      
+
       std::vector<double> F = {0.0, 0.0, 0.0};
       std::complex<double> S(0.0);
       for (int ii = 0; ii < 3; ++ii)
@@ -362,17 +362,17 @@ namespace shell_generator {
           F[i] += (1/(2.0/* *4.0*pi */))*real(T[i][j]*n[j]);
         }
       }
-      integral = integral + per_face_area_[i]*F;      
+      integral = integral + per_face_area_[i]*F;
     }
     return integral;
   }
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  
+
   std::vector<double> ShellGenerator::IntegrateByFaces() {
     std::vector<double> integral = {0.0, 0.0, 0.0};
-    //simple 
+    //simple
     for (long unsigned int i=0; i<E_.size(); ++i) {
       //std::cout << i << " ";
       auto E = E_[i];
@@ -380,7 +380,7 @@ namespace shell_generator {
       auto H = H_[i];
       // auto Es = Es_[i];
       // auto Hs = Hs_[i];
-      
+
       auto vert = face_centers_[i];
       // Vector to unit product
       double r = norm(vert);
@@ -411,7 +411,7 @@ namespace shell_generator {
       //   (-1.0/4.0)*(dot(E,vconj(E))*unit
       //               +dot(H,vconj(H))*unit
       //               )
-              
+
       //     );
       // auto
       // std::cout <<"E "<<E[0]<<", "<< E[1] <<", "<<E[2] << std::endl;
@@ -434,13 +434,13 @@ namespace shell_generator {
     }
     return integral;
   }
-  
+
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
   std::vector<double> ShellGenerator::Integrate() {
     std::vector<double> integral = {0.0, 0.0, 0.0};
-    //simple 
+    //simple
     for (unsigned int i=0; i<E_.size(); ++i) {
       auto E = E_[i];
       //auto H = 377.0*H_[i];
@@ -471,7 +471,7 @@ namespace shell_generator {
   // ********************************************************************** //
   std::vector< std::vector<double> > ShellGenerator::GetVerticesT() {
     std::vector< std::vector<double> > vertices_t;
-    vertices_t.resize(3); 
+    vertices_t.resize(3);
     for(const auto vert : vertices_){
       vertices_t[0].push_back(vert[0]);
       vertices_t[1].push_back(vert[1]);
@@ -485,7 +485,7 @@ namespace shell_generator {
   std::vector< std::vector<double> > ShellGenerator::GetFaceCentersT() {
     EvalFaces();
     std::vector< std::vector<double> > vertices_t;
-    vertices_t.resize(3); 
+    vertices_t.resize(3);
     for(const auto vert : face_centers_){
       vertices_t[0].push_back(vert[0]);
       vertices_t[1].push_back(vert[1]);
@@ -515,7 +515,7 @@ namespace shell_generator {
        //std::cout << " " << norm(vert) << " ";
      }
      const double pi = 3.1415926535897932384626433832795;
-     double area = 4.0*pi*pow2(scale); 
+     double area = 4.0*pi*pow2(scale);
      //face_area_ = area/faces_.size();
      per_vertice_area_ = area/vertices_.size();
      //std::cout << "Per verice area: " << per_vertice_area_ << std::endl;
@@ -528,7 +528,7 @@ namespace shell_generator {
     for(auto vert : vertices_){
       std::cout <<"(";
       for (auto coord:vert) std::cout<<coord<<",";
-      std::cout <<"),";      
+      std::cout <<"),";
     }
     std::cout << std::endl;
    }
@@ -563,13 +563,13 @@ namespace shell_generator {
       total_flat_area += face;
     auto scale = norm(vertices_[0]);
     const double pi = 3.1415926535897932384626433832795;
-    double area = 4.0*pi*pow2(scale); 
+    double area = 4.0*pi*pow2(scale);
     face_area_ = area/faces_.size();
     double area_scale = area/total_flat_area;
     for (auto& face:per_face_area_)
       face *= area_scale;
-    
-    
+
+
     for(auto& vert : face_centers_){
        double factor = norm(vert);
        //std::cout<< factor <<std::endl;
@@ -634,14 +634,14 @@ namespace shell_generator {
       auto edge_c_index = refined_edges_.size()-1;
 
       /*
-      //                    /\      contrcloсkwise                         
-      //                   c  1                                    
-      //                  0    b                                   
-      //                 /__a___\   edge_a                         
-      //                /\      /\                                 
-      //               c  \    /  0                                
-      //              1    \  /    b                               
-      //    edge_0a  /__0a__\/__1a__\ edge_1a                      
+      //                    /\      contrcloсkwise
+      //                   c  1
+      //                  0    b
+      //                 /__a___\   edge_a
+      //                /\      /\
+      //               c  \    /  0
+      //              1    \  /    b
+      //    edge_0a  /__0a__\/__1a__\ edge_1a
       //
       // remember! In edge_0a the refined point is [1], etc.
       */
@@ -660,7 +660,7 @@ namespace shell_generator {
       // Orient:
       // Try contrcloсkwise:
       bool isClockwise = false, is_b_swapped = false, is_c_swapped=false;
-      
+
       if (edge_0a[0]!=edge_1c[0]) {
         edge_1c.swap(edge_0c);
         is_c_swapped = !is_c_swapped;
@@ -693,18 +693,18 @@ namespace shell_generator {
       }
 
       /*
-      //                    /\      clockwise                               
-      //                   b  1                                    
-      //                  0    c                                   
-      //                 /__a___\   edge_a                         
-      //                /\      /\                                 
-      //               b  \    /  0                                
-      //              1    \  /    c                               
-      //    edge_0a  /__0a__\/__1a__\ edge_1a                      
+      //                    /\      clockwise
+      //                   b  1
+      //                  0    c
+      //                 /__a___\   edge_a
+      //                /\      /\
+      //               b  \    /  0
+      //              1    \  /    c
+      //    edge_0a  /__0a__\/__1a__\ edge_1a
       //
       */
       //Build new facets:
-      // if isClockwise 
+      // if isClockwise
       std::vector<long unsigned int> face1({edge_0a_index, edge_1b_index, edge_c_index});
       std::vector<long unsigned int> face2({edge_1a_index, edge_0c_index, edge_b_index});
       std::vector<long unsigned int> face3({edge_0b_index, edge_1c_index, edge_a_index});
@@ -732,7 +732,7 @@ namespace shell_generator {
       //                << " " << refined_edges_[face1[2]][1] << std::endl;
 
     } // end for faces_
-    
+
     std::cout << "new edges: " << refined_edges_.size() <<std::endl;
     std::cout << "new faces: " << refined_faces_.size() <<std::endl;
     edges_.clear();
@@ -743,7 +743,7 @@ namespace shell_generator {
     // }
     faces_.clear();
     faces_ = refined_faces_;
-    
+
     //Rescale(1.0);
     //GenerateEdges();
     // GenerateFaces();
@@ -766,7 +766,7 @@ namespace shell_generator {
           std::vector<long unsigned int> face({i,j,k});
           // std::cout << ie[0]<<"-"<<ie[1] << ":"
           //             << je[0]<<"-"<<je[1] << ":"
-          //             << ke[0]<<"-"<<ke[1] 
+          //             << ke[0]<<"-"<<ke[1]
           //             << std::endl;
           // std::cout << face[0]<<"-"<<face[1] << "-"<<face[2]<<std::endl;
           faces_.push_back(face);
@@ -837,7 +837,7 @@ namespace shell_generator {
       {a, b,-c},
       {a,-b, c},
       {a,-b,-c},
-      
+
       { b, c,a},
       { b,-c,a},
       {-b, c,a},
@@ -877,7 +877,7 @@ namespace shell_generator {
       {a, b, c},
       {a, -b,-c},
       {-a,-b, c},
-      {-a, b,-c}      
+      {-a, b,-c}
     };
     vertices_ = std::move(points);
     //Rescale(1.0);

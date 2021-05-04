@@ -2,9 +2,9 @@
  * @file   test-negative-epsilon.cc
  * @author Konstantin Ladutenko <kostyfisik at gmail (.) com>
  * @date   Mon Mar  9 13:21:37 2015
- * 
+ *
  * @brief  test negative epsilon case
- * 
+ *
 //    This file is part of scattnlay                                                //
 //                                                                                  //
 //    This program is free software: you can redistribute it and/or modify          //
@@ -26,13 +26,13 @@
 //                                                                                  //
 //    You should have received a copy of the GNU General Public License             //
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.         //
- * 
+ *
  */
 #include "nmie.h"
 #include <stdio.h>
 template<class T> inline T pow2(const T value) {return value*value;};
-const double PI=3.14159265358979323846;  
-nmie::MultiLayerMie multi_layer_mie_;  
+const double PI=3.14159265358979323846;
+nmie::MultiLayerMie multi_layer_mie_;
 double lambda_work_ = 3.75; // cm
 double a_ = 0.75*lambda_work_;  // 2.8125 cm - size of PEC core
 double min_index_ = 1e-11;
@@ -59,12 +59,12 @@ double EvaluateScatterOnlyIndex(std::vector<double> input) {
   try {
     multi_layer_mie_.RunMieCalculations();
     Qsca = multi_layer_mie_.GetQsca();
-  } catch( const std::invalid_argument& ia ) {
+  } catch( const std::invalid_argument &ia ) {
     Qsca = 0;
     printf("#");
     // Will catch if  multi_layer_mie_ fails or other errors.
     //std::cerr << "Invalid argument: " << ia.what() << std::endl;
-  }  
+  }
   double total_r = multi_layer_mie_.GetTotalRadius();
   return Qsca*PI*pow2(total_r);
 }
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
     double PEC_Qsca = multi_layer_mie_.GetQsca();
     double PEC_r = multi_layer_mie_.GetTotalRadius();
     double PEC_RCS = PEC_Qsca*PI*pow2(PEC_r);
-    
+
     // PEC target covered with with air layer
     multi_layer_mie_.SetCoatingWidth({0.1});
     multi_layer_mie_.SetCoatingIndex({{1.0,0.0}});
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
     double total_r1 = multi_layer_mie_.GetTotalRadius();
     double initial_RCS1 = Qsca1*PI*pow2(total_r1);
     printf("RCS = %g cm^2 with (r=%g) and  RCS=%g cm^2 without (r=%g)air coating.\n",
-	   initial_RCS1, total_r1, 
+	   initial_RCS1, total_r1,
 	   PEC_RCS, PEC_r);
 
     //multi_layer_mie.SetMaxTermsNumber(150);
@@ -131,13 +131,13 @@ int main(int argc, char *argv[]) {
 	   EvaluateScatterOnlyIndex({-0.29, 24.6, 1.0}));
     //multi_layer_mie_.SetMaxTermsNumber(-1);
 
-      // 26.24: 25||   -0.29   +24.60 
+      // 26.24: 25||   -0.29   +24.60
       // 28.48: 38||   -0.29   +24.60    +1.00
-    
-  } catch( const std::invalid_argument& ia ) {
+
+  } catch( const std::invalid_argument &ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
     return -1;
-  }  
+  }
     return 0;
 }

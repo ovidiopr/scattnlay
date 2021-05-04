@@ -18,7 +18,7 @@ TEST(RunFieldCalculationPolar, HandlesInput) {
   nmie.SetLayersSize({0.099});
   nmie.SetLayersIndex({ {0.75,0}});
   nmie.RunMieCalculation();
-  nmie.RunFieldCalculationPolar(2);
+//  nmie.RunFieldCalculationPolar(2);
 }
 //TEST(BulkSphere, HandlesInput) {
 //  nmie::MultiLayerMie<nmie::FloatType> nmie;

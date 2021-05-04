@@ -38,9 +38,9 @@
 namespace shell_generator {
   class ShellGenerator {  // will throw for any error
    public:
-    /* ShellGenerator& ReadFromFile(std::string filename); */
-    /* ShellGenerator& ResizeToComplex(double from_wl, double to_wl, int samples); */
-    /* ShellGenerator& ToIndex(); */
+    /* ShellGenerator &ReadFromFile(std::string filename); */
+    /* ShellGenerator &ResizeToComplex(double from_wl, double to_wl, int samples); */
+    /* ShellGenerator &ToIndex(); */
     double dist(std::vector<double> a, std::vector<double> b);
     double norm(std::vector<double> a);
     std::vector< std::vector<double> > GetVertices(){return vertices_;};
@@ -82,7 +82,7 @@ namespace shell_generator {
     std::vector<double> per_face_area_;
     double per_vertice_area_ = 0.0;
     std::vector< std::vector<double> > vertices_, face_centers_;
-    std::vector< double > face_surface_; 
+    std::vector< double > face_surface_;
     std::vector< std::vector<long unsigned int> > edges_, refined_edges_;
     std::vector< std::vector<long unsigned int> > faces_, refined_faces_;
     // std::vector< std::pair< double, std::complex<double> > > data_complex_;

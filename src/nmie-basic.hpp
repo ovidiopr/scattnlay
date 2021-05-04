@@ -163,7 +163,7 @@ namespace nmie {
   // Modify scattering (theta) angles                                       //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::SetAngles(const std::vector<FloatType>& angles) {
+  void MultiLayerMie<FloatType>::SetAngles(const std::vector<FloatType> &angles) {
     MarkUncalculated();
     theta_ = angles;
   }
@@ -173,7 +173,7 @@ namespace nmie {
   // Modify size of all layers                                             //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::SetLayersSize(const std::vector<FloatType>& layer_size) {
+  void MultiLayerMie<FloatType>::SetLayersSize(const std::vector<FloatType> &layer_size) {
     MarkUncalculated();
     size_param_.clear();
     FloatType prev_layer_size = 0.0;
@@ -193,7 +193,7 @@ namespace nmie {
   // Modify refractive index of all layers                                  //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::SetLayersIndex(const std::vector< std::complex<FloatType> >& index) {
+  void MultiLayerMie<FloatType>::SetLayersIndex(const std::vector< std::complex<FloatType> > &index) {
     MarkUncalculated();
     refractive_index_ = index;
   }
@@ -203,7 +203,7 @@ namespace nmie {
   // Modify coordinates for field calculation                               //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::SetFieldCoords(const std::vector< std::vector<FloatType> >& coords) {
+  void MultiLayerMie<FloatType>::SetFieldCoords(const std::vector< std::vector<FloatType> > &coords) {
     if (coords.size() != 3)
       throw std::invalid_argument("Error! Wrong dimension of field monitor points!");
     if (coords[0].size() != coords[1].size() || coords[0].size() != coords[2].size())
@@ -312,8 +312,8 @@ namespace nmie {
     const int pl = PEC_layer_position_;
     const unsigned int first_layer = (pl > 0) ? pl : 0;
     unsigned int ri, riM1, nmax = 0;
-    const std::vector<FloatType>& x = size_param_;
-    const std::vector<std::complex<FloatType> >& m = refractive_index_;
+    const std::vector<FloatType> &x = size_param_;
+    const std::vector<std::complex<FloatType> > &m = refractive_index_;
     nmax = calcNstop(xL);
     for (unsigned int i = first_layer; i < x.size(); i++) {
       if (static_cast<int>(i) > PEC_layer_position_)  // static_cast used to avoid warning
@@ -408,8 +408,8 @@ namespace nmie {
   //**********************************************************************************//
   template <typename FloatType>
   void MultiLayerMie<FloatType>::calcD1D3(const std::complex<FloatType> z,
-                               std::vector<std::complex<FloatType> >& D1,
-                               std::vector<std::complex<FloatType> >& D3) {
+                               std::vector<std::complex<FloatType> > &D1,
+                               std::vector<std::complex<FloatType> > &D3) {
     std::vector<std::complex<FloatType> > PsiZeta(nmax_+1);
     evalDownwardD1(z, D1);
     evalUpwardD3 (z, D1, D3, PsiZeta);
@@ -430,8 +430,8 @@ namespace nmie {
   //**********************************************************************************//
   template <typename FloatType>
   void MultiLayerMie<FloatType>::calcPsiZeta(std::complex<FloatType> z,
-                                  std::vector<std::complex<FloatType> >& Psi,
-                                  std::vector<std::complex<FloatType> >& Zeta) {
+                                  std::vector<std::complex<FloatType> > &Psi,
+                                  std::vector<std::complex<FloatType> > &Zeta) {
     std::vector<std::complex<FloatType> > D1(nmax_ + 1), D3(nmax_ + 1),
         PsiZeta(nmax_+1);
     // First, calculate the logarithmic derivatives
@@ -444,6 +444,22 @@ namespace nmie {
       Zeta[i] = PsiZeta[i]/Psi[i];
     }
 //    evalUpwardZeta(z, D3, Zeta);
+  }
+
+
+  template <typename FloatType>
+  void MultiLayerMie<FloatType>::calcPiTauAllTheta(const double from_Theta, const double to_Theta,
+                                                   std::vector<std::vector<FloatType> > &Pi,
+                                                   std::vector<std::vector<FloatType> > &Tau) {
+    auto perimeter_points = Pi.size();
+    for (auto &val:Pi) val.resize(available_maximal_nmax_);
+    for (auto &val:Tau) val.resize(available_maximal_nmax_);
+    double delta_Theta = eval_delta<FloatType>(perimeter_points, from_Theta, to_Theta);
+    for (unsigned int i=0; i < perimeter_points; i++) {
+      auto Theta = static_cast<FloatType>(from_Theta + i*delta_Theta);
+      // Calculate angular functions Pi and Tau
+      calcPiTau(nmm::cos(Theta), Pi[i], Tau[i]);
+    }
   }
 
 
@@ -461,8 +477,8 @@ namespace nmie {
   //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
   //**********************************************************************************//
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcPiTau(const FloatType& costheta,
-                                std::vector<FloatType>& Pi, std::vector<FloatType>& Tau) {
+  void MultiLayerMie<FloatType>::calcPiTau(const FloatType &costheta,
+                                std::vector<FloatType> &Pi, std::vector<FloatType> &Tau) {
 
     int nmax = Pi.size();
     if (Pi.size() != Tau.size())
@@ -504,10 +520,10 @@ namespace nmie {
   //**********************************************************************************//
   template <typename FloatType>
   void MultiLayerMie<FloatType>::calcSpherHarm(const std::complex<FloatType> Rho, const FloatType Theta, const FloatType Phi,
-                                    const std::complex<FloatType>& rn, const std::complex<FloatType>& Dn,
-                                    const FloatType& Pi, const FloatType& Tau, const FloatType& n,
-                                    std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n,
-                                    std::vector<std::complex<FloatType> >& No1n, std::vector<std::complex<FloatType> >& Ne1n) {
+                                    const std::complex<FloatType> &rn, const std::complex<FloatType> &Dn,
+                                    const FloatType &Pi, const FloatType &Tau, const FloatType &n,
+                                    std::vector<std::complex<FloatType> > &Mo1n, std::vector<std::complex<FloatType> > &Me1n,
+                                    std::vector<std::complex<FloatType> > &No1n, std::vector<std::complex<FloatType> > &Ne1n) {
 
     // using eq 4.50 in BH
     std::complex<FloatType> c_zero(0.0, 0.0);
@@ -556,9 +572,9 @@ namespace nmie {
 
     isScaCoeffsCalc_ = false;
 
-    const std::vector<FloatType>& x = size_param_;
-    const std::vector<std::complex<FloatType> >& m = refractive_index_;
-    const int& pl = PEC_layer_position_;
+    const std::vector<FloatType> &x = size_param_;
+    const std::vector<std::complex<FloatType> > &m = refractive_index_;
+    const int &pl = PEC_layer_position_;
     const int L = refractive_index_.size();
 
 
@@ -753,7 +769,7 @@ namespace nmie {
     if (size_param_.size() == 0)
       throw std::invalid_argument("Initialize model first!");
 
-    const std::vector<FloatType>& x = size_param_;
+    const std::vector<FloatType> &x = size_param_;
 
     //MarkUncalculated();
 

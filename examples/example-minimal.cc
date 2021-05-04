@@ -52,7 +52,7 @@ int main(int , char **) {
     multi_layer_mie.RunMieCalculation();
     double Qabs = multi_layer_mie.GetQabs();
     printf("Qabs = %g\n", Qabs);
-  } catch( const std::invalid_argument& ia ) {
+  } catch( const std::invalid_argument &ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
     return -1;

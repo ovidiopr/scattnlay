@@ -39,21 +39,24 @@ from matplotlib import pyplot as plt
 import inspect
 print("Using scattnlay from ", inspect.getfile(scattnlay))
 
-npts = 251
-factor = 3. # plot extent compared to sphere radius
-index_H2O = 1.33+0.j
+npts = 151
+factor = 1.50 # plot extent compared to sphere radius
+index_H2O = 1.33+(1e-6)*1j
 
 WL = 0.532 #mkm
-total_r = 1 #mkm
+total_r = 100 #mkm
 isMP = False
 # isMP = True
 
-# nmax = 230
-nmax = -1
 
 nm = 1.0  # host medium
 x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / WL
 m = np.array((index_H2O), dtype=np.complex128) / nm
+
+nmax = x*factor + 11 * (x*factor)**(1.0 / 3.0) + 1
+# return std::round(x + 11 * std::pow(x, (1.0 / 3.0)) + 1);
+
+# nmax = -1
 
 print("x =", x)
 print("m =", m)

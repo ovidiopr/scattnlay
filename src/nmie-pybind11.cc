@@ -50,13 +50,13 @@ py::array_t< std::complex<double>> VectorComplex2Py(const std::vector<std::compl
 
 // https://stackoverflow.com/questions/17294629/merging-flattening-sub-vectors-into-a-single-vector-c-converting-2d-to-1d
 template <typename T>
-std::vector<T> flatten(const std::vector<std::vector<T>>& v) {
+std::vector<T> flatten(const std::vector<std::vector<T>> &v) {
     std::size_t total_size = 0;
-    for (const auto& sub : v)
+    for (const auto &sub : v)
         total_size += sub.size(); // I wish there was a transform_accumulate
     std::vector<T> result;
     result.reserve(total_size);
-    for (const auto& sub : v)
+    for (const auto &sub : v)
         result.insert(result.end(), sub.begin(), sub.end());
     return result;
 }
@@ -162,8 +162,8 @@ py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array:
   unsigned int ncoord = py_Xp.size();
   std::vector<std::vector<std::complex<double> > > E(ncoord);
   std::vector<std::vector<std::complex<double> > > H(ncoord);
-  for (auto& f : E) f.resize(3);
-  for (auto& f : H) f.resize(3);
+  for (auto &f : E) f.resize(3);
+  for (auto &f : H) f.resize(3);
   int L = py_x.size(), terms;
   terms = nmie::nField(L, pl, c_x, c_m, nmax, nmie::Modes::kAll, nmie::Modes::kAll, ncoord, c_Xp, c_Yp, c_Zp, E, H);
   auto py_E = Vector2DComplex2Py<std::complex<double> >(E);

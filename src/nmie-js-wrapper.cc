@@ -85,7 +85,7 @@ EMSCRIPTEN_BINDINGS (c) {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-//  int nMieApplied(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+//  int nMieApplied(const unsigned int L, const int pl, std::vector<double> &x, std::vector<std::complex<double> > &m, const unsigned int nTheta, std::vector<double> &Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
 //
 //    if (x.size() != L || m.size() != L)
 //        throw std::invalid_argument("Declared number of layers do not fit x and m!");

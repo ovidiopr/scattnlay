@@ -74,8 +74,8 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int ScattCoeffs(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m,
-                  const int nmax, std::vector<std::complex<double> >& an, std::vector<std::complex<double> >& bn) {
+  int ScattCoeffs(const unsigned int L, const int pl, const std::vector<double> &x, const std::vector<std::complex<double> > &m,
+                  const int nmax, std::vector<std::complex<double> > &an, std::vector<std::complex<double> > &bn) {
 
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -92,7 +92,7 @@ namespace nmie {
       bn = ConvertComplexVector<double>(ml_mie.GetBn());
 
       return ml_mie.GetMaxTerms();
-    } catch(const std::invalid_argument& ia) {
+    } catch(const std::invalid_argument &ia) {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
@@ -118,9 +118,9 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int ExpanCoeffs(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax,
-                  std::vector<std::vector<std::complex<double> > >& aln, std::vector<std::vector<std::complex<double> > >& bln,
-                  std::vector<std::vector<std::complex<double> > >& cln, std::vector<std::vector<std::complex<double> > >& dln) {
+  int ExpanCoeffs(const unsigned int L, const int pl, const std::vector<double> &x, const std::vector<std::complex<double> > &m, const int nmax,
+                  std::vector<std::vector<std::complex<double> > > &aln, std::vector<std::vector<std::complex<double> > > &bln,
+                  std::vector<std::vector<std::complex<double> > > &cln, std::vector<std::vector<std::complex<double> > > &dln) {
 
     if (x.size() != L || m.size() != L)
         throw std::invalid_argument("Declared number of layers do not fit x and m!");
@@ -142,7 +142,7 @@ namespace nmie {
       dln = ConvertComplexVectorVector<double>(ml_mie.GetLayerDn());
 
       return ml_mie.GetMaxTerms();
-    } catch(const std::invalid_argument& ia) {
+    } catch(const std::invalid_argument &ia) {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
@@ -179,10 +179,10 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
-           const unsigned int nTheta, std::vector<double>& Theta, const int nmax,
+  int nMie(const unsigned int L, const int pl, std::vector<double> &x, std::vector<std::complex<double> > &m,
+           const unsigned int nTheta, std::vector<double> &Theta, const int nmax,
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2,
+           std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2,
            int mode_n, int mode_type) {
 
     if (x.size() != L || m.size() != L)
@@ -217,7 +217,7 @@ namespace nmie {
       S2 = ConvertComplexVector<double>(ml_mie.GetS2());
 
       return ml_mie.GetMaxTerms();
-    } catch(const std::invalid_argument& ia) {
+    } catch(const std::invalid_argument &ia) {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
@@ -256,10 +256,10 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   int nMie(const unsigned int L, const int pl,
-           std::vector<double>& x, std::vector<std::complex<double> >& m,
-           const unsigned int nTheta, std::vector<double>& Theta, const int nmax,
+           std::vector<double> &x, std::vector<std::complex<double> > &m,
+           const unsigned int nTheta, std::vector<double> &Theta, const int nmax,
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+           std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2) {
     return nmie::nMie(L, pl, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2, -1, -1);
   }
   //**********************************************************************************//
@@ -289,10 +289,10 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m,
-           const unsigned int nTheta, std::vector<double>& Theta,
+  int nMie(const unsigned int L, std::vector<double> &x, std::vector<std::complex<double> > &m,
+           const unsigned int nTheta, std::vector<double> &Theta,
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+           std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2) {
     return nmie::nMie(L, -1, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
@@ -324,10 +324,10 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m,
-           const unsigned int nTheta, std::vector<double>& Theta,
+  int nMie(const unsigned int L, const int pl, std::vector<double> &x, std::vector<std::complex<double> > &m,
+           const unsigned int nTheta, std::vector<double> &Theta,
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+           std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2) {
     return nmie::nMie(L, pl, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
@@ -361,10 +361,10 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int nMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m,
-           const unsigned int nTheta, std::vector<double>& Theta, const int nmax,
+  int nMie(const unsigned int L, std::vector<double> &x, std::vector<std::complex<double> > &m,
+           const unsigned int nTheta, std::vector<double> &Theta, const int nmax,
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo,
-           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+           std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2) {
     return nmie::nMie(L, -1, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
@@ -392,19 +392,19 @@ namespace nmie {
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   int nField(const unsigned int L, const int pl,
-             const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax,
+             const std::vector<double> &x, const std::vector<std::complex<double> > &m, const int nmax,
              const int mode_n, const int mode_type, const unsigned int ncoord,
-             const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec,
-             std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
+             const std::vector<double> &Xp_vec, const std::vector<double> &Yp_vec, const std::vector<double> &Zp_vec,
+             std::vector<std::vector<std::complex<double> > > &E, std::vector<std::vector<std::complex<double> > > &H) {
     if (x.size() != L || m.size() != L)
       throw std::invalid_argument("Declared number of layers do not fit x and m!");
     if (Xp_vec.size() != ncoord || Yp_vec.size() != ncoord || Zp_vec.size() != ncoord
         || E.size() != ncoord || H.size() != ncoord)
       throw std::invalid_argument("Declared number of coords do not fit Xp, Yp, Zp, E, or H!");
-    for (const auto& f:E)
+    for (const auto &f:E)
       if (f.size() != 3)
         throw std::invalid_argument("Field E is not 3D!");
-    for (const auto& f:H)
+    for (const auto &f:H)
       if (f.size() != 3)
         throw std::invalid_argument("Field H is not 3D!");
     try {
@@ -423,7 +423,7 @@ namespace nmie {
       H = ConvertComplexVectorVector<double>(ml_mie.GetFieldH());
 
       return ml_mie.GetMaxTerms();
-    } catch(const std::invalid_argument& ia) {
+    } catch(const std::invalid_argument &ia) {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);

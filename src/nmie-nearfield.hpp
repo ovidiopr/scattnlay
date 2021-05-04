@@ -111,7 +111,7 @@ namespace nmie {
     std::vector<std::complex<FloatType> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
     std::complex<FloatType> denomZeta, denomPsi, T1, T2, T3, T4;
 
-    auto& m = refractive_index_;
+    auto &m = refractive_index_;
     std::vector< std::complex<FloatType> > m1(L);
 
     for (int l = 0; l < L - 1; l++) m1[l] = m[l + 1];
@@ -211,8 +211,8 @@ namespace nmie {
   template <typename FloatType>
   void MultiLayerMie<FloatType>::calcFieldByComponents(const FloatType Rho,
                                 const FloatType Theta, const FloatType Phi,
-                                std::vector<std::complex<FloatType> >& E,
-                                std::vector<std::complex<FloatType> >& H)  {
+                                std::vector<std::complex<FloatType> > &E,
+                                std::vector<std::complex<FloatType> > &H)  {
 
     std::complex<FloatType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
     // Vector containing precomputed integer powers of i to avoid computation
@@ -222,7 +222,6 @@ namespace nmie {
     std::vector<std::complex<FloatType> > Psi(nmax_ + 1), D1n(nmax_ + 1), Zeta(nmax_ + 1), D3n(nmax_ + 1);
     std::vector<FloatType> Pi(nmax_), Tau(nmax_);
 
-    int l = 0;  // Layer number
     std::complex<FloatType> ml;
 
     // Initialize E and H
@@ -231,17 +230,8 @@ namespace nmie {
       H[i] = c_zero;
     }
 
-    if (Rho > size_param_.back()) {
-      l = size_param_.size();
-      ml = c_one;
-    } else {
-      for (int i = size_param_.size() - 1; i >= 0 ; i--) {
-        if (Rho <= size_param_[i]) {
-          l = i;
-        }
-      }
-      ml = refractive_index_[l];
-    }
+    unsigned int l;
+    GetIndexAtRadius(Rho, ml, l);
 
     // Calculate logarithmic derivative of the Ricatti-Bessel functions
     calcD1D3(Rho*ml, D1n, D3n);
@@ -353,15 +343,15 @@ namespace nmie {
     H_.resize(total_points);
     Es_.resize(total_points);
     Hs_.resize(total_points);
-    for (auto& f : E_) f.resize(3);
-    for (auto& f : H_) f.resize(3);
-    for (auto& f : Es_) f.resize(3);
-    for (auto& f : Hs_) f.resize(3);
+    for (auto &f : E_) f.resize(3);
+    for (auto &f : H_) f.resize(3);
+    for (auto &f : Es_) f.resize(3);
+    for (auto &f : Hs_) f.resize(3);
 
     for (int point = 0; point < total_points; point++) {
-      const FloatType& Xp = coords_[0][point];
-      const FloatType& Yp = coords_[1][point];
-      const FloatType& Zp = coords_[2][point];
+      const FloatType &Xp = coords_[0][point];
+      const FloatType &Yp = coords_[1][point];
+      const FloatType &Zp = coords_[2][point];
 
       // Convert to spherical coordinates
       Rho = nmm::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
@@ -416,11 +406,85 @@ int ceil_to_2_pow_n(const int input_n) {
 
 template <typename FloatType>
 double eval_delta(const int steps, const double from_value, const double to_value) {
-  auto delta = std::abs((from_value - to_value)/static_cast<double>(steps));
+  auto delta = std::abs(from_value - to_value);
+  if (steps < 2) return delta;
+  delta /= static_cast<double>(steps-1);
   // We have a limited double precision evaluation of special functions, typically it is 1e-10.
   if ( (2.*delta)/std::abs(from_value+to_value) < 1e-9)
     throw std::invalid_argument("Error! The step is too fine, not supported!");
   return delta;
+}
+
+
+// ml - refractive index
+// l - Layer number
+template <typename FloatType>
+void MultiLayerMie<FloatType>::GetIndexAtRadius(const FloatType Rho,
+                                                std::complex<FloatType> &ml,
+                                                unsigned int &l) {
+  l = 0;
+  if (Rho > size_param_.back()) {
+    l = size_param_.size();
+    ml = std::complex<FloatType>(1.0, 0.0);
+  } else {
+    for (int i = size_param_.size() - 1; i >= 0 ; i--) {
+      if (Rho <= size_param_[i]) {
+        l = i;
+      }
+    }
+    ml = refractive_index_[l];
+  }
+}
+template <typename FloatType>
+void MultiLayerMie<FloatType>::GetIndexAtRadius(const FloatType Rho,
+                                                std::complex<FloatType> &ml) {
+  unsigned int l;
+  GetIndexAtRadius(Rho, ml, l);
+}
+
+template <typename FloatType>
+void MultiLayerMie<FloatType>::calcMieSeriesNeededToConverge(const FloatType Rho) {
+  auto required_near_field_nmax = calcNmax(Rho);
+  SetMaxTerms(required_near_field_nmax);
+  // Calculate scattering coefficients an_ and bn_
+  calcScattCoeffs();
+  // We might be limited with available machine precision
+  available_maximal_nmax_ = nmax_;
+  // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
+  calcExpanCoeffs();
+}
+
+
+template <typename FloatType>
+void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const FloatType from_Rho, const FloatType to_Rho,
+                                                                const bool isIgnoreAvailableNmax,
+                                                                std::vector<std::vector<std::complex<FloatType> > > &Psi,
+                                                                std::vector<std::vector<std::complex<FloatType> > > &D1n,
+                                                                std::vector<std::vector<std::complex<FloatType> > > &Zeta,
+                                                                std::vector<std::vector<std::complex<FloatType> > > &D3n) {
+  unsigned int radius_points = Psi.size();
+  std::vector<std::vector<std::complex<FloatType> > > PsiZeta(radius_points);
+  double delta_Rho = eval_delta<FloatType>(radius_points, from_Rho, to_Rho);
+  for (unsigned int j=0; j < radius_points; j++) {
+    auto Rho = static_cast<FloatType>(from_Rho + j*delta_Rho);
+    int near_field_nmax = calcNmax(to_Rho);
+    // Skip if not enough terms in Mie series (i.e. required near field nmax > available terms )
+    if (near_field_nmax > available_maximal_nmax_ && !isIgnoreAvailableNmax) continue;
+    if (near_field_nmax > available_maximal_nmax_)  near_field_nmax = available_maximal_nmax_;
+    Psi[j].resize(near_field_nmax + 1); D1n[j].resize(near_field_nmax + 1);
+    Zeta[j].resize(near_field_nmax + 1); D3n[j].resize(near_field_nmax + 1);
+    PsiZeta[j].resize(near_field_nmax + 1);
+    std::complex<FloatType> ml;
+    GetIndexAtRadius(Rho, ml);
+    auto z = Rho*ml;
+    evalDownwardD1(z, D1n[j]);
+    evalUpwardPsi(z,  D1n[j], Psi[j]);
+    evalUpwardD3 (z, D1n[j], D3n[j], PsiZeta[j]);
+    for (unsigned int k = 0; k < Zeta[j].size(); k++) {
+      Zeta[j][k] = PsiZeta[j][k]/Psi[j][k];
+    }
+  }
+
 }
 
 
@@ -431,33 +495,97 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int input_outer_pe
                                                         const int radius_points,
                                                         const double from_Rho, const double to_Rho,
                                                         const double from_Theta, const double to_Theta,
-                                                        const double from_Phi, const double to_Phi) {
+                                                        const double from_Phi, const double to_Phi,
+                                                        const bool isIgnoreAvailableNmax) {
 //  double Rho, Theta, Phi;
   if (from_Rho > to_Rho || from_Theta > to_Theta || from_Phi > to_Phi
-      || input_outer_perimeter_points < 1 || radius_points < 1)
+      || input_outer_perimeter_points < 1 || radius_points < 1
+      || from_Rho < 0.)
     throw std::invalid_argument("Error! Invalid argument for RunFieldCalculationPolar() !");
   int outer_perimeter_points = input_outer_perimeter_points;
   if (outer_perimeter_points != 1) outer_perimeter_points = ceil_to_2_pow_n<FloatType>(input_outer_perimeter_points);
-//  double delta_Rho = eval_delta<FloatType>(radius_points, from_Rho, to_Rho);
-//  double delta_Phi = eval_delta<FloatType>(radius_points, from_Phi, to_Phi);
-  double delta_Theta = eval_delta<FloatType>(radius_points, from_Theta, to_Theta);
-  auto near_field_nmax = calcNmax(to_Rho);
-  SetMaxTerms(near_field_nmax);
+
+  calcMieSeriesNeededToConverge(to_Rho);
 
   std::vector<std::vector<FloatType> >  Pi(outer_perimeter_points), Tau(outer_perimeter_points);
-  for (auto &val:Pi) val.resize(near_field_nmax);
-  for (auto &val:Tau) val.resize(near_field_nmax);
-  for (int i=0; i < outer_perimeter_points; i++) {
-    auto Theta = static_cast<FloatType>(from_Theta + i*delta_Theta);
-    // Calculate angular functions Pi and Tau
-    calcPiTau(nmm::cos(Theta), Pi[i], Tau[i]);
-  }
+  calcPiTauAllTheta(from_Theta, to_Theta, Pi, Tau);
 
+  std::vector<std::vector<std::complex<FloatType> > > Psi(radius_points), D1n(radius_points),
+      Zeta(radius_points), D3n(radius_points), PsiZeta(radius_points);
+  calcRadialOnlyDependantFunctions(from_Rho, to_Rho, isIgnoreAvailableNmax,
+                                   Psi, D1n, Zeta, D3n);
 
-  // Calculate scattering coefficients an_ and bn_
-//  calcScattCoeffs();
-  // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
-//  calcExpanCoeffs();
+//  double delta_Phi = eval_delta<FloatType>(radius_points, from_Phi, to_Phi);
+  //  std::complex<FloatType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
+//  // Vector containing precomputed integer powers of i to avoid computation
+//  std::vector<std::complex<FloatType> > ipow = {c_one, c_i, -c_one, -c_i};
+//  std::vector<std::complex<FloatType> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
+//  std::vector<std::complex<FloatType> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
+//  std::vector<std::complex<FloatType> > E, H
+//  std::complex<FloatType> ml;
+
+//  // Initialize E and H
+//  for (int i = 0; i < 3; i++) {
+//    E[i] = c_zero;
+//    H[i] = c_zero;
+//  }
+//
+//  auto ml = GetIndexAtRadius(Rho);
+//
+//  for (int n = 0; n < nmax_; n++) {
+//    int n1 = n + 1;
+//    auto rn = static_cast<FloatType>(n1);
+//
+//    // using BH 4.12 and 4.50
+//    calcSpherHarm(Rho*ml, Theta, Phi, Psi[n1], D1n[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
+//    calcSpherHarm(Rho*ml, Theta, Phi, Zeta[n1], D3n[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
+//
+//    // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
+//    std::complex<FloatType> En = ipow[n1 % 4]
+//        *static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
+//    for (int i = 0; i < 3; i++) {
+//      auto Ediff = En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
+//          + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
+//      auto Hdiff = En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
+//          + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
+//      if (nmm::isnan(Ediff.real()) || nmm::isnan(Ediff.imag()) ||
+//          nmm::isnan(Hdiff.real()) || nmm::isnan(Hdiff.imag())
+//          ) break;
+//      if (mode_n_ == Modes::kAll) {
+//        // electric field E [V m - 1] = EF*E0
+//        E[i] += Ediff;
+//        H[i] += Hdiff;
+//        continue;
+//      }
+//      if (n1 == mode_n_) {
+//        if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
+//          E[i] += En*( -c_i*dln_[l][n]*N1e1n[i]
+//              + c_i*aln_[l][n]*N3e1n[i]);
+//
+//          H[i] += En*(-dln_[l][n]*M1e1n[i]
+//              +aln_[l][n]*M3e1n[i]);
+//          //std::cout << mode_n_;
+//        }
+//        if (mode_type_ == Modes::kMagnetic  || mode_type_ == Modes::kAll) {
+//          E[i] += En*(  cln_[l][n]*M1o1n[i]
+//              - bln_[l][n]*M3o1n[i]);
+//
+//          H[i] += En*( -c_i*cln_[l][n]*N1o1n[i]
+//              + c_i*bln_[l][n]*N3o1n[i]);
+//          //std::cout << mode_n_;
+//        }
+//        //std::cout << std::endl;
+//      }
+//      //throw std::invalid_argument("Error! Unexpected mode for field evaluation!\n mode_n="+std::to_string(mode_n)+", mode_type="+std::to_string(mode_type)+"\n=====*****=====");
+//    }
+//  }  // end of for all n
+//
+//  // magnetic field
+//  std::complex<FloatType> hffact = ml/static_cast<FloatType>(cc_*mu_);
+//  for (int i = 0; i < 3; i++) {
+//    H[i] = hffact*H[i];
+//  }
+
 }
 }  // end of namespace nmie
 #endif  // SRC_NMIE_NEARFIELD_HPP_

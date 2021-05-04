@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 
     int mode = -1;
     double tmp_mr;
-    for (const auto& arg : args) {
+    for (const auto &arg : args) {
       // For each arg in args list we detect the change of the current
       // read mode or read the arg. The reading args algorithm works
       // as a finite-state machine.
