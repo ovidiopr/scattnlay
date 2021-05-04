@@ -147,7 +147,6 @@ py::tuple py_scattnlay(const py::array_t<double, py::array::c_style | py::array:
 }
 
 
-
 py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
                        const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,

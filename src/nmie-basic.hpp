@@ -723,7 +723,7 @@ namespace nmie {
           nmm::isnan(bn_[n].real()) || nmm::isnan(bn_[n].imag())
           ) {
         // TODO somehow notify Python users about it
-        std::cout << "nmax value was chaned due to unexpected error. New values is "<< n
+        std::cout << "nmax value was changed due to unexpected error!!! New values is "<< n
                   << " (was "<<nmax_<<")"<<std::endl;
         nmax_ = n;
         break;

@@ -190,6 +190,10 @@ namespace nmie {
   //**********************************************************************************//
   // This function calculates the electric (E) and magnetic (H) fields inside and     //
   // around the particle.                                                             //
+  //
+  // Main troubles of near-field evaluations originate from special functions
+  // evaluation, so we expect that nmax needed for the convergence is the size
+  // of Psi vector.
   //                                                                                  //
   // Input parameters (coordinates of the point):                                     //
   //   Rho: Radial distance                                                           //
@@ -219,7 +223,7 @@ namespace nmie {
                                 const std::vector<FloatType> &Tau,
                                 std::vector<std::complex<FloatType> > &E,
                                 std::vector<std::complex<FloatType> > &H)  {
-
+    auto nmax = Psi.size() - 1;
     std::complex<FloatType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
     // Vector containing precomputed integer powers of i to avoid computation
     std::vector<std::complex<FloatType> > ipow = {c_one, c_i, -c_one, -c_i};
@@ -237,16 +241,7 @@ namespace nmie {
     unsigned int l;
     GetIndexAtRadius(Rho, ml, l);
 
-//    // Calculate logarithmic derivative of the Ricatti-Bessel functions
-//    calcD1D3(Rho*ml, D1n, D3n);
-//    // Calculate Ricatti-Bessel functions
-//    calcPsiZeta(Rho*ml, Psi, Zeta);
-//
-//    // Calculate angular functions Pi and Tau
-//    calcPiTau(nmm::cos(Theta), Pi, Tau);
-
-//    for (int n = nmax_ - 2; n >= 0; n--) {
-    for (int n = 0; n < nmax_; n++) {
+    for (unsigned int n = 0; n < nmax; n++) {
       int n1 = n + 1;
       auto rn = static_cast<FloatType>(n1);
 
@@ -257,14 +252,19 @@ namespace nmie {
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
       std::complex<FloatType> En = ipow[n1 % 4]
       *static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
+      std::complex<FloatType> Ediff, Hdiff;
       for (int i = 0; i < 3; i++) {
-        auto Ediff = En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
+        Ediff = En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
                          + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
-        auto Hdiff = En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
+        Hdiff = En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
                          + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
         if (nmm::isnan(Ediff.real()) || nmm::isnan(Ediff.imag()) ||
             nmm::isnan(Hdiff.real()) || nmm::isnan(Hdiff.imag())
-            ) break;
+            ) {
+          std::cout << "Unexpected truncation during near-field evaluation at n = "<< n
+                    << " (of total nmax = "<<nmax<<")!!!"<<std::endl;
+          break;
+        }
         if (mode_n_ == Modes::kAll) {
           // electric field E [V m - 1] = EF*E0
           E[i] += Ediff;
@@ -292,6 +292,9 @@ namespace nmie {
         }
         //throw std::invalid_argument("Error! Unexpected mode for field evaluation!\n mode_n="+std::to_string(mode_n)+", mode_type="+std::to_string(mode_type)+"\n=====*****=====");
       }
+      if (nmm::isnan(Ediff.real()) || nmm::isnan(Ediff.imag()) ||
+          nmm::isnan(Hdiff.real()) || nmm::isnan(Hdiff.imag())
+          ) break;
     }  // end of for all n
 
     // magnetic field
@@ -533,75 +536,6 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int input_outer_pe
                                    Psi, D1n, Zeta, D3n);
 
 //  double delta_Phi = eval_delta<FloatType>(radius_points, from_Phi, to_Phi);
-  //  std::complex<FloatType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
-//  // Vector containing precomputed integer powers of i to avoid computation
-//  std::vector<std::complex<FloatType> > ipow = {c_one, c_i, -c_one, -c_i};
-//  std::vector<std::complex<FloatType> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
-//  std::vector<std::complex<FloatType> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
-//  std::vector<std::complex<FloatType> > E, H
-//  std::complex<FloatType> ml;
-
-//  // Initialize E and H
-//  for (int i = 0; i < 3; i++) {
-//    E[i] = c_zero;
-//    H[i] = c_zero;
-//  }
-//
-//  auto ml = GetIndexAtRadius(Rho);
-//
-//  for (int n = 0; n < nmax_; n++) {
-//    int n1 = n + 1;
-//    auto rn = static_cast<FloatType>(n1);
-//
-//    // using BH 4.12 and 4.50
-//    calcSpherHarm(Rho*ml, Theta, Phi, Psi[n1], D1n[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
-//    calcSpherHarm(Rho*ml, Theta, Phi, Zeta[n1], D3n[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
-//
-//    // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
-//    std::complex<FloatType> En = ipow[n1 % 4]
-//        *static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
-//    for (int i = 0; i < 3; i++) {
-//      auto Ediff = En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
-//          + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
-//      auto Hdiff = En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
-//          + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
-//      if (nmm::isnan(Ediff.real()) || nmm::isnan(Ediff.imag()) ||
-//          nmm::isnan(Hdiff.real()) || nmm::isnan(Hdiff.imag())
-//          ) break;
-//      if (mode_n_ == Modes::kAll) {
-//        // electric field E [V m - 1] = EF*E0
-//        E[i] += Ediff;
-//        H[i] += Hdiff;
-//        continue;
-//      }
-//      if (n1 == mode_n_) {
-//        if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
-//          E[i] += En*( -c_i*dln_[l][n]*N1e1n[i]
-//              + c_i*aln_[l][n]*N3e1n[i]);
-//
-//          H[i] += En*(-dln_[l][n]*M1e1n[i]
-//              +aln_[l][n]*M3e1n[i]);
-//          //std::cout << mode_n_;
-//        }
-//        if (mode_type_ == Modes::kMagnetic  || mode_type_ == Modes::kAll) {
-//          E[i] += En*(  cln_[l][n]*M1o1n[i]
-//              - bln_[l][n]*M3o1n[i]);
-//
-//          H[i] += En*( -c_i*cln_[l][n]*N1o1n[i]
-//              + c_i*bln_[l][n]*N3o1n[i]);
-//          //std::cout << mode_n_;
-//        }
-//        //std::cout << std::endl;
-//      }
-//      //throw std::invalid_argument("Error! Unexpected mode for field evaluation!\n mode_n="+std::to_string(mode_n)+", mode_type="+std::to_string(mode_type)+"\n=====*****=====");
-//    }
-//  }  // end of for all n
-//
-//  // magnetic field
-//  std::complex<FloatType> hffact = ml/static_cast<FloatType>(cc_*mu_);
-//  for (int i = 0; i < 3; i++) {
-//    H[i] = hffact*H[i];
-//  }
 
 }
 }  // end of namespace nmie
