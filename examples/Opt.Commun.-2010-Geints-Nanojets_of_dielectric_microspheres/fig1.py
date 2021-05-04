@@ -39,12 +39,12 @@ from matplotlib import pyplot as plt
 import inspect
 print("Using scattnlay from ", inspect.getfile(scattnlay))
 
-npts = 151
-factor = 1.50 # plot extent compared to sphere radius
+npts = 351
+factor = 3 # plot extent compared to sphere radius
 index_H2O = 1.33+(1e-6)*1j
 
 WL = 0.532 #mkm
-total_r = 100 #mkm
+total_r = 1 #mkm
 isMP = False
 # isMP = True
 
@@ -97,6 +97,6 @@ print(np.min(Eabs_data), np.max(Eabs_data)," terms = "+str(terms))
 mp = ''
 if isMP: mp = '_mp'
 plt.savefig("R"+str(total_r)+"mkm"+mp+".jpg",
-            # dpi=300
+            dpi=300
             )
 # plt.show()

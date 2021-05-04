@@ -211,6 +211,12 @@ namespace nmie {
   template <typename FloatType>
   void MultiLayerMie<FloatType>::calcFieldByComponents(const FloatType Rho,
                                 const FloatType Theta, const FloatType Phi,
+                                const std::vector<std::complex<FloatType> > &Psi,
+                                const std::vector<std::complex<FloatType> > &D1n,
+                                const std::vector<std::complex<FloatType> > &Zeta,
+                                const std::vector<std::complex<FloatType> > &D3n,
+                                const std::vector<FloatType> &Pi,
+                                const std::vector<FloatType> &Tau,
                                 std::vector<std::complex<FloatType> > &E,
                                 std::vector<std::complex<FloatType> > &H)  {
 
@@ -219,8 +225,6 @@ namespace nmie {
     std::vector<std::complex<FloatType> > ipow = {c_one, c_i, -c_one, -c_i};
     std::vector<std::complex<FloatType> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
     std::vector<std::complex<FloatType> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
-    std::vector<std::complex<FloatType> > Psi(nmax_ + 1), D1n(nmax_ + 1), Zeta(nmax_ + 1), D3n(nmax_ + 1);
-    std::vector<FloatType> Pi(nmax_), Tau(nmax_);
 
     std::complex<FloatType> ml;
 
@@ -233,13 +237,13 @@ namespace nmie {
     unsigned int l;
     GetIndexAtRadius(Rho, ml, l);
 
-    // Calculate logarithmic derivative of the Ricatti-Bessel functions
-    calcD1D3(Rho*ml, D1n, D3n);
-    // Calculate Ricatti-Bessel functions
-    calcPsiZeta(Rho*ml, Psi, Zeta);
-
-    // Calculate angular functions Pi and Tau
-    calcPiTau(nmm::cos(Theta), Pi, Tau);
+//    // Calculate logarithmic derivative of the Ricatti-Bessel functions
+//    calcD1D3(Rho*ml, D1n, D3n);
+//    // Calculate Ricatti-Bessel functions
+//    calcPsiZeta(Rho*ml, Psi, Zeta);
+//
+//    // Calculate angular functions Pi and Tau
+//    calcPiTau(nmm::cos(Theta), Pi, Tau);
 
 //    for (int n = nmax_ - 2; n >= 0; n--) {
     for (int n = 0; n < nmax_; n++) {
@@ -377,7 +381,19 @@ namespace nmie {
       std::vector<std::complex<FloatType> > Es(3), Hs(3);
 
       // Do the actual calculation of electric and magnetic field
-      calcFieldByComponents(Rho, Theta, Phi, Es, Hs);
+      std::vector<std::complex<FloatType> > Psi(nmax_ + 1), D1n(nmax_ + 1), Zeta(nmax_ + 1), D3n(nmax_ + 1);
+      std::vector<FloatType> Pi(nmax_), Tau(nmax_);
+      std::complex<FloatType> ml;
+      GetIndexAtRadius(Rho, ml);
+
+      // Calculate logarithmic derivative of the Ricatti-Bessel functions
+      calcD1D3(Rho*ml, D1n, D3n);
+      // Calculate Ricatti-Bessel functions
+      calcPsiZeta(Rho*ml, Psi, Zeta);
+      // Calculate angular functions Pi and Tau
+      calcPiTau(nmm::cos(Theta), Pi, Tau);
+
+      calcFieldByComponents(Rho, Theta, Phi, Psi, D1n, Zeta, D3n, Pi, Tau, Es, Hs);
       for (int sph_coord = 0; sph_coord<3; ++sph_coord) {
         Es_[point][sph_coord] = Es[sph_coord];
         Hs_[point][sph_coord] = Hs[sph_coord];

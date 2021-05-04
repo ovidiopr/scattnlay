@@ -255,6 +255,12 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
                        std::vector<std::complex<FloatType> > &No1n, std::vector<std::complex<FloatType> > &Ne1n);
 
     void calcFieldByComponents(const FloatType Rho, const FloatType Theta, const FloatType Phi,
+                               const std::vector<std::complex<FloatType> > &Psi,
+                               const std::vector<std::complex<FloatType> > &D1n,
+                               const std::vector<std::complex<FloatType> > &Zeta,
+                               const std::vector<std::complex<FloatType> > &D3n,
+                               const std::vector<FloatType> &Pi,
+                               const std::vector<FloatType> &Tau,
                                std::vector<std::complex<FloatType> > &E,
                                std::vector<std::complex<FloatType> > &H);
 
