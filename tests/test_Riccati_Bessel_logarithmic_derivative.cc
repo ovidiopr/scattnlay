@@ -84,7 +84,7 @@ TEST(an_test, mpmath_generated_input) {
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : an_test_30digits) {
     parse2_mpmath_data(min_abs_tol, data, x, m, n, an_mp, re_abs_tol, im_abs_tol);
-    auto Nstop = nmie::LeRu_cutoff(m*x)+1;
+    auto Nstop = nmie::LeRu_near_field_cutoff(m * x)+1;
 
     nmie::MultiLayerMie<nmie::FloatType> ml_mie;
     ml_mie.SetLayersSize({x});
@@ -111,7 +111,7 @@ TEST(bn_test, mpmath_generated_input) {
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : bn_test_30digits) {
     parse2_mpmath_data(min_abs_tol, data, x, m, n, bn_mp, re_abs_tol, im_abs_tol);
-    auto Nstop = nmie::LeRu_cutoff(m*x)+1;
+    auto Nstop = nmie::LeRu_near_field_cutoff(m * x)+1;
 
     nmie::MultiLayerMie<nmie::FloatType> ml_mie;
     ml_mie.SetLayersSize({x});
@@ -138,7 +138,7 @@ TEST(zeta_psizeta_test, mpmath_generated_input) {
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : zeta_test_16digits) {
     parse_mpmath_data(min_abs_tol, data, z, n, zeta_mp, re_abs_tol, im_abs_tol);
-    auto Nstop = nmie::LeRu_cutoff(z)+10000;
+    auto Nstop = nmie::LeRu_near_field_cutoff(z)+10000;
     if (n > Nstop) continue;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+135), D3(Nstop+135),
         PsiZeta(Nstop+135), Psi(Nstop);
@@ -175,7 +175,7 @@ TEST(zeta_psizeta_test, mpmath_generated_input) {
 //  double re_abs_tol,  im_abs_tol;
 //  for (const auto &data : zeta_test_16digits) {
 //    parse_mpmath_data(min_abs_tol, data, z, n, zeta_mp, re_abs_tol, im_abs_tol);
-//    auto Nstop = nmie::LeRu_cutoff(z)+10000;
+//    auto Nstop = nmie::LeRu_near_field_cutoff(z)+10000;
 //    if (n > Nstop) continue;
 //    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop),
 //        PsiZeta(Nstop), zeta(Nstop);
@@ -200,7 +200,7 @@ TEST(psizeta_test, mpmath_generated_input) {
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : psi_mul_zeta_test_16digits) {
     parse_mpmath_data(min_abs_tol, data, z, n, PsiZeta_mp, re_abs_tol, im_abs_tol);
-    auto Nstop = nmie::LeRu_cutoff(z)+10000;
+    auto Nstop = nmie::LeRu_near_field_cutoff(z)+10000;
     if (n > Nstop) continue;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop), PsiZeta(Nstop);
     nmie::evalDownwardD1(z, D1dr);
@@ -225,7 +225,7 @@ TEST(psi_test, mpmath_generated_input) {
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : psi_test_16digits) {
     parse_mpmath_data(min_abs_tol, data, z, n, Psi_mp, re_abs_tol, im_abs_tol);
-    auto Nstop = nmie::LeRu_cutoff(z)+10000;
+    auto Nstop = nmie::LeRu_near_field_cutoff(z)+10000;
     if (n > Nstop) continue;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+35), Psi(Nstop);
     nmie::evalDownwardD1(z, D1dr);
@@ -247,7 +247,7 @@ TEST(D3test, mpmath_generated_input) {
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : D3_test_16digits) {
     parse_mpmath_data(min_abs_tol, data, z, n, D3_mp, re_abs_tol, im_abs_tol);
-    auto Nstop = nmie::LeRu_cutoff(z)+35;
+    auto Nstop = nmie::LeRu_near_field_cutoff(z)+35;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop), PsiZeta(Nstop);
     nmie::evalDownwardD1(z, D1dr);
     nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
@@ -270,7 +270,7 @@ TEST(D3test, mpmath_generated_input) {
   for (const auto &data : D1_test_30digits) {
     parse2_mpmath_data(min_abs_tol, data, x, m, n, D1_mp, re_abs_tol, im_abs_tol);
     z = m*x;
-    auto Nstop = nmie::LeRu_cutoff(z)+1;
+    auto Nstop = nmie::LeRu_near_field_cutoff(z)+1;
 //    auto Nstop = n;
     std::vector<std::complex<nmie::FloatType>> Db(Nstop),Dold(Nstop), r;
     int valid_digits = 10;

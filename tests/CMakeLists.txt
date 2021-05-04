@@ -6,6 +6,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${GTEST_LIBRARIES})
 set(LIBS ${LIBS} pthread)
 
+add_compile_options(-D_GLIBCXX_DEBUG)
 # -- Output tests in directory
 
 add_executable("test_near_field"

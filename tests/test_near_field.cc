@@ -18,7 +18,7 @@ TEST(RunFieldCalculationPolar, HandlesInput) {
   nmie.SetLayersSize({0.099});
   nmie.SetLayersIndex({ {0.75,0}});
   nmie.RunMieCalculation();
-//  nmie.RunFieldCalculationPolar(2);
+  nmie.RunFieldCalculationPolar(2);
 }
 //TEST(BulkSphere, HandlesInput) {
 //  nmie::MultiLayerMie<nmie::FloatType> nmie;
@@ -47,7 +47,7 @@ TEST(RunFieldCalculationPolar, HandlesInput) {
 //  for (const auto &data : parameters_and_results) {
 //    auto x = std::get<0>(data);
 //    auto m = std::get<1>(data);
-////    auto Nstop = nmie::LeRu_cutoff(m*x)+1;
+////    auto Nstop = nmie::LeRu_near_field_cutoff(m*x)+1;
 //
 //    nmie.SetLayersSize({x});
 //    nmie.SetLayersIndex({m});

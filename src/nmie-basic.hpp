@@ -275,7 +275,7 @@ namespace nmie {
   // ********************************************************************** //
 
   template <typename FloatType>
-  unsigned int LeRu_cutoff(const std::complex<FloatType> zz) {
+  unsigned int LeRu_near_field_cutoff(const std::complex<FloatType> zz) {
     std::complex<double> z = ConvertComplex<double>(zz);
     auto x = std::abs(z);
     return std::round(x + 11 * std::pow(x, (1.0 / 3.0)) + 1);
@@ -297,8 +297,8 @@ namespace nmie {
     } else {
       nmax = newround(xL + 4.0*pow(xL, 1.0/3.0) + 2);
     }
-    //Le Ru
-    auto Nstop = nmie::LeRu_cutoff(std::complex<FloatType>(xL,0))+1;
+    //Use Le Ru cutoff for near field, as a universal one.
+    auto Nstop = nmie::LeRu_near_field_cutoff(std::complex<FloatType>(xL, 0))+1;
     if (Nstop > nmax) nmax = Nstop;
     return nmax;
   }

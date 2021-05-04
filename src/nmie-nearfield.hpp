@@ -467,7 +467,8 @@ void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const FloatType 
   double delta_Rho = eval_delta<FloatType>(radius_points, from_Rho, to_Rho);
   for (unsigned int j=0; j < radius_points; j++) {
     auto Rho = static_cast<FloatType>(from_Rho + j*delta_Rho);
-    int near_field_nmax = calcNmax(to_Rho);
+//    if (Rho < 1e-5) Rho = 1e-5; // TODO do we need this?.
+    int near_field_nmax = calcNmax(Rho);
     // Skip if not enough terms in Mie series (i.e. required near field nmax > available terms )
     if (near_field_nmax > available_maximal_nmax_ && !isIgnoreAvailableNmax) continue;
     if (near_field_nmax > available_maximal_nmax_)  near_field_nmax = available_maximal_nmax_;

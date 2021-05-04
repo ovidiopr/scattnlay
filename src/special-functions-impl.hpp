@@ -63,13 +63,15 @@ int evalKapteynNumberOfLostSignificantDigits(const int ni,
                                              const std::complex<FloatType> zz) {
   using std::abs;  using std::imag; using std::real; using std::log; using std::sqrt; using std::round;
   std::complex<double> z = ConvertComplex<double>(zz);
+  if (abs(z) == 0.) return 0;
   auto n = static_cast<double>(ni);
   auto one = std::complex<double> (1, 0);
-  return round((
+  auto lost_digits = round((
       abs(imag(z)) - log(2.) - n * ( real( log( z/n) + sqrt(one
       - pow2(z/n)) - log (one + sqrt (one
       - pow2(z/n)))
       )))/ log(10.));
+  return lost_digits;
 }
 
 template <typename FloatType>
@@ -77,6 +79,7 @@ int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
   if (nmax == 0) nmax = 1;
   int nstar = nmax;
   auto z_dp = ConvertComplex<double>(z);
+  if (std::abs(z_dp) == 0.) return  nstar;
   int forwardLoss = evalKapteynNumberOfLostSignificantDigits(nmax, z_dp);
   int increment = static_cast<int>(std::ceil(
       std::max(4* std::pow(std::abs( z_dp), 1/3.0), 5.0)
