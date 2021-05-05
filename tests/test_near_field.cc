@@ -2,15 +2,6 @@
 #include "../src/nmie-basic.hpp"
 #include "../src/nmie-nearfield.hpp"
 
-TEST(ceil_to_2_pow_n, HandlesInput) {
-  EXPECT_EQ(16, nmie::ceil_to_2_pow_n<nmie::FloatType>(10));
-  EXPECT_EQ(32, nmie::ceil_to_2_pow_n<nmie::FloatType>(20));
-  EXPECT_EQ(32, nmie::ceil_to_2_pow_n<nmie::FloatType>(30));
-  EXPECT_EQ(128, nmie::ceil_to_2_pow_n<nmie::FloatType>(100));
-  EXPECT_EQ(256, nmie::ceil_to_2_pow_n<nmie::FloatType>(200));
-  EXPECT_EQ(128, nmie::ceil_to_2_pow_n<nmie::FloatType>(128));
-}
-
 TEST(RunFieldCalculationPolar, HandlesInput) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
   EXPECT_THROW(nmie.RunFieldCalculationPolar(0), std::invalid_argument);
@@ -47,7 +38,7 @@ TEST(RunFieldCalculationPolar, HandlesInput) {
 //  for (const auto &data : parameters_and_results) {
 //    auto x = std::get<0>(data);
 //    auto m = std::get<1>(data);
-////    auto Nstop = nmie::LeRu_near_field_cutoff(m*x)+1;
+// //    auto Nstop = nmie::LeRu_near_field_cutoff(m*x)+1;
 //
 //    nmie.SetLayersSize({x});
 //    nmie.SetLayersIndex({m});

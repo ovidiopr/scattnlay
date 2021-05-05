@@ -355,6 +355,7 @@ namespace nmie {
     for (auto &f : Es_) f.resize(3);
     for (auto &f : Hs_) f.resize(3);
 
+//    Es_.clear(); Hs_.clear(); coords_polar_.clear();
     for (int point = 0; point < total_points; point++) {
       const FloatType &Xp = coords_[0][point];
       const FloatType &Yp = coords_[1][point];
@@ -362,17 +363,12 @@ namespace nmie {
 
       // Convert to spherical coordinates
       Rho = nmm::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
-
       // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
       Theta = (Rho > 0.0) ? nmm::acos(Zp/Rho) : 0.0;
-
       // std::atan2 should take care of any special cases, e.g.  Xp=Yp=0, etc.
       Phi = nmm::atan2(Yp,Xp);
-
       // Avoid convergence problems due to Rho too small
       if (Rho < 1e-5) Rho = 1e-5;
-      // std::cout << "Xp: "<<Xp<< "  Yp: "<<Yp<< "  Zp: "<<Zp<<std::endl;
-      // std::cout << "  Rho: "<<Rho<<" Theta: "<<Theta<<"  Phi:"<<Phi<<std::endl<<std::endl;
 
       //*******************************************************//
       // external scattering field = incident + scattered      //
@@ -414,13 +410,6 @@ namespace nmie {
       }
     }  // end of for all field coordinates
   }  //  end of MultiLayerMie::RunFieldCalculation()
-
-template <typename FloatType>
-int ceil_to_2_pow_n(const int input_n) {
-  int n = 2;
-  while (input_n > n) n *= 2;
-  return n;
-}
 
 
 template <typename FloatType>
@@ -509,25 +498,22 @@ void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const FloatType 
 
 
 // input parameters:
-//         input_outer_perimeter_points: will be increased to the nearest power of 2.
+//         outer_arc_points: will be increased to the nearest power of 2.
 template <typename FloatType>
-void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int input_outer_perimeter_points,
+void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_points,
                                                         const int radius_points,
                                                         const double from_Rho, const double to_Rho,
                                                         const double from_Theta, const double to_Theta,
                                                         const double from_Phi, const double to_Phi,
                                                         const bool isIgnoreAvailableNmax) {
-//  double Rho, Theta, Phi;
   if (from_Rho > to_Rho || from_Theta > to_Theta || from_Phi > to_Phi
-      || input_outer_perimeter_points < 1 || radius_points < 1
+      || outer_arc_points < 1 || radius_points < 1
       || from_Rho < 0.)
     throw std::invalid_argument("Error! Invalid argument for RunFieldCalculationPolar() !");
-  int outer_perimeter_points = input_outer_perimeter_points;
-  if (outer_perimeter_points != 1) outer_perimeter_points = ceil_to_2_pow_n<FloatType>(input_outer_perimeter_points);
 
   calcMieSeriesNeededToConverge(to_Rho);
 
-  std::vector<std::vector<FloatType> >  Pi(outer_perimeter_points), Tau(outer_perimeter_points);
+  std::vector<std::vector<FloatType> >  Pi(outer_arc_points), Tau(outer_arc_points);
   calcPiTauAllTheta(from_Theta, to_Theta, Pi, Tau);
 
   std::vector<std::vector<std::complex<FloatType> > > Psi(radius_points), D1n(radius_points),
@@ -535,7 +521,28 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int input_outer_pe
   calcRadialOnlyDependantFunctions(from_Rho, to_Rho, isIgnoreAvailableNmax,
                                    Psi, D1n, Zeta, D3n);
 
-//  double delta_Phi = eval_delta<FloatType>(radius_points, from_Phi, to_Phi);
+  double delta_Rho = eval_delta<FloatType>(radius_points, from_Rho, to_Rho);
+  double delta_Theta = eval_delta<FloatType>(outer_arc_points, from_Theta, to_Theta);
+  double delta_Phi = eval_delta<FloatType>(radius_points, from_Phi, to_Phi);
+  Es_.clear(); Hs_.clear(); coords_polar_.clear();
+  for (int j=0; j < radius_points; j++) {
+    auto Rho = static_cast<FloatType>(from_Rho + j * delta_Rho);
+    for (int i = 0; i < outer_arc_points; i++) {
+      auto Theta = static_cast<FloatType>(from_Theta + i * delta_Theta);
+      for (int k = 0; k < outer_arc_points; k++) {
+        auto Phi = static_cast<FloatType>(from_Phi + k * delta_Phi);
+        coords_polar_.push_back({Rho, Theta, Phi});
+        // This array contains the fields in spherical coordinates
+        std::vector<std::complex<FloatType> > Es(3), Hs(3);
+        calcFieldByComponents(Rho, Theta, Phi,
+                              Psi[j], D1n[j], Zeta[j], D3n[j],
+                              Pi[i], Tau[i], Es, Hs);
+        Es_.push_back(Es);
+        Hs_.push_back(Hs);
+      }
+    }
+  }
+
 
 }
 }  // end of namespace nmie
