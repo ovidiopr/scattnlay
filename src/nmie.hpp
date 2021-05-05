@@ -298,6 +298,7 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
                                           std::vector<std::vector<std::complex<FloatType>>> &D1n,
                                           std::vector<std::vector<std::complex<FloatType>>> &Zeta,
                                           std::vector<std::vector<std::complex<FloatType>>> &D3n);
+    void convertFieldsFromSphericalToCartesian();
   };  // end of class MultiLayerMie
 
 }  // end of namespace nmie

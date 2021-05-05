@@ -187,6 +187,26 @@ namespace nmie {
   }  // end of   void MultiLayerMie::calcExpanCoeffs()
 
 
+  template <typename FloatType>
+  void MultiLayerMie<FloatType>::convertFieldsFromSphericalToCartesian() {
+    long total_points = coords_polar_.size();
+    E_.clear(); H_.clear();
+    for (int point=0; point < total_points; point++) {
+      auto Theta = coords_polar_[point][1];
+      auto Phi = coords_polar_[point][2];
+      auto Es = Es_[point];
+      auto Hs = Hs_[point];
+      using nmm::sin;
+      using nmm::cos;
+      E_.push_back({ sin(Theta)*cos(Phi)*Es[0] + cos(Theta)*cos(Phi)*Es[1] - sin(Phi)*Es[2],
+                     sin(Theta)*sin(Phi)*Es[0] + cos(Theta)*sin(Phi)*Es[1] + cos(Phi)*Es[2],
+                     cos(Theta)*Es[0] - sin(Theta)*Es[1]});
+      H_.push_back({ sin(Theta)*cos(Phi)*Hs[0] + cos(Theta)*cos(Phi)*Hs[1] - sin(Phi)*Hs[2],
+                     sin(Theta)*sin(Phi)*Hs[0] + cos(Theta)*sin(Phi)*Hs[1] + cos(Phi)*Hs[2],
+                     cos(Theta)*Hs[0] - sin(Theta)*Hs[1]});
+    }
+
+  }  // end of void MultiLayerMie::convertFieldsFromSphericalToCartesian()
   //**********************************************************************************//
   // This function calculates the electric (E) and magnetic (H) fields inside and     //
   // around the particle.                                                             //
@@ -337,36 +357,25 @@ namespace nmie {
   //**********************************************************************************//
   template <typename FloatType>
   void MultiLayerMie<FloatType>::RunFieldCalculation() {
-    FloatType Rho, Theta, Phi;
-
     // Calculate scattering coefficients an_ and bn_
     calcScattCoeffs();
-
     // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
     calcExpanCoeffs();
 
+    Es_.clear(); Hs_.clear(); coords_polar_.clear();
     long total_points = coords_[0].size();
-    E_.resize(total_points);
-    H_.resize(total_points);
-    Es_.resize(total_points);
-    Hs_.resize(total_points);
-    for (auto &f : E_) f.resize(3);
-    for (auto &f : H_) f.resize(3);
-    for (auto &f : Es_) f.resize(3);
-    for (auto &f : Hs_) f.resize(3);
-
-//    Es_.clear(); Hs_.clear(); coords_polar_.clear();
     for (int point = 0; point < total_points; point++) {
       const FloatType &Xp = coords_[0][point];
       const FloatType &Yp = coords_[1][point];
       const FloatType &Zp = coords_[2][point];
 
       // Convert to spherical coordinates
-      Rho = nmm::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
+      auto Rho = nmm::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
       // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
-      Theta = (Rho > 0.0) ? nmm::acos(Zp/Rho) : 0.0;
+      auto Theta = (Rho > 0.0) ? nmm::acos(Zp/Rho) : 0.0;
       // std::atan2 should take care of any special cases, e.g.  Xp=Yp=0, etc.
-      Phi = nmm::atan2(Yp,Xp);
+      auto Phi = nmm::atan2(Yp,Xp);
+      coords_polar_.push_back({Rho, Theta, Phi});
       // Avoid convergence problems due to Rho too small
       if (Rho < 1e-5) Rho = 1e-5;
 
@@ -393,22 +402,10 @@ namespace nmie {
       calcPiTau(nmm::cos(Theta), Pi, Tau);
 
       calcFieldByComponents(Rho, Theta, Phi, Psi, D1n, Zeta, D3n, Pi, Tau, Es, Hs);
-      for (int sph_coord = 0; sph_coord<3; ++sph_coord) {
-        Es_[point][sph_coord] = Es[sph_coord];
-        Hs_[point][sph_coord] = Hs[sph_coord];
-      }
-      { //Now, convert the fields back to cartesian coordinates
-        using nmm::sin;
-        using nmm::cos;
-        E_[point][0] = sin(Theta)*cos(Phi)*Es[0] + cos(Theta)*cos(Phi)*Es[1] - sin(Phi)*Es[2];
-        E_[point][1] = sin(Theta)*sin(Phi)*Es[0] + cos(Theta)*sin(Phi)*Es[1] + cos(Phi)*Es[2];
-        E_[point][2] = cos(Theta)*Es[0] - sin(Theta)*Es[1];
-
-        H_[point][0] = sin(Theta)*cos(Phi)*Hs[0] + cos(Theta)*cos(Phi)*Hs[1] - sin(Phi)*Hs[2];
-        H_[point][1] = sin(Theta)*sin(Phi)*Hs[0] + cos(Theta)*sin(Phi)*Hs[1] + cos(Phi)*Hs[2];
-        H_[point][2] = cos(Theta)*Hs[0] - sin(Theta)*Hs[1];
-      }
+      Es_.push_back(Es);
+      Hs_.push_back(Hs);
     }  // end of for all field coordinates
+    convertFieldsFromSphericalToCartesian();
   }  //  end of MultiLayerMie::RunFieldCalculation()
 
 
@@ -542,7 +539,7 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
       }
     }
   }
-
+  convertFieldsFromSphericalToCartesian();
 
 }
 }  // end of namespace nmie
