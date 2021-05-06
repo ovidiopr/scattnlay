@@ -415,7 +415,7 @@ namespace nmie {
       ml_mie.SetFieldCoords({ConvertVector<FloatType>(Xp_vec),
 	    ConvertVector<FloatType>(Yp_vec),
 	    ConvertVector<FloatType>(Zp_vec) });
-      if (nmax != -1) ml_mie.SetMaxTerms(nmax);
+      ml_mie.SetMaxTerms(nmax);
       ml_mie.SetModeNmaxAndType(mode_n, mode_type);
 
       ml_mie.RunFieldCalculation();

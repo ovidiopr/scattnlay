@@ -1,16 +1,33 @@
+#include <string>
 #include <pybind11/pybind11.h>
 #include "nmie-pybind11.hpp"
+#include "nmie.hpp"
 
 namespace py = pybind11;
 
+template<typename T>
+void declare_nmie(py::module &m, std::string &typestr) {
+  using mie_typed = nmie::MultiLayerMie<nmie::FloatType>;
+  std::string pyclass_name = std::string("mie") + typestr;
+  py::class_<mie_typed>(m, pyclass_name.c_str(), py::buffer_protocol(), py::dynamic_attr())
+      .def(py::init<>())
+      .def("GetPECLayer", &mie_typed::GetPECLayer)
+//      .def("width",     &mie_typed::width)
+//      .def("height",    &mie_typed::height)
+      ;
+}
+
 // wrap as Python module
 #ifdef MULTI_PRECISION
+std::string precision_name = "_mp";
 PYBIND11_MODULE(scattnlay_mp, m)
 #else
+std::string precision_name = "_dp";
 PYBIND11_MODULE(scattnlay_dp, m)
 #endif  // MULTI_PRECISION
 {
   m.doc() = "The Python version of scattnlay";
+  declare_nmie<nmie::FloatType>(m, precision_name);
 
   m.def("scattcoeffs", &py_ScattCoeffs,
         "Calculate the scattering coefficients, required to calculate both the near- and far-field parameters.",

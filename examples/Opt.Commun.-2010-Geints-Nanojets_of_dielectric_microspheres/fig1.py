@@ -40,6 +40,7 @@ import inspect
 print("Using scattnlay from ", inspect.getfile(scattnlay))
 
 npts = 351
+# npts = 51
 factor = 3 # plot extent compared to sphere radius
 index_H2O = 1.33+(1e-6)*1j
 
@@ -62,7 +63,7 @@ print("x =", x)
 print("m =", m)
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
     np.array([x]), np.array([m]))
-print("Qsca = " + str(Qsca)+" terms = "+str(terms))
+print("   Qsca = " + str(Qsca)+" terms = "+str(terms))
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
     np.array([x]), np.array([m]), mp=True)
 print("mp Qsca = " + str(Qsca)+" terms = "+str(terms))

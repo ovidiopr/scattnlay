@@ -164,6 +164,20 @@ def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
     return terms, an, bn, cn, dn
 #expancoeffs()
 
+def scattnlay_(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
+    if mp:
+        from scattnlay_mp import scattnlay as scattnlay2_
+        return scattnlay2_(x, m, theta, nmax=nmax, pl=pl)
+
+    from scattnlay_dp import scattnlay as scattnlay2_
+    return scattnlay2_(x, m, theta, nmax=nmax, pl=pl)
+        # from scattnlay_dp import mie_dp as mie_
+    # mie = mie_()
+    # a = mie.GetPECLayer()
+
+    # terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(xi, m[i], theta, nmax=nmax, pl=pl)
+    #
+    # return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 
 def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     """
@@ -193,11 +207,6 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
         S1, S2: Complex scattering amplitudes
     """
 
-    if mp:
-        from scattnlay_mp import scattnlay as scattnlay_
-    else:
-        from scattnlay_dp import scattnlay as scattnlay_
-
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
@@ -226,7 +235,7 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     S2 = np.zeros((x.shape[0], theta.shape[0]), dtype=complex)
 
     for i, xi in enumerate(x):
-        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(xi, m[i], theta, nmax=nmax, pl=pl)
+        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(xi, m[i], theta, nmax=nmax, pl=pl, mp=mp)
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 #scattnlay()
