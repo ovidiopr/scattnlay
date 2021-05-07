@@ -37,6 +37,14 @@ void declare_nmie(py::module &m, std::string &typestr) {
            (&mie_typed::SetAngles)
       )
       .def("GetQext", &mie_typed::GetQext<double>)
+      .def("GetQsca", &mie_typed::GetQsca<double>)
+      .def("GetQabs", &mie_typed::GetQabs<double>)
+      .def("GetQpr", &mie_typed::GetQpr<double>)
+      .def("GetQbk", &mie_typed::GetQbk<double>)
+      .def("GetAsymmetryFactor", &mie_typed::GetAsymmetryFactor<double>)
+      .def("GetAlbedo", &mie_typed::GetAlbedo<double>)
+      .def("GetS1", &mie_typed::GetS1<double>)
+      .def("GetS2", &mie_typed::GetS2<double>)
       ;
 }
 
@@ -60,11 +68,7 @@ PYBIND11_MODULE(scattnlay_dp, m)
         "Calculate the expansion coefficients, required to calculate the near-field parameters.",
         py::arg("x"), py::arg("m"), py::arg("nmax") = -1, py::arg("pl") = -1);
 
-  m.def("scattnlay", &py_scattnlay,
-        "Calculate the scattering parameters and amplitudes.",
-        py::arg("x"), py::arg("m"), py::arg("theta") = py::array_t<double>(0), py::arg("nmax") = -1, py::arg("pl") = -1);
-
-  m.def("fieldnlay", &py_fieldnlay,
+    m.def("fieldnlay", &py_fieldnlay,
         "Calculate the complex electric and magnetic field in the surroundings and inside the particle.",
         py::arg("x"), py::arg("m"), py::arg("xp"), py::arg("yp"), py::arg("zp"), py::arg("nmax") = -1, py::arg("pl") = -1);
 }

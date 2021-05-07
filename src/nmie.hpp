@@ -52,6 +52,16 @@ std::vector<T> Py2Vector(const py::array_t<T> &py_x) {
   return c_x;
 }
 
+template <typename inputType=double, typename outputType=double>
+py::array_t< std::complex<outputType>> VectorComplex2Py(const std::vector<std::complex<inputType> > &c_f) {
+  auto c_x = nmie::ConvertComplexVector<outputType, inputType>(c_f);
+  auto py_x = py::array_t< std::complex<outputType>>(c_x.size());
+  auto py_x_buffer = py_x.request();
+  auto *py_x_ptr = (std::complex<outputType> *) py_x_buffer.ptr;
+  std::memcpy(py_x_ptr, c_x.data(), c_x.size()*sizeof(std::complex<outputType>));
+  return py_x;
+}
+
 namespace nmie {
   int ScattCoeffs(const unsigned int L, const int pl,
                   const std::vector<double> &x, const std::vector<std::complex<double> > &m,
@@ -163,14 +173,16 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
 
     // Return calculation results
     template <typename outputType = FloatType> outputType GetQext();
-    FloatType GetQsca();
-    FloatType GetQabs();
-    FloatType GetQbk();
-    FloatType GetQpr();
-    FloatType GetAsymmetryFactor();
-    FloatType GetAlbedo();
+    template <typename outputType = FloatType> outputType  GetQsca();
+    template <typename outputType = FloatType> outputType  GetQabs();
+    template <typename outputType = FloatType> outputType  GetQbk();
+    template <typename outputType = FloatType> outputType  GetQpr();
+    template <typename outputType = FloatType> outputType  GetAsymmetryFactor();
+    template <typename outputType = FloatType> outputType  GetAlbedo();
     std::vector<std::complex<FloatType> > GetS1();
     std::vector<std::complex<FloatType> > GetS2();
+    template <typename outputType> py::array_t< std::complex<outputType>>  GetS1();
+    template <typename outputType> py::array_t< std::complex<outputType>>  GetS2();
 
     std::vector<std::complex<FloatType> > GetAn(){return an_;};
     std::vector<std::complex<FloatType> > GetBn(){return bn_;};
@@ -183,15 +195,18 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     // Problem definition
     // Modify size of all layers
     void SetLayersSize(const std::vector<FloatType> &layer_size);
-    void SetLayersSize(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_layer_size);
+    template <typename inputType>
+    void SetLayersSize(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_layer_size);
     // Modify refractive index of all layers
     void SetLayersIndex(const std::vector< std::complex<FloatType> > &index);
-    void SetLayersIndex(const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_index);
+    template <typename inputType>
+    void SetLayersIndex(const py::array_t<std::complex<inputType>, py::array::c_style | py::array::forcecast> &py_index);
     void GetIndexAtRadius(const FloatType Rho, std::complex<FloatType> &ml, unsigned int &l);
     void GetIndexAtRadius(const FloatType Rho, std::complex<FloatType> &ml);
     // Modify scattering (theta) py_angles
     void SetAngles(const std::vector<FloatType> &py_angles);
-    void SetAngles(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_angles);
+    template <typename inputType>
+    void SetAngles(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_angles);
     // Modify coordinates for field calculation
     void SetFieldCoords(const std::vector< std::vector<FloatType> > &coords);
     // Modify index of PEC layer

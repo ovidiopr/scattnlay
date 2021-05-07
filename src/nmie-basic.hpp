@@ -71,14 +71,15 @@ namespace nmie {
     return static_cast<outputType>(Qext_);
   }
 
-// ********************************************************************** //
+  // ********************************************************************** //
   // Returns previously calculated Qabs                                     //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetQabs() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetQabs() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return Qabs_;
+    return static_cast<outputType>(Qabs_);
   }
 
 
@@ -86,10 +87,11 @@ namespace nmie {
   // Returns previously calculated Qsca                                     //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetQsca() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetQsca() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return Qsca_;
+    return static_cast<outputType>(Qsca_);
   }
 
 
@@ -97,10 +99,11 @@ namespace nmie {
   // Returns previously calculated Qbk                                      //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetQbk() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetQbk() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return Qbk_;
+    return static_cast<outputType>(Qbk_);
   }
 
 
@@ -108,10 +111,11 @@ namespace nmie {
   // Returns previously calculated Qpr                                      //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetQpr() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetQpr() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return Qpr_;
+    return static_cast<outputType>(Qpr_);
   }
 
 
@@ -119,10 +123,11 @@ namespace nmie {
   // Returns previously calculated assymetry factor                         //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetAsymmetryFactor() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetAsymmetryFactor() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return asymmetry_factor_;
+    return static_cast<outputType>(asymmetry_factor_);
   }
 
 
@@ -130,10 +135,11 @@ namespace nmie {
   // Returns previously calculated Albedo                                   //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetAlbedo() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetAlbedo() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return albedo_;
+    return static_cast<outputType>(albedo_);
   }
 
 
@@ -157,9 +163,17 @@ namespace nmie {
       throw std::invalid_argument("You should run calculations before result request!");
     return S2_;
   }
+template <typename FloatType> template <typename outputType>
+py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetS1() {
+  return VectorComplex2Py<FloatType,outputType>(GetS1());
+}
+template <typename FloatType> template <typename outputType>
+py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetS2() {
+  return VectorComplex2Py<FloatType,outputType>(GetS2());
+}
 
 
-  // ********************************************************************** //
+// ********************************************************************** //
   // Modify scattering (theta) angles                                       //
   // ********************************************************************** //
   template <typename FloatType>
@@ -236,22 +250,25 @@ namespace nmie {
 
   // Python interface
   template <typename FloatType>
+  template <typename inputType>
   void MultiLayerMie<FloatType>::SetLayersSize(
-      const py::array_t<double, py::array::c_style | py::array::forcecast> &py_layer_size) {
-    auto layer_size_dp = Py2Vector<double>(py_layer_size);
+      const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_layer_size) {
+    auto layer_size_dp = Py2Vector<inputType>(py_layer_size);
     SetLayersSize(ConvertVector<FloatType>(layer_size_dp));
   }
 
   template <typename FloatType>
+  template <typename inputType>
   void MultiLayerMie<FloatType>::SetLayersIndex(
-      const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_index) {
-    auto index_dp = Py2Vector<std::complex<double> >(py_index);
+      const py::array_t<std::complex<inputType>, py::array::c_style | py::array::forcecast> &py_index) {
+    auto index_dp = Py2Vector<std::complex<inputType> >(py_index);
     SetLayersIndex(ConvertComplexVector<FloatType>(index_dp));
   }
 
  template <typename FloatType>
- void MultiLayerMie<FloatType>::SetAngles(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_angles) {
-   auto angles_dp = Py2Vector<double>(py_angles);
+ template <typename inputType>
+ void MultiLayerMie<FloatType>::SetAngles(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_angles) {
+   auto angles_dp = Py2Vector<inputType>(py_angles);
    SetAngles(ConvertVector<FloatType>(angles_dp));
  }
 

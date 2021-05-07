@@ -166,21 +166,9 @@ def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
 
 def scattnlay_(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     if mp:
-        from scattnlay_mp import scattnlay as scattnlay2_
         from scattnlay_mp import mie_mp as mie_
-        mie = mie_()
-        mie.SetLayersSize(x)
-        mie.SetLayersIndex(m)
-        mie.SetAngles(theta)
-        mie.SetPECLayer(pl)
-        mie.SetMaxTerms(nmax)
-        mie.RunMieCalculation()
-        # Qext = mie.GetQext()
-        # print(Qext)
-        return scattnlay2_(x, m, theta, nmax=nmax, pl=pl)
-
-    from scattnlay_dp import scattnlay as scattnlay2_
-    from scattnlay_dp import mie_dp as mie_
+    else:
+        from scattnlay_dp import mie_dp as mie_
     mie = mie_()
     mie.SetLayersSize(x)
     mie.SetLayersIndex(m)
@@ -189,13 +177,16 @@ def scattnlay_(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     mie.SetMaxTerms(nmax)
     mie.RunMieCalculation()
     Qext =  mie.GetQext()
+    Qsca =  mie.GetQsca()
+    Qabs =  mie.GetQabs()
+    Qbk =  mie.GetQbk()
+    Qpr =  mie.GetQpr()
+    g =  mie.GetAsymmetryFactor()
+    Albedo =  mie.GetAlbedo()
     terms = mie.GetMaxTerms()
-    print(Qext)
-
-    # terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(xi, m[i], theta, nmax=nmax, pl=pl)
-    #
-    # return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
-    return scattnlay2_(x, m, theta, nmax=nmax, pl=pl)
+    S1 = mie.GetS1()
+    S2 = mie.GetS2()
+    return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 
 def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     """
