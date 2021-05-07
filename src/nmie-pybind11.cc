@@ -84,12 +84,6 @@ py::array Vector2DComplex2Py(const std::vector<std::vector<T > > &x) {
 }
 
 
-template <typename T>
-std::vector<T> Py2Vector(const py::array_t<T> &py_x) {
-  std::vector<T> c_x(py_x.size());
-  std::memcpy(c_x.data(), py_x.data(), py_x.size()*sizeof(T));
-  return c_x;
-}
 
 
 py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,

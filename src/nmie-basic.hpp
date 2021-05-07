@@ -64,14 +64,14 @@ namespace nmie {
   // Returns previously calculated Qext                                     //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetQext() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetQext() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return Qext_;
+    return static_cast<outputType>(Qext_);
   }
 
-
-  // ********************************************************************** //
+// ********************************************************************** //
   // Returns previously calculated Qabs                                     //
   // ********************************************************************** //
   template <typename FloatType>
@@ -189,7 +189,9 @@ namespace nmie {
   }
 
 
-  // ********************************************************************** //
+
+
+// ********************************************************************** //
   // Modify refractive index of all layers                                  //
   // ********************************************************************** //
   template <typename FloatType>
@@ -197,7 +199,6 @@ namespace nmie {
     MarkUncalculated();
     refractive_index_ = index;
   }
-
 
   // ********************************************************************** //
   // Modify coordinates for field calculation                               //
@@ -233,8 +234,28 @@ namespace nmie {
     nmax_preset_ = nmax;
   }
 
+  // Python interface
+  template <typename FloatType>
+  void MultiLayerMie<FloatType>::SetLayersSize(
+      const py::array_t<double, py::array::c_style | py::array::forcecast> &py_layer_size) {
+    auto layer_size_dp = Py2Vector<double>(py_layer_size);
+    SetLayersSize(ConvertVector<FloatType>(layer_size_dp));
+  }
 
-  // ********************************************************************** //
+  template <typename FloatType>
+  void MultiLayerMie<FloatType>::SetLayersIndex(
+      const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_index) {
+    auto index_dp = Py2Vector<std::complex<double> >(py_index);
+    SetLayersIndex(ConvertComplexVector<FloatType>(index_dp));
+  }
+
+ template <typename FloatType>
+ void MultiLayerMie<FloatType>::SetAngles(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_angles) {
+   auto angles_dp = Py2Vector<double>(py_angles);
+   SetAngles(ConvertVector<FloatType>(angles_dp));
+ }
+
+// ********************************************************************** //
   // Get total size parameter of particle                                   //
   // ********************************************************************** //
   template <typename FloatType>

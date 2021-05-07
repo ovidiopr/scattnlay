@@ -37,10 +37,21 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 #include "nmie-precision.hpp"
 #ifdef MULTI_PRECISION
 #include <boost/math/constants/constants.hpp>
 #endif
+namespace py = pybind11;
+
+template <typename T>
+std::vector<T> Py2Vector(const py::array_t<T> &py_x) {
+  std::vector<T> c_x(py_x.size());
+  std::memcpy(c_x.data(), py_x.data(), py_x.size()*sizeof(T));
+  return c_x;
+}
+
 namespace nmie {
   int ScattCoeffs(const unsigned int L, const int pl,
                   const std::vector<double> &x, const std::vector<std::complex<double> > &m,
@@ -151,7 +162,7 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     void calcExpanCoeffs();
 
     // Return calculation results
-    FloatType GetQext();
+    template <typename outputType = FloatType> outputType GetQext();
     FloatType GetQsca();
     FloatType GetQabs();
     FloatType GetQbk();
@@ -172,12 +183,15 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     // Problem definition
     // Modify size of all layers
     void SetLayersSize(const std::vector<FloatType> &layer_size);
+    void SetLayersSize(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_layer_size);
     // Modify refractive index of all layers
     void SetLayersIndex(const std::vector< std::complex<FloatType> > &index);
+    void SetLayersIndex(const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_index);
     void GetIndexAtRadius(const FloatType Rho, std::complex<FloatType> &ml, unsigned int &l);
     void GetIndexAtRadius(const FloatType Rho, std::complex<FloatType> &ml);
-    // Modify scattering (theta) angles
-    void SetAngles(const std::vector<FloatType> &angles);
+    // Modify scattering (theta) py_angles
+    void SetAngles(const std::vector<FloatType> &py_angles);
+    void SetAngles(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_angles);
     // Modify coordinates for field calculation
     void SetFieldCoords(const std::vector< std::vector<FloatType> > &coords);
     // Modify index of PEC layer

@@ -67,6 +67,7 @@ print("   Qsca = " + str(Qsca)+" terms = "+str(terms))
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
     np.array([x]), np.array([m]), mp=True)
 print("mp Qsca = " + str(Qsca)+" terms = "+str(terms))
+exit(1)
 
 scan = np.linspace(-factor*x[-1], factor*x[-1], npts)
 zero = np.zeros(npts*npts, dtype = np.float64)

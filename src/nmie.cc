@@ -190,33 +190,33 @@ namespace nmie {
     if (Theta.size() != nTheta)
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
-      MultiLayerMie<FloatType> ml_mie;
-      ml_mie.SetLayersSize(ConvertVector<FloatType>(x));
-      ml_mie.SetLayersIndex(ConvertComplexVector<FloatType>(m));
-      ml_mie.SetAngles(ConvertVector<FloatType>(Theta));
-      ml_mie.SetPECLayer(pl);
-      ml_mie.SetMaxTerms(nmax);
-      ml_mie.SetModeNmaxAndType(mode_n, mode_type);
+      MultiLayerMie<FloatType> mie;
+      mie.SetLayersSize(ConvertVector<FloatType>(x));
+      mie.SetLayersIndex(ConvertComplexVector<FloatType>(m));
+      mie.SetAngles(ConvertVector<FloatType>(Theta));
+      mie.SetPECLayer(pl);
+      mie.SetMaxTerms(nmax);
+      mie.SetModeNmaxAndType(mode_n, mode_type);
 
-      ml_mie.RunMieCalculation();
+      mie.RunMieCalculation();
 
       // std::cout
       // 	<< std::setprecision(std::numeric_limits<FloatType>::digits10)
       // 	<< "Qext = "
-      // 	<< ml_mie.GetQext()
+      // 	<< mie.GetQext()
       // 	<< std::endl;
 
-      *Qext = static_cast<double>(ml_mie.GetQext());
-      *Qsca = static_cast<double>(ml_mie.GetQsca());
-      *Qabs = static_cast<double>(ml_mie.GetQabs());
-      *Qbk = static_cast<double>(ml_mie.GetQbk());
-      *Qpr = static_cast<double>(ml_mie.GetQpr());
-      *g = static_cast<double>(ml_mie.GetAsymmetryFactor());
-      *Albedo = static_cast<double>(ml_mie.GetAlbedo());
-      S1 = ConvertComplexVector<double>(ml_mie.GetS1());
-      S2 = ConvertComplexVector<double>(ml_mie.GetS2());
+      *Qext = static_cast<double>(mie.GetQext());
+      *Qsca = static_cast<double>(mie.GetQsca());
+      *Qabs = static_cast<double>(mie.GetQabs());
+      *Qbk = static_cast<double>(mie.GetQbk());
+      *Qpr = static_cast<double>(mie.GetQpr());
+      *g = static_cast<double>(mie.GetAsymmetryFactor());
+      *Albedo = static_cast<double>(mie.GetAlbedo());
+      S1 = ConvertComplexVector<double>(mie.GetS1());
+      S2 = ConvertComplexVector<double>(mie.GetS2());
 
-      return ml_mie.GetMaxTerms();
+      return mie.GetMaxTerms();
     } catch(const std::invalid_argument &ia) {
       // Will catch if  ml_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
@@ -415,7 +415,7 @@ namespace nmie {
       ml_mie.SetFieldCoords({ConvertVector<FloatType>(Xp_vec),
 	    ConvertVector<FloatType>(Yp_vec),
 	    ConvertVector<FloatType>(Zp_vec) });
-      ml_mie.SetMaxTerms(nmax);
+      if (nmax != -1) ml_mie.SetMaxTerms(nmax);
       ml_mie.SetModeNmaxAndType(mode_n, mode_type);
 
       ml_mie.RunFieldCalculation();

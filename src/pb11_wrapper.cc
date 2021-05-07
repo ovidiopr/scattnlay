@@ -1,9 +1,13 @@
 #include <string>
-#include <pybind11/pybind11.h>
 #include "nmie-pybind11.hpp"
 #include "nmie.hpp"
+#include "nmie-basic.hpp"
 
-namespace py = pybind11;
+//py::class_<Pet>(m, "Pet")
+//.def(py::init<const std::string &, int>())
+//.def("set", static_cast<void (Pet::*)(int)>(&Pet::set), "Set the pet's age")
+//.def("set", static_cast<void (Pet::*)(const std::string &)>(&Pet::set), "Set the pet's name");
+//
 
 template<typename T>
 void declare_nmie(py::module &m, std::string &typestr) {
@@ -12,8 +16,27 @@ void declare_nmie(py::module &m, std::string &typestr) {
   py::class_<mie_typed>(m, pyclass_name.c_str(), py::buffer_protocol(), py::dynamic_attr())
       .def(py::init<>())
       .def("GetPECLayer", &mie_typed::GetPECLayer)
-//      .def("width",     &mie_typed::width)
-//      .def("height",    &mie_typed::height)
+      .def("SetPECLayer", &mie_typed::SetPECLayer)
+      .def("SetMaxTerms", &mie_typed::SetMaxTerms)
+      .def("GetMaxTerms", &mie_typed::GetMaxTerms)
+      .def("SetModeNmaxAndType", &mie_typed::SetModeNmaxAndType)
+      .def("RunMieCalculation", &mie_typed::RunMieCalculation)
+      .def("SetLayersSize", static_cast<
+               void (mie_typed::*)
+                   (const py::array_t<double, py::array::c_style | py::array::forcecast>&)>
+           (&mie_typed::SetLayersSize)
+      )
+      .def("SetLayersIndex", static_cast<
+               void (mie_typed::*)
+                   (const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &)>
+           (&mie_typed::SetLayersIndex)
+      )
+      .def("SetAngles", static_cast<
+               void (mie_typed::*)
+                   (const py::array_t<double, py::array::c_style | py::array::forcecast>&)>
+           (&mie_typed::SetAngles)
+      )
+      .def("GetQext", &mie_typed::GetQext<double>)
       ;
 }
 
