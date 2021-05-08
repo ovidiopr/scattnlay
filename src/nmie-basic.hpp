@@ -925,6 +925,34 @@ namespace nmie {
     );
   }
 
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetLayerAn() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetLayerAn())
+    );
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetLayerBn() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetLayerBn())
+    );
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetLayerCn() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetLayerCn())
+    );
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetLayerDn() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetLayerDn())
+    );
+  }
+
   template <typename FloatType>
   void MultiLayerMie<FloatType>::SetFieldCoords(
       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,

@@ -31,7 +31,7 @@
 #    along with this program.  If not, see <http:#www.gnu.org/licenses/>.
 
 import scattnlay
-from scattnlay import fieldnlay, scattnlay, scattcoeffs, expancoeffs
+from scattnlay import fieldnlay, scattnlay
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -50,10 +50,13 @@ isMP = False
 
 
 nm = 1.0  # host medium
+# x = 2.0 * np.pi * np.array([total_r/2, total_r], dtype=np.float64) / WL
+# m = np.array((index_H2O, index_H2O), dtype=np.complex128) / nm
+
 x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / WL
 m = np.array((index_H2O), dtype=np.complex128) / nm
 
-nmax = x*factor + 11 * (x*factor)**(1.0 / 3.0) + 1
+nmax = int(np.max(x*factor + 11 * (x*factor)**(1.0 / 3.0) + 1))
 # return std::round(x + 11 * std::pow(x, (1.0 / 3.0)) + 1);
 
 # nmax = -1
@@ -67,11 +70,6 @@ terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
     np.array([x]), np.array([m]), mp=True)
 print("mp Qsca = " + str(Qsca)+" terms = "+str(terms))
 
-terms, a,b = scattcoeffs(np.array([x]), np.array([m]))
-print(a)
-print(b)
-
-exit(1)
 scan = np.linspace(-factor*x[-1], factor*x[-1], npts)
 zero = np.zeros(npts*npts, dtype = np.float64)
 

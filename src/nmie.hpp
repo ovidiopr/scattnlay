@@ -231,6 +231,10 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     std::vector< std::vector<std::complex<FloatType> > > GetLayerBn(){return bln_;};
     std::vector< std::vector<std::complex<FloatType> > > GetLayerCn(){return cln_;};
     std::vector< std::vector<std::complex<FloatType> > > GetLayerDn(){return dln_;};
+    template <typename outputType> py::array GetLayerAn();
+    template <typename outputType> py::array GetLayerBn();
+    template <typename outputType> py::array GetLayerCn();
+    template <typename outputType> py::array GetLayerDn();
 
     // Problem definition
     // Modify size of all layers

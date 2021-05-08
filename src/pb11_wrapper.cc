@@ -1,17 +1,10 @@
 #include <string>
-#include "nmie-pybind11.hpp"
 #include "nmie.hpp"
 #include "nmie-basic.hpp"
 #include "nmie-nearfield.hpp"
 
-//py::class_<Pet>(m, "Pet")
-//.def(py::init<const std::string &, int>())
-//.def("set", static_cast<void (Pet::*)(int)>(&Pet::set), "Set the pet's age")
-//.def("set", static_cast<void (Pet::*)(const std::string &)>(&Pet::set), "Set the pet's name");
-//
-
 template<typename T>
-void declare_nmie(py::module &m, std::string &typestr) {
+void declare_nmie(py::module &m, const std::string &typestr) {
   using mie_typed = nmie::MultiLayerMie<nmie::FloatType>;
   std::string pyclass_name = std::string("mie") + typestr;
   py::class_<mie_typed>(m, pyclass_name.c_str(), py::buffer_protocol(), py::dynamic_attr())
@@ -65,6 +58,10 @@ void declare_nmie(py::module &m, std::string &typestr) {
       .def("GetBn", &mie_typed::GetBn<double>)
       .def("GetFieldE", &mie_typed::GetFieldE<double>)
       .def("GetFieldH", &mie_typed::GetFieldH<double>)
+      .def("GetLayerAn", &mie_typed::GetLayerAn<double>)
+      .def("GetLayerBn", &mie_typed::GetLayerBn<double>)
+      .def("GetLayerCn", &mie_typed::GetLayerCn<double>)
+      .def("GetLayerDn", &mie_typed::GetLayerDn<double>)
       ;
 }
 
@@ -79,9 +76,4 @@ PYBIND11_MODULE(scattnlay_dp, m)
 {
   m.doc() = "The Python version of scattnlay";
   declare_nmie<nmie::FloatType>(m, precision_name);
-
-  m.def("expancoeffs", &py_ExpanCoeffs,
-        "Calculate the expansion coefficients, required to calculate the near-field parameters.",
-        py::arg("x"), py::arg("m"), py::arg("nmax") = -1, py::arg("pl") = -1);
 }
-
