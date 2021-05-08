@@ -2,6 +2,7 @@
 #include "nmie-pybind11.hpp"
 #include "nmie.hpp"
 #include "nmie-basic.hpp"
+#include "nmie-nearfield.hpp"
 
 //py::class_<Pet>(m, "Pet")
 //.def(py::init<const std::string &, int>())
@@ -21,6 +22,12 @@ void declare_nmie(py::module &m, std::string &typestr) {
       .def("GetMaxTerms", &mie_typed::GetMaxTerms)
       .def("SetModeNmaxAndType", &mie_typed::SetModeNmaxAndType)
       .def("RunMieCalculation", &mie_typed::RunMieCalculation)
+      .def("calcScattCoeffs", &mie_typed::calcScattCoeffs)
+      .def("calcExpanCoeffs", &mie_typed::calcExpanCoeffs)
+      .def("RunFieldCalculation", &mie_typed::RunFieldCalculation)
+      .def("RunFieldCalculationPolar", &mie_typed::RunFieldCalculationPolar)
+      .def("GetPECLayer", &mie_typed::GetPECLayer)
+
       .def("SetLayersSize", static_cast<
                void (mie_typed::*)
                    (const py::array_t<double, py::array::c_style | py::array::forcecast>&)>
@@ -36,6 +43,15 @@ void declare_nmie(py::module &m, std::string &typestr) {
                    (const py::array_t<double, py::array::c_style | py::array::forcecast>&)>
            (&mie_typed::SetAngles)
       )
+      .def("SetFieldCoords", static_cast<
+               void (mie_typed::*)
+                   (
+                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,
+                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Yp,
+                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Zp
+                   )>
+           (&mie_typed::SetFieldCoords)
+      )
       .def("GetQext", &mie_typed::GetQext<double>)
       .def("GetQsca", &mie_typed::GetQsca<double>)
       .def("GetQabs", &mie_typed::GetQabs<double>)
@@ -45,6 +61,10 @@ void declare_nmie(py::module &m, std::string &typestr) {
       .def("GetAlbedo", &mie_typed::GetAlbedo<double>)
       .def("GetS1", &mie_typed::GetS1<double>)
       .def("GetS2", &mie_typed::GetS2<double>)
+      .def("GetAn", &mie_typed::GetAn<double>)
+      .def("GetBn", &mie_typed::GetBn<double>)
+      .def("GetFieldE", &mie_typed::GetFieldE<double>)
+      .def("GetFieldH", &mie_typed::GetFieldH<double>)
       ;
 }
 
@@ -60,15 +80,8 @@ PYBIND11_MODULE(scattnlay_dp, m)
   m.doc() = "The Python version of scattnlay";
   declare_nmie<nmie::FloatType>(m, precision_name);
 
-  m.def("scattcoeffs", &py_ScattCoeffs,
-        "Calculate the scattering coefficients, required to calculate both the near- and far-field parameters.",
-        py::arg("x"), py::arg("m"), py::arg("nmax") = -1, py::arg("pl") = -1);
-
   m.def("expancoeffs", &py_ExpanCoeffs,
         "Calculate the expansion coefficients, required to calculate the near-field parameters.",
         py::arg("x"), py::arg("m"), py::arg("nmax") = -1, py::arg("pl") = -1);
-
-    m.def("fieldnlay", &py_fieldnlay,
-        "Calculate the complex electric and magnetic field in the surroundings and inside the particle.",
-        py::arg("x"), py::arg("m"), py::arg("xp"), py::arg("yp"), py::arg("zp"), py::arg("nmax") = -1, py::arg("pl") = -1);
 }
+

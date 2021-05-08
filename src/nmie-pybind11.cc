@@ -40,44 +40,6 @@
 namespace py = pybind11;
 
 
-// https://stackoverflow.com/questions/17294629/merging-flattening-sub-vectors-into-a-single-vector-c-converting-2d-to-1d
-template <typename T>
-std::vector<T> flatten(const std::vector<std::vector<T>> &v) {
-    std::size_t total_size = 0;
-    for (const auto &sub : v)
-        total_size += sub.size(); // I wish there was a transform_accumulate
-    std::vector<T> result;
-    result.reserve(total_size);
-    for (const auto &sub : v)
-        result.insert(result.end(), sub.begin(), sub.end());
-    return result;
-}
-
-
-template <typename T>
-py::array Vector2DComplex2Py(const std::vector<std::vector<T > > &x) {
-  size_t dim1 = x.size();
-  size_t dim2 = x[0].size();
-  auto result = flatten(x);
-  // https://github.com/tdegeus/pybind11_examples/blob/master/04_numpy-2D_cpp-vector/example.cpp
-  size_t              ndim    = 2;
-  std::vector<size_t> shape   = {dim1, dim2};
-  std::vector<size_t> strides = {sizeof(T)*dim2, sizeof(T)};
-
-  // return 2-D NumPy array
-  return py::array(py::buffer_info(
-    result.data(),                       /* data as contiguous array  */
-    sizeof(T),                           /* size of one scalar        */
-    py::format_descriptor<T>::format(),  /* data type                 */
-    ndim,                                /* number of dimensions      */
-    shape,                               /* shape of the matrix       */
-    strides                              /* strides for each axis     */
-  ));
-}
-
-
-
-
 py::tuple py_ScattCoeffs(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
                          const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
                          const int nmax=-1, const int pl=-1) {
@@ -110,30 +72,3 @@ py::tuple py_ExpanCoeffs(const py::array_t<double, py::array::c_style | py::arra
 
   return py::make_tuple(terms, Vector2DComplex2Py(c_an), Vector2DComplex2Py(c_bn), Vector2DComplex2Py(c_cn), Vector2DComplex2Py(c_dn));
 }
-
-
-py::tuple py_fieldnlay(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_x,
-                       const py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> &py_m,
-                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,
-                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Yp,
-                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Zp,
-                       const int nmax=-1, const int pl=-1) {
-
-  auto c_x = Py2Vector<double>(py_x);
-  auto c_m = Py2Vector< std::complex<double> >(py_m);
-  auto c_Xp = Py2Vector<double>(py_Xp);
-  auto c_Yp = Py2Vector<double>(py_Yp);
-  auto c_Zp = Py2Vector<double>(py_Zp);
-  unsigned int ncoord = py_Xp.size();
-  std::vector<std::vector<std::complex<double> > > E(ncoord);
-  std::vector<std::vector<std::complex<double> > > H(ncoord);
-  for (auto &f : E) f.resize(3);
-  for (auto &f : H) f.resize(3);
-  int L = py_x.size(), terms;
-  terms = nmie::nField(L, pl, c_x, c_m, nmax, nmie::Modes::kAll, nmie::Modes::kAll, ncoord, c_Xp, c_Yp, c_Zp, E, H);
-  auto py_E = Vector2DComplex2Py<std::complex<double> >(E);
-  auto py_H = Vector2DComplex2Py<std::complex<double> >(H);
-  return py::make_tuple(terms, py_E, py_H);
-}
-
-

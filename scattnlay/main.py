@@ -32,6 +32,25 @@
 
 import numpy as np
 
+
+def scattcoeffs_(x, m, nmax=-1, pl=-1, mp=False):
+    if mp:
+        from scattnlay_mp import mie_mp as mie_
+    else:
+        # from scattnlay_dp import mie_dp as mie_
+        from scattnlay_mp import mie_mp as mie_
+    mie = mie_()
+    mie.SetLayersSize(x)
+    mie.SetLayersIndex(m)
+    mie.SetPECLayer(pl)
+    mie.SetMaxTerms(nmax)
+    mie.calcScattCoeffs()
+    terms = mie.GetMaxTerms()
+    a = mie.GetAn()
+    b = mie.GetBn()
+    return terms, a, b
+
+
 def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     """
     scattcoeffs(x, m[, nmax, pl, mp])
@@ -53,16 +72,11 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
         an, bn: Complex scattering coefficients
     """
 
-    if mp:
-        from scattnlay_mp import scattcoeffs as scattcoeffs_
-    else:
-        from scattnlay_dp import scattcoeffs as scattcoeffs_
-
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return scattcoeffs_(x, m, nmax=nmax, pl=pl)
+            return scattcoeffs_(x, m, nmax=nmax, pl=pl, mp=mp)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -82,7 +96,7 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     bn = np.zeros((0, nstore), dtype=complex)
 
     for i, xi in enumerate(x):
-        terms[i], a, b = scattcoeffs_(xi, m[i], nmax=nmax, pl=pl)
+        terms[i], a, b = scattcoeffs_(xi, m[i], nmax=nmax, pl=pl, mp=mp)
 
         if terms[i] > nstore:
             nstore = terms[i]
@@ -220,7 +234,7 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return scattnlay_(x, m, theta, nmax=nmax, pl=pl)
+            return scattnlay_(x, m, theta, nmax=nmax, pl=pl, mp=mp)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -248,6 +262,25 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 #scattnlay()
+
+
+def fieldnlay_(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
+    if mp:
+        from scattnlay_mp import mie_mp as mie_
+    else:
+        from scattnlay_dp import mie_dp as mie_
+        # from scattnlay_mp import mie_mp as mie_
+    mie = mie_()
+    mie.SetLayersSize(x)
+    mie.SetLayersIndex(m)
+    mie.SetPECLayer(pl)
+    mie.SetMaxTerms(nmax)
+    mie.SetFieldCoords(xp, yp, zp)
+    mie.RunFieldCalculation()
+    terms = mie.GetMaxTerms()
+    E = mie.GetFieldE()
+    H = mie.GetFieldH()
+    return terms, E, H
 
 
 def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
@@ -278,16 +311,12 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
            (or structure) and correct it for the following ones
     """
 
-    if mp:
-        from scattnlay_mp import fieldnlay as fieldnlay_
-    else:
-        from scattnlay_dp import fieldnlay as fieldnlay_
 
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return fieldnlay_(x, m, xp, yp, zp, nmax=nmax, pl=pl)
+            return fieldnlay_(x, m, xp, yp, zp, nmax=nmax, pl=pl, mp=mp)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -304,7 +333,7 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     for i, xi in enumerate(x):
         # (2020/05/12) We assume that the coordinates are referred to the first wavelength
         #              (or structure) and correct it for the following ones
-        terms[i], E[i], H[i] = fieldnlay_(xi, m[i], xp*xi[-1]/x[0, -1], yp*xi[-1]/x[0, -1], zp*xi[-1]/x[0, -1], nmax=nmax, pl=pl)
+        terms[i], E[i], H[i] = fieldnlay_(xi, m[i], xp*xi[-1]/x[0, -1], yp*xi[-1]/x[0, -1], zp*xi[-1]/x[0, -1], nmax=nmax, pl=pl, mp=mp)
 
     return terms, E, H
 #fieldnlay()

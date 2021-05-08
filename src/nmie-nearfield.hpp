@@ -408,9 +408,8 @@ namespace nmie {
     convertFieldsFromSphericalToCartesian();
   }  //  end of MultiLayerMie::RunFieldCalculation()
 
-
 template <typename FloatType>
-double eval_delta(const int steps, const double from_value, const double to_value) {
+double eval_delta(const unsigned int steps, const double from_value, const double to_value) {
   auto delta = std::abs(from_value - to_value);
   if (steps < 2) return delta;
   delta /= static_cast<double>(steps-1);
@@ -461,15 +460,15 @@ void MultiLayerMie<FloatType>::calcMieSeriesNeededToConverge(const FloatType Rho
 
 
 template <typename FloatType>
-void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const FloatType from_Rho, const FloatType to_Rho,
+void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const double from_Rho, const double to_Rho,
                                                                 const bool isIgnoreAvailableNmax,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &Psi,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &D1n,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &Zeta,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &D3n) {
-  unsigned int radius_points = Psi.size();
+  auto radius_points = Psi.size();
   std::vector<std::vector<std::complex<FloatType> > > PsiZeta(radius_points);
-  double delta_Rho = eval_delta<FloatType>(radius_points, from_Rho, to_Rho);
+  double delta_Rho = eval_delta<double>(radius_points, from_Rho, to_Rho);
   for (unsigned int j=0; j < radius_points; j++) {
     auto Rho = static_cast<FloatType>(from_Rho + j*delta_Rho);
 //    if (Rho < 1e-5) Rho = 1e-5; // TODO do we need this?.
@@ -518,9 +517,9 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
   calcRadialOnlyDependantFunctions(from_Rho, to_Rho, isIgnoreAvailableNmax,
                                    Psi, D1n, Zeta, D3n);
 
-  double delta_Rho = eval_delta<FloatType>(radius_points, from_Rho, to_Rho);
-  double delta_Theta = eval_delta<FloatType>(outer_arc_points, from_Theta, to_Theta);
-  double delta_Phi = eval_delta<FloatType>(radius_points, from_Phi, to_Phi);
+  double delta_Rho = eval_delta<double>(radius_points, from_Rho, to_Rho);
+  double delta_Theta = eval_delta<double>(outer_arc_points, from_Theta, to_Theta);
+  double delta_Phi = eval_delta<double>(radius_points, from_Phi, to_Phi);
   Es_.clear(); Hs_.clear(); coords_polar_.clear();
   for (int j=0; j < radius_points; j++) {
     auto Rho = static_cast<FloatType>(from_Rho + j * delta_Rho);
@@ -542,5 +541,9 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
   convertFieldsFromSphericalToCartesian();
 
 }
+
+// Python interface
+
+
 }  // end of namespace nmie
 #endif  // SRC_NMIE_NEARFIELD_HPP_

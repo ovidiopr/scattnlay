@@ -163,14 +163,7 @@ namespace nmie {
       throw std::invalid_argument("You should run calculations before result request!");
     return S2_;
   }
-template <typename FloatType> template <typename outputType>
-py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetS1() {
-  return VectorComplex2Py<FloatType,outputType>(GetS1());
-}
-template <typename FloatType> template <typename outputType>
-py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetS2() {
-  return VectorComplex2Py<FloatType,outputType>(GetS2());
-}
+
 
 
 // ********************************************************************** //
@@ -247,30 +240,6 @@ py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetS2() {
     MarkUncalculated();
     nmax_preset_ = nmax;
   }
-
-  // Python interface
-  template <typename FloatType>
-  template <typename inputType>
-  void MultiLayerMie<FloatType>::SetLayersSize(
-      const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_layer_size) {
-    auto layer_size_dp = Py2Vector<inputType>(py_layer_size);
-    SetLayersSize(ConvertVector<FloatType>(layer_size_dp));
-  }
-
-  template <typename FloatType>
-  template <typename inputType>
-  void MultiLayerMie<FloatType>::SetLayersIndex(
-      const py::array_t<std::complex<inputType>, py::array::c_style | py::array::forcecast> &py_index) {
-    auto index_dp = Py2Vector<std::complex<inputType> >(py_index);
-    SetLayersIndex(ConvertComplexVector<FloatType>(index_dp));
-  }
-
- template <typename FloatType>
- template <typename inputType>
- void MultiLayerMie<FloatType>::SetAngles(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_angles) {
-   auto angles_dp = Py2Vector<inputType>(py_angles);
-   SetAngles(ConvertVector<FloatType>(angles_dp));
- }
 
 // ********************************************************************** //
   // Get total size parameter of particle                                   //
@@ -489,10 +458,10 @@ py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetS2() {
   void MultiLayerMie<FloatType>::calcPiTauAllTheta(const double from_Theta, const double to_Theta,
                                                    std::vector<std::vector<FloatType> > &Pi,
                                                    std::vector<std::vector<FloatType> > &Tau) {
-    auto perimeter_points = Pi.size();
+    const unsigned int perimeter_points = Pi.size();
     for (auto &val:Pi) val.resize(available_maximal_nmax_);
     for (auto &val:Tau) val.resize(available_maximal_nmax_);
-    double delta_Theta = eval_delta<FloatType>(perimeter_points, from_Theta, to_Theta);
+    double delta_Theta = eval_delta<double>(perimeter_points, from_Theta, to_Theta);
     for (unsigned int i=0; i < perimeter_points; i++) {
       auto Theta = static_cast<FloatType>(from_Theta + i*delta_Theta);
       // Calculate angular functions Pi and Tau
@@ -899,6 +868,74 @@ py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetS2() {
     Qbk_ = (Qbktmp.real()*Qbktmp.real() + Qbktmp.imag()*Qbktmp.imag())/x2;    // Equation (33)
 
     isMieCalculated_ = true;
+  }
+
+  // Python interface
+  template <typename FloatType> template <typename inputType>
+  void MultiLayerMie<FloatType>::SetLayersSize(
+      const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_layer_size) {
+    auto layer_size_dp = Py2Vector<inputType>(py_layer_size);
+    SetLayersSize(ConvertVector<FloatType>(layer_size_dp));
+  }
+
+  template <typename FloatType> template <typename inputType>
+  void MultiLayerMie<FloatType>::SetLayersIndex(
+      const py::array_t<std::complex<inputType>, py::array::c_style | py::array::forcecast> &py_index) {
+    auto index_dp = Py2Vector<std::complex<inputType> >(py_index);
+    SetLayersIndex(ConvertComplexVector<FloatType>(index_dp));
+  }
+
+  template <typename FloatType> template <typename inputType>
+  void MultiLayerMie<FloatType>::SetAngles(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_angles) {
+    auto angles_dp = Py2Vector<inputType>(py_angles);
+    SetAngles(ConvertVector<FloatType>(angles_dp));
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetS1() {
+    return VectorComplex2Py<FloatType,outputType>(GetS1());
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetS2() {
+    return VectorComplex2Py<FloatType,outputType>(GetS2());
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetAn() {
+    return VectorComplex2Py<FloatType,outputType>(GetAn());
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetBn() {
+    return VectorComplex2Py<FloatType,outputType>(GetBn());
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetFieldE() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetFieldE())
+    );
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetFieldH() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetFieldH())
+    );
+  }
+
+  template <typename FloatType>
+  void MultiLayerMie<FloatType>::SetFieldCoords(
+      const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,
+      const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Yp,
+      const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Zp) {
+    auto c_Xp = Py2Vector<double>(py_Xp);
+    auto c_Yp = Py2Vector<double>(py_Yp);
+    auto c_Zp = Py2Vector<double>(py_Zp);
+    SetFieldCoords({ConvertVector<FloatType>(c_Xp),
+                    ConvertVector<FloatType>(c_Yp),
+                    ConvertVector<FloatType>(c_Zp) });
   }
 
 }  // end of namespace nmie

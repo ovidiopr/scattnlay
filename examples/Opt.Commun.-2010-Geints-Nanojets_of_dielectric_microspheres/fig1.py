@@ -31,8 +31,7 @@
 #    along with this program.  If not, see <http:#www.gnu.org/licenses/>.
 
 import scattnlay
-from scattnlay import fieldnlay
-from scattnlay import scattnlay
+from scattnlay import fieldnlay, scattnlay, scattcoeffs, expancoeffs
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -40,7 +39,7 @@ import inspect
 print("Using scattnlay from ", inspect.getfile(scattnlay))
 
 npts = 351
-# npts = 51
+# npts = 11
 factor = 3 # plot extent compared to sphere radius
 index_H2O = 1.33+(1e-6)*1j
 
@@ -67,8 +66,12 @@ print("   Qsca = " + str(Qsca)+" terms = "+str(terms))
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
     np.array([x]), np.array([m]), mp=True)
 print("mp Qsca = " + str(Qsca)+" terms = "+str(terms))
-exit(1)
 
+terms, a,b = scattcoeffs(np.array([x]), np.array([m]))
+print(a)
+print(b)
+
+exit(1)
 scan = np.linspace(-factor*x[-1], factor*x[-1], npts)
 zero = np.zeros(npts*npts, dtype = np.float64)
 

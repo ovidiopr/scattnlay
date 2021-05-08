@@ -37,8 +37,11 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/complex.h>
+
 #include "nmie-precision.hpp"
 #ifdef MULTI_PRECISION
 #include <boost/math/constants/constants.hpp>
@@ -53,13 +56,48 @@ std::vector<T> Py2Vector(const py::array_t<T> &py_x) {
 }
 
 template <typename inputType=double, typename outputType=double>
-py::array_t< std::complex<outputType>> VectorComplex2Py(const std::vector<std::complex<inputType> > &c_f) {
-  auto c_x = nmie::ConvertComplexVector<outputType, inputType>(c_f);
+py::array_t< std::complex<outputType>> VectorComplex2Py(const std::vector<std::complex<inputType> > &cf_x) {
+  auto c_x = nmie::ConvertComplexVector<outputType, inputType>(cf_x);
   auto py_x = py::array_t< std::complex<outputType>>(c_x.size());
   auto py_x_buffer = py_x.request();
   auto *py_x_ptr = (std::complex<outputType> *) py_x_buffer.ptr;
   std::memcpy(py_x_ptr, c_x.data(), c_x.size()*sizeof(std::complex<outputType>));
   return py_x;
+}
+
+// https://stackoverflow.com/questions/17294629/merging-flattening-sub-vectors-into-a-single-vector-c-converting-2d-to-1d
+template <typename T>
+std::vector<T> flatten(const std::vector<std::vector<T>> &v) {
+  std::size_t total_size = 0;
+  for (const auto &sub : v)
+    total_size += sub.size(); // I wish there was a transform_accumulate
+  std::vector<T> result;
+  result.reserve(total_size);
+  for (const auto &sub : v)
+    result.insert(result.end(), sub.begin(), sub.end());
+  return result;
+}
+
+
+template <typename T>
+py::array Vector2DComplex2Py(const std::vector<std::vector<T > > &x) {
+  size_t dim1 = x.size();
+  size_t dim2 = x[0].size();
+  auto result = flatten(x);
+  // https://github.com/tdegeus/pybind11_examples/blob/master/04_numpy-2D_cpp-vector/example.cpp
+  size_t              ndim    = 2;
+  std::vector<size_t> shape   = {dim1, dim2};
+  std::vector<size_t> strides = {sizeof(T)*dim2, sizeof(T)};
+
+  // return 2-D NumPy array
+  return py::array(py::buffer_info(
+      result.data(),                       /* data as contiguous array  */
+      sizeof(T),                           /* size of one scalar        */
+      py::format_descriptor<T>::format(),  /* data type                 */
+      ndim,                                /* number of dimensions      */
+      shape,                               /* shape of the matrix       */
+      strides                              /* strides for each axis     */
+  ));
 }
 
 namespace nmie {
@@ -79,7 +117,7 @@ namespace nmie {
 
 //helper functions
 template <typename FloatType>
-double eval_delta(const int steps, const double from_value, const double to_value);
+double eval_delta(const unsigned int steps, const double from_value, const double to_value);
 
 
 template<class T> inline T pow2(const T value) {return value*value;}
@@ -186,6 +224,8 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
 
     std::vector<std::complex<FloatType> > GetAn(){return an_;};
     std::vector<std::complex<FloatType> > GetBn(){return bn_;};
+    template <typename outputType> py::array_t< std::complex<outputType>>  GetAn();
+    template <typename outputType> py::array_t< std::complex<outputType>>  GetBn();
 
     std::vector< std::vector<std::complex<FloatType> > > GetLayerAn(){return aln_;};
     std::vector< std::vector<std::complex<FloatType> > > GetLayerBn(){return bln_;};
@@ -209,6 +249,9 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     void SetAngles(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_angles);
     // Modify coordinates for field calculation
     void SetFieldCoords(const std::vector< std::vector<FloatType> > &coords);
+    void SetFieldCoords(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,
+                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Yp,
+                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Zp);
     // Modify index of PEC layer
     void SetPECLayer(int layer_position = 0);
     // Modify the mode taking into account for evaluation of output variables
@@ -240,6 +283,9 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
 
     std::vector<std::vector< std::complex<FloatType> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<FloatType> > > GetFieldH(){return H_;};
+    template <typename outputType> py::array GetFieldE();
+    template <typename outputType> py::array GetFieldH();
+
     // Get fields in spherical coordinates.
     std::vector<std::vector< std::complex<FloatType> > > GetFieldEs(){return E_;};   // {rho[], teha[], phi[]}
     std::vector<std::vector< std::complex<FloatType> > > GetFieldHs(){return H_;};
@@ -320,8 +366,8 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
                            const double to_Theta,
                            std::vector<std::vector<FloatType>> &Pi,
                            std::vector<std::vector<FloatType>> &Tau);
-    void calcRadialOnlyDependantFunctions(const FloatType from_Rho,
-                                          const FloatType to_Rho,
+    void calcRadialOnlyDependantFunctions(const double from_Rho,
+                                          const double to_Rho,
                                           const bool isIgnoreAvailableNmax,
                                           std::vector<std::vector<std::complex<FloatType>>> &Psi,
                                           std::vector<std::vector<std::complex<FloatType>>> &D1n,
