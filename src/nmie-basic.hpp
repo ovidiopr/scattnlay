@@ -525,33 +525,36 @@ namespace nmie {
   // Output parameters:                                                               //
   //   Mo1n, Me1n, No1n, Ne1n: Complex vector spherical harmonics                     //
   //**********************************************************************************//
-  template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcSpherHarm(const std::complex<FloatType> Rho, const FloatType Theta, const FloatType Phi,
-                                    const std::complex<FloatType> &rn, const std::complex<FloatType> &Dn,
-                                    const FloatType &Pi, const FloatType &Tau, const FloatType &n,
-                                    std::vector<std::complex<FloatType> > &Mo1n, std::vector<std::complex<FloatType> > &Me1n,
-                                    std::vector<std::complex<FloatType> > &No1n, std::vector<std::complex<FloatType> > &Ne1n) {
+  template <typename FloatType>  template <typename evalType>
+  void MultiLayerMie<FloatType>::calcSpherHarm(const std::complex<evalType> Rho, const evalType Theta, const evalType Phi,
+                                    const std::complex<evalType> &rn, const std::complex<evalType> &Dn,
+                                    const evalType &Pi, const evalType &Tau, const evalType &n,
+                                    std::vector<std::complex<evalType> > &Mo1n, std::vector<std::complex<evalType> > &Me1n,
+                                    std::vector<std::complex<evalType> > &No1n, std::vector<std::complex<evalType> > &Ne1n) {
 
     // using eq 4.50 in BH
-    std::complex<FloatType> c_zero(0.0, 0.0);
+    std::complex<evalType> c_zero(0.0, 0.0);
 
     using nmm::sin;
     using nmm::cos;
+    auto sin_Phi = sin(Phi);
+    auto cos_Phi = cos(Phi);
+    auto sin_Theta = sin(Theta);
     Mo1n[0] = c_zero;
-    Mo1n[1] = cos(Phi)*Pi*rn/Rho;
-    Mo1n[2] = -sin(Phi)*Tau*rn/Rho;
+    Mo1n[1] = cos_Phi*Pi*rn/Rho;
+    Mo1n[2] = -sin_Phi*Tau*rn/Rho;
 
     Me1n[0] = c_zero;
-    Me1n[1] = -sin(Phi)*Pi*rn/Rho;
-    Me1n[2] = -cos(Phi)*Tau*rn/Rho;
+    Me1n[1] = -sin_Phi*Pi*rn/Rho;
+    Me1n[2] = -cos_Phi*Tau*rn/Rho;
 
-    No1n[0] = sin(Phi)*(n*n + n)*sin(Theta)*Pi*rn/Rho/Rho;
-    No1n[1] = sin(Phi)*Tau*Dn*rn/Rho;
-    No1n[2] = cos(Phi)*Pi*Dn*rn/Rho;
+    No1n[0] = sin_Phi*(n*n + n)*sin_Theta*Pi*rn/Rho/Rho;
+    No1n[1] = sin_Phi*Tau*Dn*rn/Rho;
+    No1n[2] = cos_Phi*Pi*Dn*rn/Rho;
 
-    Ne1n[0] = cos(Phi)*(n*n + n)*sin(Theta)*Pi*rn/Rho/Rho;
-    Ne1n[1] = cos(Phi)*Tau*Dn*rn/Rho;
-    Ne1n[2] = -sin(Phi)*Pi*Dn*rn/Rho;
+    Ne1n[0] = cos_Phi*(n*n + n)*sin_Theta*Pi*rn/Rho/Rho;
+    Ne1n[1] = cos_Phi*Tau*Dn*rn/Rho;
+    Ne1n[2] = -sin_Phi*Pi*Dn*rn/Rho;
   }  // end of MultiLayerMie::calcSpherHarm(...)
 
 

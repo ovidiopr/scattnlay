@@ -204,7 +204,7 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
                                   const double from_Rho=0, const double to_Rho=static_cast<double>(1.),
                                   const double from_Theta=0, const double to_Theta=static_cast<double>(3.14159265358979323),
                                   const double from_Phi=0, const double to_Phi=static_cast<double>(3.14159265358979323),
-                                  const bool isIgnoreAvailableNmax = true); // TODO change to false for production
+                                  const bool isIgnoreAvailableNmax = false);
 
     void calcScattCoeffs();
     void calcExpanCoeffs();
@@ -245,8 +245,9 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     void SetLayersIndex(const std::vector< std::complex<FloatType> > &index);
     template <typename inputType>
     void SetLayersIndex(const py::array_t<std::complex<inputType>, py::array::c_style | py::array::forcecast> &py_index);
-    void GetIndexAtRadius(const FloatType Rho, std::complex<FloatType> &ml, unsigned int &l);
-    void GetIndexAtRadius(const FloatType Rho, std::complex<FloatType> &ml);
+
+    template <typename evalType=FloatType> void GetIndexAtRadius(const evalType Rho, std::complex<evalType> &ml, unsigned int &l);
+    template <typename evalType=FloatType> void GetIndexAtRadius(const evalType Rho, std::complex<evalType> &ml);
     // Modify scattering (theta) py_angles
     void SetAngles(const std::vector<FloatType> &py_angles);
     template <typename inputType>
@@ -328,21 +329,23 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
                      std::vector<std::complex<FloatType> > &Zeta);
     void calcPiTau(const FloatType &costheta,
                    std::vector<FloatType> &Pi, std::vector<FloatType> &Tau);
-    void calcSpherHarm(const std::complex<FloatType> Rho, const FloatType Theta, const FloatType Phi,
-                       const std::complex<FloatType> &rn, const std::complex<FloatType> &Dn,
-                       const FloatType &Pi, const FloatType &Tau, const FloatType &n,
-                       std::vector<std::complex<FloatType> > &Mo1n, std::vector<std::complex<FloatType> > &Me1n,
-                       std::vector<std::complex<FloatType> > &No1n, std::vector<std::complex<FloatType> > &Ne1n);
+    template <typename evalType=FloatType>
+    void calcSpherHarm(const std::complex<evalType> Rho, const evalType Theta, const evalType Phi,
+                       const std::complex<evalType> &rn, const std::complex<evalType> &Dn,
+                       const evalType &Pi, const evalType &Tau, const evalType &n,
+                       std::vector<std::complex<evalType> > &Mo1n, std::vector<std::complex<evalType> > &Me1n,
+                       std::vector<std::complex<evalType> > &No1n, std::vector<std::complex<evalType> > &Ne1n);
 
-    void calcFieldByComponents(const FloatType Rho, const FloatType Theta, const FloatType Phi,
-                               const std::vector<std::complex<FloatType> > &Psi,
-                               const std::vector<std::complex<FloatType> > &D1n,
-                               const std::vector<std::complex<FloatType> > &Zeta,
-                               const std::vector<std::complex<FloatType> > &D3n,
-                               const std::vector<FloatType> &Pi,
-                               const std::vector<FloatType> &Tau,
-                               std::vector<std::complex<FloatType> > &E,
-                               std::vector<std::complex<FloatType> > &H);
+    template <typename evalType=FloatType>
+    void calcFieldByComponents(const evalType Rho, const evalType Theta, const evalType Phi,
+                               const std::vector<std::complex<evalType> > &Psi,
+                               const std::vector<std::complex<evalType> > &D1n,
+                               const std::vector<std::complex<evalType> > &Zeta,
+                               const std::vector<std::complex<evalType> > &D3n,
+                               const std::vector<evalType> &Pi,
+                               const std::vector<evalType> &Tau,
+                               std::vector<std::complex<evalType> > &E,
+                               std::vector<std::complex<evalType> > &H);
 
     bool isExpCoeffsCalc_ = false;
     bool isScaCoeffsCalc_ = false;

@@ -31,11 +31,17 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
+from scattnlay_mp import mie_mp as mie_mp_
+from scattnlay_dp import mie_dp
+
+mie = mie_dp()
+mie_mp = mie_mp_()
+
 def scattcoeffs_(x, m, nmax=-1, pl=-1, mp=False):
     if mp:
         from scattnlay_mp import mie_mp as mie_
     else:
-        from scattnlay3 import mie_dp as mie_
+        from scattnlay_dp import mie_dp as mie_
         # from scattnlay_mp import mie_mp as mie_
     mie = mie_()
     mie.SetLayersSize(x)

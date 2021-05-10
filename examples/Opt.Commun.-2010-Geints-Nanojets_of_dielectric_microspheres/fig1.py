@@ -40,11 +40,11 @@ print("Using scattnlay from ", inspect.getfile(scattnlay))
 
 npts = 351
 # npts = 11
-factor = 3 # plot extent compared to sphere radius
+factor = 2 # plot extent compared to sphere radius
 index_H2O = 1.33+(1e-6)*1j
 
 WL = 0.532 #mkm
-total_r = 1 #mkm
+total_r = 125 #mkm
 isMP = False
 # isMP = True
 
@@ -89,14 +89,14 @@ Er = np.absolute(Ec)
 Eabs2 = (Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
 Eabs_data = np.resize(Eabs2, (npts, npts))
 label = r'$|E|^2$'
-pos = plt.imshow(Eabs_data,
+pos = plt.imshow(Eabs_data.T,
            cmap='gnuplot',
                  # cmap='jet',
            vmin=0., vmax=14
 
            )
 plt.colorbar(pos)
-print(np.min(Eabs_data), np.max(Eabs_data)," terms = "+str(terms))
+print(np.min(Eabs_data), np.max(Eabs_data)," terms = "+str(terms), ' size=', Eabs_data.size)
 mp = ''
 if isMP: mp = '_mp'
 plt.savefig("R"+str(total_r)+"mkm"+mp+".jpg",

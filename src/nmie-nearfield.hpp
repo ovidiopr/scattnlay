@@ -232,25 +232,25 @@ namespace nmie {
   // Output parameters:                                                               //
   //   E, H: Complex electric and magnetic fields                                     //
   //**********************************************************************************//
-  template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcFieldByComponents(const FloatType Rho,
-                                const FloatType Theta, const FloatType Phi,
-                                const std::vector<std::complex<FloatType> > &Psi,
-                                const std::vector<std::complex<FloatType> > &D1n,
-                                const std::vector<std::complex<FloatType> > &Zeta,
-                                const std::vector<std::complex<FloatType> > &D3n,
-                                const std::vector<FloatType> &Pi,
-                                const std::vector<FloatType> &Tau,
-                                std::vector<std::complex<FloatType> > &E,
-                                std::vector<std::complex<FloatType> > &H)  {
+  template <typename FloatType>  template <typename evalType>
+  void MultiLayerMie<FloatType>::calcFieldByComponents(const evalType Rho,
+                                const evalType Theta, const evalType Phi,
+                                const std::vector<std::complex<evalType> > &Psi,
+                                const std::vector<std::complex<evalType> > &D1n,
+                                const std::vector<std::complex<evalType> > &Zeta,
+                                const std::vector<std::complex<evalType> > &D3n,
+                                const std::vector<evalType> &Pi,
+                                const std::vector<evalType> &Tau,
+                                std::vector<std::complex<evalType> > &E,
+                                std::vector<std::complex<evalType> > &H)  {
     auto nmax = Psi.size() - 1;
-    std::complex<FloatType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
+    std::complex<evalType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
     // Vector containing precomputed integer powers of i to avoid computation
-    std::vector<std::complex<FloatType> > ipow = {c_one, c_i, -c_one, -c_i};
-    std::vector<std::complex<FloatType> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
-    std::vector<std::complex<FloatType> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
+    std::vector<std::complex<evalType> > ipow = {c_one, c_i, -c_one, -c_i};
+    std::vector<std::complex<evalType> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
+    std::vector<std::complex<evalType> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
 
-    std::complex<FloatType> ml;
+    std::complex<evalType> ml;
 
     // Initialize E and H
     for (int i = 0; i < 3; i++) {
@@ -263,16 +263,16 @@ namespace nmie {
 
     for (unsigned int n = 0; n < nmax; n++) {
       int n1 = n + 1;
-      auto rn = static_cast<FloatType>(n1);
+      auto rn = static_cast<evalType>(n1);
 
       // using BH 4.12 and 4.50
       calcSpherHarm(Rho*ml, Theta, Phi, Psi[n1], D1n[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
       calcSpherHarm(Rho*ml, Theta, Phi, Zeta[n1], D3n[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
 
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
-      std::complex<FloatType> En = ipow[n1 % 4]
-      *static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
-      std::complex<FloatType> Ediff, Hdiff;
+      std::complex<evalType> En = ipow[n1 % 4]
+      *static_cast<evalType>((rn + rn + 1.0)/(rn*rn + rn));
+      std::complex<evalType> Ediff, Hdiff;
       for (int i = 0; i < 3; i++) {
         Ediff = En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
                          + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
@@ -318,7 +318,7 @@ namespace nmie {
     }  // end of for all n
 
     // magnetic field
-    std::complex<FloatType> hffact = ml/static_cast<FloatType>(cc_*mu_);
+    std::complex<evalType> hffact = ml/static_cast<evalType>(cc_*mu_);
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
     }
@@ -422,9 +422,9 @@ double eval_delta(const unsigned int steps, const double from_value, const doubl
 
 // ml - refractive index
 // l - Layer number
-template <typename FloatType>
-void MultiLayerMie<FloatType>::GetIndexAtRadius(const FloatType Rho,
-                                                std::complex<FloatType> &ml,
+template <typename FloatType> template <typename evalType>
+void MultiLayerMie<FloatType>::GetIndexAtRadius(const evalType Rho,
+                                                std::complex<evalType> &ml,
                                                 unsigned int &l) {
   l = 0;
   if (Rho > size_param_.back()) {
@@ -439,9 +439,9 @@ void MultiLayerMie<FloatType>::GetIndexAtRadius(const FloatType Rho,
     ml = refractive_index_[l];
   }
 }
-template <typename FloatType>
-void MultiLayerMie<FloatType>::GetIndexAtRadius(const FloatType Rho,
-                                                std::complex<FloatType> &ml) {
+template <typename FloatType> template <typename evalType>
+void MultiLayerMie<FloatType>::GetIndexAtRadius(const evalType Rho,
+                                                std::complex<evalType> &ml) {
   unsigned int l;
   GetIndexAtRadius(Rho, ml, l);
 }
@@ -506,10 +506,19 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
       || outer_arc_points < 1 || radius_points < 1
       || from_Rho < 0.)
     throw std::invalid_argument("Error! Invalid argument for RunFieldCalculationPolar() !");
-
+  int theta_points = 0, phi_points = 0;
+  if (to_Theta-from_Theta > to_Phi-from_Phi) {
+    theta_points = outer_arc_points;
+    phi_points =  static_cast<int>((to_Phi-from_Phi)/(to_Theta-from_Theta) * outer_arc_points);
+  } else {
+    phi_points = outer_arc_points;
+    theta_points =  static_cast<int>((to_Theta-from_Theta)/(to_Phi-from_Phi) * outer_arc_points);
+  }
+  if (theta_points == 0) theta_points = 1;
+  if (phi_points == 0) phi_points = 1;
   calcMieSeriesNeededToConverge(to_Rho);
 
-  std::vector<std::vector<FloatType> >  Pi(outer_arc_points), Tau(outer_arc_points);
+  std::vector<std::vector<FloatType> >  Pi(theta_points), Tau(theta_points);
   calcPiTauAllTheta(from_Theta, to_Theta, Pi, Tau);
 
   std::vector<std::vector<std::complex<FloatType> > > Psi(radius_points), D1n(radius_points),
@@ -518,8 +527,8 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
                                    Psi, D1n, Zeta, D3n);
 
   double delta_Rho = eval_delta<double>(radius_points, from_Rho, to_Rho);
-  double delta_Theta = eval_delta<double>(outer_arc_points, from_Theta, to_Theta);
-  double delta_Phi = eval_delta<double>(radius_points, from_Phi, to_Phi);
+  double delta_Theta = eval_delta<double>(theta_points, from_Theta, to_Theta);
+  double delta_Phi = eval_delta<double>(phi_points, from_Phi, to_Phi);
   Es_.clear(); Hs_.clear(); coords_polar_.clear();
   for (int j=0; j < radius_points; j++) {
     auto Rho = static_cast<FloatType>(from_Rho + j * delta_Rho);
