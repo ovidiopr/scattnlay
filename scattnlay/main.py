@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 #
-#    Copyright (C) 2009-2019 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
-#    Copyright (C) 2013-2019 Konstantin Ladutenko <kostyfisik@gmail.com>
+#    Copyright (C) 2009-2021 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
+#    Copyright (C) 2013-2021 Konstantin Ladutenko <kostyfisik@gmail.com>
 #
 #    This file is part of scattnlay
 #
@@ -29,8 +29,31 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import numpy as np
+
+from scattnlay_mp import mie_mp as mie_mp_
+from scattnlay_dp import mie_dp
+
+mie = mie_dp()
+mie_mp = mie_mp_()
+
+def scattcoeffs_(x, m, nmax=-1, pl=-1, mp=False):
+    if mp:
+        from scattnlay_mp import mie_mp as mie_
+    else:
+        from scattnlay_dp import mie_dp as mie_
+        # from scattnlay_mp import mie_mp as mie_
+    mie = mie_()
+    mie.SetLayersSize(x)
+    mie.SetLayersIndex(m)
+    mie.SetPECLayer(pl)
+    mie.SetMaxTerms(nmax)
+    mie.calcScattCoeffs()
+    terms = mie.GetMaxTerms()
+    a = mie.GetAn()
+    b = mie.GetBn()
+    return terms, a, b
+
 
 def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     """
@@ -53,16 +76,11 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
         an, bn: Complex scattering coefficients
     """
 
-    if mp:
-        from scattnlay_mp import scattcoeffs as scattcoeffs_
-    else:
-        from scattnlay_dp import scattcoeffs as scattcoeffs_
-
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return scattcoeffs_(x, m, nmax=nmax, pl=pl)
+            return scattcoeffs_(x, m, nmax=nmax, pl=pl, mp=mp)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -82,7 +100,7 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     bn = np.zeros((0, nstore), dtype=complex)
 
     for i, xi in enumerate(x):
-        terms[i], a, b = scattcoeffs_(xi, m[i], nmax=nmax, pl=pl)
+        terms[i], a, b = scattcoeffs_(xi, m[i], nmax=nmax, pl=pl, mp=mp)
 
         if terms[i] > nstore:
             nstore = terms[i]
@@ -93,8 +111,30 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
         bn = np.vstack((bn, b))
 
     return terms, an, bn
-#scattcoeffs()
 
+
+def expancoeffs_(x, m, nmax=-1, pl=-1, mp=False):
+    if mp:
+        from scattnlay_mp import mie_mp as mie_
+    else:
+        from scattnlay_dp import mie_dp as mie_
+        # from scattnlay_mp import mie_mp as mie_
+    mie = mie_()
+    mie.SetLayersSize(x)
+    mie.SetLayersIndex(m)
+    mie.SetPECLayer(pl)
+    mie.SetMaxTerms(nmax)
+    mie.calcScattCoeffs()
+    mie.calcExpanCoeffs()
+    terms = mie.GetMaxTerms()
+    an = mie.GetLayerAn()
+    bn = mie.GetLayerBn()
+    cn = mie.GetLayerCn()
+    dn = mie.GetLayerDn()
+    return terms, an, bn, cn, dn
+
+
+# TODO verify that expancoeffs() is really working
 def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
     """
     expancoeffs(x, m[, nmax, pl, mp])
@@ -115,17 +155,11 @@ def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
         terms: Number of multipolar expansion terms used for the calculations
         an, bn, cn, dn: Complex expansion coefficients of each layer
     """
-
-    if mp:
-        from scattnlay_mp import expancoeffs as expancoeffs_
-    else:
-        from scattnlay_dp import expancoeffs as expancoeffs_
-
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return expancoeffs_(x, m, nmax=nmax, pl=pl)
+            return expancoeffs_(x, m, nmax=nmax, pl=pl, mp=mp)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -141,13 +175,13 @@ def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
         nstore = nmax
 
     terms = np.zeros((x.shape[0]), dtype=int)
-    an = np.zeros((0, x.shape[1], nstore), dtype=complex)
-    bn = np.zeros((0, x.shape[1], nstore), dtype=complex)
-    cn = np.zeros((0, x.shape[1], nstore), dtype=complex)
-    dn = np.zeros((0, x.shape[1], nstore), dtype=complex)
+    an = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
+    bn = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
+    cn = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
+    dn = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
 
     for i, xi in enumerate(x):
-        terms[i], a, b, c, d = expancoeffs_(xi, m[i], nmax=nmax, pl=pl)
+        terms[i], a, b, c, d = expancoeffs_(xi, m[i], nmax=nmax, pl=pl, mp=mp)
 
         if terms[i] > nstore:
             nstore = terms[i]
@@ -156,13 +190,37 @@ def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
             cn.resize((cn.shape[0], cn.shape[1], nstore))
             dn.resize((dn.shape[0], dn.shape[1], nstore))
 
-        an = np.vstack((an, a))
-        bn = np.vstack((bn, b))
-        cn = np.vstack((cn, c))
-        dn = np.vstack((dn, d))
+        an = np.vstack((an, [a]))
+        bn = np.vstack((bn, [b]))
+        cn = np.vstack((cn, [c]))
+        dn = np.vstack((dn, [d]))
 
     return terms, an, bn, cn, dn
-#expancoeffs()
+
+
+def scattnlay_(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
+    if mp:
+        from scattnlay_mp import mie_mp as mie_
+    else:
+        from scattnlay_dp import mie_dp as mie_
+    mie = mie_()
+    mie.SetLayersSize(x)
+    mie.SetLayersIndex(m)
+    mie.SetAngles(theta)
+    mie.SetPECLayer(pl)
+    mie.SetMaxTerms(nmax)
+    mie.RunMieCalculation()
+    Qext =  mie.GetQext()
+    Qsca =  mie.GetQsca()
+    Qabs =  mie.GetQabs()
+    Qbk =  mie.GetQbk()
+    Qpr =  mie.GetQpr()
+    g =  mie.GetAsymmetryFactor()
+    Albedo =  mie.GetAlbedo()
+    terms = mie.GetMaxTerms()
+    S1 = mie.GetS1()
+    S2 = mie.GetS2()
+    return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 
 
 def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
@@ -192,17 +250,11 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
         Albedo: Single scattering albedo (Albedo = Qsca/Qext)
         S1, S2: Complex scattering amplitudes
     """
-
-    if mp:
-        from scattnlay_mp import scattnlay as scattnlay_
-    else:
-        from scattnlay_dp import scattnlay as scattnlay_
-
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return scattnlay_(x, m, theta, nmax=nmax, pl=pl)
+            return scattnlay_(x, m, theta, nmax=nmax, pl=pl, mp=mp)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -226,10 +278,28 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     S2 = np.zeros((x.shape[0], theta.shape[0]), dtype=complex)
 
     for i, xi in enumerate(x):
-        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(xi, m[i], theta, nmax=nmax, pl=pl)
+        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(xi, m[i], theta, nmax=nmax, pl=pl, mp=mp)
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
-#scattnlay()
+
+
+def fieldnlay_(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
+    if mp:
+        from scattnlay_mp import mie_mp as mie_
+    else:
+        from scattnlay_dp import mie_dp as mie_
+        # from scattnlay_mp import mie_mp as mie_
+    mie = mie_()
+    mie.SetLayersSize(x)
+    mie.SetLayersIndex(m)
+    mie.SetPECLayer(pl)
+    mie.SetMaxTerms(nmax)
+    mie.SetFieldCoords(xp, yp, zp)
+    mie.RunFieldCalculation()
+    terms = mie.GetMaxTerms()
+    E = mie.GetFieldE()
+    H = mie.GetFieldH()
+    return terms, E, H
 
 
 def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
@@ -259,17 +329,11 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     *Note: We assume that the coordinates are referred to the first wavelength
            (or structure) and correct it for the following ones
     """
-
-    if mp:
-        from scattnlay_mp import fieldnlay as fieldnlay_
-    else:
-        from scattnlay_dp import fieldnlay as fieldnlay_
-
     if len(m.shape) != 1 and len(m.shape) != 2:
         raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
-            return fieldnlay_(x, m, xp, yp, zp, nmax=nmax, pl=pl)
+            return fieldnlay_(x, m, xp, yp, zp, nmax=nmax, pl=pl, mp=mp)
         else:
             raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
@@ -286,8 +350,7 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     for i, xi in enumerate(x):
         # (2020/05/12) We assume that the coordinates are referred to the first wavelength
         #              (or structure) and correct it for the following ones
-        terms[i], E[i], H[i] = fieldnlay_(xi, m[i], xp*xi[-1]/x[0, -1], yp*xi[-1]/x[0, -1], zp*xi[-1]/x[0, -1], nmax=nmax, pl=pl)
+        terms[i], E[i], H[i] = fieldnlay_(xi, m[i], xp*xi[-1]/x[0, -1], yp*xi[-1]/x[0, -1], zp*xi[-1]/x[0, -1], nmax=nmax, pl=pl, mp=mp)
 
     return terms, E, H
-#fieldnlay()
 

@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     //std::string TiN_filename("Si.txt");
     std::string shell_filename(core_filename);
 
-    nmie::MultiLayerMieApplied<nmie::FloatType> multi_layer_mie;  
+    nmie::MultiLayerMieApplied<nmie::FloatType> multi_layer_mie;
     const std::complex<double> epsilon_Si(18.4631066585, 0.6259727805);
     const std::complex<double> epsilon_Ag(-8.5014154589, 0.7585845411);
     const std::complex<double> index_Si = std::sqrt(epsilon_Si);
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 
     multi_layer_mie.SetWavelength(WL);
     multi_layer_mie.RunMieCalculation();
-    
+
     double Qabs = static_cast<double>(multi_layer_mie.GetQabs());
     printf("Qabs = %g\n", Qabs);
     std::vector< std::vector<std::complex<nmie::FloatType> > > aln, bln, cln, dln;
@@ -110,11 +110,11 @@ int main(int argc, char *argv[]) {
     auto Si_data = Si_index.GetIndex();
     auto Ag_data = Ag_index.GetIndex();
     for (int i=0; i < Si_data.size(); ++i) {
-      const double& WL = Si_data[i].first;
-      const std::complex<double>& Si = Si_data[i].second;
-      const std::complex<double>& Ag = Ag_data[i].second;
+      const double &WL = Si_data[i].first;
+      const std::complex<double> &Si = Si_data[i].second;
+      const std::complex<double> &Ag = Ag_data[i].second;
       str+=std::to_string(WL);
-      multi_layer_mie.ClearTarget();      
+      multi_layer_mie.ClearTarget();
       if (isSiAgSi) {
 	multi_layer_mie.AddTargetLayer(core_width, Si);
 	multi_layer_mie.AddTargetLayer(inner_width, Ag);
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
     return -1;
-  }  
+  }
     return 0;
 }
 

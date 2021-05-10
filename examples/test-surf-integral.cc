@@ -44,12 +44,12 @@ int main(int argc, char *argv[]) {
     //shell.PrintVerts();
     auto points = shell.GetVertices();
     double charge_s = shell.IntegrateGaussSimple(charge, shift);
-    std::cout << "Accuracy ( 1==ideal ): " << charge_s/charge << std::endl; 
-  } catch( const std::invalid_argument& ia ) {
+    std::cout << "Accuracy ( 1==ideal ): " << charge_s/charge << std::endl;
+  } catch( const std::invalid_argument &ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
     return -1;
-  }  
+  }
     return 0;
 }
 

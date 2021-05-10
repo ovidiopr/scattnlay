@@ -7,7 +7,7 @@
  * @copyright 2015 Konstantin Ladutenko
  *
  * @brief  Read complex spectra from file in format 'WL real imag'
- * 
+ *
  * read-spectra is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,7 +20,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with read-spectra.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 #include <vector>
 #include <string>
@@ -29,11 +29,11 @@
 namespace read_spectra {
   class ReadSpectra {  // will throw for any error
    public:
-    ReadSpectra& ReadFromFile(std::string filename);
-    ReadSpectra& ResizeToComplex(double from_wl, double to_wl, int samples);
-    ReadSpectra& ToIndex();
+    ReadSpectra &ReadFromFile(std::string filename);
+    ReadSpectra &ResizeToComplex(double from_wl, double to_wl, int samples);
+    ReadSpectra &ToIndex();
     std::complex<double> at(double wavelength);
-    void PrintData();    
+    void PrintData();
     std::vector< std::pair< double, std::complex<double> > >&
       GetIndex(){return data_complex_index_;};
   private:

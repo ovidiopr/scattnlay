@@ -30,14 +30,14 @@
 #include <string>
 #include <iostream>
 #include "../src/nmie.hpp"
-#include "../src/nmie-impl.hpp"
+#include "../src/nmie-basic.hpp"
 #include "../src/nmie-applied.hpp"
 #include "../src/nmie-applied-impl.hpp"
 #include "../src/shell-generator.hpp"
 int main(int argc, char *argv[]) {
   try {
     const double pi = 3.1415926535897932384626433832795;
-    nmie::MultiLayerMieApplied<double> multi_layer_mie;  
+    nmie::MultiLayerMieApplied<double> multi_layer_mie;
     // const std::complex<double> epsilon_Si(18.4631066585, 0.6259727805);
     //    const std::complex<double> epsilon_Ag(-8.5014154589, 0.7585845411);
     // const std::complex<double> index_Si = std::sqrt(epsilon_Si);
@@ -86,17 +86,17 @@ int main(int argc, char *argv[]) {
 
         auto F = shell.IntegrateGauss(2.54,12.03);
         //std::cout<<"\tcharge:\t" <<F<< std::endl;
-        
+
         // auto F1 = shell.IntegrateByComp();
-        // std::cout<<"F: " <<F1[0]<<", "<< F1[1] <<", "<<F1[2] << std::endl;        
+        // std::cout<<"F: " <<F1[0]<<", "<< F1[1] <<", "<<F1[2] << std::endl;
       }
 
     }  // end for refines
-  } catch( const std::invalid_argument& ia ) {
+  } catch( const std::invalid_argument &ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
     return -1;
-  }  
+  }
     return 0;
 }
 

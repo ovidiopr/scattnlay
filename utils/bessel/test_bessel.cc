@@ -37,7 +37,7 @@ int nmax_ = -1;
 //Temporary variables
 std::vector<std::complex<double> > PsiZeta_;
 
-void calcD1D3(const std::complex<double> z, std::vector<std::complex<double> >& D1, std::vector<std::complex<double> >& D3) {
+void calcD1D3(const std::complex<double> z, std::vector<std::complex<double> > &D1, std::vector<std::complex<double> > &D3) {
     D1[nmax_] = std::complex<double>(0.0, 0.0);
     const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
     for (int n = nmax_; n > 0; n--) {
@@ -59,7 +59,7 @@ void calcD1D3(const std::complex<double> z, std::vector<std::complex<double> >& 
     }
   }
 
-  void calcPsiZeta(std::complex<double> z, std::vector<std::complex<double> >& Psi, std::vector<std::complex<double> >& Zeta) {
+  void calcPsiZeta(std::complex<double> z, std::vector<std::complex<double> > &Psi, std::vector<std::complex<double> > &Zeta) {
     std::complex<double> c_i(0.0, 1.0);
     std::vector<std::complex<double> > D1(nmax_ + 1), D3(nmax_ + 1);
     calcD1D3(z, D1, D3);
@@ -76,7 +76,7 @@ void calcD1D3(const std::complex<double> z, std::vector<std::complex<double> >& 
 
 
 int main(int argc, char *argv[]) {
-  
+
   int n_small = 1, n_big = 15;
   int n = n_big+2, n_print;
   std::complex<double> z_small(0.0012, 0.0034);
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
   for (unsigned int i = 0; i < csj.size(); ++i)
     csh[i] = csj[i]+c_i*csy[i];
   nmie::bessel::calcPsi(n, z, Psi, dPsi);
-  nmie::bessel::calcZeta(n, z, Zeta, dZeta);  
+  nmie::bessel::calcZeta(n, z, Zeta, dZeta);
 
   // n_print = n_small;
   // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_print,
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
   // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
   // 	 csh[n_print].real(), csh[n_print].imag());
   // printf("WA csj  =         e   r        e   i;\n");
-    
+
   n_print = n_small;
   printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
   	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
   for (unsigned int i = 0; i < csj.size(); ++i)
     csh[i] = csj[i]+c_i*csy[i];
   nmie::bessel::calcPsi(n, z, Psi, dPsi);
-  nmie::bessel::calcZeta(n, z, Zeta, dZeta);  
+  nmie::bessel::calcZeta(n, z, Zeta, dZeta);
 
   // n_print = n_small;
   // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_print,
@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
   // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
   // 	 csh[n_print].real(), csh[n_print].imag());
   // printf("WA csj  =         e   r        e   i;\n");
-    
+
   n_print = n_small;
   printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
   	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
@@ -241,7 +241,7 @@ int main(int argc, char *argv[]) {
   for (unsigned int i = 0; i < csj.size(); ++i)
     csh[i] = csj[i]+c_i*csy[i];
   nmie::bessel::calcPsi(n, z, Psi, dPsi);
-  nmie::bessel::calcZeta(n, z, Zeta, dZeta);  
+  nmie::bessel::calcZeta(n, z, Zeta, dZeta);
 
   // n_print = n_small;
   // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_print,
@@ -262,7 +262,7 @@ int main(int argc, char *argv[]) {
   // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
   // 	 csh[n_print].real(), csh[n_print].imag());
   // printf("WA csj  =         e   r        e   i;\n");
-    
+
   n_print = n_small;
   printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
   	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
@@ -309,7 +309,7 @@ int main(int argc, char *argv[]) {
   for (unsigned int i = 0; i < csj.size(); ++i)
     csh[i] = csj[i]+c_i*csy[i];
   nmie::bessel::calcPsi(n, z, Psi, dPsi);
-  nmie::bessel::calcZeta(n, z, Zeta, dZeta);  
+  nmie::bessel::calcZeta(n, z, Zeta, dZeta);
 
   // n_print = n_small;
   // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_print,
@@ -330,7 +330,7 @@ int main(int argc, char *argv[]) {
   // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
   // 	 csh[n_print].real(), csh[n_print].imag());
   // printf("WA csj  =         e   r        e   i;\n");
-    
+
   n_print = n_small;
   printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
   	 Psi[n_print].real(), Psi[n_print].imag(), n_print,
@@ -380,7 +380,7 @@ int main(int argc, char *argv[]) {
   for (unsigned int i = 0; i < csj.size(); ++i)
     csh[i] = csj[i]+c_i*csy[i];
   nmie::bessel::calcPsi(n, z, Psi, dPsi);
-  nmie::bessel::calcZeta(n, z, Zeta, dZeta);  
+  nmie::bessel::calcZeta(n, z, Zeta, dZeta);
 
   // n_print = n_small;
   // printf("csj[%i] = %+10.5er%+10.5ei;  csy[%i] = %+10.5er%+10.5ei\n", n_print,
@@ -401,7 +401,7 @@ int main(int argc, char *argv[]) {
   // printf("csh[%i] = %+10.5er%+10.5ei\n", n_print,
   // 	 csh[n_print].real(), csh[n_print].imag());
   // printf("WA csj  =         e   r        e   i;\n");
-    
+
   // n_print = n_small;
   // printf("Psi[%i] = %+10.5er%+10.5ei;  Zeta[%i] = %+10.5er%+10.5ei\n", n_print,
   // 	 Psi[n_print].real(), Psi[n_print].imag(), n_print,

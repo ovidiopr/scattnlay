@@ -1,8 +1,7 @@
 #include "gtest/gtest.h"
-#include "../src/nmie-impl.hpp"
-#include "../src/nmie-precision.hpp"
+#include "../src/nmie-basic.hpp"
 
-// TODO fails for MP with 100 digits.
+// TODO fails for MP with 100 digits. And 16 digits, which should be equal to double precision.
 #ifndef MULTI_PRECISION
 //TEST(BulkSphere, DISABLED_ArgPi) {
 TEST(BulkSphere, ArgPi) {
@@ -56,7 +55,7 @@ TEST(BulkSphere, HandlesInput) {
   for (const auto &data : parameters_and_results) {
     auto x = std::get<0>(data);
     auto m = std::get<1>(data);
-//    auto Nstop = nmie::LeRu_cutoff(m*x)+1;
+//    auto Nstop = nmie::LeRu_near_field_cutoff(m*x)+1;
 
     nmie.SetLayersSize({x});
     nmie.SetLayersIndex({m});

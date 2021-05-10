@@ -56,28 +56,30 @@
 #include "nmie-precision.hpp"
 
 namespace nmie {
-////helper functions
-//template<class T> inline T pow2(const T value) {return value*value;}
-
 // Note, that Kapteyn seems to be too optimistic (at least by 3 digits
 // in some cases) for forward recurrence, see D1test with WYang_data
+template <typename FloatType>
 int evalKapteynNumberOfLostSignificantDigits(const int ni,
                                              const std::complex<FloatType> zz) {
   using std::abs;  using std::imag; using std::real; using std::log; using std::sqrt; using std::round;
   std::complex<double> z = ConvertComplex<double>(zz);
+  if (abs(z) == 0.) return 0;
   auto n = static_cast<double>(ni);
   auto one = std::complex<double> (1, 0);
-  return round((
+  auto lost_digits = round((
       abs(imag(z)) - log(2.) - n * ( real( log( z/n) + sqrt(one
       - pow2(z/n)) - log (one + sqrt (one
       - pow2(z/n)))
       )))/ log(10.));
+  return lost_digits;
 }
 
+template <typename FloatType>
 int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
   if (nmax == 0) nmax = 1;
   int nstar = nmax;
   auto z_dp = ConvertComplex<double>(z);
+  if (std::abs(z_dp) == 0.) return  nstar;
   int forwardLoss = evalKapteynNumberOfLostSignificantDigits(nmax, z_dp);
   int increment = static_cast<int>(std::ceil(
       std::max(4* std::pow(std::abs( z_dp), 1/3.0), 5.0)
@@ -92,8 +94,8 @@ int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
 
 // Custom implementation of complex cot function to avoid overflow
 // if Im(z) < 0, then it evaluates cot(z) as conj(cot(conj(z)))
-const std::complex<FloatType>
-complex_cot(const std::complex<FloatType> z) {
+template <typename FloatType>
+std::complex<FloatType> complex_cot(const std::complex<FloatType> z) {
   auto Remx = z.real();
   auto Immx = z.imag();
   int sign = (Immx>0) ? 1: -1; // use complex conj if needed for exp and return
@@ -109,8 +111,9 @@ complex_cot(const std::complex<FloatType> z) {
 }
 
 // Forward iteration for evaluation of ratio of the Riccati–Bessel functions
+template <typename FloatType>
 void evalForwardR (const std::complex<FloatType> z,
-                   std::vector<std::complex<FloatType> >& r) {
+                   std::vector<std::complex<FloatType> > &r) {
   if (r.size() < 1) throw std::invalid_argument(
       "We need non-zero evaluations of ratio of the Riccati–Bessel functions.\n");
   // r0 = cot(z)
@@ -123,8 +126,9 @@ void evalForwardR (const std::complex<FloatType> z,
 
 
 // Backward iteration for evaluation of ratio of the Riccati–Bessel functions
+template <typename FloatType>
 void evalBackwardR (const std::complex<FloatType> z,
-                   std::vector<std::complex<FloatType> >& r) {
+                   std::vector<std::complex<FloatType> > &r) {
   if (r.size() < 1) throw std::invalid_argument(
         "We need non-zero evaluations of ratio of the Riccati–Bessel functions.\n");
   int nmax = r.size()-1 ;
@@ -137,9 +141,10 @@ void evalBackwardR (const std::complex<FloatType> z,
 //  nmm::cout << "R0 = " << r[0] <<" at arg = "<<z<<'\n';
 }
 
+template <typename FloatType>
 void convertRtoD1(const std::complex<FloatType> z,
-                  std::vector<std::complex<FloatType> >& r,
-                  std::vector<std::complex<FloatType> >& D1) {
+                  std::vector<std::complex<FloatType> > &r,
+                  std::vector<std::complex<FloatType> > &D1) {
   if (D1.size() > r.size()) throw std::invalid_argument(
       "Not enough elements in array of ratio of the Riccati–Bessel functions to convert it into logarithmic derivative array.\n");
   std::complex<FloatType> Dold;
@@ -151,8 +156,9 @@ void convertRtoD1(const std::complex<FloatType> z,
 }
 
 // ********************************************************************** //
+template <typename FloatType>
 void evalForwardD (const std::complex<FloatType> z,
-                     std::vector<std::complex<FloatType> >& D) {
+                     std::vector<std::complex<FloatType> > &D) {
   int nmax = D.size();
   FloatType one = static_cast<FloatType >(1);
   for (int n = 1; n < nmax; n++) {
@@ -162,8 +168,9 @@ void evalForwardD (const std::complex<FloatType> z,
 }
 
 // ********************************************************************** //
+template <typename FloatType>
 void evalForwardD1 (const std::complex<FloatType> z,
-                   std::vector<std::complex<FloatType> >& D) {
+                   std::vector<std::complex<FloatType> > &D) {
   if (D.size()<1) throw std::invalid_argument("Should have a leas one element!\n");
   D[0] = std::cos(z)/std::sin(z);
   evalForwardD(z,D);
@@ -171,8 +178,8 @@ void evalForwardD1 (const std::complex<FloatType> z,
 
 //  template <typename FloatType>
 //  void MultiLayerMie<FloatType>::calcD1D3(const std::complex<FloatType> z,
-//                               std::vector<std::complex<FloatType> >& D1,
-//                               std::vector<std::complex<FloatType> >& D3) {
+//                               std::vector<std::complex<FloatType> > &D1,
+//                               std::vector<std::complex<FloatType> > &D3) {
 //
 //    // if (cabs(D1[0]) > 1.0e15) {
 //    //   throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
@@ -206,8 +213,8 @@ void evalForwardD1 (const std::complex<FloatType> z,
   //**********************************************************************************//
 //  template <typename FloatType>
 //  void MultiLayerMie<FloatType>::calcPsiZeta(std::complex<FloatType> z,
-//                                  std::vector<std::complex<FloatType> >& Psi,
-//                                  std::vector<std::complex<FloatType> >& Zeta) {
+//                                  std::vector<std::complex<FloatType> > &Psi,
+//                                  std::vector<std::complex<FloatType> > &Zeta) {
 //
 //    std::complex<FloatType> c_i(0.0, 1.0);
 //    std::vector<std::complex<FloatType> > D1(nmax_ + 1), D3(nmax_ + 1);
@@ -239,8 +246,8 @@ void evalForwardD1 (const std::complex<FloatType> z,
   //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
   //**********************************************************************************//
 //  template <typename FloatType>
-//  void MultiLayerMie<FloatType>::calcPiTau(const FloatType& costheta,
-//                                std::vector<FloatType>& Pi, std::vector<FloatType>& Tau) {
+//  void MultiLayerMie<FloatType>::calcPiTau(const FloatType &costheta,
+//                                std::vector<FloatType> &Pi, std::vector<FloatType> &Tau) {
 //
 //    int i;
 //    //****************************************************//
@@ -279,8 +286,8 @@ void evalForwardD1 (const std::complex<FloatType> z,
   //**********************************************************************************//
 //  template <typename FloatType>
 //  void MultiLayerMie<FloatType>::calcSpherHarm(const std::complex<FloatType> Rho, const FloatType Theta, const FloatType Phi,
-//                                    const std::complex<FloatType>& rn, const std::complex<FloatType>& Dn,
-//                                    const FloatType& Pi, const FloatType& Tau, const FloatType& n,
+//                                    const std::complex<FloatType> &rn, const std::complex<FloatType> &Dn,
+//                                    const FloatType &Pi, const FloatType &Tau, const FloatType &n,
 //                                    std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n,
 //                                    std::vector<std::complex<FloatType> >& No1n, std::vector<std::complex<FloatType> >& Ne1n) {
 //
@@ -319,6 +326,7 @@ void evalForwardD1 (const std::complex<FloatType> z,
 // Output parameters:                                                               //
 //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions                //
 //**********************************************************************************//
+template <typename FloatType>
 void evalDownwardD1 (const std::complex<FloatType> z,
                      std::vector<std::complex<FloatType> >& D1) {
   int nmax = D1.size() - 1;
@@ -344,6 +352,7 @@ void evalDownwardD1 (const std::complex<FloatType> z,
 }
 
 
+template <typename FloatType>
 void evalUpwardD3 (const std::complex<FloatType> z,
                    const std::vector<std::complex<FloatType> >& D1,
                    std::vector<std::complex<FloatType> >& D3,
@@ -362,11 +371,11 @@ void evalUpwardD3 (const std::complex<FloatType> z,
 }
 
 
+template <typename FloatType>
 void evalUpwardPsi (const std::complex<FloatType> z,
                     const std::vector<std::complex<FloatType> > D1,
                    std::vector<std::complex<FloatType> >& Psi) {
   int nmax = Psi.size() - 1;
-  std::complex<FloatType> c_i(0.0, 1.0);
   // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
   Psi[0] = std::sin(z);
   for (int n = 1; n <= nmax; n++) {
@@ -375,6 +384,7 @@ void evalUpwardPsi (const std::complex<FloatType> z,
 }
 
 // Sometimes in literature Zeta is also denoted as Ksi, it is a Riccati-Bessel function of third kind.
+template <typename FloatType>
 void evalUpwardZeta (const std::complex<FloatType> z,
                     const std::vector<std::complex<FloatType> > D3,
                     std::vector<std::complex<FloatType> >& Zeta) {

@@ -31,9 +31,9 @@
 #include "../src/nmie-applied.hpp"
 #include "../src/nmie-applied-impl.hpp"
 
-int main(int argc, char *argv[]) {
+int main(int , char **) {
   try {
-    nmie::MultiLayerMieApplied<double> multi_layer_mie;  
+    nmie::MultiLayerMieApplied<double> multi_layer_mie;
     const std::complex<double> epsilon_Si(18.4631066585, 0.6259727805);
     const std::complex<double> epsilon_Ag(-8.5014154589, 0.7585845411);
     const std::complex<double> index_Si = std::sqrt(epsilon_Si);
@@ -52,11 +52,11 @@ int main(int argc, char *argv[]) {
     multi_layer_mie.RunMieCalculation();
     double Qabs = multi_layer_mie.GetQabs();
     printf("Qabs = %g\n", Qabs);
-  } catch( const std::invalid_argument& ia ) {
+  } catch( const std::invalid_argument &ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
     return -1;
-  }  
+  }
     return 0;
 }
 

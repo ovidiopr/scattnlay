@@ -35,8 +35,8 @@
 namespace nmie {
   namespace bessel {
 
-    void calcZeta(int n,  std::complex<double>z,  std::vector< std::complex<double> >& Zeta,
-		   std::vector< std::complex<double> >& dZeta) {
+    void calcZeta(int n,  std::complex<double>z,  std::vector< std::complex<double> > &Zeta,
+		   std::vector< std::complex<double> > &dZeta) {
       std::vector< std::complex<double> > csj, cdj, csy, cdy;
       int nm;
       csphjy (n, z, nm, csj, cdj,  csy, cdy );
@@ -49,8 +49,8 @@ namespace nmie {
       }
     }  // end of calcZeta()
 
-    void calcPsi(int n,  std::complex<double>z,  std::vector< std::complex<double> >& Psi,
-		   std::vector< std::complex<double> >& dPsi) {
+    void calcPsi(int n,  std::complex<double>z,  std::vector< std::complex<double> > &Psi,
+		   std::vector< std::complex<double> > &dPsi) {
       std::vector< std::complex<double> > csj, cdj, csy, cdy;
       int nm;
       csphjy (n, z, nm, csj, cdj,  csy, cdy );
@@ -63,9 +63,9 @@ namespace nmie {
     }  // end of calcPsi()
 
 // !*****************************************************************************80
-//  
+//
 //  C++ port of fortran code
-//  
+//
 // !! CSPHJY: spherical Bessel functions jn(z) and yn(z) for complex argument.
 // !
 // !  Discussion:
@@ -75,8 +75,8 @@ namespace nmie {
 // !
 // !  Licensing:
 // !
-// !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.  However, 
-// !    they give permission to incorporate this routine into a user program 
+// !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.  However,
+// !    they give permission to incorporate this routine into a user program
 // !    provided that the copyright is acknowledged.
 // !
 // !  Modified:
@@ -94,7 +94,7 @@ namespace nmie {
 // !    Wiley, 1996,
 // !    ISBN: 0-471-11963-6,
 // !    LC: QA351.C45.
-// ! 
+// !
 // !  Parameters:
 // !
 // !    Input, integer ( kind = 4 ) N, the order of jn(z) and yn(z).
@@ -106,11 +106,11 @@ namespace nmie {
 // !    Output, complex ( kind = 8 ) CSJ(0:N0, CDJ(0:N), CSY(0:N), CDY(0:N),
 // !    the values of jn(z), jn'(z), yn(z), yn'(z).
 // !
-    void csphjy (int n, std::complex<double>z, int& nm,
-		 std::vector< std::complex<double> >& csj,
-		 std::vector< std::complex<double> >& cdj,
-		 std::vector< std::complex<double> >& csy,
-		 std::vector< std::complex<double> >& cdy ) {
+    void csphjy (int n, std::complex<double>z, int &nm,
+		 std::vector< std::complex<double> > &csj,
+		 std::vector< std::complex<double> > &cdj,
+		 std::vector< std::complex<double> > &csy,
+		 std::vector< std::complex<double> > &cdy ) {
       double a0;
       csj.resize(n+1);
       cdj.resize(n+1);
@@ -119,7 +119,7 @@ namespace nmie {
       std::complex<double> cf, cf0, cf1, cs, csa, csb;
       int m;
       a0 = std::abs(z);
-      nm = n;      
+      nm = n;
       if (a0 < 1.0e-60) {
 	for (int k = 0; k < n+1; ++k) {
 	  csj[k] = 0.0;
@@ -133,7 +133,7 @@ namespace nmie {
       }
       csj[0] = std::sin ( z ) / z;
       csj[1] = ( csj[0] - std::cos ( z ) ) / z;
-      
+
       if ( 2 <= n ) {
 	csa = csj[0];
 	csb = csj[1];
@@ -174,11 +174,11 @@ namespace nmie {
       for (int k = 2; k<=nm; ++k) {
 	cdy[k] = csy[k-1] - ( k + 1.0 ) * csy[k] / z;
       }
-      
+
       return;
     }
       // function msta2 ( x, n, mp )
-      
+
       // !*****************************************************************************80
       // !
       // !! MSTA2 determines a backward recurrence starting point for Jn(x).
@@ -190,8 +190,8 @@ namespace nmie {
       // !
       // !  Licensing:
       // !
-      // !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.  However, 
-      // !    they give permission to incorporate this routine into a user program 
+      // !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.  However,
+      // !    they give permission to incorporate this routine into a user program
       // !    provided that the copyright is acknowledged.
       // !
       // !  Modified:
@@ -257,14 +257,14 @@ namespace nmie {
 // !
 // !  Discussion:
 // !
-// !    This procedure determines the starting point for backward  
-// !    recurrence such that the magnitude of    
+// !    This procedure determines the starting point for backward
+// !    recurrence such that the magnitude of
 // !    Jn(x) at that point is about 10^(-MP).
 // !
 // !  Licensing:
 // !
-// !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.  However, 
-// !    they give permission to incorporate this routine into a user program 
+// !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.  However,
+// !    they give permission to incorporate this routine into a user program
 // !    provided that the copyright is acknowledged.
 // !
 // !  Modified:
@@ -287,7 +287,7 @@ namespace nmie {
 // !
 // !    Input, real ( kind = 8 ) X, the argument.
 // !
-// !    Input, integer ( kind = 4 ) MP, the negative logarithm of the 
+// !    Input, integer ( kind = 4 ) MP, the negative logarithm of the
 // !    desired magnitude.
 // !
 // !    Output, integer ( kind = 4 ) MSTA1, the starting point.
@@ -300,7 +300,7 @@ namespace nmie {
       f0 = envj ( n0, a0 ) - mp;
       n1 = n0 + 5;
       f1 = envj ( n1, a0 ) - mp;
-      for (int it = 1; it <= 20; ++it) { 
+      for (int it = 1; it <= 20; ++it) {
 	nn = n1 - ( n1 - n0 ) / ( 1.0 - f0 / f1 );
 	f = envj ( nn, a0 ) - mp;
 	if ( abs ( nn - n1 ) < 1 ) break;
@@ -319,8 +319,8 @@ namespace nmie {
       // !
       // !  Licensing:
       // !
-      // !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.  However, 
-      // !    they give permission to incorporate this routine into a user program 
+      // !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.  However,
+      // !    they give permission to incorporate this routine into a user program
       // !    provided that the copyright is acknowledged.
       // !
       // !  Modified:

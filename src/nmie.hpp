@@ -37,26 +37,87 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+#include <pybind11/complex.h>
+
 #include "nmie-precision.hpp"
 #ifdef MULTI_PRECISION
 #include <boost/math/constants/constants.hpp>
 #endif
+namespace py = pybind11;
+
+template <typename T>
+std::vector<T> Py2Vector(const py::array_t<T> &py_x) {
+  std::vector<T> c_x(py_x.size());
+  std::memcpy(c_x.data(), py_x.data(), py_x.size()*sizeof(T));
+  return c_x;
+}
+
+template <typename inputType=double, typename outputType=double>
+py::array_t< std::complex<outputType>> VectorComplex2Py(const std::vector<std::complex<inputType> > &cf_x) {
+  auto c_x = nmie::ConvertComplexVector<outputType, inputType>(cf_x);
+  auto py_x = py::array_t< std::complex<outputType>>(c_x.size());
+  auto py_x_buffer = py_x.request();
+  auto *py_x_ptr = (std::complex<outputType> *) py_x_buffer.ptr;
+  std::memcpy(py_x_ptr, c_x.data(), c_x.size()*sizeof(std::complex<outputType>));
+  return py_x;
+}
+
+// https://stackoverflow.com/questions/17294629/merging-flattening-sub-vectors-into-a-single-vector-c-converting-2d-to-1d
+template <typename T>
+std::vector<T> flatten(const std::vector<std::vector<T>> &v) {
+  std::size_t total_size = 0;
+  for (const auto &sub : v)
+    total_size += sub.size(); // I wish there was a transform_accumulate
+  std::vector<T> result;
+  result.reserve(total_size);
+  for (const auto &sub : v)
+    result.insert(result.end(), sub.begin(), sub.end());
+  return result;
+}
+
+
+template <typename T>
+py::array Vector2DComplex2Py(const std::vector<std::vector<T > > &x) {
+  size_t dim1 = x.size();
+  size_t dim2 = x[0].size();
+  auto result = flatten(x);
+  // https://github.com/tdegeus/pybind11_examples/blob/master/04_numpy-2D_cpp-vector/example.cpp
+  size_t              ndim    = 2;
+  std::vector<size_t> shape   = {dim1, dim2};
+  std::vector<size_t> strides = {sizeof(T)*dim2, sizeof(T)};
+
+  // return 2-D NumPy array
+  return py::array(py::buffer_info(
+      result.data(),                       /* data as contiguous array  */
+      sizeof(T),                           /* size of one scalar        */
+      py::format_descriptor<T>::format(),  /* data type                 */
+      ndim,                                /* number of dimensions      */
+      shape,                               /* shape of the matrix       */
+      strides                              /* strides for each axis     */
+  ));
+}
+
 namespace nmie {
   int ScattCoeffs(const unsigned int L, const int pl,
-                  const std::vector<double>& x, const std::vector<std::complex<double> >& m,
+                  const std::vector<double> &x, const std::vector<std::complex<double> > &m,
                   const int nmax,
-                  std::vector<std::complex<double> >& an,
-                  std::vector<std::complex<double> >& bn);
+                  std::vector<std::complex<double> > &an,
+                  std::vector<std::complex<double> > &bn);
 
   int ExpanCoeffs(const unsigned int L, const int pl,
-                  const std::vector<double>& x, const std::vector<std::complex<double> >& m,
+                  const std::vector<double> &x, const std::vector<std::complex<double> > &m,
                   const int nmax,
-                  std::vector<std::vector<std::complex<double> > >& an,
-                  std::vector<std::vector<std::complex<double> > >& bn,
-                  std::vector<std::vector<std::complex<double> > >& cn,
-                  std::vector<std::vector<std::complex<double> > >& dn);
+                  std::vector<std::vector<std::complex<double> > > &an,
+                  std::vector<std::vector<std::complex<double> > > &bn,
+                  std::vector<std::vector<std::complex<double> > > &cn,
+                  std::vector<std::vector<std::complex<double> > > &dn);
 
 //helper functions
+template <typename FloatType>
+double eval_delta(const unsigned int steps, const double from_value, const double to_value);
 
 
 template<class T> inline T pow2(const T value) {return value*value;}
@@ -70,59 +131,59 @@ int newround(FloatType x) {
   //return x >= 0 ? (x + 0.5).convert_to<int>():(x - 0.5).convert_to<int>();
 }
 template<typename T>
-inline std::complex<T> my_exp(const std::complex<T>& x) {
+inline std::complex<T> my_exp(const std::complex<T> &x) {
   using std::exp; // use ADL
-  T const& r = exp(x.real());
+  T const &r = exp(x.real());
   return std::polar(r, x.imag());
 }
 
 // pl, nmax, mode_n, mode_type
     int nMie(const unsigned int L,
            const int pl,
-           std::vector<double>& x, std::vector<std::complex<double> >& m,
-           const unsigned int nTheta, std::vector<double>& Theta,
+           std::vector<double> &x, std::vector<std::complex<double> > &m,
+           const unsigned int nTheta, std::vector<double> &Theta,
            const int nmax,
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
            double *g, double *Albedo,
-           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2,
+           std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2,
            int mode_n, int mode_type);
   // pl and nmax
     int nMie(const unsigned int L,
            const int pl,
-           std::vector<double>& x, std::vector<std::complex<double> >& m,
-           const unsigned int nTheta, std::vector<double>& Theta,
+           std::vector<double> &x, std::vector<std::complex<double> > &m,
+           const unsigned int nTheta, std::vector<double> &Theta,
            const int nmax,
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
            double *g, double *Albedo,
-           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+           std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
   // no pl and nmax
   int nMie(const unsigned int L,
-           std::vector<double>& x, std::vector<std::complex<double> >& m,
-           const unsigned int nTheta, std::vector<double>& Theta,
+           std::vector<double> &x, std::vector<std::complex<double> > &m,
+           const unsigned int nTheta, std::vector<double> &Theta,
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
            double *g, double *Albedo,
-           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+           std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
   // pl
   int nMie(const unsigned int L,
            const int pl,
-           std::vector<double>& x, std::vector<std::complex<double> >& m,
-           const unsigned int nTheta, std::vector<double>& Theta,
+           std::vector<double> &x, std::vector<std::complex<double> > &m,
+           const unsigned int nTheta, std::vector<double> &Theta,
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
            double *g, double *Albedo,
-           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+           std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
   // nmax
   int nMie(const unsigned int L,
-           std::vector<double>& x, std::vector<std::complex<double> >& m,
-           const unsigned int nTheta, std::vector<double>& Theta,
+           std::vector<double> &x, std::vector<std::complex<double> > &m,
+           const unsigned int nTheta, std::vector<double> &Theta,
            const int nmax,
            double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr,
            double *g, double *Albedo,
-           std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2);
+           std::vector<std::complex<double> > &S1, std::vector<std::complex<double> > &S2);
   int nField(const unsigned int L, const int pl,
-             const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax,
+             const std::vector<double> &x, const std::vector<std::complex<double> > &m, const int nmax,
              const int mode_n, const int mode_type, const unsigned int ncoord,
-             const std::vector<double>& Xp, const std::vector<double>& Yp, const std::vector<double>& Zp,
-             std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H);
+             const std::vector<double> &Xp, const std::vector<double> &Yp, const std::vector<double> &Zp,
+             std::vector<std::vector<std::complex<double> > > &E, std::vector<std::vector<std::complex<double> > > &H);
 
   // constants for per mode evaluation
   enum Modes {kAll = -1, kElectric = 0, kMagnetic = 1};
@@ -138,37 +199,64 @@ inline std::complex<T> my_exp(const std::complex<T>& x) {
     // Run calculation
     void RunMieCalculation();
     void RunFieldCalculation();
+    void RunFieldCalculationPolar(const int outer_arc_points = 1,
+                                  const int radius_points=1,
+                                  const double from_Rho=0, const double to_Rho=static_cast<double>(1.),
+                                  const double from_Theta=0, const double to_Theta=static_cast<double>(3.14159265358979323),
+                                  const double from_Phi=0, const double to_Phi=static_cast<double>(3.14159265358979323),
+                                  const bool isIgnoreAvailableNmax = false);
+
     void calcScattCoeffs();
     void calcExpanCoeffs();
 
     // Return calculation results
-    FloatType GetQext();
-    FloatType GetQsca();
-    FloatType GetQabs();
-    FloatType GetQbk();
-    FloatType GetQpr();
-    FloatType GetAsymmetryFactor();
-    FloatType GetAlbedo();
+    template <typename outputType = FloatType> outputType GetQext();
+    template <typename outputType = FloatType> outputType  GetQsca();
+    template <typename outputType = FloatType> outputType  GetQabs();
+    template <typename outputType = FloatType> outputType  GetQbk();
+    template <typename outputType = FloatType> outputType  GetQpr();
+    template <typename outputType = FloatType> outputType  GetAsymmetryFactor();
+    template <typename outputType = FloatType> outputType  GetAlbedo();
     std::vector<std::complex<FloatType> > GetS1();
     std::vector<std::complex<FloatType> > GetS2();
+    template <typename outputType> py::array_t< std::complex<outputType>>  GetS1();
+    template <typename outputType> py::array_t< std::complex<outputType>>  GetS2();
 
     std::vector<std::complex<FloatType> > GetAn(){return an_;};
     std::vector<std::complex<FloatType> > GetBn(){return bn_;};
+    template <typename outputType> py::array_t< std::complex<outputType>>  GetAn();
+    template <typename outputType> py::array_t< std::complex<outputType>>  GetBn();
 
     std::vector< std::vector<std::complex<FloatType> > > GetLayerAn(){return aln_;};
     std::vector< std::vector<std::complex<FloatType> > > GetLayerBn(){return bln_;};
     std::vector< std::vector<std::complex<FloatType> > > GetLayerCn(){return cln_;};
     std::vector< std::vector<std::complex<FloatType> > > GetLayerDn(){return dln_;};
+    template <typename outputType> py::array GetLayerAn();
+    template <typename outputType> py::array GetLayerBn();
+    template <typename outputType> py::array GetLayerCn();
+    template <typename outputType> py::array GetLayerDn();
 
     // Problem definition
     // Modify size of all layers
-    void SetLayersSize(const std::vector<FloatType>& layer_size);
+    void SetLayersSize(const std::vector<FloatType> &layer_size);
+    template <typename inputType>
+    void SetLayersSize(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_layer_size);
     // Modify refractive index of all layers
-    void SetLayersIndex(const std::vector< std::complex<FloatType> >& index);
-    // Modify scattering (theta) angles
-    void SetAngles(const std::vector<FloatType>& angles);
+    void SetLayersIndex(const std::vector< std::complex<FloatType> > &index);
+    template <typename inputType>
+    void SetLayersIndex(const py::array_t<std::complex<inputType>, py::array::c_style | py::array::forcecast> &py_index);
+
+    template <typename evalType=FloatType> void GetIndexAtRadius(const evalType Rho, std::complex<evalType> &ml, unsigned int &l);
+    template <typename evalType=FloatType> void GetIndexAtRadius(const evalType Rho, std::complex<evalType> &ml);
+    // Modify scattering (theta) py_angles
+    void SetAngles(const std::vector<FloatType> &py_angles);
+    template <typename inputType>
+    void SetAngles(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_angles);
     // Modify coordinates for field calculation
-    void SetFieldCoords(const std::vector< std::vector<FloatType> >& coords);
+    void SetFieldCoords(const std::vector< std::vector<FloatType> > &coords);
+    void SetFieldCoords(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,
+                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Yp,
+                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Zp);
     // Modify index of PEC layer
     void SetPECLayer(int layer_position = 0);
     // Modify the mode taking into account for evaluation of output variables
@@ -200,6 +288,9 @@ inline std::complex<T> my_exp(const std::complex<T>& x) {
 
     std::vector<std::vector< std::complex<FloatType> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<FloatType> > > GetFieldH(){return H_;};
+    template <typename outputType> py::array GetFieldE();
+    template <typename outputType> py::array GetFieldH();
+
     // Get fields in spherical coordinates.
     std::vector<std::vector< std::complex<FloatType> > > GetFieldEs(){return E_;};   // {rho[], teha[], phi[]}
     std::vector<std::vector< std::complex<FloatType> > > GetFieldHs(){return H_;};
@@ -214,10 +305,11 @@ inline std::complex<T> my_exp(const std::complex<T>& x) {
     std::vector< std::vector<std::complex<FloatType> > > aln_, bln_, cln_, dln_;
     // Points for field evaluation
     std::vector< std::vector<FloatType> > coords_;
+    std::vector< std::vector<FloatType> > coords_polar_;
 
   private:
-    void calcNstop();
-    void calcNmax(unsigned int first_layer);
+    unsigned int calcNstop(FloatType xL = -1);
+    unsigned int calcNmax(FloatType xL = -1);
 
     std::complex<FloatType> calc_an(int n, FloatType XL, std::complex<FloatType> Ha, std::complex<FloatType> mL,
                                  std::complex<FloatType> PsiXL, std::complex<FloatType> ZetaXL,
@@ -230,22 +322,30 @@ inline std::complex<T> my_exp(const std::complex<T>& x) {
     std::complex<FloatType> calc_S2(int n, std::complex<FloatType> an, std::complex<FloatType> bn,
                                  FloatType Pi, FloatType Tau);
     void calcD1D3(std::complex<FloatType> z,
-                  std::vector<std::complex<FloatType> >& D1,
-                  std::vector<std::complex<FloatType> >& D3);
+                  std::vector<std::complex<FloatType> > &D1,
+                  std::vector<std::complex<FloatType> > &D3);
     void calcPsiZeta(std::complex<FloatType> x,
-                     std::vector<std::complex<FloatType> >& Psi,
-                     std::vector<std::complex<FloatType> >& Zeta);
-    void calcPiTau(const FloatType& costheta,
-                   std::vector<FloatType>& Pi, std::vector<FloatType>& Tau);
-    void calcSpherHarm(const std::complex<FloatType> Rho, const FloatType Theta, const FloatType Phi,
-                       const std::complex<FloatType>& rn, const std::complex<FloatType>& Dn,
-                       const FloatType& Pi, const FloatType& Tau, const FloatType& n,
-                       std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n,
-                       std::vector<std::complex<FloatType> >& No1n, std::vector<std::complex<FloatType> >& Ne1n);
+                     std::vector<std::complex<FloatType> > &Psi,
+                     std::vector<std::complex<FloatType> > &Zeta);
+    void calcPiTau(const FloatType &costheta,
+                   std::vector<FloatType> &Pi, std::vector<FloatType> &Tau);
+    template <typename evalType=FloatType>
+    void calcSpherHarm(const std::complex<evalType> Rho, const evalType Theta, const evalType Phi,
+                       const std::complex<evalType> &rn, const std::complex<evalType> &Dn,
+                       const evalType &Pi, const evalType &Tau, const evalType &n,
+                       std::vector<std::complex<evalType> > &Mo1n, std::vector<std::complex<evalType> > &Me1n,
+                       std::vector<std::complex<evalType> > &No1n, std::vector<std::complex<evalType> > &Ne1n);
 
-    void calcFieldByComponents(const FloatType Rho, const FloatType Theta, const FloatType Phi,
-                               std::vector<std::complex<FloatType> >& E,
-                               std::vector<std::complex<FloatType> >& H);
+    template <typename evalType=FloatType>
+    void calcFieldByComponents(const evalType Rho, const evalType Theta, const evalType Phi,
+                               const std::vector<std::complex<evalType> > &Psi,
+                               const std::vector<std::complex<evalType> > &D1n,
+                               const std::vector<std::complex<evalType> > &Zeta,
+                               const std::vector<std::complex<evalType> > &D3n,
+                               const std::vector<evalType> &Pi,
+                               const std::vector<evalType> &Tau,
+                               std::vector<std::complex<evalType> > &E,
+                               std::vector<std::complex<evalType> > &H);
 
     bool isExpCoeffsCalc_ = false;
     bool isScaCoeffsCalc_ = false;
@@ -262,11 +362,25 @@ inline std::complex<T> my_exp(const std::complex<T>& x) {
     // with calcNmax(int first_layer);
     int nmax_ = -1;
     int nmax_preset_ = -1;
+    int available_maximal_nmax_ = -1;
     /// Store result
     FloatType Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::vector< std::complex<FloatType> > > E_, H_;  // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<FloatType> > > Es_, Hs_;  // {X[], Y[], Z[]}
     std::vector<std::complex<FloatType> > S1_, S2_;
+    void calcMieSeriesNeededToConverge(const FloatType Rho);
+    void calcPiTauAllTheta(const double from_Theta,
+                           const double to_Theta,
+                           std::vector<std::vector<FloatType>> &Pi,
+                           std::vector<std::vector<FloatType>> &Tau);
+    void calcRadialOnlyDependantFunctions(const double from_Rho,
+                                          const double to_Rho,
+                                          const bool isIgnoreAvailableNmax,
+                                          std::vector<std::vector<std::complex<FloatType>>> &Psi,
+                                          std::vector<std::vector<std::complex<FloatType>>> &D1n,
+                                          std::vector<std::vector<std::complex<FloatType>>> &Zeta,
+                                          std::vector<std::vector<std::complex<FloatType>>> &D3n);
+    void convertFieldsFromSphericalToCartesian();
   };  // end of class MultiLayerMie
 
 }  // end of namespace nmie

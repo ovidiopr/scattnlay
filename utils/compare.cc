@@ -45,9 +45,9 @@ const double PI=3.14159265358979323846;
 template<class T> inline T pow2(const T value) {return value*value;}
 
 template <class VectorType, int dimensions> inline
-std::vector<VectorType> CrossProduct(std::vector<VectorType>& a, std::vector<VectorType>& b) {
+std::vector<VectorType> CrossProduct(std::vector<VectorType> &a, std::vector<VectorType> &b) {
   if (a.size() != 3 || b.size() != 3) throw std::invalid_argument("Cross product only for 3D vectors!");
-  std::vector<VectorType> r (3);   
+  std::vector<VectorType> r (3);
   r[0] = a[1]*b[2]-a[2]*b[1];
   r[1] = a[2]*b[0]-a[0]*b[2];
   r[2] = a[0]*b[1]-a[1]*b[0];
@@ -92,19 +92,19 @@ int main(int argc, char *argv[]) {
     double Qextw, Qabsw, Qscaw, Qbkw, Qprw, gw, Albedow;
 
     double ti = 0.0, tf = 90.0;
-    int nt = 0;    
+    int nt = 0;
     if (argc < 5) throw std::invalid_argument(error_msg);
-    
+
     //strcpy(comment, "");
     // for (i = 1; i < argc; i++) {
-    int mode = -1; 
+    int mode = -1;
     double tmp_mr;
     for (auto arg : args) {
       // For each arg in args list we detect the change of the current
       // read mode or read the arg. The reading args algorithm works
       // as a finite-state machine.
 
-      // Detecting new read mode (if it is a valid -key) 
+      // Detecting new read mode (if it is a valid -key)
       if (arg == "-l") {
 	mode = read_L;
 	continue;
@@ -169,13 +169,13 @@ int main(int argc, char *argv[]) {
 	continue;
       }
     }
-    if ( (x.size() != m.size()) || (L != x.size()) ) 
+    if ( (x.size() != m.size()) || (L != x.size()) )
       throw std::invalid_argument(std::string("Broken structure!\n")
 							 +error_msg);
-    if ( (0 == m.size()) || ( 0 == x.size()) ) 
+    if ( (0 == m.size()) || ( 0 == x.size()) )
       throw std::invalid_argument(std::string("Empty structure!\n")
 							 +error_msg);
-    
+
     if (nt < 0) {
       printf("Error reading Theta.\n");
       return -1;
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]) {
     // long ctime_nsec, best_c;
     // long cpptime_sec, ctime_sec;
     // long repeats = 150;
-    // //HeapProfilerStart("heapprof");    
+    // //HeapProfilerStart("heapprof");
     // do {
     //   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
     //   for (int i = 0; i<repeats; ++i) {
@@ -202,9 +202,9 @@ int main(int argc, char *argv[]) {
     //   cpptime_nsec = diff(time1,time2).tv_nsec;
     //   cpptime_sec = diff(time1,time2).tv_sec;
     //   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
-    //   // for (int i = 0; i<repeats; ++i) {      
+    //   // for (int i = 0; i<repeats; ++i) {
     //   // 	nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
-    //   // }  
+    //   // }
     //   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
     //   ctime_nsec = diff(time1,time2).tv_nsec;
     //   ctime_sec = diff(time1,time2).tv_sec;
@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
     nMie(L, x, m, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
     nmie::nMie(L, x, m, nt, Theta, &Qextw, &Qscaw, &Qabsw, &Qbkw, &Qprw, &gw, &Albedow, S1w, S2w);
         printf("\n");
-    
+
     if (has_comment) {
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  old\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
@@ -234,10 +234,10 @@ int main(int argc, char *argv[]) {
       printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  old\n", Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);
       printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     }
-    
+
     if (nt > 0) {
       printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i\n");
-      
+
       for (i = 0; i < nt; i++) {
         printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  old\n", Theta[i]*180.0/PI, S1[i].real(), S1[i].imag(), S2[i].real(), S2[i].imag());
         printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  \n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
@@ -297,8 +297,8 @@ int main(int argc, char *argv[]) {
     int pl = 0;
     int nmax = 0;
     std::vector<std::vector<std::complex<double> > > E(ncoord), H(ncoord);
-    for (auto& f:E) f.resize(3);
-    for (auto& f:H) f.resize(3);
+    for (auto &f:E) f.resize(3);
+    for (auto &f:H) f.resize(3);
     double free_impedance = 376.73031;
     //double free_impedance = 1.0;
 
@@ -320,7 +320,7 @@ int main(int argc, char *argv[]) {
       }
       if (sum_e > max_E) max_E = sum_e;
       if (sum_e < min_E) min_E = sum_e;
-    
+
       //printf("Field E=%g\n", std::sqrt(std::abs(sum_e)));
     }
     printf("Min E = %g; max E =%g", min_E, max_E);
@@ -330,11 +330,11 @@ int main(int argc, char *argv[]) {
     //   printf("Field H=%g\n", std::sqrt(std::abs(sum_h))*free_impedance);
     // }
 
-  } catch( const std::invalid_argument& ia ) {
+  } catch( const std::invalid_argument &ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
     return -1;
-  }  
+  }
     return 0;
 }
 

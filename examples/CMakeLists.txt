@@ -1,1 +1,1 @@
-add_executable(bug1 bug1.cc)
+add_executable(example-minimal example-minimal.cc)

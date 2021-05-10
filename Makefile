@@ -5,7 +5,7 @@ VERSION=2.3
 BUILDIR=$(CURDIR)/debian/$(PROJECT)
 SRCDIR=$(CURDIR)/src
 MULTIPREC=100
-CXX_NMIE_HEADERS=$(SRCDIR)/nmie.hpp $(SRCDIR)/nmie-impl.hpp $(SRCDIR)/nmie-precision.hpp
+CXX_NMIE_HEADERS=$(SRCDIR)/nmie.hpp $(SRCDIR)/nmie-basic.hpp $(SRCDIR)/nmie-nearfield.hpp  $(SRCDIR)/nmie-precision.hpp
 
 all:
 	@echo "make source - Create source package for Python extension"
@@ -20,7 +20,7 @@ all:
 source:
 	$(PYTHON) setup.py sdist $(COMPILE) --dist-dir=../
 
-ext: $(SRCDIR)/nmie.cc $(SRCDIR)/nmie-pybind11.cc $(SRCDIR)/pb11_wrapper.cc $(CXX_NMIE_HEADERS)
+ext: $(SRCDIR)/pb11_wrapper.cc $(CXX_NMIE_HEADERS)
 	$(PYTHON) setup.py build_ext --inplace
 
 install:
@@ -58,7 +58,7 @@ wasm: $(SRCDIR)/nmie-js-wrapper.cc $(CXX_NMIE_HEADERS)
 #	emcc --bind -lm -Wall -O2 -std=c++11 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 
 # 	emcc --bind -lm -Wall -O2 -std=c++11 -s MODULARIZE=1 -s WASM=1 -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
-	emcc --bind -lm -Wall -Oz -std=c++11 -s MODULARIZE=1 -s ASSERTIONS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
+	emcc --bind -lm -Wall -pedantic -Oz -std=c++11 -s MODULARIZE=1 -s ASSERTIONS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 #	emcc --bind -lm -Wall -O3 -std=c++11 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s 'EXPORT_NAME="nmiejs"' -o ./nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 
 # 	emcc -g --bind -lm -Wall -std=c++11 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc

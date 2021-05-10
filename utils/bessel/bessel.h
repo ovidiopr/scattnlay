@@ -29,8 +29,8 @@
 namespace nmie {
   namespace bessel {
     void calcZeta(int n,  std::complex<double>z,
-		  std::vector< std::complex<double> >& Zeta,
-		  std::vector< std::complex<double> >& dZeta);
+		  std::vector< std::complex<double> > &Zeta,
+		  std::vector< std::complex<double> > &dZeta);
     void calcPsi(int n,  std::complex<double>z,
 		  std::vector< std::complex<double> >& Psi,
 		  std::vector< std::complex<double> >& dPsi);

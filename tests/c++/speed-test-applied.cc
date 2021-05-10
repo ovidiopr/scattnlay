@@ -83,19 +83,19 @@ int main(int argc, char *argv[]) {
     double Qextw, Qabsw, Qscaw, Qbkw, Qprw, gw, Albedow;
 
     double ti = 0.0, tf = 90.0;
-    int nt = 0;    
+    int nt = 0;
     if (argc < 5) throw std::invalid_argument(error_msg);
-    
+
     //strcpy(comment, "");
     // for (i = 1; i < argc; i++) {
-    int mode = -1; 
+    int mode = -1;
     double tmp_mr;
     for (auto arg : args) {
       // For each arg in args list we detect the change of the current
       // read mode or read the arg. The reading args algorithm works
       // as a finite-state machine.
 
-      // Detecting new read mode (if it is a valid -key) 
+      // Detecting new read mode (if it is a valid -key)
       if (arg == "-l") {
 	mode = read_L;
 	continue;
@@ -160,13 +160,13 @@ int main(int argc, char *argv[]) {
 	continue;
       }
     }
-    if ( (x.size() != m.size()) || (L != x.size()) ) 
+    if ( (x.size() != m.size()) || (L != x.size()) )
       throw std::invalid_argument(std::string("Broken structure!\n")
 							 +error_msg);
-    if ( (0 == m.size()) || ( 0 == x.size()) ) 
+    if ( (0 == m.size()) || ( 0 == x.size()) )
       throw std::invalid_argument(std::string("Empty structure!\n")
 							 +error_msg);
-    
+
     if (nt < 0) {
       printf("Error reading Theta.\n");
       return -1;
@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
     long ctime_nsec, best_c;
     long cpptime_sec, ctime_sec;
     long repeats = 150;
-    //HeapProfilerStart("heapprof");    
+    //HeapProfilerStart("heapprof");
     do {
       clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
       for (int i = 0; i<repeats; ++i) {
@@ -198,26 +198,26 @@ int main(int argc, char *argv[]) {
     } while (cpptime_nsec < 1e8 && ctime_nsec < 1e8);
 
         printf("\n");
-    
+
     if (has_comment) {
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", comment.c_str(), Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     } else {
       printf("%+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e  \n", Qextw, Qscaw, Qabsw, Qbkw, Qprw, gw, Albedow);
     }
-    
+
     if (nt > 0) {
       printf(" Theta,         S1.r,         S1.i,         S2.r,         S2.i\n");
-      
+
       for (i = 0; i < nt; i++) {
         printf("%6.2f, %+.5e, %+.5e, %+.5e, %+.5e  \n", Theta[i]*180.0/PI, S1w[i].real(), S1w[i].imag(), S2w[i].real(), S2w[i].imag());
       }
     }
 
-  } catch( const std::invalid_argument& ia ) {
+  } catch( const std::invalid_argument &ia ) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
     return -1;
-  }  
+  }
     return 0;
 }
 

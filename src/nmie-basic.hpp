@@ -1,5 +1,5 @@
-#ifndef SRC_NMIE_IMPL_HPP_
-#define SRC_NMIE_IMPL_HPP_
+#ifndef SRC_NMIE_BASIC_HPP_
+#define SRC_NMIE_BASIC_HPP_
 //**********************************************************************************//
 //    Copyright (C) 2009-2018  Ovidio Pena <ovidio@bytesfall.com>                   //
 //    Copyright (C) 2013-2018  Konstantin Ladutenko <kostyfisik@gmail.com>          //
@@ -54,7 +54,6 @@
 
 #include "special-functions-impl.hpp"
 #include "nmie.hpp"
-#include "nmie-precision.hpp"
 
 namespace nmie {
 
@@ -65,21 +64,22 @@ namespace nmie {
   // Returns previously calculated Qext                                     //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetQext() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetQext() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return Qext_;
+    return static_cast<outputType>(Qext_);
   }
-
 
   // ********************************************************************** //
   // Returns previously calculated Qabs                                     //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetQabs() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetQabs() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return Qabs_;
+    return static_cast<outputType>(Qabs_);
   }
 
 
@@ -87,10 +87,11 @@ namespace nmie {
   // Returns previously calculated Qsca                                     //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetQsca() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetQsca() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return Qsca_;
+    return static_cast<outputType>(Qsca_);
   }
 
 
@@ -98,10 +99,11 @@ namespace nmie {
   // Returns previously calculated Qbk                                      //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetQbk() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetQbk() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return Qbk_;
+    return static_cast<outputType>(Qbk_);
   }
 
 
@@ -109,10 +111,11 @@ namespace nmie {
   // Returns previously calculated Qpr                                      //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetQpr() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetQpr() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return Qpr_;
+    return static_cast<outputType>(Qpr_);
   }
 
 
@@ -120,10 +123,11 @@ namespace nmie {
   // Returns previously calculated assymetry factor                         //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetAsymmetryFactor() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetAsymmetryFactor() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return asymmetry_factor_;
+    return static_cast<outputType>(asymmetry_factor_);
   }
 
 
@@ -131,10 +135,11 @@ namespace nmie {
   // Returns previously calculated Albedo                                   //
   // ********************************************************************** //
   template <typename FloatType>
-  FloatType MultiLayerMie<FloatType>::GetAlbedo() {
+  template <typename outputType>
+  outputType MultiLayerMie<FloatType>::GetAlbedo() {
     if (!isMieCalculated_)
       throw std::invalid_argument("You should run calculations before result request!");
-    return albedo_;
+    return static_cast<outputType>(albedo_);
   }
 
 
@@ -160,11 +165,12 @@ namespace nmie {
   }
 
 
-  // ********************************************************************** //
+
+// ********************************************************************** //
   // Modify scattering (theta) angles                                       //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::SetAngles(const std::vector<FloatType>& angles) {
+  void MultiLayerMie<FloatType>::SetAngles(const std::vector<FloatType> &angles) {
     MarkUncalculated();
     theta_ = angles;
   }
@@ -174,7 +180,7 @@ namespace nmie {
   // Modify size of all layers                                             //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::SetLayersSize(const std::vector<FloatType>& layer_size) {
+  void MultiLayerMie<FloatType>::SetLayersSize(const std::vector<FloatType> &layer_size) {
     MarkUncalculated();
     size_param_.clear();
     FloatType prev_layer_size = 0.0;
@@ -190,21 +196,22 @@ namespace nmie {
   }
 
 
-  // ********************************************************************** //
+
+
+// ********************************************************************** //
   // Modify refractive index of all layers                                  //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::SetLayersIndex(const std::vector< std::complex<FloatType> >& index) {
+  void MultiLayerMie<FloatType>::SetLayersIndex(const std::vector< std::complex<FloatType> > &index) {
     MarkUncalculated();
     refractive_index_ = index;
   }
-
 
   // ********************************************************************** //
   // Modify coordinates for field calculation                               //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::SetFieldCoords(const std::vector< std::vector<FloatType> >& coords) {
+  void MultiLayerMie<FloatType>::SetFieldCoords(const std::vector< std::vector<FloatType> > &coords) {
     if (coords.size() != 3)
       throw std::invalid_argument("Error! Wrong dimension of field monitor points!");
     if (coords[0].size() != coords[1].size() || coords[0].size() != coords[2].size())
@@ -234,8 +241,7 @@ namespace nmie {
     nmax_preset_ = nmax;
   }
 
-
-  // ********************************************************************** //
+// ********************************************************************** //
   // Get total size parameter of particle                                   //
   // ********************************************************************** //
   template <typename FloatType>
@@ -275,7 +281,9 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
 
-  int LeRu_cutoff(std::complex<double> z) {
+  template <typename FloatType>
+  unsigned int LeRu_near_field_cutoff(const std::complex<FloatType> zz) {
+    std::complex<double> z = ConvertComplex<double>(zz);
     auto x = std::abs(z);
     return std::round(x + 11 * std::pow(x, (1.0 / 3.0)) + 1);
 //    return 10000;
@@ -285,19 +293,21 @@ namespace nmie {
   // Calculate calcNstop - equation (17)                                    //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcNstop() {
+  unsigned int MultiLayerMie<FloatType>::calcNstop(FloatType xL) {
+    unsigned int nmax = 0;
     //Wiscombe
-    const FloatType& xL = size_param_.back();
+    if (xL < size_param_.back()) xL = size_param_.back();
     if (xL <= 8) {
-      nmax_ = newround(xL + 4.0*pow(xL, 1.0/3.0) + 1);
+      nmax = newround(xL + 4.0*pow(xL, 1.0/3.0) + 1);
     } else if (xL <= 4200) {
-      nmax_ = newround(xL + 4.05*pow(xL, 1.0/3.0) + 2);
+      nmax = newround(xL + 4.05*pow(xL, 1.0/3.0) + 2);
     } else {
-      nmax_ = newround(xL + 4.0*pow(xL, 1.0/3.0) + 2);
+      nmax = newround(xL + 4.0*pow(xL, 1.0/3.0) + 2);
     }
-    //Le Ru
-    auto Nstop = nmie::LeRu_cutoff(static_cast<double>(xL))+1;
-    if (Nstop > nmax_) nmax_ = Nstop;
+    //Use Le Ru cutoff for near field, as a universal one.
+    auto Nstop = nmie::LeRu_near_field_cutoff(std::complex<FloatType>(xL, 0))+1;
+    if (Nstop > nmax) nmax = Nstop;
+    return nmax;
   }
 
 
@@ -305,30 +315,33 @@ namespace nmie {
   // Maximum number of terms required for the calculation                   //
   // ********************************************************************** //
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcNmax(unsigned int first_layer) {
-    int ri, riM1;
-    const std::vector<FloatType>& x = size_param_;
-    const std::vector<std::complex<FloatType> >& m = refractive_index_;
-    calcNstop();  // Set initial nmax_ value
+  unsigned int MultiLayerMie<FloatType>::calcNmax(FloatType xL) {
+    const int pl = PEC_layer_position_;
+    const unsigned int first_layer = (pl > 0) ? pl : 0;
+    unsigned int ri, riM1, nmax = 0;
+    const std::vector<FloatType> &x = size_param_;
+    const std::vector<std::complex<FloatType> > &m = refractive_index_;
+    nmax = calcNstop(xL);
     for (unsigned int i = first_layer; i < x.size(); i++) {
       if (static_cast<int>(i) > PEC_layer_position_)  // static_cast used to avoid warning
         ri = newround(cabs(x[i]*m[i]));
       else
         ri = 0;
-      nmax_ = std::max(nmax_, ri);
+      nmax = std::max(nmax, ri);
       // first layer is pec, if pec is present
       if ((i > first_layer) && (static_cast<int>(i - 1) > PEC_layer_position_))
         riM1 = newround(cabs(x[i - 1]* m[i]));
       else
         riM1 = 0;
-      nmax_ = std::max(nmax_, riM1);
+      nmax = std::max(nmax, riM1);
     }
-    nmax_ += 100;  // Final nmax_ value
+    nmax += 15;  // Final nmax value
 #ifdef MULTI_PRECISION
-    nmax_ += MULTI_PRECISION; //TODO we may need to use more terms that this for MP computations.
+    nmax += MULTI_PRECISION; //TODO we may need to use more terms that this for MP computations.
 #endif
-    // nmax_ *= nmax_;
-    // printf("using nmax %i\n", nmax_);
+    // nmax *= nmax;
+    // printf("using nmax %i\n", nmax);
+    return nmax;
   }
 
 
@@ -402,8 +415,8 @@ namespace nmie {
   //**********************************************************************************//
   template <typename FloatType>
   void MultiLayerMie<FloatType>::calcD1D3(const std::complex<FloatType> z,
-                               std::vector<std::complex<FloatType> >& D1,
-                               std::vector<std::complex<FloatType> >& D3) {
+                               std::vector<std::complex<FloatType> > &D1,
+                               std::vector<std::complex<FloatType> > &D3) {
     std::vector<std::complex<FloatType> > PsiZeta(nmax_+1);
     evalDownwardD1(z, D1);
     evalUpwardD3 (z, D1, D3, PsiZeta);
@@ -424,8 +437,8 @@ namespace nmie {
   //**********************************************************************************//
   template <typename FloatType>
   void MultiLayerMie<FloatType>::calcPsiZeta(std::complex<FloatType> z,
-                                  std::vector<std::complex<FloatType> >& Psi,
-                                  std::vector<std::complex<FloatType> >& Zeta) {
+                                  std::vector<std::complex<FloatType> > &Psi,
+                                  std::vector<std::complex<FloatType> > &Zeta) {
     std::vector<std::complex<FloatType> > D1(nmax_ + 1), D3(nmax_ + 1),
         PsiZeta(nmax_+1);
     // First, calculate the logarithmic derivatives
@@ -438,6 +451,22 @@ namespace nmie {
       Zeta[i] = PsiZeta[i]/Psi[i];
     }
 //    evalUpwardZeta(z, D3, Zeta);
+  }
+
+
+  template <typename FloatType>
+  void MultiLayerMie<FloatType>::calcPiTauAllTheta(const double from_Theta, const double to_Theta,
+                                                   std::vector<std::vector<FloatType> > &Pi,
+                                                   std::vector<std::vector<FloatType> > &Tau) {
+    const unsigned int perimeter_points = Pi.size();
+    for (auto &val:Pi) val.resize(available_maximal_nmax_);
+    for (auto &val:Tau) val.resize(available_maximal_nmax_);
+    double delta_Theta = eval_delta<double>(perimeter_points, from_Theta, to_Theta);
+    for (unsigned int i=0; i < perimeter_points; i++) {
+      auto Theta = static_cast<FloatType>(from_Theta + i*delta_Theta);
+      // Calculate angular functions Pi and Tau
+      calcPiTau(nmm::cos(Theta), Pi[i], Tau[i]);
+    }
   }
 
 
@@ -455,10 +484,13 @@ namespace nmie {
   //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
   //**********************************************************************************//
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcPiTau(const FloatType& costheta,
-                                std::vector<FloatType>& Pi, std::vector<FloatType>& Tau) {
+  void MultiLayerMie<FloatType>::calcPiTau(const FloatType &costheta,
+                                std::vector<FloatType> &Pi, std::vector<FloatType> &Tau) {
 
-    int i;
+    int nmax = Pi.size();
+    if (Pi.size() != Tau.size())
+      throw std::invalid_argument("Error! Pi and Tau vectors should have the same size!");
+
     //****************************************************//
     // Equations (26a) - (26c)                            //
     //****************************************************//
@@ -466,10 +498,10 @@ namespace nmie {
     Pi[0] = 1.0;  // n=1
     Tau[0] = costheta;
     // Calculate the actual values
-    if (nmax_ > 1) {
+    if (nmax > 1) {
       Pi[1] = 3*costheta*Pi[0]; //n=2
       Tau[1] = 2*costheta*Pi[1] - 3*Pi[0];
-      for (i = 2; i < nmax_; i++) { //n=[3..nmax_]
+      for (int i = 2; i < nmax; i++) { //n=[3..nmax_]
         Pi[i] = ((i + i + 1)*costheta*Pi[i - 1] - (i + 1)*Pi[i - 2])/i;
         Tau[i] = (i + 1)*costheta*Pi[i] - (i + 2)*Pi[i - 1];
       }
@@ -493,33 +525,36 @@ namespace nmie {
   // Output parameters:                                                               //
   //   Mo1n, Me1n, No1n, Ne1n: Complex vector spherical harmonics                     //
   //**********************************************************************************//
-  template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcSpherHarm(const std::complex<FloatType> Rho, const FloatType Theta, const FloatType Phi,
-                                    const std::complex<FloatType>& rn, const std::complex<FloatType>& Dn,
-                                    const FloatType& Pi, const FloatType& Tau, const FloatType& n,
-                                    std::vector<std::complex<FloatType> >& Mo1n, std::vector<std::complex<FloatType> >& Me1n,
-                                    std::vector<std::complex<FloatType> >& No1n, std::vector<std::complex<FloatType> >& Ne1n) {
+  template <typename FloatType>  template <typename evalType>
+  void MultiLayerMie<FloatType>::calcSpherHarm(const std::complex<evalType> Rho, const evalType Theta, const evalType Phi,
+                                    const std::complex<evalType> &rn, const std::complex<evalType> &Dn,
+                                    const evalType &Pi, const evalType &Tau, const evalType &n,
+                                    std::vector<std::complex<evalType> > &Mo1n, std::vector<std::complex<evalType> > &Me1n,
+                                    std::vector<std::complex<evalType> > &No1n, std::vector<std::complex<evalType> > &Ne1n) {
 
     // using eq 4.50 in BH
-    std::complex<FloatType> c_zero(0.0, 0.0);
+    std::complex<evalType> c_zero(0.0, 0.0);
 
     using nmm::sin;
     using nmm::cos;
+    auto sin_Phi = sin(Phi);
+    auto cos_Phi = cos(Phi);
+    auto sin_Theta = sin(Theta);
     Mo1n[0] = c_zero;
-    Mo1n[1] = cos(Phi)*Pi*rn/Rho;
-    Mo1n[2] = -sin(Phi)*Tau*rn/Rho;
+    Mo1n[1] = cos_Phi*Pi*rn/Rho;
+    Mo1n[2] = -sin_Phi*Tau*rn/Rho;
 
     Me1n[0] = c_zero;
-    Me1n[1] = -sin(Phi)*Pi*rn/Rho;
-    Me1n[2] = -cos(Phi)*Tau*rn/Rho;
+    Me1n[1] = -sin_Phi*Pi*rn/Rho;
+    Me1n[2] = -cos_Phi*Tau*rn/Rho;
 
-    No1n[0] = sin(Phi)*(n*n + n)*sin(Theta)*Pi*rn/Rho/Rho;
-    No1n[1] = sin(Phi)*Tau*Dn*rn/Rho;
-    No1n[2] = cos(Phi)*Pi*Dn*rn/Rho;
+    No1n[0] = sin_Phi*(n*n + n)*sin_Theta*Pi*rn/Rho/Rho;
+    No1n[1] = sin_Phi*Tau*Dn*rn/Rho;
+    No1n[2] = cos_Phi*Pi*Dn*rn/Rho;
 
-    Ne1n[0] = cos(Phi)*(n*n + n)*sin(Theta)*Pi*rn/Rho/Rho;
-    Ne1n[1] = cos(Phi)*Tau*Dn*rn/Rho;
-    Ne1n[2] = -sin(Phi)*Pi*Dn*rn/Rho;
+    Ne1n[0] = cos_Phi*(n*n + n)*sin_Theta*Pi*rn/Rho/Rho;
+    Ne1n[1] = cos_Phi*Tau*Dn*rn/Rho;
+    Ne1n[2] = -sin_Phi*Pi*Dn*rn/Rho;
   }  // end of MultiLayerMie::calcSpherHarm(...)
 
 
@@ -547,9 +582,9 @@ namespace nmie {
 
     isScaCoeffsCalc_ = false;
 
-    const std::vector<FloatType>& x = size_param_;
-    const std::vector<std::complex<FloatType> >& m = refractive_index_;
-    const int& pl = PEC_layer_position_;
+    const std::vector<FloatType> &x = size_param_;
+    const std::vector<std::complex<FloatType> > &m = refractive_index_;
+    const int &pl = PEC_layer_position_;
     const int L = refractive_index_.size();
 
 
@@ -559,7 +594,7 @@ namespace nmie {
     // below the PEC are discarded.                                           //
     // ***********************************************************************//
     int fl = (pl > 0) ? pl : 0;
-    if (nmax_preset_ <= 0) calcNmax(fl);
+    if (nmax_preset_ <= 0) nmax_ = calcNmax();
     else nmax_ = nmax_preset_;
 
     std::complex<FloatType> z1, z2;
@@ -698,7 +733,7 @@ namespace nmie {
           nmm::isnan(bn_[n].real()) || nmm::isnan(bn_[n].imag())
           ) {
         // TODO somehow notify Python users about it
-        std::cout << "nmax value was chaned due to unexpected error. New values is "<< n
+        std::cout << "nmax value was changed due to unexpected error!!! New values is "<< n
                   << " (was "<<nmax_<<")"<<std::endl;
         nmax_ = n;
         break;
@@ -744,7 +779,7 @@ namespace nmie {
     if (size_param_.size() == 0)
       throw std::invalid_argument("Initialize model first!");
 
-    const std::vector<FloatType>& x = size_param_;
+    const std::vector<FloatType> &x = size_param_;
 
     //MarkUncalculated();
 
@@ -838,354 +873,101 @@ namespace nmie {
     isMieCalculated_ = true;
   }
 
+  // Python interface
+  template <typename FloatType> template <typename inputType>
+  void MultiLayerMie<FloatType>::SetLayersSize(
+      const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_layer_size) {
+    auto layer_size_dp = Py2Vector<inputType>(py_layer_size);
+    SetLayersSize(ConvertVector<FloatType>(layer_size_dp));
+  }
 
-  //**********************************************************************************//
-  // This function calculates the expansion coefficients inside the particle,         //
-  // required to calculate the near-field parameters.                                 //
-  //                                                                                  //
-  // Input parameters:                                                                //
-  //   L: Number of layers                                                            //
-  //   pl: Index of PEC layer. If there is none just send -1                          //
-  //   x: Array containing the size parameters of the layers [0..L-1]                 //
-  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
-  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
-  //         calculations. Only use it if you know what you are doing, otherwise      //
-  //         set this parameter to -1 and the function will calculate it.             //
-  //                                                                                  //
-  // Output parameters:                                                               //
-  //   aln, bln, cln, dln: Complex scattering amplitudes inside the particle          //
-  //                                                                                  //
-  // Return value:                                                                    //
-  //   Number of multipolar expansion terms used for the calculations                 //
-  //**********************************************************************************//
+  template <typename FloatType> template <typename inputType>
+  void MultiLayerMie<FloatType>::SetLayersIndex(
+      const py::array_t<std::complex<inputType>, py::array::c_style | py::array::forcecast> &py_index) {
+    auto index_dp = Py2Vector<std::complex<inputType> >(py_index);
+    SetLayersIndex(ConvertComplexVector<FloatType>(index_dp));
+  }
+
+  template <typename FloatType> template <typename inputType>
+  void MultiLayerMie<FloatType>::SetAngles(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_angles) {
+    auto angles_dp = Py2Vector<inputType>(py_angles);
+    SetAngles(ConvertVector<FloatType>(angles_dp));
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetS1() {
+    return VectorComplex2Py<FloatType,outputType>(GetS1());
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetS2() {
+    return VectorComplex2Py<FloatType,outputType>(GetS2());
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetAn() {
+    return VectorComplex2Py<FloatType,outputType>(GetAn());
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array_t< std::complex<outputType>>  MultiLayerMie<FloatType>::GetBn() {
+    return VectorComplex2Py<FloatType,outputType>(GetBn());
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetFieldE() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetFieldE())
+    );
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetFieldH() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetFieldH())
+    );
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetLayerAn() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetLayerAn())
+    );
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetLayerBn() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetLayerBn())
+    );
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetLayerCn() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetLayerCn())
+    );
+  }
+
+  template <typename FloatType> template <typename outputType>
+  py::array MultiLayerMie<FloatType>::GetLayerDn() {
+    return Vector2DComplex2Py<std::complex<outputType> >(
+        ConvertComplexVectorVector<outputType>(GetLayerDn())
+    );
+  }
+
   template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcExpanCoeffs() {
-    if (!isScaCoeffsCalc_)
-      throw std::invalid_argument("(calcExpanCoeffs) You should calculate external coefficients first!");
+  void MultiLayerMie<FloatType>::SetFieldCoords(
+      const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,
+      const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Yp,
+      const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Zp) {
+    auto c_Xp = Py2Vector<double>(py_Xp);
+    auto c_Yp = Py2Vector<double>(py_Yp);
+    auto c_Zp = Py2Vector<double>(py_Zp);
+    SetFieldCoords({ConvertVector<FloatType>(c_Xp),
+                    ConvertVector<FloatType>(c_Yp),
+                    ConvertVector<FloatType>(c_Zp) });
+  }
 
-    isExpCoeffsCalc_ = false;
-
-    std::complex<FloatType> c_one(1.0, 0.0), c_zero(0.0, 0.0);
-
-    const int L = refractive_index_.size();
-
-    aln_.resize(L + 1);
-    bln_.resize(L + 1);
-    cln_.resize(L + 1);
-    dln_.resize(L + 1);
-    for (int l = 0; l <= L; l++) {
-      aln_[l].resize(nmax_);
-      bln_[l].resize(nmax_);
-      cln_[l].resize(nmax_);
-      dln_[l].resize(nmax_);
-    }
-
-    // Yang, paragraph under eq. A3
-    // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
-    for (int n = 0; n < nmax_; n++) {
-      aln_[L][n] = an_[n];
-      bln_[L][n] = bn_[n];
-      cln_[L][n] = c_one;
-      dln_[L][n] = c_one;
-    }
-
-    std::vector<std::complex<FloatType> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
-    std::vector<std::complex<FloatType> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
-    std::complex<FloatType> denomZeta, denomPsi, T1, T2, T3, T4;
-
-    auto& m = refractive_index_;
-    std::vector< std::complex<FloatType> > m1(L);
-
-    for (int l = 0; l < L - 1; l++) m1[l] = m[l + 1];
-    m1[L - 1] = std::complex<FloatType> (1.0, 0.0);
-
-    std::complex<FloatType> z, z1;
-    for (int l = L - 1; l >= 0; l--) {
-      if (l <= PEC_layer_position_) { // We are inside a PEC. All coefficients must be zero!!!
-        for (int n = 0; n < nmax_; n++) {
-          // aln
-          aln_[l][n] = c_zero;
-          // bln
-          bln_[l][n] = c_zero;
-          // cln
-          cln_[l][n] = c_zero;
-          // dln
-          dln_[l][n] = c_zero;
-        }
-      } else { // Regular material, just do the calculation
-        z = size_param_[l]*m[l];
-        z1 = size_param_[l]*m1[l];
-
-        calcD1D3(z, D1z, D3z);
-        calcD1D3(z1, D1z1, D3z1);
-        calcPsiZeta(z, Psiz, Zetaz);
-        calcPsiZeta(z1, Psiz1, Zetaz1);
-
-        for (int n = 0; n < nmax_; n++) {
-          int n1 = n + 1;
-
-          denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
-          denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
-
-          T1 =  aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
-          T2 = (bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1])*m[l]/m1[l];
-
-          T3 = (dln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - aln_[l + 1][n]*D3z1[n1]*Zetaz1[n1])*m[l]/m1[l];
-          T4 =  cln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - bln_[l + 1][n]*D3z1[n1]*Zetaz1[n1];
-
-          // aln
-          aln_[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
-          // bln
-          bln_[l][n] = (D1z[n1]*T2 + T4)/denomZeta;
-          // cln
-          cln_[l][n] = (D3z[n1]*T2 + T4)/denomPsi;
-          // dln
-          dln_[l][n] = (D3z[n1]*T1 + T3)/denomPsi;
-        }  // end of all n
-      }  // end PEC condition
-    }  // end of all l
-
-    // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
-    for (int n = 0; n < nmax_; ++n) {
-      if (cabs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
-      else {
-        //throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
-        std::cout<< std::setprecision(100)
-                 << "Warning: Potentially unstable calculation of aln[0]["
-                 << n << "] = "<< aln_[0][n] <<std::endl;
-        aln_[0][n] = 0.0;
-      }
-      if (cabs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
-      else {
-        //throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
-        std::cout<< std::setprecision(100)
-                 << "Warning: Potentially unstable calculation of bln[0]["
-                 << n << "] = "<< bln_[0][n] <<std::endl;
-        bln_[0][n] = 0.0;
-      }
-    }
-
-    isExpCoeffsCalc_ = true;
-  }  // end of   void MultiLayerMie::calcExpanCoeffs()
-
-
-  //**********************************************************************************//
-  // This function calculates the electric (E) and magnetic (H) fields inside and     //
-  // around the particle.                                                             //
-  //                                                                                  //
-  // Input parameters (coordinates of the point):                                     //
-  //   Rho: Radial distance                                                           //
-  //   Phi: Azimuthal angle                                                           //
-  //   Theta: Polar angle                                                             //
-  //   mode_n: mode order.                                                            //
-  //          -1 - use all modes (all_)                                               //
-  //           1 - use dipole mode only                                               //
-  //           2 - use quadrupole mode only                                           //
-  //           ...                                                                    //
-  //   mode_type: only used when mode_n != -1                                         //
-  //          0 - electric only                                                       //
-  //          1 - magnetic only                                                       //
-  //                                                                                  //
-  //                                                                                  //
-  // Output parameters:                                                               //
-  //   E, H: Complex electric and magnetic fields                                     //
-  //**********************************************************************************//
-  template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcFieldByComponents(const FloatType Rho,
-                                const FloatType Theta, const FloatType Phi,
-                                std::vector<std::complex<FloatType> >& E,
-                                std::vector<std::complex<FloatType> >& H)  {
-
-    std::complex<FloatType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
-    // Vector containing precomputed integer powers of i to avoid computation
-    std::vector<std::complex<FloatType> > ipow = {c_one, c_i, -c_one, -c_i};
-    std::vector<std::complex<FloatType> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
-    std::vector<std::complex<FloatType> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
-    std::vector<std::complex<FloatType> > Psi(nmax_ + 1), D1n(nmax_ + 1), Zeta(nmax_ + 1), D3n(nmax_ + 1);
-    std::vector<FloatType> Pi(nmax_), Tau(nmax_);
-
-    int l = 0;  // Layer number
-    std::complex<FloatType> ml;
-
-    // Initialize E and H
-    for (int i = 0; i < 3; i++) {
-      E[i] = c_zero;
-      H[i] = c_zero;
-    }
-
-    if (Rho > size_param_.back()) {
-      l = size_param_.size();
-      ml = c_one;
-    } else {
-      for (int i = size_param_.size() - 1; i >= 0 ; i--) {
-        if (Rho <= size_param_[i]) {
-          l = i;
-        }
-      }
-      ml = refractive_index_[l];
-    }
-
-    // Calculate logarithmic derivative of the Ricatti-Bessel functions
-    calcD1D3(Rho*ml, D1n, D3n);
-    // Calculate Ricatti-Bessel functions
-    calcPsiZeta(Rho*ml, Psi, Zeta);
-
-    // Calculate angular functions Pi and Tau
-    calcPiTau(nmm::cos(Theta), Pi, Tau);
-
-//    for (int n = nmax_ - 2; n >= 0; n--) {
-    for (int n = 0; n < nmax_-1; n++) {
-      int n1 = n + 1;
-      auto rn = static_cast<FloatType>(n1);
-
-      // using BH 4.12 and 4.50
-      calcSpherHarm(Rho*ml, Theta, Phi, Psi[n1], D1n[n1], Pi[n], Tau[n], rn, M1o1n, M1e1n, N1o1n, N1e1n);
-      calcSpherHarm(Rho*ml, Theta, Phi, Zeta[n1], D3n[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
-
-      // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
-      std::complex<FloatType> En = ipow[n1 % 4]
-      *static_cast<FloatType>((rn + rn + 1.0)/(rn*rn + rn));
-      for (int i = 0; i < 3; i++) {
-        auto Ediff = En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
-                         + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
-        auto Hdiff = En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
-                         + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
-        if (nmm::isnan(Ediff.real()) || nmm::isnan(Ediff.imag()) ||
-            nmm::isnan(Hdiff.real()) || nmm::isnan(Hdiff.imag())
-            ) break;
-        if (mode_n_ == Modes::kAll) {
-          // electric field E [V m - 1] = EF*E0
-          E[i] += Ediff;
-          H[i] += Hdiff;
-          continue;
-        }
-        if (n1 == mode_n_) {
-          if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
-            E[i] += En*( -c_i*dln_[l][n]*N1e1n[i]
-                        + c_i*aln_[l][n]*N3e1n[i]);
-
-            H[i] += En*(-dln_[l][n]*M1e1n[i]
-                        +aln_[l][n]*M3e1n[i]);
-            //std::cout << mode_n_;
-          }
-          if (mode_type_ == Modes::kMagnetic  || mode_type_ == Modes::kAll) {
-            E[i] += En*(  cln_[l][n]*M1o1n[i]
-                        - bln_[l][n]*M3o1n[i]);
-
-            H[i] += En*( -c_i*cln_[l][n]*N1o1n[i]
-                        + c_i*bln_[l][n]*N3o1n[i]);
-            //std::cout << mode_n_;
-          }
-          //std::cout << std::endl;
-        }
-        //throw std::invalid_argument("Error! Unexpected mode for field evaluation!\n mode_n="+std::to_string(mode_n)+", mode_type="+std::to_string(mode_type)+"\n=====*****=====");
-      }
-    }  // end of for all n
-
-    // magnetic field
-    std::complex<FloatType> hffact = ml/static_cast<FloatType>(cc_*mu_);
-    for (int i = 0; i < 3; i++) {
-      H[i] = hffact*H[i];
-    }
-   }  // end of MultiLayerMie::calcFieldByComponents(...)
-
-
-  //**********************************************************************************//
-  // This function calculates complex electric and magnetic field in the surroundings //
-  // and inside the particle.                                                         //
-  //                                                                                  //
-  // Input parameters:                                                                //
-  //   L: Number of layers                                                            //
-  //   pl: Index of PEC layer. If there is none just send 0 (zero)                    //
-  //   x: Array containing the size parameters of the layers [0..L-1]                 //
-  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
-  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
-  //         calculations. Only use it if you know what you are doing, otherwise      //
-  //         set this parameter to 0 (zero) and the function will calculate it.       //
-  //   ncoord: Number of coordinate points                                            //
-  //   Coords: Array containing all coordinates where the complex electric and        //
-  //           magnetic fields will be calculated                                     //
-  //   mode_n: mode order.                                                            //
-  //          -1 - use all modes (all_)                                               //
-  //           1 - use dipole mode only                                               //
-  //           2 - use quadrupole mode only                                           //
-  //           ...                                                                    //
-  //   mode_type: only used when mode_n != -1                                         //
-  //          0 - electric only                                                       //
-  //          1 - magnetic only                                                       //
-  //                                                                                  //
-  // Output parameters:                                                               //
-  //   E, H: Complex electric and magnetic field at the provided coordinates          //
-  //                                                                                  //
-  // Return value:                                                                    //
-  //   Number of multipolar expansion terms used for the calculations                 //
-  //**********************************************************************************//
-  template <typename FloatType>
-  void MultiLayerMie<FloatType>::RunFieldCalculation() {
-    FloatType Rho, Theta, Phi;
-
-    // Calculate scattering coefficients an_ and bn_
-    calcScattCoeffs();
-
-    // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
-    calcExpanCoeffs();
-
-    long total_points = coords_[0].size();
-    E_.resize(total_points);
-    H_.resize(total_points);
-    Es_.resize(total_points);
-    Hs_.resize(total_points);
-    for (auto& f : E_) f.resize(3);
-    for (auto& f : H_) f.resize(3);
-    for (auto& f : Es_) f.resize(3);
-    for (auto& f : Hs_) f.resize(3);
-
-    for (int point = 0; point < total_points; point++) {
-      const FloatType& Xp = coords_[0][point];
-      const FloatType& Yp = coords_[1][point];
-      const FloatType& Zp = coords_[2][point];
-
-      // Convert to spherical coordinates
-      Rho = nmm::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
-
-      // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
-      Theta = (Rho > 0.0) ? nmm::acos(Zp/Rho) : 0.0;
-
-      // std::atan2 should take care of any special cases, e.g.  Xp=Yp=0, etc.
-      Phi = nmm::atan2(Yp,Xp);
-
-      // Avoid convergence problems due to Rho too small
-      if (Rho < 1e-5) Rho = 1e-5;
-      // std::cout << "Xp: "<<Xp<< "  Yp: "<<Yp<< "  Zp: "<<Zp<<std::endl;
-      // std::cout << "  Rho: "<<Rho<<" Theta: "<<Theta<<"  Phi:"<<Phi<<std::endl<<std::endl;
-
-      //*******************************************************//
-      // external scattering field = incident + scattered      //
-      // BH p.92 (4.37), 94 (4.45), 95 (4.50)                  //
-      // assume: medium is non-absorbing; refim = 0; Uabs = 0  //
-      //*******************************************************//
-
-      // This array contains the fields in spherical coordinates
-      std::vector<std::complex<FloatType> > Es(3), Hs(3);
-
-      // Do the actual calculation of electric and magnetic field
-      calcFieldByComponents(Rho, Theta, Phi, Es, Hs);
-      for (int sph_coord = 0; sph_coord<3; ++sph_coord) {
-        Es_[point][sph_coord] = Es[sph_coord];
-        Hs_[point][sph_coord] = Hs[sph_coord];
-      }
-      { //Now, convert the fields back to cartesian coordinates
-        using nmm::sin;
-        using nmm::cos;
-        E_[point][0] = sin(Theta)*cos(Phi)*Es[0] + cos(Theta)*cos(Phi)*Es[1] - sin(Phi)*Es[2];
-        E_[point][1] = sin(Theta)*sin(Phi)*Es[0] + cos(Theta)*sin(Phi)*Es[1] + cos(Phi)*Es[2];
-        E_[point][2] = cos(Theta)*Es[0] - sin(Theta)*Es[1];
-
-        H_[point][0] = sin(Theta)*cos(Phi)*Hs[0] + cos(Theta)*cos(Phi)*Hs[1] - sin(Phi)*Hs[2];
-        H_[point][1] = sin(Theta)*sin(Phi)*Hs[0] + cos(Theta)*sin(Phi)*Hs[1] + cos(Phi)*Hs[2];
-        H_[point][2] = cos(Theta)*Hs[0] - sin(Theta)*Hs[1];
-      }
-    }  // end of for all field coordinates
-  }  //  end of MultiLayerMie::RunFieldCalculation()
 }  // end of namespace nmie
-#endif  // SRC_NMIE_IMPL_HPP_
+#endif  // SRC_NMIE_BASIC_HPP_

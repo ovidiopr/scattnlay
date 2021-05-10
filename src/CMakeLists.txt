@@ -2,11 +2,10 @@
 set(_scattnlay_python_sources
         ${CMAKE_CURRENT_LIST_DIR}/nmie.hpp
         ${CMAKE_CURRENT_LIST_DIR}/nmie.cc
-        ${CMAKE_CURRENT_LIST_DIR}/nmie-pybind11.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/nmie-pybind11.cc
         ${CMAKE_CURRENT_LIST_DIR}/nmie-precision.hpp
         ${CMAKE_CURRENT_LIST_DIR}/special-functions-impl.hpp
-        ${CMAKE_CURRENT_LIST_DIR}/nmie-impl.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/nmie-basic.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/nmie-nearfield.hpp
         ${CMAKE_CURRENT_LIST_DIR}/pb11_wrapper.cc)
 
 # Define python extension
