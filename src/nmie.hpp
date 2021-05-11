@@ -55,6 +55,22 @@ std::vector<T> Py2Vector(const py::array_t<T> &py_x) {
   return c_x;
 }
 
+// https://github.com/pybind/pybind11/issues/1042#issuecomment-508582847
+//template <typename Sequence>
+//inline py::array_t<typename Sequence::value_type> Vector2Py(Sequence&& seq) {
+//  // Move entire object to heap (Ensure is moveable!). Memory handled via Python capsule
+//  Sequence* seq_ptr = new Sequence(std::move(seq));
+//  auto capsule = py::capsule(seq_ptr, [](void* p) { delete reinterpret_cast<Sequence*>(p); });
+//  return py::array(seq_ptr->size(),  // shape of array
+//                   seq_ptr->data(),  // c-style contiguous strides for Sequence
+//                   capsule           // numpy array references this parent
+//  );
+//}
+template <typename outputType>
+inline py::array_t<outputType> Vector2Py(const std::vector<outputType>& seq) {
+  return py::array(seq.size(), seq.data());
+}
+
 template <typename inputType=double, typename outputType=double>
 py::array_t< std::complex<outputType>> VectorComplex2Py(const std::vector<std::complex<inputType> > &cf_x) {
   auto c_x = nmie::ConvertComplexVector<outputType, inputType>(cf_x);
@@ -124,6 +140,11 @@ template<class T> inline T pow2(const T value) {return value*value;}
 
 template<class T> inline T cabs(const std::complex<T> value)
 {return nmm::sqrt(pow2(value.real()) + pow2(value.imag()));}
+
+template<class T> inline T vabs(const std::vector<std::complex<T>> value)
+{return nmm::sqrt(
+    pow2(value[0].real()) + pow2(value[1].real()) + pow2(value[2].real())
+    +pow2(value[0].imag()) + pow2(value[1].imag()) + pow2(value[2].imag()));}
 
 template <typename FloatType>
 int newround(FloatType x) {
@@ -291,9 +312,14 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     template <typename outputType> py::array GetFieldE();
     template <typename outputType> py::array GetFieldH();
 
+    std::vector< FloatType> GetFieldEabs(){return Eabs_;};   // {X[], Y[], Z[]}
+    std::vector< FloatType> GetFieldHabs(){return Habs_;};
+//    template <typename outputType> py::array_t<outputType>  GetFieldEabs();
+//    template <typename outputType> py::array_t<outputType>  GetFieldHabs();
+
     // Get fields in spherical coordinates.
-    std::vector<std::vector< std::complex<FloatType> > > GetFieldEs(){return E_;};   // {rho[], teha[], phi[]}
-    std::vector<std::vector< std::complex<FloatType> > > GetFieldHs(){return H_;};
+    std::vector<std::vector< std::complex<FloatType> > > GetFieldEs(){return Es_;};   // {rho[], teha[], phi[]}
+    std::vector<std::vector< std::complex<FloatType> > > GetFieldHs(){return Hs_;};
 
   protected:
     // Size parameter for all layers
@@ -367,6 +393,7 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     FloatType Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0, asymmetry_factor_ = 0.0, albedo_ = 0.0;
     std::vector<std::vector< std::complex<FloatType> > > E_, H_;  // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<FloatType> > > Es_, Hs_;  // {X[], Y[], Z[]}
+    std::vector<FloatType> Eabs_, Habs_;  // {X[], Y[], Z[]}
     std::vector<std::complex<FloatType> > S1_, S2_;
     void calcMieSeriesNeededToConverge(const FloatType Rho);
     void calcPiTauAllTheta(const double from_Theta,

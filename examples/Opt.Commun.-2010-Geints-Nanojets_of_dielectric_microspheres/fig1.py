@@ -38,7 +38,7 @@ from matplotlib import pyplot as plt
 import inspect
 print("Using scattnlay from ", inspect.getfile(scattnlay))
 
-npts = 351
+npts = 11
 # npts = 11
 factor = 2 # plot extent compared to sphere radius
 index_H2O = 1.33+(1e-6)*1j

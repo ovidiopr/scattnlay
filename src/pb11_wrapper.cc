@@ -58,6 +58,8 @@ void declare_nmie(py::module &m, const std::string &typestr) {
       .def("GetBn", &mie_typed::GetBn<double>)
       .def("GetFieldE", &mie_typed::GetFieldE<double>)
       .def("GetFieldH", &mie_typed::GetFieldH<double>)
+//      .def("GetFieldEabs", &mie_typed::GetFieldEabs<double>)
+//      .def("GetFieldHabs", &mie_typed::GetFieldHabs<double>)
       .def("GetLayerAn", &mie_typed::GetLayerAn<double>)
       .def("GetLayerBn", &mie_typed::GetLayerBn<double>)
       .def("GetLayerCn", &mie_typed::GetLayerCn<double>)

@@ -535,10 +535,10 @@ namespace nmie {
     // using eq 4.50 in BH
     std::complex<evalType> c_zero(0.0, 0.0);
 
-    using nmm::sin;
-    using nmm::cos;
-    auto sin_Phi = sin(Phi);
-    auto cos_Phi = cos(Phi);
+//    using nmm::sin;
+//    using nmm::cos;
+    auto sin_Phi = sin_t(Phi);
+    auto cos_Phi = cos_t(Phi);
     auto sin_Theta = sin(Theta);
     Mo1n[0] = c_zero;
     Mo1n[1] = cos_Phi*Pi*rn/Rho;
@@ -927,6 +927,16 @@ namespace nmie {
         ConvertComplexVectorVector<outputType>(GetFieldH())
     );
   }
+
+//  template <typename FloatType> template <typename outputType>
+//  py::array_t<outputType>  MultiLayerMie<FloatType>::GetFieldEabs() {
+//    return Vector2Py(ConvertVector<double>(GetFieldEabs()));
+//  }
+//
+//  template <typename FloatType> template <typename outputType>
+//  py::array_t<outputType>  MultiLayerMie<FloatType>::GetFieldHabs() {
+//    return Vector2Py(ConvertVector<double>(GetFieldHabs()));
+//  }
 
   template <typename FloatType> template <typename outputType>
   py::array MultiLayerMie<FloatType>::GetLayerAn() {

@@ -191,6 +191,7 @@ namespace nmie {
   void MultiLayerMie<FloatType>::convertFieldsFromSphericalToCartesian() {
     long total_points = coords_polar_.size();
     E_.clear(); H_.clear();
+    Eabs_.clear(); Habs_.clear();
     for (int point=0; point < total_points; point++) {
       auto Theta = coords_polar_[point][1];
       auto Phi = coords_polar_[point][2];
@@ -204,6 +205,8 @@ namespace nmie {
       H_.push_back({ sin(Theta)*cos(Phi)*Hs[0] + cos(Theta)*cos(Phi)*Hs[1] - sin(Phi)*Hs[2],
                      sin(Theta)*sin(Phi)*Hs[0] + cos(Theta)*sin(Phi)*Hs[1] + cos(Phi)*Hs[2],
                      cos(Theta)*Hs[0] - sin(Theta)*Hs[1]});
+      Eabs_.push_back(vabs(E_.back()));
+      Habs_.push_back(vabs(H_.back()));
     }
 
   }  // end of void MultiLayerMie::convertFieldsFromSphericalToCartesian()
@@ -538,31 +541,31 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
   Es_.clear(); Hs_.clear(); coords_polar_.clear();
   for (int j=0; j < radius_points; j++) {
     auto Rho = static_cast<FloatType>(from_Rho + j * delta_Rho);
+    double Rho_dp = static_cast<double>(Rho);
+    std::vector< std::complex<double> > Psi_dp = ConvertComplexVector<double>(Psi[j]);
+    std::vector< std::complex<double> > Zeta_dp = ConvertComplexVector<double>(Zeta[j]);
+    std::vector< std::complex<double> > D1n_dp = ConvertComplexVector<double>(D1n[j]);
+    std::vector< std::complex<double> > D3n_dp = ConvertComplexVector<double>(D3n[j]);
     for (int i = 0; i < theta_points; i++) {
       auto Theta = static_cast<FloatType>(from_Theta + i * delta_Theta);
+      double Theta_dp = static_cast<double>(Theta);
+      std::vector<double> Pi_dp = ConvertVector<double>(Pi[i]);
+      std::vector<double> Tau_dp = ConvertVector<double>(Tau[i]);
       for (int k = 0; k < phi_points; k++) {
         auto Phi = static_cast<FloatType>(from_Phi + k * delta_Phi);
+        double Phi_dp = static_cast<double>(Phi);
         coords_polar_.push_back({Rho, Theta, Phi});
-//        double Rho_dp = static_cast<double>(Rho);
-//        double Phi_dp = static_cast<double>(Phi);
-//        double Theta_dp = static_cast<double>(Theta);
-//        std::vector<double> Pi_dp = ConvertVector<double>(Pi[i]);
-//        std::vector<double> Tau_dp = ConvertVector<double>(Tau[i]);
-//        std::vector< std::complex<double> > Psi_dp = ConvertComplexVector<double>(Psi[j]);
-//        std::vector< std::complex<double> > Zeta_dp = ConvertComplexVector<double>(Zeta[j]);
-//        std::vector< std::complex<double> > D1n_dp = ConvertComplexVector<double>(D1n[j]);
-//        std::vector< std::complex<double> > D3n_dp = ConvertComplexVector<double>(D3n[j]);
 
         // This array contains the fields in spherical coordinates
-        std::vector<std::complex<FloatType> > Es(3), Hs(3);
-//        std::vector<std::complex<double> > Es(3), Hs(3);
+//        std::vector<std::complex<FloatType> > Es(3), Hs(3);
+        std::vector<std::complex<double> > Es(3), Hs(3);
         calcFieldByComponents(
-//            Rho_dp, Theta_dp, Phi_dp,
-//                              Psi_dp, D1n_dp, Zeta_dp, D3n_dp,
-//                              Pi_dp, Tau_dp, Es, Hs
-        Rho, Theta, Phi,
-            Psi[j], D1n[j], Zeta[j], D3n[j],
-            Pi[i], Tau[i], Es, Hs
+            Rho_dp, Theta_dp, Phi_dp,
+                              Psi_dp, D1n_dp, Zeta_dp, D3n_dp,
+                              Pi_dp, Tau_dp, Es, Hs
+//        Rho, Theta, Phi,
+//            Psi[j], D1n[j], Zeta[j], D3n[j],
+//            Pi[i], Tau[i], Es, Hs
         );
         Es_.push_back(ConvertComplexVector<FloatType>(Es));
         Hs_.push_back(ConvertComplexVector<FloatType>(Hs));

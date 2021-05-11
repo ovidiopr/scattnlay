@@ -31,7 +31,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scattnlay import mie, mie_mp
 
-npts = 351/2
+npts = 11/2
 # npts = 11
 
 
@@ -97,12 +97,11 @@ for i in range(len(r_all)):
         theta.append(theta_all[j])
         r.append(r_all[i])
 
-mie.RunFieldCalculationPolar(outer_arc_points, r_points,
-                             from_r, to_r,
-                             from_theta, to_theta,
-                             0, 0,
-                             True)
-Ec = mie.GetFieldE()
+mie_mp.RunFieldCalculationPolar(outer_arc_points, r_points, from_r, to_r, from_theta, to_theta, 0, 0, True)
+Ec = mie_mp.GetFieldE()
+# mie.RunFieldCalculationPolar(outer_arc_points, r_points, from_r, to_r, from_theta, to_theta, 0, 0, True)
+# Ec = mie.GetFieldE()
+print("Field evaluation done.")
 Er = np.absolute(Ec)
 Eabs = (Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
 # Eabs = np.resize(Eabs2, (outer_arc_points, r_points))
