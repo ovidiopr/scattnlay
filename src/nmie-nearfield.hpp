@@ -538,9 +538,9 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
   Es_.clear(); Hs_.clear(); coords_polar_.clear();
   for (int j=0; j < radius_points; j++) {
     auto Rho = static_cast<FloatType>(from_Rho + j * delta_Rho);
-    for (int i = 0; i < outer_arc_points; i++) {
+    for (int i = 0; i < theta_points; i++) {
       auto Theta = static_cast<FloatType>(from_Theta + i * delta_Theta);
-      for (int k = 0; k < outer_arc_points; k++) {
+      for (int k = 0; k < phi_points; k++) {
         auto Phi = static_cast<FloatType>(from_Phi + k * delta_Phi);
         coords_polar_.push_back({Rho, Theta, Phi});
 //        double Rho_dp = static_cast<double>(Rho);
