@@ -58,7 +58,17 @@ namespace nmie {
   //typedef float FloatType;
   #endif  // MULTI_PRECISION
 
-  template <typename ToFloatType, typename FromFloatType>
+  template<class T> T sin_t(T v) {
+    if (std::is_same<T, double>::value) return static_cast<T>(std::sin(static_cast<double>(v)));
+    return static_cast<T>(nmm::sin(static_cast<FloatType >(v)));
+  }
+  template<class T> T cos_t(T v) {
+    if (std::is_same<T, double>::value) return static_cast<T>(std::cos(static_cast<double>(v)));
+    return static_cast<T>(nmm::cos(static_cast<FloatType >(v)));
+  }
+
+
+template <typename ToFloatType, typename FromFloatType>
   std::vector<ToFloatType> ConvertVector(const std::vector<FromFloatType> x) {
     std::vector<ToFloatType> new_x;
     for (auto element : x) {

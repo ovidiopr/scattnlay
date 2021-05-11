@@ -77,3 +77,4 @@ PYBIND11_MODULE(scattnlay_dp, m)
   m.doc() = "The Python version of scattnlay";
   declare_nmie<nmie::FloatType>(m, precision_name);
 }
+

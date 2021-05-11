@@ -273,14 +273,20 @@ namespace nmie {
       std::complex<evalType> En = ipow[n1 % 4]
       *static_cast<evalType>((rn + rn + 1.0)/(rn*rn + rn));
       std::complex<evalType> Ediff, Hdiff;
+      std::complex<FloatType> Ediff_ft, Hdiff_ft;
       for (int i = 0; i < 3; i++) {
-        Ediff = En*(      cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
-                         + c_i*aln_[l][n]*N3e1n[i] -     bln_[l][n]*M3o1n[i]);
-        Hdiff = En*(     -dln_[l][n]*M1e1n[i] - c_i*cln_[l][n]*N1o1n[i]
-                         + c_i*bln_[l][n]*N3o1n[i] +     aln_[l][n]*M3e1n[i]);
-        if (nmm::isnan(Ediff.real()) || nmm::isnan(Ediff.imag()) ||
-            nmm::isnan(Hdiff.real()) || nmm::isnan(Hdiff.imag())
-            ) {
+        std::complex<evalType> aln = ConvertComplex<evalType>(aln_[l][n]);
+        std::complex<evalType> bln = ConvertComplex<evalType>(bln_[l][n]);
+        std::complex<evalType> cln = ConvertComplex<evalType>(cln_[l][n]);
+        std::complex<evalType> dln = ConvertComplex<evalType>(dln_[l][n]);
+        Ediff = En*(      cln*M1o1n[i] - c_i*dln*N1e1n[i]
+                         + c_i*aln*N3e1n[i] -     bln*M3o1n[i]);
+        Hdiff = En*(     -dln*M1e1n[i] - c_i*cln*N1o1n[i]
+                         + c_i*bln*N3o1n[i] +     aln*M3e1n[i]);
+        Ediff_ft = ConvertComplex<FloatType>(Ediff);
+        Hdiff_ft = ConvertComplex<FloatType>(Hdiff);
+        if ( nmm::isnan(Ediff_ft.real()) || nmm::isnan(Ediff_ft.imag()) ||
+             nmm::isnan(Hdiff_ft.real()) || nmm::isnan(Hdiff_ft.imag()) ) {
           std::cout << "Unexpected truncation during near-field evaluation at n = "<< n
                     << " (of total nmax = "<<nmax<<")!!!"<<std::endl;
           break;
@@ -293,27 +299,27 @@ namespace nmie {
         }
         if (n1 == mode_n_) {
           if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
-            E[i] += En*( -c_i*dln_[l][n]*N1e1n[i]
-                        + c_i*aln_[l][n]*N3e1n[i]);
+            E[i] += En*( -c_i*dln*N1e1n[i]
+                        + c_i*aln*N3e1n[i]);
 
-            H[i] += En*(-dln_[l][n]*M1e1n[i]
-                        +aln_[l][n]*M3e1n[i]);
+            H[i] += En*(-dln*M1e1n[i]
+                        +aln*M3e1n[i]);
             //std::cout << mode_n_;
           }
           if (mode_type_ == Modes::kMagnetic  || mode_type_ == Modes::kAll) {
-            E[i] += En*(  cln_[l][n]*M1o1n[i]
-                        - bln_[l][n]*M3o1n[i]);
+            E[i] += En*(  cln*M1o1n[i]
+                        - bln*M3o1n[i]);
 
-            H[i] += En*( -c_i*cln_[l][n]*N1o1n[i]
-                        + c_i*bln_[l][n]*N3o1n[i]);
+            H[i] += En*( -c_i*cln*N1o1n[i]
+                        + c_i*bln*N3o1n[i]);
             //std::cout << mode_n_;
           }
           //std::cout << std::endl;
         }
         //throw std::invalid_argument("Error! Unexpected mode for field evaluation!\n mode_n="+std::to_string(mode_n)+", mode_type="+std::to_string(mode_type)+"\n=====*****=====");
       }
-      if (nmm::isnan(Ediff.real()) || nmm::isnan(Ediff.imag()) ||
-          nmm::isnan(Hdiff.real()) || nmm::isnan(Hdiff.imag())
+      if (nmm::isnan(Ediff_ft.real()) || nmm::isnan(Ediff_ft.imag()) ||
+          nmm::isnan(Hdiff_ft.real()) || nmm::isnan(Hdiff_ft.imag())
           ) break;
     }  // end of for all n
 
@@ -429,14 +435,14 @@ void MultiLayerMie<FloatType>::GetIndexAtRadius(const evalType Rho,
   l = 0;
   if (Rho > size_param_.back()) {
     l = size_param_.size();
-    ml = std::complex<FloatType>(1.0, 0.0);
+    ml = std::complex<evalType>(1.0, 0.0);
   } else {
     for (int i = size_param_.size() - 1; i >= 0 ; i--) {
       if (Rho <= size_param_[i]) {
         l = i;
       }
     }
-    ml = refractive_index_[l];
+    ml = ConvertComplex<evalType>(refractive_index_[l]);
   }
 }
 template <typename FloatType> template <typename evalType>
@@ -537,13 +543,29 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
       for (int k = 0; k < outer_arc_points; k++) {
         auto Phi = static_cast<FloatType>(from_Phi + k * delta_Phi);
         coords_polar_.push_back({Rho, Theta, Phi});
+//        double Rho_dp = static_cast<double>(Rho);
+//        double Phi_dp = static_cast<double>(Phi);
+//        double Theta_dp = static_cast<double>(Theta);
+//        std::vector<double> Pi_dp = ConvertVector<double>(Pi[i]);
+//        std::vector<double> Tau_dp = ConvertVector<double>(Tau[i]);
+//        std::vector< std::complex<double> > Psi_dp = ConvertComplexVector<double>(Psi[j]);
+//        std::vector< std::complex<double> > Zeta_dp = ConvertComplexVector<double>(Zeta[j]);
+//        std::vector< std::complex<double> > D1n_dp = ConvertComplexVector<double>(D1n[j]);
+//        std::vector< std::complex<double> > D3n_dp = ConvertComplexVector<double>(D3n[j]);
+
         // This array contains the fields in spherical coordinates
         std::vector<std::complex<FloatType> > Es(3), Hs(3);
-        calcFieldByComponents(Rho, Theta, Phi,
-                              Psi[j], D1n[j], Zeta[j], D3n[j],
-                              Pi[i], Tau[i], Es, Hs);
-        Es_.push_back(Es);
-        Hs_.push_back(Hs);
+//        std::vector<std::complex<double> > Es(3), Hs(3);
+        calcFieldByComponents(
+//            Rho_dp, Theta_dp, Phi_dp,
+//                              Psi_dp, D1n_dp, Zeta_dp, D3n_dp,
+//                              Pi_dp, Tau_dp, Es, Hs
+        Rho, Theta, Phi,
+            Psi[j], D1n[j], Zeta[j], D3n[j],
+            Pi[i], Tau[i], Es, Hs
+        );
+        Es_.push_back(ConvertComplexVector<FloatType>(Es));
+        Hs_.push_back(ConvertComplexVector<FloatType>(Hs));
       }
     }
   }
