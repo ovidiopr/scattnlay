@@ -39,6 +39,10 @@
 
 #include "nmie.hpp"
 #include "nmie-basic.hpp"
+#include "nmie-nearfield.hpp"
+
+#include <emscripten/bind.h>
+#include <emscripten/val.h>
 
 
 namespace nmie {
@@ -54,6 +58,14 @@ namespace nmie {
     // Will throw for any error!
    public:
     void RunMieCalculation();
+    void RunFieldCalculationPolar(const int outer_arc_points,
+                                  const int radius_points,
+                                  const double from_Rho, const double to_Rho,
+                                  const double from_Theta, const double to_Theta,
+                                  const double from_Phi, const double to_Phi,
+                                  const int isIgnoreAvailableNmax);
+    emscripten::val GetFieldEabs();
+
     void GetFailed();
     long iformat = 0;
     bool output = true;
@@ -172,9 +184,6 @@ namespace nmie {
     std::vector< std::complex<FloatType> > target_index_, coating_index_;
 
     std::vector< std::vector<FloatType> > coords_sp_;
-
-
-
 
   };  // end of class MultiLayerMie
 
