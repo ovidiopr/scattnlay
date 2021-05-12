@@ -38,83 +38,10 @@
 #include <iostream>
 #include <vector>
 
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
-#include <pybind11/complex.h>
-
 #include "nmie-precision.hpp"
 #ifdef MULTI_PRECISION
 #include <boost/math/constants/constants.hpp>
 #endif
-namespace py = pybind11;
-
-template <typename T>
-std::vector<T> Py2Vector(const py::array_t<T> &py_x) {
-  std::vector<T> c_x(py_x.size());
-  std::memcpy(c_x.data(), py_x.data(), py_x.size()*sizeof(T));
-  return c_x;
-}
-
-// https://github.com/pybind/pybind11/issues/1042#issuecomment-508582847
-//template <typename Sequence>
-//inline py::array_t<typename Sequence::value_type> Vector2Py(Sequence&& seq) {
-//  // Move entire object to heap (Ensure is moveable!). Memory handled via Python capsule
-//  Sequence* seq_ptr = new Sequence(std::move(seq));
-//  auto capsule = py::capsule(seq_ptr, [](void* p) { delete reinterpret_cast<Sequence*>(p); });
-//  return py::array(seq_ptr->size(),  // shape of array
-//                   seq_ptr->data(),  // c-style contiguous strides for Sequence
-//                   capsule           // numpy array references this parent
-//  );
-//}
-template <typename outputType>
-inline py::array_t<outputType> Vector2Py(const std::vector<outputType>& seq) {
-  return py::array(seq.size(), seq.data());
-}
-
-template <typename inputType=double, typename outputType=double>
-py::array_t< std::complex<outputType>> VectorComplex2Py(const std::vector<std::complex<inputType> > &cf_x) {
-  auto c_x = nmie::ConvertComplexVector<outputType, inputType>(cf_x);
-  auto py_x = py::array_t< std::complex<outputType>>(c_x.size());
-  auto py_x_buffer = py_x.request();
-  auto *py_x_ptr = (std::complex<outputType> *) py_x_buffer.ptr;
-  std::memcpy(py_x_ptr, c_x.data(), c_x.size()*sizeof(std::complex<outputType>));
-  return py_x;
-}
-
-// https://stackoverflow.com/questions/17294629/merging-flattening-sub-vectors-into-a-single-vector-c-converting-2d-to-1d
-template <typename T>
-std::vector<T> flatten(const std::vector<std::vector<T>> &v) {
-  std::size_t total_size = 0;
-  for (const auto &sub : v)
-    total_size += sub.size(); // I wish there was a transform_accumulate
-  std::vector<T> result;
-  result.reserve(total_size);
-  for (const auto &sub : v)
-    result.insert(result.end(), sub.begin(), sub.end());
-  return result;
-}
-
-
-template <typename T>
-py::array Vector2DComplex2Py(const std::vector<std::vector<T > > &x) {
-  size_t dim1 = x.size();
-  size_t dim2 = x[0].size();
-  auto result = flatten(x);
-  // https://github.com/tdegeus/pybind11_examples/blob/master/04_numpy-2D_cpp-vector/example.cpp
-  size_t              ndim    = 2;
-  std::vector<size_t> shape   = {dim1, dim2};
-  std::vector<size_t> strides = {sizeof(T)*dim2, sizeof(T)};
-
-  // return 2-D NumPy array
-  return py::array(py::buffer_info(
-      result.data(),                       /* data as contiguous array  */
-      sizeof(T),                           /* size of one scalar        */
-      py::format_descriptor<T>::format(),  /* data type                 */
-      ndim,                                /* number of dimensions      */
-      shape,                               /* shape of the matrix       */
-      strides                              /* strides for each axis     */
-  ));
-}
 
 namespace nmie {
   int ScattCoeffs(const unsigned int L, const int pl,
@@ -240,44 +167,27 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     template <typename outputType = FloatType> outputType  GetAlbedo();
     std::vector<std::complex<FloatType> > GetS1();
     std::vector<std::complex<FloatType> > GetS2();
-    template <typename outputType> py::array_t< std::complex<outputType>>  GetS1();
-    template <typename outputType> py::array_t< std::complex<outputType>>  GetS2();
 
     std::vector<std::complex<FloatType> > GetAn(){return an_;};
     std::vector<std::complex<FloatType> > GetBn(){return bn_;};
-    template <typename outputType> py::array_t< std::complex<outputType>>  GetAn();
-    template <typename outputType> py::array_t< std::complex<outputType>>  GetBn();
 
     std::vector< std::vector<std::complex<FloatType> > > GetLayerAn(){return aln_;};
     std::vector< std::vector<std::complex<FloatType> > > GetLayerBn(){return bln_;};
     std::vector< std::vector<std::complex<FloatType> > > GetLayerCn(){return cln_;};
     std::vector< std::vector<std::complex<FloatType> > > GetLayerDn(){return dln_;};
-    template <typename outputType> py::array GetLayerAn();
-    template <typename outputType> py::array GetLayerBn();
-    template <typename outputType> py::array GetLayerCn();
-    template <typename outputType> py::array GetLayerDn();
 
     // Problem definition
     // Modify size of all layers
     void SetLayersSize(const std::vector<FloatType> &layer_size);
-    template <typename inputType>
-    void SetLayersSize(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_layer_size);
     // Modify refractive index of all layers
     void SetLayersIndex(const std::vector< std::complex<FloatType> > &index);
-    template <typename inputType>
-    void SetLayersIndex(const py::array_t<std::complex<inputType>, py::array::c_style | py::array::forcecast> &py_index);
 
     template <typename evalType=FloatType> void GetIndexAtRadius(const evalType Rho, std::complex<evalType> &ml, unsigned int &l);
     template <typename evalType=FloatType> void GetIndexAtRadius(const evalType Rho, std::complex<evalType> &ml);
-    // Modify scattering (theta) py_angles
-    void SetAngles(const std::vector<FloatType> &py_angles);
-    template <typename inputType>
-    void SetAngles(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_angles);
+    // Modify scattering (theta) angles
+    void SetAngles(const std::vector<FloatType> &angles);
     // Modify coordinates for field calculation
     void SetFieldCoords(const std::vector< std::vector<FloatType> > &coords);
-    void SetFieldCoords(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,
-                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Yp,
-                        const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Zp);
     // Modify index of PEC layer
     void SetPECLayer(int layer_position = 0);
     // Modify the mode taking into account for evaluation of output variables
@@ -309,13 +219,9 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
 
     std::vector<std::vector< std::complex<FloatType> > > GetFieldE(){return E_;};   // {X[], Y[], Z[]}
     std::vector<std::vector< std::complex<FloatType> > > GetFieldH(){return H_;};
-    template <typename outputType> py::array GetFieldE();
-    template <typename outputType> py::array GetFieldH();
 
     std::vector< FloatType> GetFieldEabs(){return Eabs_;};   // {X[], Y[], Z[]}
     std::vector< FloatType> GetFieldHabs(){return Habs_;};
-//    template <typename outputType> py::array_t<outputType>  GetFieldEabs();
-//    template <typename outputType> py::array_t<outputType>  GetFieldHabs();
 
     // Get fields in spherical coordinates.
     std::vector<std::vector< std::complex<FloatType> > > GetFieldEs(){return Es_;};   // {rho[], teha[], phi[]}

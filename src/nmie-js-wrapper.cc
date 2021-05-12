@@ -48,6 +48,9 @@ EMSCRIPTEN_BINDINGS (c) {
                 .function("SetModeNmaxAndType",&nmie::MultiLayerMieApplied<double>::SetModeNmaxAndType)
                 .function("ClearTarget",&nmie::MultiLayerMieApplied<double>::ClearTarget)
                 .function("RunMieCalculation",&nmie::MultiLayerMieApplied<double>::RunMieCalculation)
+                .function("RunFieldCalculationPolar",&nmie::MultiLayerMieApplied<double>::RunFieldCalculationPolar)
+// https://stackoverflow.com/questions/65566923/is-there-a-more-efficient-way-to-return-arrays-from-c-to-javascript
+//                .function("GetFieldEabs",&nmie::MultiLayerMieApplied<double>::GetFieldEabs)
                 .function("GetQsca",&nmie::MultiLayerMieApplied<double>::GetQsca)
                 .function("GetQext",&nmie::MultiLayerMieApplied<double>::GetQext)
                 .function("GetQabs",&nmie::MultiLayerMieApplied<double>::GetQabs)

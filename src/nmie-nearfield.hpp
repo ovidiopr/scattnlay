@@ -515,6 +515,7 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
       || outer_arc_points < 1 || radius_points < 1
       || from_Rho < 0.)
     throw std::invalid_argument("Error! Invalid argument for RunFieldCalculationPolar() !");
+  auto nmax_old = nmax_;
   int theta_points = 0, phi_points = 0;
   if (to_Theta-from_Theta > to_Phi-from_Phi) {
     theta_points = outer_arc_points;
@@ -540,27 +541,25 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
   double delta_Phi = eval_delta<double>(phi_points, from_Phi, to_Phi);
   Es_.clear(); Hs_.clear(); coords_polar_.clear();
   for (int j=0; j < radius_points; j++) {
-    auto Rho = static_cast<FloatType>(from_Rho + j * delta_Rho);
-    double Rho_dp = static_cast<double>(Rho);
+    auto Rho = from_Rho + j * delta_Rho;
     std::vector< std::complex<double> > Psi_dp = ConvertComplexVector<double>(Psi[j]);
     std::vector< std::complex<double> > Zeta_dp = ConvertComplexVector<double>(Zeta[j]);
     std::vector< std::complex<double> > D1n_dp = ConvertComplexVector<double>(D1n[j]);
     std::vector< std::complex<double> > D3n_dp = ConvertComplexVector<double>(D3n[j]);
     for (int i = 0; i < theta_points; i++) {
-      auto Theta = static_cast<FloatType>(from_Theta + i * delta_Theta);
-      double Theta_dp = static_cast<double>(Theta);
+      auto Theta = from_Theta + i * delta_Theta;
       std::vector<double> Pi_dp = ConvertVector<double>(Pi[i]);
       std::vector<double> Tau_dp = ConvertVector<double>(Tau[i]);
       for (int k = 0; k < phi_points; k++) {
-        auto Phi = static_cast<FloatType>(from_Phi + k * delta_Phi);
-        double Phi_dp = static_cast<double>(Phi);
+
+        auto Phi = from_Phi + k * delta_Phi;
         coords_polar_.push_back({Rho, Theta, Phi});
 
         // This array contains the fields in spherical coordinates
 //        std::vector<std::complex<FloatType> > Es(3), Hs(3);
         std::vector<std::complex<double> > Es(3), Hs(3);
         calcFieldByComponents(
-            Rho_dp, Theta_dp, Phi_dp,
+            Rho, Theta, Phi,
                               Psi_dp, D1n_dp, Zeta_dp, D3n_dp,
                               Pi_dp, Tau_dp, Es, Hs
 //        Rho, Theta, Phi,
@@ -573,7 +572,7 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
     }
   }
   convertFieldsFromSphericalToCartesian();
-
+  nmax_ = nmax_old;
 }
 
 // Python interface
