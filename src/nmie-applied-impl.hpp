@@ -417,7 +417,24 @@ c    MM + 1  and - 1, alternately
                                                                from_Theta, to_Theta, from_Phi, to_Phi,
                                                                isIgnoreAvailableNmax == 0 ? false : true);
   }
-  // ********************************************************************** //
+
+//from https://toughengineer.github.io/demo/dsp/fft-perf/
+template <typename FloatType=double>
+emscripten::val toJSFloat64Array(const std::vector<double> &v) {
+  emscripten::val view{ emscripten::typed_memory_view(v.size(), v.data()) };  // make a view of local object
+
+  auto result = emscripten::val::global("Float64Array").new_(v.size());  // make a JS typed array
+  result.call<void>("set", view);  // set typed array values "on the JS side" using the memory view
+
+  return result;
+}
+
+template <typename FloatType>
+emscripten::val MultiLayerMieApplied<FloatType>::GetFieldEabs() {
+  auto Eabs = this->MultiLayerMie<FloatType>::GetFieldEabs();
+  return toJSFloat64Array(Eabs);
+}
+// ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
   template <typename FloatType>

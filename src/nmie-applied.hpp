@@ -41,6 +41,9 @@
 #include "nmie-basic.hpp"
 #include "nmie-nearfield.hpp"
 
+#include <emscripten/bind.h>
+#include <emscripten/val.h>
+
 
 namespace nmie {
 
@@ -61,6 +64,7 @@ namespace nmie {
                                   const double from_Theta, const double to_Theta,
                                   const double from_Phi, const double to_Phi,
                                   const int isIgnoreAvailableNmax);
+    emscripten::val GetFieldEabs();
 
     void GetFailed();
     long iformat = 0;

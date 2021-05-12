@@ -34,7 +34,6 @@
 #include "nmie-applied.hpp"
 #include "nmie-applied-impl.hpp"
 #include "nmie-precision.hpp"
-#include <emscripten/bind.h>
 
 using namespace emscripten;
 
@@ -49,8 +48,7 @@ EMSCRIPTEN_BINDINGS (c) {
                 .function("ClearTarget",&nmie::MultiLayerMieApplied<double>::ClearTarget)
                 .function("RunMieCalculation",&nmie::MultiLayerMieApplied<double>::RunMieCalculation)
                 .function("RunFieldCalculationPolar",&nmie::MultiLayerMieApplied<double>::RunFieldCalculationPolar)
-// https://stackoverflow.com/questions/65566923/is-there-a-more-efficient-way-to-return-arrays-from-c-to-javascript
-//                .function("GetFieldEabs",&nmie::MultiLayerMieApplied<double>::GetFieldEabs)
+                .function("GetFieldEabs",&nmie::MultiLayerMieApplied<double>::GetFieldEabs)
                 .function("GetQsca",&nmie::MultiLayerMieApplied<double>::GetQsca)
                 .function("GetQext",&nmie::MultiLayerMieApplied<double>::GetQext)
                 .function("GetQabs",&nmie::MultiLayerMieApplied<double>::GetQabs)

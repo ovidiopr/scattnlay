@@ -152,7 +152,7 @@
     // outer_arc_points, radius_points, from_Rho, to_Rho,
     // from_Theta, to_Theta, from_Phi, to_Phi, isIgnoreAvailableNmax
     nmie.RunFieldCalculationPolar(2, 2, 0.1, 1.5, 0, 3.1415, 0, 3.1415, 0);
-    // console.log("Field Eabs:", nmie.GetFieldEabs());
+    console.log("Field Eabs:", nmie.GetFieldEabs());
   })();
 
   const range = (start, stop, step = 1) => Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
