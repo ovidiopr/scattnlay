@@ -80,28 +80,18 @@ namespace nmie {
 template<typename FloatType>
 class PyMultiLayerMie : public MultiLayerMie<FloatType> {
  public:
-  template<typename outputType>
-  py::array_t<std::complex<outputType>> GetS1();
-  template<typename outputType>
-  py::array_t<std::complex<outputType>> GetS2();
-  template<typename outputType>
-  py::array_t<std::complex<outputType>> GetAn();
-  template<typename outputType>
-  py::array_t<std::complex<outputType>> GetBn();
-  template<typename outputType>
-  py::array GetLayerAn();
-  template<typename outputType>
-  py::array GetLayerBn();
-  template<typename outputType>
-  py::array GetLayerCn();
-  template<typename outputType>
-  py::array GetLayerDn();
-  template<typename outputType>
-  py::array GetFieldE();
-  template<typename outputType>
-  py::array GetFieldH();
-//    template <typename outputType> py::array_t<outputType>  GetFieldEabs();
-//    template <typename outputType> py::array_t<outputType>  GetFieldHabs();
+  template<typename outputType> py::array_t<std::complex<outputType>> GetS1();
+  template<typename outputType> py::array_t<std::complex<outputType>> GetS2();
+  template<typename outputType> py::array_t<std::complex<outputType>> GetAn();
+  template<typename outputType> py::array_t<std::complex<outputType>> GetBn();
+  template<typename outputType> py::array GetLayerAn();
+  template<typename outputType> py::array GetLayerBn();
+  template<typename outputType> py::array GetLayerCn();
+  template<typename outputType> py::array GetLayerDn();
+  template<typename outputType> py::array GetFieldE();
+  template<typename outputType> py::array GetFieldH();
+  template<typename outputType> py::array_t<outputType>  GetFieldEabs();
+  template<typename outputType> py::array_t<outputType>  GetFieldHabs();
 
   template<typename inputType>
   void SetLayersSize(const py::array_t<inputType, py::array::c_style | py::array::forcecast> &py_layer_size);
@@ -156,6 +146,22 @@ py::array_t<std::complex<outputType>> PyMultiLayerMie<FloatType>::GetS2() {
       );
 }
 
+
+template <typename FloatType> template <typename outputType>
+py::array_t<outputType>  PyMultiLayerMie<FloatType>::GetFieldEabs() {
+  return Vector2Py(ConvertVector<double>(
+      this->MultiLayerMie<FloatType>::GetFieldEabs()
+  ));
+}
+
+template <typename FloatType> template <typename outputType>
+py::array_t<outputType>  PyMultiLayerMie<FloatType>::GetFieldHabs() {
+  return Vector2Py(ConvertVector<double>(
+      this->MultiLayerMie<FloatType>::GetFieldHabs()
+  ));
+}
+
+
 template<typename FloatType>
 template<typename outputType>
 py::array_t<std::complex<outputType>> PyMultiLayerMie<FloatType>::GetAn() {
@@ -192,19 +198,6 @@ py::array PyMultiLayerMie<FloatType>::GetFieldH() {
   );
 }
 
-//  template <typename FloatType> template <typename outputType>
-//  py::array_t<outputType>  PyMultiLayerMie<FloatType>::GetFieldEabs() {
-//    return Vector2Py(ConvertVector<double>(
-//    this->MultiLayerMie<FloatType>::GetFieldEabs()
-//    ));
-//  }
-//
-//  template <typename FloatType> template <typename outputType>
-//  py::array_t<outputType>  PyMultiLayerMie<FloatType>::GetFieldHabs() {
-//    return Vector2Py(ConvertVector<double>(
-//    this->MultiLayerMie<FloatType>::GetFieldHabs()
-//    ));
-//  }
 
 template<typename FloatType>
 template<typename outputType>
@@ -315,8 +308,8 @@ void declare_nmie(py::module &m, const std::string &typestr) {
       .def("GetBn", &mie_typed::GetBn<double>)
       .def("GetFieldE", &mie_typed::GetFieldE<double>)
       .def("GetFieldH", &mie_typed::GetFieldH<double>)
-//      .def("GetFieldEabs", &mie_typed::GetFieldEabs<double>)
-//      .def("GetFieldHabs", &mie_typed::GetFieldHabs<double>)
+      .def("GetFieldEabs", &mie_typed::GetFieldEabs<double>)
+      .def("GetFieldHabs", &mie_typed::GetFieldHabs<double>)
       .def("GetLayerAn", &mie_typed::GetLayerAn<double>)
       .def("GetLayerBn", &mie_typed::GetLayerBn<double>)
       .def("GetLayerCn", &mie_typed::GetLayerCn<double>)
