@@ -6,12 +6,17 @@ TEST(RunFieldCalculationPolar, HandlesInput) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
   EXPECT_THROW(nmie.RunFieldCalculationPolar(0), std::invalid_argument);
   EXPECT_THROW(nmie.RunFieldCalculationPolar(1,1,10,5), std::invalid_argument);
-  nmie.SetLayersSize({1.099});
-  nmie.SetLayersIndex({ {1.,0}});
+  double r = 60;
+//  double r = 1500;
+  nmie.SetLayersSize({r/2, r});
+  nmie.SetLayersIndex({ {1.33,0}, {1.33,0}});
   nmie.RunMieCalculation();
-  nmie.RunFieldCalculationPolar(2, 2, 0.1, 1.5);
+  nmie.RunFieldCalculationPolar(1, 1,
+                                0.5145*r,
+                                r*0.5148,
+                                0, 3.14, 0, 0, true, -1);
   auto Eabs = nmie.GetFieldEabs();
-  std::cout<<"nmax = " << nmie.GetMaxTerms() << std::endl;
+  std::cout<<"nmax = " << nmie.GetMaxTerms() << " Eabs:"<<Eabs[0]<<std::endl;
 
 }
 //TEST(BulkSphere, HandlesInput) {

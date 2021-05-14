@@ -214,7 +214,7 @@ namespace nmie {
   // This function calculates the electric (E) and magnetic (H) fields inside and     //
   // around the particle.                                                             //
   //
-  // Main troubles of near-field evaluations originate from special functions
+  // Main trouble of near-field evaluations is supposed to originate from special functions
   // evaluation, so we expect that nmax needed for the convergence is the size
   // of Psi vector.
   //                                                                                  //
@@ -248,6 +248,7 @@ namespace nmie {
                                 std::vector<std::complex<evalType> > &H)  {
     auto nmax = Psi.size() - 1;
     std::complex<evalType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
+//    auto c_nan = ConvertComplex<FloatType>(std::complex<double>(std::nan(""), std::nan("")));
     // Vector containing precomputed integer powers of i to avoid computation
     std::vector<std::complex<evalType> > ipow = {c_one, c_i, -c_one, -c_i};
     std::vector<std::complex<evalType> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
@@ -264,6 +265,8 @@ namespace nmie {
     unsigned int l;
     GetIndexAtRadius(Rho, ml, l);
 
+    std::vector<bool> isConvergedE = {false, false, false}, isConvergedH = {false, false, false};
+//    evalType E0 = 0, H0=0;
     for (unsigned int n = 0; n < nmax; n++) {
       int n1 = n + 1;
       auto rn = static_cast<evalType>(n1);
@@ -278,10 +281,11 @@ namespace nmie {
       std::complex<evalType> Ediff, Hdiff;
       std::complex<FloatType> Ediff_ft, Hdiff_ft;
       for (int i = 0; i < 3; i++) {
-        std::complex<evalType> aln = ConvertComplex<evalType>(aln_[l][n]);
-        std::complex<evalType> bln = ConvertComplex<evalType>(bln_[l][n]);
-        std::complex<evalType> cln = ConvertComplex<evalType>(cln_[l][n]);
-        std::complex<evalType> dln = ConvertComplex<evalType>(dln_[l][n]);
+        if (isConvergedE[i] && isConvergedH[i]) continue;
+        auto aln = ConvertComplex<evalType>(aln_[l][n]);
+        auto bln = ConvertComplex<evalType>(bln_[l][n]);
+        auto cln = ConvertComplex<evalType>(cln_[l][n]);
+        auto dln = ConvertComplex<evalType>(dln_[l][n]);
         Ediff = En*(      cln*M1o1n[i] - c_i*dln*N1e1n[i]
                          + c_i*aln*N3e1n[i] -     bln*M3o1n[i]);
         Hdiff = En*(     -dln*M1e1n[i] - c_i*cln*N1o1n[i]
@@ -289,10 +293,23 @@ namespace nmie {
         Ediff_ft = ConvertComplex<FloatType>(Ediff);
         Hdiff_ft = ConvertComplex<FloatType>(Hdiff);
         if ( nmm::isnan(Ediff_ft.real()) || nmm::isnan(Ediff_ft.imag()) ||
-             nmm::isnan(Hdiff_ft.real()) || nmm::isnan(Hdiff_ft.imag()) ) {
+            nmm::isnan(Hdiff_ft.real()) || nmm::isnan(Hdiff_ft.imag()) ) {
           std::cout << "Unexpected truncation during near-field evaluation at n = "<< n
                     << " (of total nmax = "<<nmax<<")!!!"<<std::endl;
           break;
+        }
+        if (n!=0) {
+          if (cabs(Ediff) == 0) isConvergedE[i] = true;
+          if (cabs(Hdiff) == 0) isConvergedH[i] = true;
+          if (cabs(E[i]) != 0.)
+            if (cabs(Ediff)/cabs(E[i]) < nearfield_convergence_threshold_) isConvergedE[i] = true;
+          if (cabs(H[i]) != 0.)
+            if (cabs(Hdiff)/cabs(H[i]) < nearfield_convergence_threshold_) isConvergedH[i] = true;
+        }
+        if (isConvergedE[i]) Ediff = c_zero;
+        if (isConvergedH[i]) Hdiff = c_zero;
+        if ((!isConvergedH[i] || !isConvergedE[i]) && n==nmax-1) {
+          std::cout<<"Econv:"<<cabs(Ediff)/cabs(E[i])<<" Hconv:"<<cabs(Hdiff)/cabs(H[i])<<std::endl;
         }
         if (mode_n_ == Modes::kAll) {
           // electric field E [V m - 1] = EF*E0
@@ -325,6 +342,13 @@ namespace nmie {
           nmm::isnan(Hdiff_ft.real()) || nmm::isnan(Hdiff_ft.imag())
           ) break;
     }  // end of for all n
+    if( !isConvergedE[0] || !isConvergedE[1] ||!isConvergedE[2] ||
+        !isConvergedH[0] || !isConvergedH[1] ||!isConvergedH[2] ) {
+      std::cout << "Field evaluation failed to converge an nmax = "<< nmax << std::endl;
+      std::cout << "Near-field convergence threshold: "<<nearfield_convergence_threshold_<<std::endl;
+//      for(auto &ee :E) ee = c_zero;
+//      for(auto &ee :H) ee = c_zero;
+    }
 
     // magnetic field
     std::complex<evalType> hffact = ml/static_cast<evalType>(cc_*mu_);
@@ -456,9 +480,13 @@ void MultiLayerMie<FloatType>::GetIndexAtRadius(const evalType Rho,
 }
 
 template <typename FloatType>
-void MultiLayerMie<FloatType>::calcMieSeriesNeededToConverge(const FloatType Rho) {
-  auto required_near_field_nmax = calcNmax(Rho);
-  SetMaxTerms(required_near_field_nmax);
+void MultiLayerMie<FloatType>::calcMieSeriesNeededToConverge(const FloatType Rho, int nmax_in) {
+  if (nmax_in < 1) {
+    auto required_near_field_nmax = calcNmax(Rho);
+    SetMaxTerms(required_near_field_nmax);
+  } else {
+    SetMaxTerms(nmax_in);
+  }
   // Calculate scattering coefficients an_ and bn_
   calcScattCoeffs();
   // We might be limited with available machine precision
@@ -474,14 +502,17 @@ void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const double fro
                                                                 std::vector<std::vector<std::complex<FloatType> > > &Psi,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &D1n,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &Zeta,
-                                                                std::vector<std::vector<std::complex<FloatType> > > &D3n) {
+                                                                std::vector<std::vector<std::complex<FloatType> > > &D3n,
+                                                                int nmax_in) {
   auto radius_points = Psi.size();
   std::vector<std::vector<std::complex<FloatType> > > PsiZeta(radius_points);
   double delta_Rho = eval_delta<double>(radius_points, from_Rho, to_Rho);
   for (unsigned int j=0; j < radius_points; j++) {
     auto Rho = static_cast<FloatType>(from_Rho + j*delta_Rho);
 //    if (Rho < 1e-5) Rho = 1e-5; // TODO do we need this?.
-    int near_field_nmax = calcNmax(Rho);
+    int near_field_nmax = nmax_in;
+    if (nmax_in < 1) near_field_nmax = calcNmax(Rho);
+
     // Skip if not enough terms in Mie series (i.e. required near field nmax > available terms )
     if (near_field_nmax > available_maximal_nmax_ && !isIgnoreAvailableNmax) continue;
     if (near_field_nmax > available_maximal_nmax_)  near_field_nmax = available_maximal_nmax_;
@@ -510,12 +541,13 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
                                                         const double from_Rho, const double to_Rho,
                                                         const double from_Theta, const double to_Theta,
                                                         const double from_Phi, const double to_Phi,
-                                                        const bool isIgnoreAvailableNmax) {
+                                                        const bool isIgnoreAvailableNmax,
+                                                        int nmax_in) {
   if (from_Rho > to_Rho || from_Theta > to_Theta || from_Phi > to_Phi
       || outer_arc_points < 1 || radius_points < 1
       || from_Rho < 0.)
     throw std::invalid_argument("Error! Invalid argument for RunFieldCalculationPolar() !");
-  auto nmax_old = nmax_;
+//  auto nmax_old = nmax_;
   int theta_points = 0, phi_points = 0;
   if (to_Theta-from_Theta > to_Phi-from_Phi) {
     theta_points = outer_arc_points;
@@ -526,7 +558,7 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
   }
   if (theta_points == 0) theta_points = 1;
   if (phi_points == 0) phi_points = 1;
-  calcMieSeriesNeededToConverge(to_Rho);
+  calcMieSeriesNeededToConverge(to_Rho, nmax_in);
 
   std::vector<std::vector<FloatType> >  Pi(theta_points), Tau(theta_points);
   calcPiTauAllTheta(from_Theta, to_Theta, Pi, Tau);
@@ -534,8 +566,10 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
   std::vector<std::vector<std::complex<FloatType> > > Psi(radius_points), D1n(radius_points),
       Zeta(radius_points), D3n(radius_points), PsiZeta(radius_points);
   calcRadialOnlyDependantFunctions(from_Rho, to_Rho, isIgnoreAvailableNmax,
-                                   Psi, D1n, Zeta, D3n);
+                                   Psi, D1n, Zeta, D3n,
+                                   nmax_in);
 
+  std::cout<<"Done evaluation of special functions."<<std::endl;
   double delta_Rho = eval_delta<double>(radius_points, from_Rho, to_Rho);
   double delta_Theta = eval_delta<double>(theta_points, from_Theta, to_Theta);
   double delta_Phi = eval_delta<double>(phi_points, from_Phi, to_Phi);
@@ -562,7 +596,7 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
             Rho, Theta, Phi,
                               Psi_dp, D1n_dp, Zeta_dp, D3n_dp,
                               Pi_dp, Tau_dp, Es, Hs
-//        Rho, Theta, Phi,
+//            static_cast<FloatType>(Rho), static_cast<FloatType>(Theta), static_cast<FloatType>(Phi),
 //            Psi[j], D1n[j], Zeta[j], D3n[j],
 //            Pi[i], Tau[i], Es, Hs
         );
@@ -572,7 +606,7 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
     }
   }
   convertFieldsFromSphericalToCartesian();
-  nmax_ = nmax_old;
+//  nmax_ = nmax_old;
 }
 
 // Python interface
