@@ -159,13 +159,14 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     const FloatType mu_ = 4.0*PI_*1.0e-7;
     // Run calculation
     void RunMieCalculation();
-    void RunFieldCalculation();
-    void RunFieldCalculationPolar(const int outer_arc_points = 1,
+    void RunFieldCalculation(bool isMarkUnconverged=true);
+
+      void RunFieldCalculationPolar(const int outer_arc_points = 1,
                                   const int radius_points=1,
                                   const double from_Rho=0, const double to_Rho=static_cast<double>(1.),
                                   const double from_Theta=0, const double to_Theta=static_cast<double>(3.14159265358979323),
                                   const double from_Phi=0, const double to_Phi=static_cast<double>(3.14159265358979323),
-                                  const bool isIgnoreAvailableNmax = false,
+                                  const bool isMarkUnconverged = false,
                                   int nmax_in = -1);
 
     void calcScattCoeffs();
@@ -236,6 +237,7 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
 
     std::vector< FloatType> GetFieldEabs(){return Eabs_;};   // {X[], Y[], Z[]}
     std::vector< FloatType> GetFieldHabs(){return Habs_;};
+    bool GetFieldConvergence();
 
     // Get fields in spherical coordinates.
     std::vector<std::vector< std::complex<FloatType> > > GetFieldEs(){return Es_;};   // {rho[], teha[], phi[]}
@@ -291,11 +293,16 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
                                const std::vector<evalType> &Pi,
                                const std::vector<evalType> &Tau,
                                std::vector<std::complex<evalType> > &E,
-                               std::vector<std::complex<evalType> > &H);
+                               std::vector<std::complex<evalType> > &H,
+                               std::vector<bool> &isConvergedE,
+                               std::vector<bool> &isConvergedH,
+                               bool isMarkUnconverged);
 
     bool isExpCoeffsCalc_ = false;
     bool isScaCoeffsCalc_ = false;
     bool isMieCalculated_ = false;
+    std::vector<bool> isConvergedE_ = {false, false, false};
+    std::vector<bool> isConvergedH_ = {false, false, false};
 
     // Scattering angles for scattering pattern in radians
     std::vector<FloatType> theta_;
@@ -322,7 +329,6 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
                            std::vector<std::vector<FloatType>> &Tau);
     void calcRadialOnlyDependantFunctions(const double from_Rho,
                                           const double to_Rho,
-                                          const bool isIgnoreAvailableNmax,
                                           std::vector<std::vector<std::complex<FloatType>>> &Psi,
                                           std::vector<std::vector<std::complex<FloatType>>> &D1n,
                                           std::vector<std::vector<std::complex<FloatType>>> &Zeta,
@@ -330,6 +336,7 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
                                           int nmax_in = -1
                                           );
     void convertFieldsFromSphericalToCartesian();
+    void UpdateConvergenceStatus(std::vector<bool> isConvergedE, std::vector<bool> isConvergedH);
   };  // end of class MultiLayerMie
 
 }  // end of namespace nmie

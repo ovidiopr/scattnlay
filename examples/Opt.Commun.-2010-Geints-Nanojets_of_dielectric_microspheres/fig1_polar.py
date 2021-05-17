@@ -38,8 +38,8 @@ total_r = 5  # mkm
 isMP = False
 # isMP = True
 
-terms_in = 210
-# terms = -1
+# terms_in = 210
+terms_in = -1
 
 
 from_theta = 0
@@ -58,11 +58,11 @@ if isMP: mp = '_mp'
 
 
 nm = 1.0  # host medium
-x = 2.0 * np.pi * np.array([total_r/2, total_r], dtype=np.float64) / WL
-m = np.array((index_H2O, index_H2O), dtype=np.complex128) / nm
+# x = 2.0 * np.pi * np.array([total_r/2, total_r], dtype=np.float64) / WL
+# m = np.array((index_H2O, index_H2O), dtype=np.complex128) / nm
 
-# x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / WL
-# m = np.array((index_H2O), dtype=np.complex128) / nm
+x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / WL
+m = np.array((index_H2O), dtype=np.complex128) / nm
 
 from_r = 0.01*x[-1]
 to_r = x[-1]*factor
