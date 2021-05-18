@@ -15,13 +15,6 @@ target_link_libraries("test_near_field" ${LIBS})
 add_test(NAME "test_near_field"
         COMMAND "test_near_field")
 
-add_executable("test_near_field_multi_precision"
-        test_near_field.cc)
-target_compile_options("test_near_field_multi_precision"
-        PRIVATE -DMULTI_PRECISION=100)
-target_link_libraries("test_near_field_multi_precision" ${LIBS})
-add_test(NAME "test_near_field_multi_precision"
-        COMMAND "test_near_field_multi_precision")
 
 
 # In included file test_spec_functions_data.hpp there are results of multiple
@@ -47,3 +40,11 @@ target_compile_options("test_bulk_sphere_multi_precision"
 target_link_libraries("test_bulk_sphere_multi_precision" ${LIBS})
 add_test(NAME "test_bulk_sphere_multi_precision"
         COMMAND "test_bulk_sphere_multi_precision")
+
+add_executable("test_near_field_multi_precision"
+        test_near_field.cc)
+target_compile_options("test_near_field_multi_precision"
+        PRIVATE -DMULTI_PRECISION=100)
+target_link_libraries("test_near_field_multi_precision" ${LIBS})
+add_test(NAME "test_near_field_multi_precision"
+        COMMAND "test_near_field_multi_precision")

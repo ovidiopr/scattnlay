@@ -166,7 +166,7 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
                                   const double from_Rho=0, const double to_Rho=static_cast<double>(1.),
                                   const double from_Theta=0, const double to_Theta=static_cast<double>(3.14159265358979323),
                                   const double from_Phi=0, const double to_Phi=static_cast<double>(3.14159265358979323),
-                                  const bool isMarkUnconverged = false,
+                                  const bool isMarkUnconverged = true,
                                   int nmax_in = -1);
 
     void calcScattCoeffs();

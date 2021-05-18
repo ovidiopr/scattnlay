@@ -82,6 +82,7 @@ namespace nmie {
       throw std::invalid_argument("(calcExpanCoeffs) You should calculate external coefficients first!");
 
     isExpCoeffsCalc_ = false;
+    aln_.clear(); bln_.clear(); cln_.clear(); dln_.clear();
 
     std::complex<FloatType> c_one(1.0, 0.0), c_zero(0.0, 0.0);
 
@@ -163,28 +164,27 @@ namespace nmie {
       }  // end PEC condition
     }  // end of all l
 
-    // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
-    for (int n = 0; n < nmax_; ++n) {
-      int print_precision = 16;
+    int print_precision = 16;
 #ifdef MULTI_PRECISION
-      print_precision = MULTI_PRECISION;
+    print_precision = MULTI_PRECISION;
 #endif
-      if (cabs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
-      else {
-        //throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
+    // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
+    int print_count = 0;
+    for (int n = 0; n < nmax_; ++n) {
+      if (cabs(aln_[0][n]) > 1e-10 && print_count < 2)  {
+        print_count++;
         std::cout<< std::setprecision(print_precision)
                  << "Warning: Potentially unstable calculation of aln[0]["
                  << n << "] = "<< aln_[0][n] <<std::endl;
-        aln_[0][n] = 0.0;
       }
-      if (cabs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
-      else {
-        //throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
+      if (cabs(bln_[0][n]) > 1e-10  && print_count < 2)  {
+        print_count++;
         std::cout<< std::setprecision(print_precision)
                  << "Warning: Potentially unstable calculation of bln[0]["
                  << n << "] = "<< bln_[0][n] <<std::endl;
-        bln_[0][n] = 0.0;
       }
+      aln_[0][n] = 0.0;
+      bln_[0][n] = 0.0;
     }
 
     isExpCoeffsCalc_ = true;
@@ -315,7 +315,7 @@ namespace nmie {
         }
         if (isConvergedE[i]) Ediff = c_zero;
         if (isConvergedH[i]) Hdiff = c_zero;
-        if ((!isConvergedH[i] || !isConvergedE[i]) && n==nmax-1) {
+        if ((!isConvergedH[i] || !isConvergedE[i]) && n==nmax-1 && GetFieldConvergence()) {
           std::cout<<"Econv:"<<cabs(Ediff)/cabs(E[i])<<" Hconv:"<<cabs(Hdiff)/cabs(H[i])<<std::endl;
 
         }
@@ -350,8 +350,8 @@ namespace nmie {
           nmm::isnan(Hdiff_ft.real()) || nmm::isnan(Hdiff_ft.imag())
           ) break;
     }  // end of for all n
-    if( !isConvergedE[0] || !isConvergedE[1] ||!isConvergedE[2] ||
-        !isConvergedH[0] || !isConvergedH[1] ||!isConvergedH[2] ) {
+    if( (!isConvergedE[0] || !isConvergedE[1] ||!isConvergedE[2] ||
+        !isConvergedH[0] || !isConvergedH[1] ||!isConvergedH[2] ) && GetFieldConvergence()) {
       std::cout << "Field evaluation failed to converge an nmax = "<< nmax << std::endl;
       std::cout << "Near-field convergence threshold: "<<nearfield_convergence_threshold_<<std::endl;
       if (isMarkUnconverged) {  //mark as NaN

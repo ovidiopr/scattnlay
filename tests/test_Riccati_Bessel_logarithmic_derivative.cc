@@ -269,27 +269,28 @@ TEST(D3test, mpmath_generated_input) {
   double re_abs_tol,  im_abs_tol;
   for (const auto &data : D1_test_30digits) {
     parse2_mpmath_data(min_abs_tol, data, x, m, n, D1_mp, re_abs_tol, im_abs_tol);
+    if (n == 0 && nmie::cabs(D1_mp) > 1e14) continue;
     z = m*x;
-    auto Nstop = nmie::LeRu_near_field_cutoff(z)+1;
+//    auto Nstop = nmie::LeRu_near_field_cutoff(z)+1;
 //    auto Nstop = n;
-    std::vector<std::complex<nmie::FloatType>> Db(Nstop),Dold(Nstop), r;
-    int valid_digits = 10;
+    int valid_digits = 16;
     int nstar = nmie::getNStar(n, z, valid_digits);
+    std::vector<std::complex<nmie::FloatType>> Db(nstar),Dold(nstar), r;
     r.resize(nstar);
     Db.resize(nstar);
     nmie::evalBackwardR(z,r);
     nmie::convertRtoD1(z, r, Db);
     if (n > Db.size()) continue;
     EXPECT_NEAR(std::real(Db[n]), std::real(D1_mp), re_abs_tol)
-              << "Db at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
+              << "Db at n=" << n <<" nstar="<<nstar<< " z="<<z;
     EXPECT_NEAR(std::imag(Db[n]), std::imag(D1_mp), im_abs_tol)
-              << "Db at n=" << n << " Nstop="<< Nstop<<" nstar="<<nstar<< " z="<<z;
+              << "Db at n=" << n <<" nstar="<<nstar<< " z="<<z;
     nmie::evalDownwardD1(z, Dold);
     if (n > Dold.size()) continue;
     EXPECT_NEAR(std::real(Dold[n]), std::real(D1_mp), re_abs_tol)
-              << "Dold at n=" << n << " Nstop="<< Nstop<< " z="<<z;
+              << "Dold at n=" << n << " z="<<z;
     EXPECT_NEAR(std::imag(Dold[n]), std::imag(D1_mp), im_abs_tol)
-              << "Dold at n=" << n << " Nstop="<< Nstop<< " z="<<z;
+              << "Dold at n=" << n << " z="<<z;
 
   }
 }

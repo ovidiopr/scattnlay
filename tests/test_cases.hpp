@@ -16,15 +16,17 @@ parameters_bulk_sphere
 {0.101, {0.75,0}, "Hong Du testcase:b"},
 {10,    {0.75,0}, "Hong Du testcase:c"},
 {100,   {1.33,1e-5}, "Hong Du testcase:e"},
-//{0.055, {1.5, 1},    "Hong Du testcase:g"},
-//{0.056, {1.5, 1}, "Hong Du testcase:h"},
-//{100,   {1.5, 1}, "Hong Du testcase:i"},
-//{1,     {10,  10},   "Hong Du testcase:k"},
+{0.055, {1.5, 1},    "Hong Du testcase:g"},
+{0.056, {1.5, 1}, "Hong Du testcase:h"},
+{100,   {1.5, 1}, "Hong Du testcase:i"},
+{1,     {10,  10},   "Hong Du testcase:k"},
 {1000,  {0.75,0}, "Hong Du testcase:d"},
-//{100,   {10,  10,},  "Hong Du testcase:l"},
-//{10000, {1.33,1e-5}, "Hong Du testcase:f"},
+#ifdef MULTI_PRECISION
+//{10000, {1.33,1e-5}, "Hong Du testcase:f"}, // passes but takes too long
+//{100,   {10,  10,},  "Hong Du testcase:l"}, // fails in any precision
 //{10000, {1.5, 1},    "Hong Du testcase:j"},
 //{10000, {10,  10},   "Hong Du testcase:m"},
+#endif
 };
 
 #endif //SCATTNLAY_TESTS_TEST_CASES_HPP_

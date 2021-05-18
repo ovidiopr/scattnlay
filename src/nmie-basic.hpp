@@ -581,6 +581,8 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcScattCoeffs() {
 
     isScaCoeffsCalc_ = false;
+    an_.clear();
+    bn_.clear();
 
     const std::vector<FloatType> &x = size_param_;
     const std::vector<std::complex<FloatType> > &m = refractive_index_;
