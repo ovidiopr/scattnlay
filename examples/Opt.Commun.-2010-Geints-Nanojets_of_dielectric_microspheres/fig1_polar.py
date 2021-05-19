@@ -34,7 +34,8 @@ from scattnlay import mie, mie_mp
 # npts = 151/2
 npts = 51/2
 factor = 3  # plot extent compared to sphere radius
-total_r = 0.055/2/np.pi  # mkm
+# total_r = 0.055/2/np.pi  # mkm
+total_r = 1
 isMP = False
 # isMP = True
 
@@ -61,14 +62,14 @@ if isMP: mp = '_mp'
 nm = 1.0  # host medium
 # x = 2.0 * np.pi * np.array([total_r/2, total_r], dtype=np.float64) / WL
 # m = np.array((index_H2O, index_H2O), dtype=np.complex128) / nm
+#
+x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / WL
+m = np.array((index_H2O), dtype=np.complex128) / nm
 
-# x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / WL
-# m = np.array((index_H2O), dtype=np.complex128) / nm
+# x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / 1
+# m = np.array((1.5+1j), dtype=np.complex128) / nm
 
-x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / 1
-m = np.array((1.5+1j), dtype=np.complex128) / nm
-
-from_r = x[-1]
+from_r = x[-1]*0.001
 to_r = x[-1]*factor
 r_points = int(outer_arc_points/abs(to_theta-from_theta))
 
@@ -113,10 +114,10 @@ if isMP:
     Eabs = (mie_mp.GetFieldEabs())**2
     terms = mie_mp.GetMaxTerms()
 else:
-    mie.RunFieldCalculationPolar(4, 3, x[-1], x[-1]*3, 0, np.pi, 0, 0, True, -1)
-    Eabs = (mie.GetFieldEabs())**2
-    print(Eabs)
-    exit(1)
+    # mie.RunFieldCalculationPolar(4, 3, x[-1], x[-1]*3, 0, np.pi, 0, 0, True, -1)
+    # Eabs = (mie.GetFieldEabs())**2
+    # print(Eabs)
+    # exit(1)
     mie.RunFieldCalculationPolar(outer_arc_points, r_points, from_r, to_r, from_theta, to_theta, 0, 0, False, terms_in)
     Eabs = (mie.GetFieldEabs())**2
     terms = mie.GetMaxTerms()

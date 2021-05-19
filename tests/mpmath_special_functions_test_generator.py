@@ -215,9 +215,10 @@ def main():
     # sf_evals.run_test(mrb.bn, 'bn', is_xm=True)
 
     # sf_evals.run_test(mrb.psi, 'psi')
+    # sf_evals.run_test(mrb.ksi, 'zeta')
     # sf_evals.run_test(mrb.psi_div_ksi, 'psi_div_ksi')
     # sf_evals.run_test(mrb.psi_mul_ksi, 'psi_mul_zeta', is_only_x=True)
-    sf_evals.run_test(mrb.psi_mul_ksi, 'psi_mul_zeta')
+    # sf_evals.run_test(mrb.psi_mul_ksi, 'psi_mul_zeta')
     # sf_evals.run_test(mrb.psi_div_xi, 'psi_div_xi')
     with open(sf_evals.filename, 'w') as out_file:
         out_file.write(sf_evals.get_file_content())

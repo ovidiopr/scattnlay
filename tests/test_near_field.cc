@@ -33,13 +33,13 @@ TEST(BulkSphere, HandlesInput) {
     nmie.SetMaxTerms(-1);
 //    nmie.RunMieCalculation();
 //    std::cout<<" test case: "<<std::get<2>(data)<<" Qsca="<<nmie.GetQsca()<<std::endl;
-    nmie.RunFieldCalculationPolar(4,3,x,x*3, 0, static_cast<double>(nmie.PI_), 0, 0,true, -1);
+    nmie.RunFieldCalculationPolar(4,3,x,x*3, 0, static_cast<double>(nmie.PI_), 0, static_cast<double>(nmie.PI_),true, -1);
     auto Eabs = nmie.GetFieldEabs();
     for (auto &E:Eabs) E=nmie::pow2(E);
 //    print(Eabs)
     EXPECT_TRUE(nmie.GetFieldConvergence())<<"Outside test for x="<<x<<" m="<<m<<" test case: "<<std::get<2>(data)<<std::endl;
-//    nmie.RunFieldCalculationPolar(4,10,x*0.01,x);
-//    EXPECT_TRUE(nmie.GetFieldConvergence())<<"Inside test for x="<<x<<" m="<<m<<" test case: "<<std::get<2>(data)<<std::endl;
+    nmie.RunFieldCalculationPolar(4,10,x*0.01,x, 0, static_cast<double>(nmie.PI_), 0, static_cast<double>(nmie.PI_),true, -1);
+    EXPECT_TRUE(nmie.GetFieldConvergence())<<"Inside test for x="<<x<<" m="<<m<<" test case: "<<std::get<2>(data)<<std::endl;
   }
 }
 //#endif
