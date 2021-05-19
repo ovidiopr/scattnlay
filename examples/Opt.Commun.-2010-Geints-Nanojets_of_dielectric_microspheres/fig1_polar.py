@@ -31,8 +31,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scattnlay import mie, mie_mp
 
-npts = 11/2
-# npts = 11
+# npts = 151/2
+npts = 51/2
+factor = 3  # plot extent compared to sphere radius
+# total_r = 0.055/2/np.pi  # mkm
+total_r = 1
+isMP = False
+# isMP = True
+
+# terms_in = 210
+terms_in = -1
 
 
 from_theta = 0
@@ -41,23 +49,27 @@ outer_arc_points = int(abs(to_theta-from_theta)*npts)
 # outer_arc_points = 600
 
 
-factor = 2 # plot extent compared to sphere radius
 index_H2O = 1.33+(1e-6)*1j
+# index_H2O = 1.001
 
-WL = 0.532 #mkm
-total_r = 125 #mkm
-isMP = False
-# isMP = True
+# WL = 0.532 #mkm
+WL = 1 #mkm
+
+mp = ''
+if isMP: mp = '_mp'
 
 
 nm = 1.0  # host medium
 # x = 2.0 * np.pi * np.array([total_r/2, total_r], dtype=np.float64) / WL
 # m = np.array((index_H2O, index_H2O), dtype=np.complex128) / nm
-
+#
 x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / WL
 m = np.array((index_H2O), dtype=np.complex128) / nm
 
-from_r = 0.01*x[-1]
+# x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / 1
+# m = np.array((1.5+1j), dtype=np.complex128) / nm
+
+from_r = x[-1]*0.001
 to_r = x[-1]*factor
 r_points = int(outer_arc_points/abs(to_theta-from_theta))
 
@@ -79,7 +91,7 @@ Qsca =  mie_mp.GetQsca()
 terms = mie_mp.GetMaxTerms()
 
 print("mp Qsca = " + str(Qsca)+" terms = "+str(terms))
-
+# exit(1)
 
 # mie.SetFieldCoords(xp, yp, zp)
 # mie.RunFieldCalculation()
@@ -96,16 +108,20 @@ for i in range(len(r_all)):
     for j in range(len(theta_all)):
         theta.append(theta_all[j])
         r.append(r_all[i])
-
-mie_mp.RunFieldCalculationPolar(outer_arc_points, r_points, from_r, to_r, from_theta, to_theta, 0, 0, True)
-Ec = mie_mp.GetFieldE()
-# mie.RunFieldCalculationPolar(outer_arc_points, r_points, from_r, to_r, from_theta, to_theta, 0, 0, True)
-# Ec = mie.GetFieldE()
-print("Field evaluation done.")
-Er = np.absolute(Ec)
-Eabs = (Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
-# Eabs = np.resize(Eabs2, (outer_arc_points, r_points))
-print("min(Eabs)=", np.min(Eabs)," max(Eabs)=", np.max(Eabs)," terms = "+str(terms), ' size=', Eabs.size)
+if isMP:
+    mie_mp.RunFieldCalculationPolar(4, 3, x[-1], x[-1]*3, 0, np.pi, 0, 0, False, terms_in)
+    mie_mp.RunFieldCalculationPolar(outer_arc_points, r_points, from_r, to_r, from_theta, to_theta, 0, 0, False, terms_in)
+    Eabs = (mie_mp.GetFieldEabs())**2
+    terms = mie_mp.GetMaxTerms()
+else:
+    # mie.RunFieldCalculationPolar(4, 3, x[-1], x[-1]*3, 0, np.pi, 0, 0, True, -1)
+    # Eabs = (mie.GetFieldEabs())**2
+    # print(Eabs)
+    # exit(1)
+    mie.RunFieldCalculationPolar(outer_arc_points, r_points, from_r, to_r, from_theta, to_theta, 0, 0, False, terms_in)
+    Eabs = (mie.GetFieldEabs())**2
+    terms = mie.GetMaxTerms()
+print(mp, "min(Eabs)=", np.min(Eabs)," max(Eabs)=", np.max(Eabs)," terms = "+str(terms), ' size=', Eabs.size)
 
 
 fig, ax = plt.subplots(subplot_kw=dict(projection='polar'))
@@ -121,8 +137,6 @@ ax.yaxis.grid(False)
 ax.xaxis.grid(False)
 
 # ax.plot(theta,r, 'ro', ms=0.1)
-mp = ''
-if isMP: mp = '_mp'
 plt.savefig("R"+str(total_r)+"mkm"+mp+"_polar.jpg",
             dpi=600
             )

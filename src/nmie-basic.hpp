@@ -581,6 +581,8 @@ namespace nmie {
   void MultiLayerMie<FloatType>::calcScattCoeffs() {
 
     isScaCoeffsCalc_ = false;
+    an_.clear();
+    bn_.clear();
 
     const std::vector<FloatType> &x = size_param_;
     const std::vector<std::complex<FloatType> > &m = refractive_index_;
@@ -717,6 +719,7 @@ namespace nmie {
     // first layer is 0 (zero), in future versions all arrays will follow  //
     // this convention to save memory. (13 Nov, 2014)                      //
     //*********************************************************************//
+    FloatType a0=0, b0=0;
     for (int n = 0; n < nmax_; n++) {
       //********************************************************************//
       //Expressions for calculating an and bn coefficients are not valid if //
@@ -729,10 +732,22 @@ namespace nmie {
         an_[n] = calc_an(n + 1, x[L - 1], std::complex<FloatType>(0.0, 0.0), std::complex<FloatType>(1.0, 0.0), PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
         bn_[n] = PsiXL[n + 1]/ZetaXL[n + 1];
       }
+      if (n == 0) {a0 = cabs(an_[0]); b0 = cabs(bn_[0]);}
+      if (n == nmax_ - 1 && nmax_preset_ <= 0) {
+        std::cout << "Failed to converge in Mie series for nmax="<<nmax_ << std::endl;
+        std::cout << "convergence threshold: "<< convergence_threshold_ << std::endl;
+        std::cout << "Mie series a[nmax]/a[1]:" << cabs(an_[n]) / a0 << " and b[nmax]/b[1]:" << cabs(bn_[n]) / b0 << std::endl;
+
+      }
+      if (cabs(an_[n]) / a0 < convergence_threshold_ &&
+          cabs(bn_[n]) / b0 < convergence_threshold_) {
+        if (nmax_preset_ <= 0) nmax_ = n;
+        break;
+      }
+
       if (nmm::isnan(an_[n].real()) || nmm::isnan(an_[n].imag()) ||
           nmm::isnan(bn_[n].real()) || nmm::isnan(bn_[n].imag())
           ) {
-        // TODO somehow notify Python users about it
         std::cout << "nmax value was changed due to unexpected error!!! New values is "<< n
                   << " (was "<<nmax_<<")"<<std::endl;
         nmax_ = n;

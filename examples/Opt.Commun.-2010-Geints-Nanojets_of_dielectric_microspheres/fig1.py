@@ -45,8 +45,8 @@ index_H2O = 1.33+(1e-6)*1j
 
 WL = 0.532 #mkm
 total_r = 125 #mkm
-isMP = False
-# isMP = True
+# isMP = False
+isMP = True
 
 
 nm = 1.0  # host medium

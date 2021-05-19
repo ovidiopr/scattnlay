@@ -66,6 +66,11 @@ namespace nmie {
     if (std::is_same<T, double>::value) return static_cast<T>(std::cos(static_cast<double>(v)));
     return static_cast<T>(nmm::cos(static_cast<FloatType >(v)));
   }
+  template<class T> T sqrt_t(T v) {
+    if (std::is_same<T, double>::value) return static_cast<T>(std::sqrt(static_cast<double>(v)));
+    return static_cast<T>(nmm::sqrt(static_cast<FloatType >(v)));
+  }
+
 
 
 template <typename ToFloatType, typename FromFloatType>

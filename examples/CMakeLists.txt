@@ -1,1 +1,1 @@
-add_executable(example-minimal example-minimal.cc)
+#add_executable(example-minimal example-minimal.cc)

@@ -137,8 +137,7 @@ void evalBackwardR (const std::complex<FloatType> z,
   for (int n = nmax -1; n >= 0; n--) {
     r[n] = -static_cast<FloatType>(1)/r[n+1] + static_cast<FloatType>(2*n+1)/z;
   }
-//  r[0] = nmm::cos(z)/nmm::sin(z);
-//  nmm::cout << "R0 = " << r[0] <<" at arg = "<<z<<'\n';
+  r[0] = complex_cot(z);
 }
 
 template <typename FloatType>
@@ -172,7 +171,7 @@ template <typename FloatType>
 void evalForwardD1 (const std::complex<FloatType> z,
                    std::vector<std::complex<FloatType> > &D) {
   if (D.size()<1) throw std::invalid_argument("Should have a leas one element!\n");
-  D[0] = std::cos(z)/std::sin(z);
+  D[0] = nmm::cos(z)/nmm::sin(z);
   evalForwardD(z,D);
 }
 
@@ -223,8 +222,8 @@ void evalForwardD1 (const std::complex<FloatType> z,
 //    calcD1D3(z, D1, D3);
 //
 //    // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
-//    Psi[0] = std::sin(z);
-//    Zeta[0] = std::sin(z) - c_i*std::cos(z);
+//    Psi[0] = nmm::sin(z);
+//    Zeta[0] = nmm::sin(z) - c_i*nmm::cos(z);
 //    for (int n = 1; n <= nmax_; n++) {
 //      Psi[n]  =  Psi[n - 1]*(std::complex<FloatType>(n,0.0)/z - D1[n - 1]);
 //      Zeta[n] = Zeta[n - 1]*(std::complex<FloatType>(n,0.0)/z - D3[n - 1]);
@@ -370,6 +369,16 @@ void evalUpwardD3 (const std::complex<FloatType> z,
   }
 }
 
+template <typename FloatType>
+std::complex<FloatType> complex_sin (const std::complex<FloatType> z){
+  auto a = z.real();
+  auto b = z.imag();
+  auto i = std::complex<FloatType>(0,1);
+  using nmm::sin; using nmm::cos; using nmm::exp;
+  return ((cos(a)+i*sin(a))*exp(-b)
+      - (cos(-a)+i*sin(-a))*exp(b)
+      )/(static_cast<FloatType>(2)*i);
+}
 
 template <typename FloatType>
 void evalUpwardPsi (const std::complex<FloatType> z,
@@ -377,7 +386,7 @@ void evalUpwardPsi (const std::complex<FloatType> z,
                    std::vector<std::complex<FloatType> >& Psi) {
   int nmax = Psi.size() - 1;
   // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
-  Psi[0] = std::sin(z);
+  Psi[0] = complex_sin(z);
   for (int n = 1; n <= nmax; n++) {
     Psi[n]  =  Psi[n - 1]*(std::complex<FloatType>(n,0.0)/z - D1[n - 1]);
   }
@@ -391,7 +400,7 @@ void evalUpwardZeta (const std::complex<FloatType> z,
   int nmax = Zeta.size() - 1;
   std::complex<FloatType> c_i(0.0, 1.0);
   // Now, use the upward recurrence to calculate Zeta and Zeta - equations (20a) - (21b)
-  Zeta[0] = std::sin(z) - c_i*std::cos(z);
+  Zeta[0] = nmm::sin(z) - c_i*nmm::cos(z);
   for (int n = 1; n <= nmax; n++) {
     Zeta[n]  =  Zeta[n - 1]*(std::complex<FloatType>(n, 0.0)/z - D3[n - 1]);
   }
