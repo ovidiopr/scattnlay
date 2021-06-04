@@ -197,8 +197,8 @@
           simulationSetup: {
             hostIndex: 1,
             stepWL: 2,
-            fromWL: 300.0,
-            toWL: 1000.0,
+            fromWL: "100*(1+2)",
+            toWL: 1000,
             layers: [
               {
                 R: 100.0,
@@ -505,17 +505,19 @@
                   }, 20);
         },
       runMie: function () {
+        const math = require('mathjs')
+
         this.simulationRuntime.r_units = this.units;
         this.simulationRuntime.r_source_units = this.source_units;
         this.simulationRuntime.fromWL = this.simulationSetup.fromWL;
-        this.simulationRuntime.toWL = this.simulationSetup.toWL;
+        this.simulationRuntime.toWL = math.evaluate(this.simulationSetup.toWL);
         this.simulationRuntime.stepWL = this.simulationSetup.stepWL;
         this.simulationRuntime.layers =this.simulationSetup.layers; // TODO: not a copy, but we need spline_n.at() method in every layer.
 
         let t0 = performance.now();
-        let fromWL = parseFloat(this.simulationSetup.fromWL);
-        let toWL = parseFloat(this.simulationSetup.toWL);
-        let stepWL = parseFloat(this.simulationSetup.stepWL);
+        let fromWL = parseFloat(this.simulationRuntime.fromWL);
+        let toWL = parseFloat(this.simulationRuntime.toWL);
+        let stepWL = parseFloat(this.simulationRuntime.stepWL);
         let host = parseFloat(this.simulationSetup.hostIndex);
 
 
