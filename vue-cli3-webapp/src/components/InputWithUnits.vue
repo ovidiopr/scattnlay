@@ -47,6 +47,7 @@
             // autocomplete to update showValue.
             setTimeout(() => {
               this.showValue = this.valueLocal;
+              this.$emit('newdata',this.valueLocal);
             }, 500);
             if (!this.expr_list.includes(this.expr)) this.expr_list.unshift(this.expr);
             if (this.expr_list.length > 5) this.expr_list.pop();
@@ -72,11 +73,10 @@
         }
       },
         watch: {
-            valueLocal: {
-                handler: function () {
-                    this.$emit('newdata',math.evaluate(this.valueLocal));
-                }
-            },
+            // valueLocal: {
+            //     handler: function () {
+            //     }
+            // },
           showValue: {
               handler: function () {
                 try {
@@ -95,6 +95,11 @@
                     this.isDisabledLocal = this.isDisabled;
                 }
             },
+          value: {
+            handler: function () {
+              this.showValue = this.value;
+            }
+          },
             deep: true
         },
         data () {
@@ -102,7 +107,7 @@
                 // TODO: Is it OK to modify valueLocal later in <b-input>?
                 valueLocal: math.evaluate(this.value),
               expr: this.value,
-              expr_list: [this.value],
+              expr_list: [],
               showValue: math.evaluate(this.value),
               isFocused: false,
                 isDisabledLocal: false,
