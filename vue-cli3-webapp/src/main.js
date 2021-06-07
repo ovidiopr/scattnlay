@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import store from './store'
 import App from './App.vue'
 import Buefy from 'buefy'
 // import 'buefy/dist/buefy.css'
@@ -12,9 +13,7 @@ library.add(faCoffee, faCheckCircle, faPlusCircle, faBan, faTrash);
 
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
-
-Vue.config.productionTip = false;
-
 new Vue({
   render: h => h(App),
+  store
 }).$mount('#app');

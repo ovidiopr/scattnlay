@@ -197,8 +197,8 @@
           simulationSetup: {
             hostIndex: 1,
             stepWL: 2,
-            fromWL: 300.0,
-            toWL: 1000.0,
+            fromWL: "100*(1+2)",
+            toWL: 1000,
             layers: [
               {
                 R: 100.0,
@@ -505,17 +505,19 @@
                   }, 20);
         },
       runMie: function () {
+        const math = require('mathjs')
+
         this.simulationRuntime.r_units = this.units;
         this.simulationRuntime.r_source_units = this.source_units;
-        this.simulationRuntime.fromWL = this.simulationSetup.fromWL;
-        this.simulationRuntime.toWL = this.simulationSetup.toWL;
+        this.simulationRuntime.fromWL = math.evaluate(this.simulationSetup.fromWL);
+        this.simulationRuntime.toWL = math.evaluate(this.simulationSetup.toWL);
         this.simulationRuntime.stepWL = this.simulationSetup.stepWL;
         this.simulationRuntime.layers =this.simulationSetup.layers; // TODO: not a copy, but we need spline_n.at() method in every layer.
 
         let t0 = performance.now();
-        let fromWL = parseFloat(this.simulationSetup.fromWL);
-        let toWL = parseFloat(this.simulationSetup.toWL);
-        let stepWL = parseFloat(this.simulationSetup.stepWL);
+        let fromWL = parseFloat(this.simulationRuntime.fromWL);
+        let toWL = parseFloat(this.simulationRuntime.toWL);
+        let stepWL = parseFloat(this.simulationRuntime.stepWL);
         let host = parseFloat(this.simulationSetup.hostIndex);
 
 
@@ -612,49 +614,6 @@
 
         this.changes++;
 
-      },
-      filterBug: function () {
-        let Qsca = this.simulationRuntime.Qsca;
-        let Qabs = this.simulationRuntime.Qabs;
-        let Qext = this.simulationRuntime.Qext;
-        let Qsca_n = this.simulationRuntime.Qsca_n;
-        let Qabs_n = this.simulationRuntime.Qabs_n;
-        let total_mode_n = this.simulationSetup.total_mode_n;
-        for (let mode_type = 0; mode_type < 2; mode_type++) {
-          for (let n = 0; n < total_mode_n; n++){
-            this.filterMedian(Qsca_n[mode_type][n]);
-            this.filterMedian(Qabs_n[mode_type][n]);
-          }
-        }
-        this.filterMedian(Qsca);
-        this.filterMedian(Qabs);
-        for (let i = 0; i < Qsca.length; i++) {
-          Qext[i] = Qsca[i] + Qabs[i];
-        }
-        // this.filterMedian(Qext);
-
-        this.simulationRuntime.Qsca = Qsca;
-        this.simulationRuntime.Qabs = Qabs;
-        this.simulationRuntime.Qext = Qext;
-        this.simulationRuntime.Qsca_n = Qsca_n;
-        this.simulationRuntime.Qabs_n = Qabs_n;
-
-      },
-      filterMedian: function(spectra) {
-        let l = spectra.length;
-        let i;
-        for (i = 1; i < l-1; i++) {
-          let prev = spectra[i-1];
-          let curr = spectra[i];
-          let next = spectra[i+1];
-          let diff1 = Math.abs((prev-curr)/curr);
-          let diff2 = Math.abs((next-curr)/curr);
-          if (diff1 > 0.3 && diff2 > 0.3) {
-            spectra[i] = (prev+next)/2.0;
-          }
-           // console.log(spectra(i));
-        }
-        // return spectra;
       },
       setIsPlotMode: function () {
           let total_mode_n = this.simulationSetup.total_mode_n;
@@ -837,7 +796,7 @@
   .add_padding {
     padding: 1rem;
   }
-  // Custom styles to build into the design of physics.ifmo.ru
+  // Custom styles to build into the design of physics.itmo.ru
   // npm run build && ./deploy.sh  && xclip -sel c < dist/index.html
   .content table {
     width: auto;

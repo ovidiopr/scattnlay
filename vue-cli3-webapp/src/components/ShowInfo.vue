@@ -10,10 +10,12 @@
                 <br><br>
                 Feel free to use provided software, however, use it at your own risk. We made our best effort to verify
                 it is correct, however, we do not provide any warranty.
-                <br><br>
-                Report bugs, issues, and feature requests at project's <a href="https://github.com/ovidiopr/scattnlay">GitHub</a>
 
-                <br><br>
+                <br><br> Report bugs, issues, and feature requests at project's
+                <a href="https://github.com/ovidiopr/scattnlay">GitHub</a>
+                (preferred) or mail to <a href="mailto:k.ladutenko@metalab.ifmo.ru?subject=Mie calculator webapp (Scattnlay)">k.ladutenko@metalab.ifmo.ru</a>.
+
+              <br><br>
                 If it was useful for your project, please, cite in your related paper the following reference:
                 <br><br>
                 <article style="margin-left: 1rem">
