@@ -49,7 +49,10 @@
               this.showValue = this.valueLocal;
               this.$emit('newdata',this.valueLocal);
             }, 500);
-            if (!this.expr_list.includes(this.expr)) this.expr_list.unshift(this.expr);
+            if (!this.expr_list.includes(this.expr)
+                && this.expr != ""
+                && !Number.isNaN(Number(math.evaluate(this.expr)))
+            ) this.expr_list.unshift(this.expr);
             if (this.expr_list.length > 5) this.expr_list.pop();
           }
         },
@@ -87,7 +90,11 @@
             },
           expr: {
             handler: function () {
-              this.valueLocal = math.evaluate(this.expr);
+              if (this.expr=="") return;
+              let result = math.evaluate(this.expr);
+              if (Number.isNaN(result)) return;
+              if (typeof result === 'object') return;
+              this.valueLocal = result;
             }
           },
             isDisabled: {
