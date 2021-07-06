@@ -46,7 +46,7 @@ x = np.ones((1), dtype = np.float64)
 m = np.ones((1), dtype = np.complex128)
 
 
-core_r = 45000
+core_r = 100
 
 
 Qsca_vec = []

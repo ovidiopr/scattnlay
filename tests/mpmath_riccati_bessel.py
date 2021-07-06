@@ -16,7 +16,7 @@ def psi(n,z):
 # Riccati-Bessel -z*y_n(z)
 def xi(n,z):
     return -mp.sqrt( (mp.pi * z)/2 ) * mp.autoprec(mp.bessely)(n+1/2,z)
-# Riccati-Bessel psi - i* xi
+# Riccati-Bessel psi - i* xi        z*j_n(z) + i* z*j_n(z)
 def ksi(n,z):
     return psi(n,z) - 1.j * xi(n,z)
 

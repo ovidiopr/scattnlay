@@ -12,9 +12,11 @@
             <div class="field is-grouped is-grouped-multiline">
                 <input-with-units title="from" v-bind:units="source_units"
                                   v-bind:value="fromWLLocal"
+                                  v-bind:has-conflict="simulationSetup.fromWL_hasConflict"
                                   @newdata="fromWLLocal=$event"/>
                 <input-with-units title="to" v-bind:units="source_units"
                                   v-bind:value="toWLLocal"
+                                  v-bind:has-conflict="simulationSetup.toWL_hasConflict"
                                   @newdata="toWLLocal=$event"/>
                 <div>
                 <div v-if="isStep">
@@ -36,6 +38,7 @@
 
 <script>
 import InputWithUnits from "./InputWithUnits.vue";
+import { mapState } from 'vuex'
 export default {
   name: "GetSourceParameters",
   components: {
@@ -54,6 +57,10 @@ export default {
   methods: {
 
   },
+  computed:
+    mapState([
+    'simulationSetup'
+  ]),
   watch: {
     isStep: {
       handler: function () {

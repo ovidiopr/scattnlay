@@ -33,7 +33,7 @@ from optical_constants import read_refractive_index_from_yaml as get_index
 def gauss(x, mu, sigma):
     return 1/(sigma * np.sqrt(2 * np.pi)) * np.exp( - (x - mu)**2 / (2 * sigma**2))
 
-fill_factor = 0.8
+# fill_factor = 0.8
 
 from_WL = 300
 to_WL = 1100
@@ -74,36 +74,36 @@ index_TiO2 = get_index("refractiveindex_info/TiO2-Sarkar.yml", WLs, units='nm')
 # index_TiO2[:,1] += 0.5j
 # index_Au[:,1] = index_Au[:,1]* fill_factor + (1-fill_factor)
 
-print("Au index before correction, max = ", np.max(np.imag(index_Au[:,1])))
-# Taking into account gold free electrons damping
-# contributed by surface scattering and bulk dumping
-# See eq 1 in [1] -> doi: https://doi.org/10.1186/s11671-018-2670-7
-eps_exp = index_Au[:,1]**2
-c=299792458  # speed of light
-h= 4.135667516e-15  # eV*s, Planck constant
-w = h*c/(WLs*1e-9)  # eV, frequency
-w_p =8.55  # eV, gold plasmon frequency
-g_b = 18.4e-3  # eV, bulk dumping
-v_f = 1.4e6  # m/s, Fermi velocity of electrons in gold
-A = 1.33  # fit parameter for 16 nm gold shell, see Table 2 in [1]
-L_b = (4.*((core_r+inner_shell_h)**3 - core_r**3)/
-       (3.*((core_r+inner_shell_h)**2 + core_r**2)))
-# g_s = v_f/L_b  # eq 2 in [1]
-g_s = h*A*v_f/(inner_shell_h*1e-9)  # eq 4 in [1]
-# g_b *= 0.2
-# g_s *= 0.5
-eps_Au = (eps_exp
-          +
-          w_p**2 / ( w * (w + 1j*g_b) )
-          -
-          w_p**2 / ( w * (w + 1j*(g_b+g_s)) )
-          )
+# print("Au index before correction, max = ", np.max(np.imag(index_Au[:,1])))
+# # Taking into account gold free electrons damping
+# # contributed by surface scattering and bulk dumping
+# # See eq 1 in [1] -> doi: https://doi.org/10.1186/s11671-018-2670-7
+# eps_exp = index_Au[:,1]**2
+# c=299792458  # speed of light
+# h= 4.135667516e-15  # eV*s, Planck constant
+# w = h*c/(WLs*1e-9)  # eV, frequency
+# w_p =8.55  # eV, gold plasmon frequency
+# g_b = 18.4e-3  # eV, bulk dumping
+# v_f = 1.4e6  # m/s, Fermi velocity of electrons in gold
+# A = 1.33  # fit parameter for 16 nm gold shell, see Table 2 in [1]
+# L_b = (4.*((core_r+inner_shell_h)**3 - core_r**3)/
+#        (3.*((core_r+inner_shell_h)**2 + core_r**2)))
+# # g_s = v_f/L_b  # eq 2 in [1]
+# g_s = h*A*v_f/(inner_shell_h*1e-9)  # eq 4 in [1]
+# # g_b *= 0.2
+# # g_s *= 0.5
+# eps_Au = (eps_exp
+#           +
+#           w_p**2 / ( w * (w + 1j*g_b) )
+#           -
+#           w_p**2 / ( w * (w + 1j*(g_b+g_s)) )
+#           )
 # index_Au[:,1] = np.sqrt(eps_Au)
 index_Au[:,1] += 1.6j
-print(f"L_b={L_b}")
-# print(w)
-print(f"g_s={g_s}, g_b={g_b} ")
-print("Au index after, max = ", np.max(np.imag(index_Au[:,1])))
+# print(f"L_b={L_b}")
+# # print(w)
+# print(f"g_s={g_s}, g_b={g_b} ")
+# print("Au index after, max = ", np.max(np.imag(index_Au[:,1])))
 x = np.ones((3), dtype = np.float64)
 m = np.ones((3), dtype = np.complex128)
 

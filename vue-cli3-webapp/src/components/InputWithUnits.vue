@@ -1,5 +1,5 @@
 <template>
-    <div class="field has-addons">
+    <div class="field has-addons" style="margin-bottom: 0.25rem">
         <p class="control">
             <a class="button is-static input-with-units-title">
                 {{ title }}
@@ -14,12 +14,15 @@
         </div>
         <div v-else>
             <p class="control">
+              <b-field :type="{ 'is-danger': hasConflict }"
+                       :message="{ 'Input conflict': hasConflict }">
                 <b-autocomplete v-on:focus="handleFocus($event)" v-on:blur="handleBlur"
                          v-on:keyup.native.enter="focusNext($event)" v-model="showValue"
                                 :data="expr_list"
                                 :open-on-focus="true"
                                 class="input-with-units-value"/>
 
+              </b-field>
             </p>
         </div>
         <p class="control">
@@ -102,6 +105,11 @@
                     this.isDisabledLocal = this.isDisabled;
                 }
             },
+          hasConflict: {
+            handler: function () {
+              this.hasConflictLocal = this.hasConflict;
+            }
+          },
           value: {
             handler: function () {
               this.showValue = this.value;
@@ -117,14 +125,15 @@
               expr_list: [],
               showValue: math.evaluate(this.value),
               isFocused: false,
-                isDisabledLocal: false,
+              isDisabledLocal: false,
+              hasConflictLocal: this.hasConflict
             }
         },
       mounted() {
         this.$emit('newdata',math.evaluate(this.value));
 
       },
-        props: ['title', 'units', 'value', 'isDisabled']
+        props: ['title', 'units', 'value', 'isDisabled', 'hasConflict']
     }
 </script>
 
@@ -136,6 +145,7 @@
 
 .input-with-units-value {
     width:10rem;
+   z-index: 2;
 }
 .input-with-units-units {
     width:3rem;

@@ -179,6 +179,12 @@
                 if (mat.name.includes('Johnson')) mat.isUsed=false;
                 if (mat.name.includes('Aspnes')) mat.isUsed=false;
             }
+          try { // wake-up proxcors
+            let tryURL = 'https://proxcors.herokuapp.com/https://refractiveindex.info/database/data/main/Ag/McPeak.yml';
+            fetch(tryURL);
+          } catch (e) {
+            console.log(e);
+          }
         },
         watch: {
             materials: {
@@ -329,7 +335,7 @@
                 let Ag_data;
 
                 try {
-                    let proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                    let proxyUrl = 'https://proxcors.herokuapp.com/';
                     if (URL.includes('https://refractiveindex.info')) URL = proxyUrl+URL;
                     let response = await fetch(URL);
                     let Ag_data = await response.text();

@@ -1,5 +1,5 @@
 <template>
-    <div class="field">
+    <div class="field" >
         <div class="field is-horizontal layer">
             <div class="field-label is-normal">
                 <label class="label lnorm">
@@ -28,15 +28,19 @@
                         <span class="tooltiptext">Layer thickness</span>
 
                     </div>
-                    <b-select v-model="layer.material">
-                        <option v-if="index == 0" value="PEC" disabled> PEC</option>
-                        <option value="nk">nk-constant</option>
-                        <option v-for="material in filteredMaterials" v-bind:key="material.name"
-                                v-bind:value="material.name">
-                            {{material.name}} ({{material.spline_n.xs[0]}} -
-                                               {{material.spline_n.xs[material.spline_n.xs.length-1]}} nm)
-                        </option>
-                    </b-select>
+                    <b-field :type="{ 'is-danger': layer.isMaterial_hasConflict }"
+                             :message="{ 'Input conflict': layer.isMaterial_hasConflict }"
+                             style="margin-bottom: 0.5rem">
+                      <b-select v-model="layer.material">
+                            <option v-if="index == 0" value="PEC" disabled> PEC</option>
+                            <option value="nk">nk-constant</option>
+                            <option v-for="material in filteredMaterials" v-bind:key="material.name"
+                                    v-bind:value="material.name">
+                                {{material.name}} ({{material.spline_n.xs[0]}} -
+                                                   {{material.spline_n.xs[material.spline_n.xs.length-1]}} nm)
+                            </option>
+                      </b-select>
+                    </b-field>
                     <div v-if="layer.isMaterialLoaded">
                         <font-awesome-icon icon="check-circle" class="has-text-success"/>
                     </div>
@@ -91,28 +95,29 @@
             }
         },
         watch: {
-            'layer.material': {
-                handler: function () {
-                    // console.log('update');
-                    this.layer.isMaterialLoaded = false;
-                    if (this.layer.material == 'nk') {
-                        this.isDisabled = false;
-                        this.layer.reN = 4;
-                        this.layer.imN = 0.01;
-                        this.layer.isMaterialLoaded = true;
-                    } else {
-                        this.isDisabled = true;
-                    }
-                    for (const mat of this.materials) {
-                        if (mat.name != this.layer.material) continue;
-                        this.layer.spline_n = mat.spline_n;
-                        this.layer.spline_k = mat.spline_k;
-                        console.log(mat.spline_n.at(500));
-                        console.log(this.layer.spline_n.at(500));
-                        this.layer.isMaterialLoaded = true;
-                    }
-                }
+          'layer.material': {
+            handler: function () {
+              // console.log('update');
+              this.layer.isMaterialLoaded = false;
+              if (this.layer.material == 'nk') {
+                this.isDisabled = false;
+                this.layer.reN = 4;
+                this.layer.imN = 0.01;
+                this.layer.isMaterialLoaded = true;
+              } else {
+                this.isDisabled = true;
+              }
+              for (const mat of this.materials) {
+                if (mat.name != this.layer.material) continue;
+                this.layer.spline_n = mat.spline_n;
+                this.layer.spline_k = mat.spline_k;
+                console.log(mat.spline_n.at(500));
+                console.log(this.layer.spline_n.at(500));
+                this.layer.isMaterialLoaded = true;
+              }
+              this.layer.isMaterial_hasConflict = false;
             }
+          }
         },
         props: ['layer', 'particle', 'index', 'units', 'materials']
     }
@@ -148,7 +153,7 @@
 
         /* Position the tooltip text - see examples below! */
         position: absolute;
-        z-index: 1;
+        z-index: 4;
 
         bottom: 120%;
         left: 0%;
@@ -159,6 +164,6 @@
         visibility: visible;
     }
     .nk-input {
-        margin-bottom: 12px;
+        margin-bottom: 0.25rem;
     }
 </style>

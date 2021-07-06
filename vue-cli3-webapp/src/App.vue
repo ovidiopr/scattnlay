@@ -124,6 +124,7 @@
   // ).then(bytes =>
   //         console.log(bytes)
   // );
+  import { mapState } from 'vuex'
 
   import nmiejs from './nmiejs.js';
   // Test nmiejs if working
@@ -180,6 +181,10 @@
       ReactiveChart,
       ShowInfo
     },
+    computed:
+        mapState([
+          'simulationSetup'
+        ]),
     data() {
         return {
           nmie: undefined,
@@ -194,23 +199,6 @@
           source_units_prev: 'nm',
           materials: [],
           isSourceOtherUnits: false,
-          simulationSetup: {
-            hostIndex: 1,
-            stepWL: 2,
-            fromWL: "100*(1+2)",
-            toWL: 1000,
-            layers: [
-              {
-                R: 100.0,
-                material: 'nk',
-                isMaterialLoaded:true,
-                reN: 4.0,
-                imN: 0.01,
-                index: 0
-              }
-            ],
-            total_mode_n: 4
-          },
           simulationRuntime: {
             r_units: 'nm',
             r_source_units: 'nm',
@@ -335,6 +323,28 @@
 
     },
     watch: {
+      'simulationSetup.layers': {
+        handler: function () {
+          this.checkConflictsWL();
+        },
+        deep: true
+      },
+      'simulationSetup.toWL': {
+        handler: function () {
+          for (let i = 0; i < this.simulationSetup.layers.length; i++) {
+            this.simulationSetup.layers[i].isMaterial_hasConflict = false;
+          }
+          this.checkConflictsWL();
+        }
+      },
+      'simulationSetup.fromWL': {
+        handler: function () {
+          for (let i = 0; i < this.simulationSetup.layers.length; i++) {
+            this.simulationSetup.layers[i].isMaterial_hasConflict = false;
+          }
+          this.checkConflictsWL();
+        }
+      },
       plotSelector: {
           handler: function () {
             this.plotResults();
@@ -420,6 +430,29 @@
       }
     },
     methods: {
+      checkConflictsWL (){
+        this.simulationSetup.fromWL_hasConflict = false;
+        this.simulationSetup.toWL_hasConflict = false;
+        let fromWL = this.convertUnits2nm(this.source_units, this.simulationSetup.fromWL);
+        let toWL = this.convertUnits2nm(this.source_units, this.simulationSetup.toWL);
+
+        for (let i = 0; i < this.simulationSetup.layers.length; i++) {
+          // console.log('checking WL conflict layer', i);
+          if (this.simulationSetup.layers[i].material=='nk') continue;
+          // console.log(fromWL, ' and ', this.simulationSetup.layers[i].spline_n.xs[0]);
+          // console.log(toWL, ' and ', this.simulationSetup.layers[i]
+          //     .spline_n.xs[this.simulationSetup.layers[i].spline_n.xs.length-1] );
+          if (fromWL < this.simulationSetup.layers[i].spline_n.xs[0]) {
+            this.simulationSetup.fromWL_hasConflict = true;
+            this.simulationSetup.layers[i].isMaterial_hasConflict = true;
+          }
+          if ( toWL > this.simulationSetup.layers[i]
+              .spline_n.xs[this.simulationSetup.layers[i].spline_n.xs.length-1] ) {
+            this.simulationSetup.toWL_hasConflict = true;
+            this.simulationSetup.layers[i].isMaterial_hasConflict = true;
+          }
+        }
+      },
       handleResize() {
           this.window.width = window.innerWidth;
           this.window.height = window.innerHeight*0.8;
@@ -485,7 +518,34 @@
         });
       },
       runSimulation: function() {
-          this.$buefy.notification.open({
+          if (this.simulationSetup.toWL_hasConflict ||
+          this.simulationSetup.fromWL_hasConflict) {
+            this.$buefy.notification.open({
+              duration: 2000,
+              message: 'Simulation has input conflicts, fixing...',
+              type: 'is-danger',
+              position: 'is-bottom-left',
+            });
+          }
+
+        for (let i = 0; i < this.simulationSetup.layers.length; i++) {
+          if (this.simulationSetup.layers[i].material=='nk') continue;
+          let fromWLnm = this.convertUnits2nm(this.source_units, this.simulationSetup.fromWL);
+          let toWLnm = this.convertUnits2nm(this.source_units, this.simulationSetup.toWL);
+          let fromWL_material = this.simulationSetup.layers[i].spline_n.xs[0];
+          if (fromWLnm < fromWL_material ) {
+            this.simulationSetup.fromWL = this.convertUnitsFrom_nm(
+                this.source_units, fromWL_material);
+          }
+          let toWL_material = this.simulationSetup.layers[i]
+              .spline_n.xs[this.simulationSetup.layers[i].spline_n.xs.length-1];
+          if ( toWLnm > toWL_material  ) {
+            this.simulationSetup.toWL = this.convertUnitsFrom_nm(
+                this.source_units, toWL_material);
+          }
+        }
+
+        this.$buefy.notification.open({
             duration: 200,
             message: 'Simulation was started!',
             type: 'is-danger',
@@ -567,6 +627,9 @@
               if (layer.spline_n.xs[0] > WL
                       || layer.spline_n.xs[layer.spline_n.xs.length-1] < WL) {
                 this.notifyDanger('ERROR!!! Source parameters are out of material spectral range!');
+                layer.isMaterial_hasConflict = true;
+                this.simulationSetup.toWL_hasConflict = true;
+                this.simulationSetup.fromWL_hasConflict = true;
                 return;
               }
               layer.reN = layer.spline_n.at(WL);

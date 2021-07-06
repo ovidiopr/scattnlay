@@ -32,6 +32,7 @@
 
 <script>
     import GetLayerParameters from "./GetLayerParameters.vue";
+    import { mapState } from 'vuex'
     export default {
         name: "GetParticleParameters",
         components: {
@@ -45,7 +46,11 @@
                 index: 1
             }
         },
-        watch: {
+      computed:
+          mapState([
+            'simulationSetup'
+          ]),
+      watch: {
             // emit updated values
             particle: {
                 handler: function () {
@@ -64,18 +69,20 @@
             // },
             layersNum: {
                 handler: function () {
-                    while (this.layersNum < this.layers.length) {
-                        this.layers.pop();
+                    while (this.layersNum < this.simulationSetup.layers.length) {
+                        this.simulationSetup.layers.pop();
                     }
-                    let r_prev = this.layers[0].R;
-                    while (this.layersNum > this.layers.length) {
+                    let r_prev = this.simulationSetup.layers[0].R;
+                    while (this.layersNum > this.simulationSetup.layers.length) {
                         // r_prev = r_prev*1.1;
-                        this.layers.push(
+                        this.simulationSetup.layers.push(
                             {
                                 R: r_prev*0.1,
                                 material: 'nk',
                                 isMaterialLoaded:true,
-                                reN: 4.0,
+                              isMaterial_hasConflict:false,
+
+                              reN: 4.0,
                                 imN: 0.01,
                                 index: 1,
                                 spline_n: undefined,
@@ -83,8 +90,8 @@
                             }
                         );
                     }
-                    for (let i = 0; i < this.layers.length; i++) {
-                        this.layers[i].index = i;
+                    for (let i = 0; i < this.simulationSetup.layers.length; i++) {
+                        this.simulationSetup.layers[i].index = i;
                     }
                 }
             },
