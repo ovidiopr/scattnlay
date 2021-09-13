@@ -27,9 +27,7 @@ import { defineComponent } from 'vue';
 import nmiejs from './nmiejs.js';
 // Test nmiejs if working
 void (async () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const module = await nmiejs();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const nmie = new module.nmie();
   nmie.ClearTarget();
   let R = 100.0;
