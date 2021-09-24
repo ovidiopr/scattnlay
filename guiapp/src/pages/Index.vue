@@ -1,49 +1,29 @@
 <template>
   <q-page class="row items-center justify-evenly">
-    <example-component
-      title="Example component"
-      active
-      :todos="todos"
-      :meta="meta"
-    ></example-component>
+
+    <input-with-units
+        v-model:name="name"
+        title="Re(n)"
+        units="nm"
+        tooltip_text="help text"
+        active
+    ></input-with-units>
+    Input result: {{name}}
+<!--    tooltip_text="help text"-->
   </q-page>
 </template>
 
 <script lang="ts">
-import { Todo, Meta } from 'components/models';
-import ExampleComponent from 'components/CompositionComponent.vue';
+// import { Todo, Meta } from 'components/models';
 import { defineComponent, ref } from 'vue';
+import InputWithUnits from 'components/CompositionComponent.vue';
 
 export default defineComponent({
   name: 'PageIndex',
-  components: { ExampleComponent },
+  components: {InputWithUnits },
   setup() {
-    const todos = ref<Todo[]>([
-      {
-        id: 1,
-        content: 'ct1'
-      },
-      {
-        id: 2,
-        content: 'ct2'
-      },
-      {
-        id: 3,
-        content: 'ct3'
-      },
-      {
-        id: 4,
-        content: 'ct4'
-      },
-      {
-        id: 5,
-        content: 'ct5'
-      }
-    ]);
-    const meta = ref<Meta>({
-      totalCount: 1200
-    });
-    return { todos, meta };
+    let name = ref('')
+    return {name};
   }
 });
 </script>
