@@ -1,83 +1,99 @@
 <template>
   <div>
     <q-card
-            flat
-            bordered
+        bordered
+        flat
     >
-      <q-tooltip v-if="tooltipText">
-        {{tooltip_text}}
-      </q-tooltip>
       <q-card-section
-          horizontal
-          class="items-center bg-grey-2">
-        <div class="side_note text-grey-9 q-px-xs"
+          class="items-center bg-grey-2"
+          horizontal>
+        <div v-if='title' class="side_note text-grey-9 q-px-xs"
              style="width: 4rem"
         >
-          {{title}}
+          {{ title }}
         </div>
+        <div
+            @mousemove="setTooltip"
+        >
+
+        <q-tooltip
+            v-model = "isShowingTooltip"
+                   anchor="top middle"
+                   self="center middle"
+        >
+          = {{round_number(localTooltipText,5)}}
+        </q-tooltip>
 
         <q-select
-            :model-value="name"
-            @input-value="$emit('update:name', $event)"
-            use-input
-            hide-selected
-            fill-input
-            input-debounce="0"
+            :model-value="localQSelectValue"
             :options="options"
-            style="width: 10rem"
-            options-dense
-            dense
             bg-color="white"
             class="q-py-none"
+            dense
+            fill-input
+            hide-selected
+            input-debounce="0"
+            options-dense
+            style="width: 10rem"
+            use-input
+            behavior="menu"
+            @focus="setTooltip"
+            @blur="handleQSelectBlur"
+            @keydown.enter="handleQSelectBlur"
+            @keydown.tab="handleQSelectBlur"
+            @input-value="localQSelectValue=$event"
         >
-          <template v-slot:no-option>
-            <q-item>
-              <q-item-section class="text-grey">
-                No results
-              </q-item-section>
-            </q-item>
+          <template
+                    v-if="localTooltipText&&!isShowingTooltip"
+                    #append
+          >
+            <div
+                style="font-size: 12px"
+            >
+              ={{round_number(localTooltipText,1)}}
+            </div>
           </template>
+<!--          <template #no-option>-->
+<!--            <q-item>-->
+<!--              <q-item-section class="text-grey">-->
+<!--                No results-->
+<!--              </q-item-section>-->
+<!--            </q-item>-->
+<!--          </template>-->
         </q-select>
+        </div>
 
         <div
             class="side_note text-grey-9 q-px-xs"
             style="width: 3rem"
         >
-          {{ units}}
+          {{ units }}
         </div>
       </q-card-section>
     </q-card>
-    local options: {{name}}
+<!--    local options: {{ inputValue }}-->
+
+    local: {{localQSelectValue}}
   </div>
 </template>
 
 <script lang="ts">
 // import { useModelWrapper } from 'components/modelWrapper'
-import {
-  defineComponent,
-  //   watch,
-  // PropType,
-  // computed,
+import {evaluate, isNumeric} from 'mathjs';
+import {defineComponent,
   ref,
-  // toRef,
-  // Ref,
-} from 'vue';
-// import { Todo, Meta } from './models';
-
-// function useModelWrapper(props, emit, name = 'modelValue') {
-//   return computed({
-//     get: () => props[name],
-//     set: (value) => emit(`update:${name}`, value)
-//   })
-// }
-const stringOptions = [
-  'Google', 'Facebook', 'Twitter', 'Apple', 'Oracle'
-]
+  watch,
+  onMounted,
+  } from 'vue';
 
 export default defineComponent({
   name: 'InputWithUnits',
   props: {
-    name: {
+    outputValue: {
+      type: Number,
+      default: 0
+    },
+    evalExpr: {
       type: String,
       default: ''
     },
@@ -87,7 +103,7 @@ export default defineComponent({
       default: ''
     },
     units: {
-      type:String,
+      type: String,
       default: ''
     },
     tooltipText: {
@@ -95,20 +111,77 @@ export default defineComponent({
       default: ''
     }
   },
-  emits : [
-    'update:name'
+  emits: [
+    'update:output-value'
+    // <!--            @input-value="$emit('update:input-expr', $event)"-->
+    // <!--        >-->
   ],
   setup(props, {emit}) {
-  //   // import { ref } from 'vue'
-  //   // const return_value = ref(0)
-  //   // var options = ref([3, 2])
-    const options = ref(stringOptions)
-  //   // var return_value = ref(null)
-  //   var model = ref(null)
-    return {
-  //     model,
-      options
+    let localQSelectValue = ref('')
+    let localTooltipText = ref('')
+    let isShowingTooltip = ref(false)
+
+
+    onMounted(()=>{
+      localQSelectValue.value = props.evalExpr
+      localTooltipText.value = props.evalExpr
+      if (props.tooltipText) localTooltipText.value = props.tooltipText
+      console.log(localTooltipText.value)
+    });
+
+
+    let options = ref(['1+2', 'sqrt(6)*20'])
+    let evaluatedValue = ref(0)
+
+
+    function setTooltip(){
+      if (evaluatedValue.value != Number(localQSelectValue.value)) {
+        localTooltipText.value = evaluatedValue.value.toString()
+        isShowingTooltip.value = true
+      } else {
+        localTooltipText.value = ''
+        isShowingTooltip.value = false
+      }
     }
+
+
+    function handleQSelectBlur(){
+      isShowingTooltip.value=false
+      const expr = localQSelectValue.value
+      if (!options.value.includes(expr)) options.value.unshift(expr);
+      if (options.value.length > 5) options.value.pop();
+      // localQSelectValue.value = evaluatedValue.value.toString()
+    }
+
+
+    function round_number (value:string, digits:number):number {
+      // TODO manage special cases of very big and very
+      // small numbers assuming digits value is small
+      return Number(Math.round(parseFloat(value + 'e' + digits.toString())) + 'e-' + digits.toString())
+    }
+
+
+    watch(localQSelectValue, () => {
+      let tryEvaluate:any
+      try {
+        tryEvaluate = evaluate(localQSelectValue.value)
+        if (isNumeric(tryEvaluate)) evaluatedValue.value = Number(tryEvaluate)
+      } catch { }
+    })
+
+
+
+
+    watch(evaluatedValue, () => {
+      emit('update:output-value', evaluatedValue.value)
+      setTooltip()
+    })
+
+
+    return {
+      options,  localQSelectValue, localTooltipText, isShowingTooltip,
+      setTooltip, handleQSelectBlur, round_number
+    };
   },
 });
 </script>

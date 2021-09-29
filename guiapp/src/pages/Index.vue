@@ -2,13 +2,14 @@
   <q-page class="row items-center justify-evenly">
 
     <input-with-units
-        v-model:name="name"
+        v-model:output-value="someValue"
+        v-model:eval-expr="someExpr"
+        v-model:is-show-help="isShowHelp"
         title="Re(n)"
         units="nm"
-        tooltip_text="help text"
         active
     ></input-with-units>
-    Input result: {{name}}
+    Input result: {{someValue}}
 <!--    tooltip_text="help text"-->
   </q-page>
 </template>
@@ -22,8 +23,10 @@ export default defineComponent({
   name: 'PageIndex',
   components: {InputWithUnits },
   setup() {
-    let name = ref('')
-    return {name};
+    let someValue = ref(10);
+    let someExpr = ref('10');
+    let isShowHelp = ref(true)
+    return { someValue, someExpr, isShowHelp };
   }
 });
 </script>
