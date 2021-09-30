@@ -13,7 +13,7 @@
           {{ title }}
         </div>
         <div
-            @mousemove="setTooltip"
+            @mousemove="setTooltipVisibility"
         >
 
         <q-tooltip
@@ -21,8 +21,15 @@
                    anchor="top middle"
                    self="center middle"
         >
-          = {{round_number(localTooltipText,5)}}
+          = {{format_number(localTooltipText,2)}}
         </q-tooltip>
+          <q-tooltip
+              v-model = "isShowingHelpLocal"
+              anchor="bottom middle"
+              self="top middle"
+          >
+              Input example: <b>(1+2)*sqrt(2)</b><br>
+          </q-tooltip>
 
         <q-select
             :model-value="localQSelectValue"
@@ -37,20 +44,18 @@
             style="width: 10rem"
             use-input
             behavior="menu"
-            @focus="setTooltip"
+            @filter="filterFn"
             @blur="handleQSelectBlur"
-            @keydown.enter="handleQSelectBlur"
-            @keydown.tab="handleQSelectBlur"
             @input-value="localQSelectValue=$event"
         >
           <template
-                    v-if="localTooltipText&&!isShowingTooltip"
+                    v-if="isShowingTooltipAppend&&!isShowingTooltip"
                     #append
           >
             <div
                 style="font-size: 12px"
             >
-              ={{round_number(localTooltipText,1)}}
+              ={{format_number(localTooltipText,1)}}
             </div>
           </template>
 <!--          <template #no-option>-->
@@ -79,11 +84,11 @@
 
 <script lang="ts">
 // import { useModelWrapper } from 'components/modelWrapper'
-import {evaluate, isNumeric} from 'mathjs';
+import {evaluate} from 'mathjs';
 import {defineComponent,
   ref,
   watch,
-  onMounted,
+  onMounted
   } from 'vue';
 
 export default defineComponent({
@@ -106,9 +111,9 @@ export default defineComponent({
       type: String,
       default: ''
     },
-    tooltipText: {
-      type: String,
-      default: ''
+    isShowingHelp: {
+      type: Boolean,
+      default: false
     }
   },
   emits: [
@@ -117,59 +122,89 @@ export default defineComponent({
     // <!--        >-->
   ],
   setup(props, {emit}) {
+
     let localQSelectValue = ref('')
     let localTooltipText = ref('')
     let isShowingTooltip = ref(false)
+    let isShowingTooltipAppend = ref(false)
+    let isShowingHelpLocal = ref(false)
 
+    let options = ref(['a','b'])
+    let optionsHistory = ref(['a','b'])
+    let evaluatedValue = ref(0)
+
+    function filterFn (val:any, update:any, abort:any) {
+      update(() => {
+        // To remove the selection from previously
+        // selection option - we recreate the options list
+        options.value = optionsHistory.value
+      })
+    }
+
+    function runEvaluate() {
+      try {
+        const tryEvaluate = Number(evaluate(localQSelectValue.value))
+        if (!isNaN(tryEvaluate)) evaluatedValue.value = tryEvaluate
+      } catch { }
+    }
 
     onMounted(()=>{
-      localQSelectValue.value = props.evalExpr
-      localTooltipText.value = props.evalExpr
-      if (props.tooltipText) localTooltipText.value = props.tooltipText
-      console.log(localTooltipText.value)
+      isShowingTooltip.value = false
     });
 
 
-    let options = ref(['1+2', 'sqrt(6)*20'])
-    let evaluatedValue = ref(0)
+    function setTooltipValue(){
+      localTooltipText.value = evaluatedValue.value.toString()
+    }
 
 
-    function setTooltip(){
+    function setTooltipVisibility(){
+      isShowingHelpLocal.value = props.isShowingHelp
+      if (options.value.length>0) isShowingHelpLocal.value = false
       if (evaluatedValue.value != Number(localQSelectValue.value)) {
-        localTooltipText.value = evaluatedValue.value.toString()
         isShowingTooltip.value = true
+        isShowingTooltipAppend.value = true
       } else {
-        localTooltipText.value = ''
         isShowingTooltip.value = false
+        isShowingTooltipAppend.value = false
       }
     }
 
+    function setTooltip(){
+      setTooltipValue()
+      setTooltipVisibility()
+    }
 
     function handleQSelectBlur(){
-      isShowingTooltip.value=false
+      isShowingTooltip.value = false
+      isShowingHelpLocal.value = false
       const expr = localQSelectValue.value
-      if (!options.value.includes(expr)) options.value.unshift(expr);
-      if (options.value.length > 5) options.value.pop();
-      // localQSelectValue.value = evaluatedValue.value.toString()
+      if (!optionsHistory.value.includes(expr)) optionsHistory.value.unshift(expr)
+      if (optionsHistory.value.length > 5) optionsHistory.value.pop()
     }
 
 
-    function round_number (value:string, digits:number):number {
-      // TODO manage special cases of very big and very
-      // small numbers assuming digits value is small
-      return Number(Math.round(parseFloat(value + 'e' + digits.toString())) + 'e-' + digits.toString())
+
+    function format_number (value:string, digits:number):string {
+      // const help_string = 'text\n text'
+      const num = parseFloat(value)
+      if ( num < Math.pow(10, -digits) ||
+           num > 5*Math.pow(10,  digits+2)
+         ) return num.toExponential(digits)
+      return Number(Math.round(
+          parseFloat(value + 'e' + digits.toString())).toString()
+          + 'e-' + digits.toString()).toString()
     }
 
 
     watch(localQSelectValue, () => {
-      let tryEvaluate:any
-      try {
-        tryEvaluate = evaluate(localQSelectValue.value)
-        if (isNumeric(tryEvaluate)) evaluatedValue.value = Number(tryEvaluate)
-      } catch { }
+      runEvaluate()
     })
 
 
+    // watch(options, ()=>{
+    //   if (options.value.length>0)
+    // })
 
 
     watch(evaluatedValue, () => {
@@ -178,9 +213,21 @@ export default defineComponent({
     })
 
 
+
+    localQSelectValue.value = props.evalExpr
+    runEvaluate()
+    localTooltipText.value = localQSelectValue.value
+    setTooltip()
+    options.value.pop()
+    options.value.pop()
+    optionsHistory.value.pop()
+    optionsHistory.value.pop()
+
     return {
       options,  localQSelectValue, localTooltipText, isShowingTooltip,
-      setTooltip, handleQSelectBlur, round_number
+      isShowingHelpLocal, isShowingTooltipAppend,
+      setTooltip, handleQSelectBlur, format_number,
+      setTooltipVisibility, filterFn
     };
   },
 });

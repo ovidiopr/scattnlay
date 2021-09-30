@@ -4,8 +4,16 @@
     <input-with-units
         v-model:output-value="someValue"
         v-model:eval-expr="someExpr"
-        v-model:is-show-help="isShowHelp"
+        v-model:is-showing-help="isShowingHelp"
         title="Re(n)"
+        units="nm"
+        active
+    ></input-with-units>
+    <input-with-units
+        v-model:output-value="someValue"
+        v-model:eval-expr="someExpr"
+        v-model:is-showing-help="isShowingHelp"
+        title="Im(n)"
         units="nm"
         active
     ></input-with-units>
@@ -25,8 +33,8 @@ export default defineComponent({
   setup() {
     let someValue = ref(10);
     let someExpr = ref('10');
-    let isShowHelp = ref(true)
-    return { someValue, someExpr, isShowHelp };
+    let isShowingHelp = ref(false)
+    return { someValue, someExpr, isShowingHelp };
   }
 });
 </script>
