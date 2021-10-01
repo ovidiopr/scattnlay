@@ -32,8 +32,9 @@ export default defineComponent({
   components: {InputWithUnits },
   setup() {
     let someValue = ref(10);
-    let someExpr = ref('10');
-    let isShowingHelp = ref(false)
+    let someExpr = ref('10+2');
+    // let isShowingHelp = ref(false)
+    let isShowingHelp = ref(true)
     return { someValue, someExpr, isShowingHelp };
   }
 });
