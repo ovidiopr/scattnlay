@@ -5,7 +5,7 @@
         anchor="top middle"
         self="center middle"
     >
-      {{formatNumber(localTooltipText,2)}}
+      {{formatNumber(localTooltipText,digits+1)}}
     </q-tooltip>
     <q-tooltip v-if="isShowingHelp"
                v-model = "isShowingHelpLocal"
@@ -52,7 +52,7 @@
                   style="font-size: 12px"
                   class="q-py-sm"
               >
-                {{formatNumber(localTooltipText,1)}}
+                {{formatNumber(localTooltipText,digits)}}
               </div>
             </template>
             <template #option="scope">
@@ -61,7 +61,7 @@
                   {{scope.opt}}
                 </q-item-section>
                 <q-item-section side>
-                  {{formatNumber(evalString(scope.opt),1)}}
+                  {{formatNumber(evalString(scope.opt),digits)}}
                 </q-item-section>
               </q-item>
             </template>
@@ -126,6 +126,7 @@ export default defineComponent({
 
     let evaluatedValue = ref(0)
     let count_updates = 0
+    const digits = 1
 
     // Set some random values to get correct typing with
     // TypeScript and remove them after initialization.
@@ -147,7 +148,6 @@ export default defineComponent({
 
     function formatNumber (value:string, digits:number):string {
       if (value==='') return ''
-      // const help_string = 'text\n text'
       const num = parseFloat(value)
       if ( num < Math.pow(10, -digits) ||
           num > 5*Math.pow(10,  digits+2)
@@ -157,7 +157,7 @@ export default defineComponent({
           + 'e-' + digits.toString()).toString()
     }
 
-    // evaluate option items, returns empty string for trivial evaluation or error
+    // evaluate option items, returns empty string for trivial evaluations and errors
     function evalString(val:string):string {
       // Using try{} block to drop silently invalid input
       try {
@@ -244,7 +244,7 @@ export default defineComponent({
       isShowingTooltipAppend, isShowingHelpLocal,
       qSelectOptions,  localQSelectValue,
       handleQSelectBlur, filterQSelectOptions,
-      formatNumber, evalString
+      digits, formatNumber, evalString
     };
   },
 });
