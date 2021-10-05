@@ -3,16 +3,15 @@
 
     <input-with-units
         v-model:input-result="someValue"
-        v-model:initial-expression="someExpr"
         v-model:is-showing-help="isShowingHelpInputWithUnits"
+        :initial-expression="someExpr"
         title="Re(n)"
         units="nm"
-        active
     ></input-with-units>
     <input-with-units
         v-model:input-result="someValue"
-        v-model:initial-expression="someExpr"
         v-model:is-showing-help="isShowingHelpInputWithUnits"
+        :initial-expression="someExpr"
         title=""
         units=""
         active
@@ -31,7 +30,7 @@ export default defineComponent({
   components: {InputWithUnits },
   setup() {
     let someValue = ref(10);
-    let someExpr = ref('10+3');
+    let someExpr = ref('10');
     // InputWithUnits component will disable showing help after first input
     let isShowingHelpInputWithUnits = ref(true)
     return { someValue, someExpr, isShowingHelpInputWithUnits };

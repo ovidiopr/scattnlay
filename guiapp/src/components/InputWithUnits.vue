@@ -137,38 +137,6 @@ export default defineComponent({
     qSelectOptionsHistory.value.pop()
     qSelectOptionsHistory.value.pop()
 
-    function filterQSelectOptions (val:string,
-                       update:(data: ()=>void) => void) {
-      update(() => {
-        // To remove the selection from previously
-        // selected option - we refill the options list
-        qSelectOptions.value = qSelectOptionsHistory.value
-      })
-    }
-
-    function formatNumber (value:string, digits:number):string {
-      if (value==='') return ''
-      const num = parseFloat(value)
-      if ( num < Math.pow(10, -digits) ||
-          num > 5*Math.pow(10,  digits+2)
-      ) return '='+num.toExponential(digits)
-      return '='+Number(Math.round(
-              parseFloat(value + 'e' + digits.toString())).toString()
-          + 'e-' + digits.toString()).toString()
-    }
-
-    // evaluate option items, returns empty string for trivial evaluations and errors
-    function evalString(val:string):string {
-      // Using try{} block to drop silently invalid input
-      try {
-        const tryEvaluate = Number(evaluate(val))
-        if (!isNaN(tryEvaluate) && tryEvaluate != Number(val)) {
-          return tryEvaluate.toString()
-        }
-      } catch { }
-      return ''
-    }
-
     // evaluate current input, keeps the previous evaluateValue for invalid input
     function runEvaluate() {
       // Using try{} block to drop silently invalid input
@@ -225,13 +193,6 @@ export default defineComponent({
       if (qSelectOptions.value.length>0) isShowingHelpLocal.value = false
     })
 
-    function handleQSelectBlur(){
-      isShowingTooltip.value = false
-      const expr = localQSelectValue.value
-      if (!qSelectOptionsHistory.value.includes(expr)) qSelectOptionsHistory.value.unshift(expr)
-      if (qSelectOptionsHistory.value.length > 5) qSelectOptionsHistory.value.pop()
-    }
-
     // eslint-disable-next-line vue/no-setup-props-destructure
     localQSelectValue.value = props.initialExpression // TODO do we need reactivity from props.initialExpression?
     runEvaluate()
@@ -243,8 +204,48 @@ export default defineComponent({
       localTooltipText, isShowingTooltip,
       isShowingTooltipAppend, isShowingHelpLocal,
       qSelectOptions,  localQSelectValue,
-      handleQSelectBlur, filterQSelectOptions,
-      digits, formatNumber, evalString
+
+      handleQSelectBlur(){
+        isShowingTooltip.value = false
+        const expr = localQSelectValue.value
+        if (!qSelectOptionsHistory.value.includes(expr)) qSelectOptionsHistory.value.unshift(expr)
+        if (qSelectOptionsHistory.value.length > 5) qSelectOptionsHistory.value.pop()
+      },
+
+      filterQSelectOptions (val:string,
+                            update:(data: ()=>void) => void) {
+        update(() => {
+          // To remove the selection from previously
+          // selected option - we refill the options list
+          qSelectOptions.value = qSelectOptionsHistory.value
+        })
+      },
+
+      digits,
+
+      formatNumber (value:string, digits:number):string {
+        if (value==='') return ''
+        const num = parseFloat(value)
+        if ( num < Math.pow(10, -digits) ||
+            num > 5*Math.pow(10,  digits+2)
+        ) return '='+num.toExponential(digits)
+        return '='+Number(Math.round(
+                parseFloat(value + 'e' + digits.toString())).toString()
+            + 'e-' + digits.toString()).toString()
+      },
+
+      // evaluate option items, returns empty string for trivial evaluations and errors
+      evalString(val:string):string {
+        // Using try{} block to drop silently invalid input
+        try {
+          const tryEvaluate = Number(evaluate(val))
+          if (!isNaN(tryEvaluate) && tryEvaluate != Number(val)) {
+            return tryEvaluate.toString()
+          }
+        } catch { }
+        return ''
+      },
+
     };
   },
 });
