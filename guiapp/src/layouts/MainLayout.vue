@@ -1,5 +1,6 @@
 <template>
-  <q-layout view="hHh lpr lFf">
+  <q-layout view="lHh lpR fFf">
+<!--  <q-layout view="hHh Lpr lFr">-->
     <q-header elevated>
       <q-toolbar>
         <q-btn
@@ -10,23 +11,27 @@
           aria-label="Menu"
           @click="toggleLeftDrawer"
         />
-        <q-tabs align="left">
-          <q-route-tab to="/" label="Spectrum" />
-          <q-route-tab to="/page2" label="Near-field" />
-          <q-route-tab to="/page3" label="Far-field" />
+        <q-tabs align="right" v-model="tab">
+          <q-route-tab to="/spectrum" label="Spectrum" name="spectrum"/>
+          <q-route-tab to="/page2" label="Near-field" name="nearfield"/>
+          <q-route-tab to="/page3" label="Far-field" name="farfield"/>
         </q-tabs>
       </q-toolbar>
     </q-header>
 
     <q-drawer
       v-model="leftDrawerOpen"
-      show-if-above
       bordered
     >
       <q-list>
-
+        <q-item clickable @click="toggleLeftDrawer">
+          <q-item-section></q-item-section>
+          <q-item-section avatar side> <q-icon name="close" /> </q-item-section>
+        </q-item>
         <q-item
             clickable
+            to="/info"
+            @click="toggleLeftDrawer"
         >
           <q-item-section
               avatar
@@ -40,13 +45,13 @@
         </q-item>
         <q-separator inset spaced/>
         <q-item> <q-item-section> <q-item-label> External links</q-item-label> </q-item-section> </q-item>
-        <q-item clickable tag="a" target="_blank" :href="`https://github.com/ovidiopr/scattnlay`" >
+        <q-item clickable tag="a" target="_blank" href="https://github.com/ovidiopr/scattnlay" >
           <q-item-section avatar > <q-icon name="code" /> </q-item-section>
           <q-item-section> <q-item-label>Project at GitHub</q-item-label>
             <q-item-label caption> Open-source software </q-item-label>
           </q-item-section>
         </q-item>
-        <q-item clickable tag="a" target="_blank" :href="`https://github.com/ovidiopr/scattnlay/issues/new?title=[webapp]`" >
+        <q-item clickable tag="a" target="_blank" href="https://github.com/ovidiopr/scattnlay/issues/new?title=[webapp]" >
           <q-item-section avatar > <q-icon name="support" /> </q-item-section>
           <q-item-section> <q-item-label>Support</q-item-label>
             <q-item-label caption> Requires a GitHub account</q-item-label></q-item-section>
@@ -130,7 +135,7 @@ export default defineComponent({
 
   setup () {
     const leftDrawerOpen = ref(false)
-
+    const tab = ref('')
     return {
       // essentialLinks: linksList,
       leftDrawerOpen,
