@@ -22,14 +22,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref,
+  // computed
+} from 'vue';
 import { useStore } from 'vuex'
 import InputWithUnits from 'components/InputWithUnits.vue';
+// import {store} from "quasar/wrappers";
+import {storeKey} from "src/store";
+
 
 export default defineComponent({
   name: 'PageIndex',
   components: {InputWithUnits },
   setup() {
+    const $store = useStore(storeKey)
+    console.log( 'store value',$store.state.example.prop)
     let someValue = ref(10);
     let someExpr = ref('10');
     // InputWithUnits component will disable showing help after first input
