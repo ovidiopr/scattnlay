@@ -11,7 +11,7 @@
           aria-label="Menu"
           @click="toggleLeftDrawer"
         />
-        <q-tabs align="right" v-model="tab">
+        <q-tabs align="right">
           <q-route-tab to="/spectrum" label="Spectrum" name="spectrum"/>
           <q-route-tab to="/page2" label="Near-field" name="nearfield"/>
           <q-route-tab to="/page3" label="Far-field" name="farfield"/>
@@ -135,9 +135,7 @@ export default defineComponent({
 
   setup () {
     const leftDrawerOpen = ref(false)
-    const tab = ref('')
     return {
-      // essentialLinks: linksList,
       leftDrawerOpen,
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
