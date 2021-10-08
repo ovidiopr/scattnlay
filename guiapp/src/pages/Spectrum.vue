@@ -1,6 +1,6 @@
 <template>
   <q-page class="row items-center justify-evenly">
-
+<!--    Your code-->
     <input-with-units
         v-model:input-result="someValue"
         v-model:is-showing-help="isShowingHelpInputWithUnits"
@@ -21,22 +21,20 @@
   </q-page>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
 import { defineComponent, ref,
   // computed
 } from 'vue';
-import { useStore } from 'vuex'
+import { useStore } from 'src/store';
 import InputWithUnits from 'components/InputWithUnits.vue';
-// import {store} from "quasar/wrappers";
-import {storeKey} from "src/store";
 
 
 export default defineComponent({
   name: 'PageIndex',
   components: {InputWithUnits },
   setup() {
-    const $store = useStore(storeKey)
-    console.log( 'store value',$store.state.example.prop)
+    const $store = useStore()
+    console.log( 'store value',$store.state.guiRuntime.isShowingHelpForInputWithUnits)
     let someValue = ref(10);
     let someExpr = ref('10');
     // InputWithUnits component will disable showing help after first input

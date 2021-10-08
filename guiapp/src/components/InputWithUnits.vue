@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="q-pa-xs">
     <q-tooltip
         v-model = "isShowingTooltip"
         anchor="top middle"
@@ -12,7 +12,7 @@
                anchor="bottom middle"
                self="top middle"
     >
-      Input example: <b>(1+2)*sqrt(2)</b><br>
+      Input example: <b>{{ helpExpr }}</b><br>
     </q-tooltip>
     <q-card
         bordered
@@ -56,7 +56,7 @@
               </div>
             </template>
             <template #option="scope">
-              <q-item v-bind="scope.itemProps">
+              <q-item v-bind="scope.itemProps" class="q-px-sm">
                 <q-item-section>
                   {{scope.opt}}
                 </q-item-section>
@@ -123,6 +123,7 @@ export default defineComponent({
     let isShowingTooltip = ref(false)
     let isShowingTooltipAppend = ref(false)
     let isShowingHelpLocal = ref(false)
+    let helpExpr = ref('(1+2)*sqrt(2)')
 
     let evaluatedValue = ref(0)
     let count_updates = 0
@@ -177,7 +178,10 @@ export default defineComponent({
       const threshold = 1
       if (count_updates < threshold+1) { // emit only once
         count_updates += 1
-        if (props.isShowingHelp && count_updates > threshold) emit('update:is-showing-help', false)
+        if (props.isShowingHelp && count_updates > threshold) {
+          qSelectOptionsHistory.value.unshift(helpExpr.value)
+          emit('update:is-showing-help', false)
+        }
       }
     })
 
@@ -203,11 +207,17 @@ export default defineComponent({
     return {
       localTooltipText, isShowingTooltip,
       isShowingTooltipAppend, isShowingHelpLocal,
+      helpExpr,
       qSelectOptions,  localQSelectValue,
 
       handleQSelectBlur(){
         isShowingTooltip.value = false
         const expr = localQSelectValue.value
+        // Switch off showing help as soon as we have some input from user
+        if (props.isShowingHelp) {
+          qSelectOptionsHistory.value.unshift(helpExpr.value)
+          emit('update:is-showing-help', false)
+        }
         if (!qSelectOptionsHistory.value.includes(expr)) qSelectOptionsHistory.value.unshift(expr)
         if (qSelectOptionsHistory.value.length > 5) qSelectOptionsHistory.value.pop()
       },
