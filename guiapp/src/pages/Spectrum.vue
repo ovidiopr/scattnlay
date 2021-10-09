@@ -3,14 +3,14 @@
 <!--    Your code-->
     <input-with-units
         v-model:input-result="someValue"
-        v-model:is-showing-help="isShowingHelpInputWithUnits"
+        v-model:is-showing-help="isShowingHelpForInputWithUnits"
         :initial-expression="someExpr"
         title="Re(n)"
         units="nm"
     ></input-with-units>
     <input-with-units
         v-model:input-result="someValue"
-        v-model:is-showing-help="isShowingHelpInputWithUnits"
+        v-model:is-showing-help="isShowingHelpForInputWithUnits"
         :initial-expression="someExpr"
         title=""
         units=""
@@ -23,7 +23,7 @@
 
 <script lang='ts'>
 import { defineComponent, ref,
-  // computed
+  computed
 } from 'vue';
 import { useStore } from 'src/store';
 import InputWithUnits from 'components/InputWithUnits.vue';
@@ -38,8 +38,14 @@ export default defineComponent({
     let someValue = ref(10);
     let someExpr = ref('10');
     // InputWithUnits component will disable showing help after first input
-    let isShowingHelpInputWithUnits = ref(true)
-    return { someValue, someExpr, isShowingHelpInputWithUnits };
+    const isShowingHelpForInputWithUnits = computed({
+      get: () => $store.state.guiRuntime.isShowingHelpForInputWithUnits,
+      set: val => {
+        $store.commit('guiRuntime/setIsShowingHelpForInputWithUnits', val)
+      }
+    })
+    // let isShowingHelpForInputWithUnits = ref(true)
+    return { someValue, someExpr, isShowingHelpForInputWithUnits};
   }
 });
 </script>

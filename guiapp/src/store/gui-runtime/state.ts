@@ -4,7 +4,7 @@ export interface guiRuntimeStateInterface {
 
 function state(): guiRuntimeStateInterface {
   return {
-    isShowingHelpForInputWithUnits: false
+    isShowingHelpForInputWithUnits: true
   }
 };
 
