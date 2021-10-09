@@ -9,6 +9,12 @@ import {
 import guiRuntime from './gui-runtime'
 import { guiRuntimeStateInterface } from './gui-runtime/state';
 
+import plotRuntime from './plot-runtime'
+import { plotRuntimeStateInterface } from './plot-runtime/state';
+
+import simulationSetup from './simulation-setup'
+import { simulationSetupStateInterface } from './simulation-setup/state';
+
 /*
  * If not building with SSR mode, you can
  * directly export the Store instantiation;
@@ -21,6 +27,8 @@ import { guiRuntimeStateInterface } from './gui-runtime/state';
 export interface StateInterface {
   // Define your own store structure, using submodules if needed
   guiRuntime: guiRuntimeStateInterface;
+  plotRuntime: plotRuntimeStateInterface;
+  simulationSetup: simulationSetupStateInterface;
   // Declared as unknown to avoid linting issue. Best to strongly type as per the line above.
   // example: unknown
 }
@@ -38,7 +46,9 @@ export const storeKey: InjectionKey<VuexStore<StateInterface>> = Symbol('vuex-ke
 export default store(function (/* { ssrContext } */) {
   const Store = createStore<StateInterface>({
     modules: {
-      guiRuntime
+      guiRuntime,
+      plotRuntime,
+      simulationSetup
     },
 
     // enable strict mode (adds overhead!)

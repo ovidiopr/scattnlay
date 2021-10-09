@@ -1,7 +1,7 @@
 <template>
   <q-page class="row items-center justify-evenly">
-    <!--    Your code-->
-    <h4>Spectrum</h4>
+<!--    Your code-->
+    <h4>Near-field</h4>
     <input-with-units
         v-model:input-result="someValue"
         v-model:is-showing-help="isShowingHelpForInputWithUnits"

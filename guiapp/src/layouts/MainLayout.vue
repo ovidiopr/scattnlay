@@ -13,8 +13,8 @@
         />
         <q-tabs align="right">
           <q-route-tab to="/spectrum" label="Spectrum" name="spectrum"/>
-          <q-route-tab to="/page2" label="Near-field" name="nearfield"/>
-          <q-route-tab to="/page3" label="Far-field" name="farfield"/>
+          <q-route-tab to="/nearfield" label="Near-field" name="nearfield"/>
+<!--          <q-route-tab to="/farfield" label="Far-field" name="farfield"/>-->
         </q-tabs>
       </q-toolbar>
     </q-header>
