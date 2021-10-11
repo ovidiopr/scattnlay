@@ -13,6 +13,7 @@
     "@quasar/extras": "^1.0.0",
     "@types/emscripten": "^1.39.5",
     "core-js": "^3.6.5",
+    "lodash": "^4.17.21",
     "mathjs": "^9.5.0",
     "quasar": "^2.0.0",
     "vuex": "^4.0.1"
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
     "@quasar/app": "^3.0.0",
+    "@types/lodash": "^4.14.175",
     "@types/node": "^12.20.21",
     "@typescript-eslint/eslint-plugin": "^4.16.1",
     "@typescript-eslint/parser": "^4.16.1",

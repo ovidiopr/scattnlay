@@ -79,12 +79,12 @@
 </template>
 
 <script lang="ts">
-import {evaluate} from 'mathjs';
+import {evaluate} from 'mathjs'
 import {
   defineComponent,
   ref,
   watch,
-  } from 'vue';
+  } from 'vue'
 
 export default defineComponent({
   name: 'InputWithUnits',
@@ -256,7 +256,7 @@ export default defineComponent({
         return ''
       },
 
-    };
+    }
   },
-});
+})
 </script>

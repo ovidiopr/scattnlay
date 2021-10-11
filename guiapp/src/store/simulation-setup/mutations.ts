@@ -1,10 +1,12 @@
 import { MutationTree } from 'vuex';
-import { simulationSetupStateInterface } from './state';
+import { simulationSetupStateInterface, simulationSetup } from './state';
+import { cloneDeep } from 'lodash'
 
 const mutation: MutationTree<simulationSetupStateInterface> = {
-  setIsShowingHelpForInputWithUnits (state: simulationSetupStateInterface, newVal: boolean) {
+  setGuiState (state: simulationSetupStateInterface,
+               newVal: simulationSetup) {
     // your code
-    state.isShowingHelpForInputWithUnits = newVal
+    state.gui = cloneDeep(newVal)
   }
 };
 

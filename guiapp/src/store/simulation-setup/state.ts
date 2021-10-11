@@ -1,10 +1,31 @@
+import { cloneDeep } from 'lodash'
+export interface simulationSetup {
+  hostIndex: number,
+  fromWL: number, toWL:number, pointsWL:number
+}
+
 export interface simulationSetupStateInterface {
-  isShowingHelpForInputWithUnits: boolean;
+  library: Map<string,simulationSetup>;
+  gui: simulationSetup;
+  current: simulationSetup;
+}
+
+function setupFactory(hostIndex = 1,
+                      fromWL = 300, toWL=1000, pointsWL=350
+                     ):simulationSetup {
+  return {hostIndex:hostIndex,
+    fromWL:fromWL, toWL:toWL, pointsWL:pointsWL }
 }
 
 function state(): simulationSetupStateInterface {
+  const gui = setupFactory()
+  const current = cloneDeep(gui)
+  const library = new Map<string,simulationSetup>()
+  library.set('default', cloneDeep(gui))
   return {
-    isShowingHelpForInputWithUnits: true
+    library,
+    gui,
+    current
   }
 };
 
