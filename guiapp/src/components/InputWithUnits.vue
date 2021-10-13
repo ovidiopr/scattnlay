@@ -28,7 +28,7 @@
         </div>
         <div>
           <q-select
-              :model-value="localQSelectValue"
+              :model-value="localQSelectModel"
               :options="qSelectOptions"
               bg-color="white"
               dense
@@ -42,7 +42,7 @@
               @filter="filterQSelectOptions"
               @blur="handleQSelectBlur"
               @keydown.enter="handleQSelectBlur"
-              @input-value="localQSelectValue=$event"
+              @input-value="localQSelectModel=$event"
           >
             <template
                 v-if="isShowingTooltipAppend&&!isShowingTooltip"
@@ -118,14 +118,14 @@ export default defineComponent({
   ],
   setup(props, {emit}) {
 
-    let localQSelectValue = ref('')
+    let localQSelectModel = ref('')
     let localTooltipText = ref('')
     let isShowingTooltip = ref(false)
     let isShowingTooltipAppend = ref(false)
     let isShowingHelpLocal = ref(false)
     let helpExpr = ref('(1+2)*sqrt(2)')
 
-    let evaluatedValue = ref(0)
+    let evaluated = ref(0)
     let count_updates = 0
     const digits = 1
 
@@ -142,17 +142,17 @@ export default defineComponent({
     function runEvaluate() {
       // Using try{} block to drop silently invalid input
       try {
-        const tryEvaluate = Number(evaluate(localQSelectValue.value))
-        if (!isNaN(tryEvaluate)) evaluatedValue.value = tryEvaluate
+        const tryEvaluate = Number(evaluate(localQSelectModel.value))
+        if (!isNaN(tryEvaluate)) evaluated.value = tryEvaluate
       } catch { }
     }
 
-    watch(localQSelectValue, () => {
+    watch(localQSelectModel, () => {
       runEvaluate()
     })
 
     function setTooltipVisibility(){
-      if (evaluatedValue.value != Number(localQSelectValue.value)) {
+      if (evaluated.value != Number(localQSelectModel.value)) {
         isShowingTooltip.value = true
         isShowingTooltipAppend.value = true
       } else {
@@ -167,16 +167,16 @@ export default defineComponent({
     })
 
     function setTooltip(){
-      localTooltipText.value = evaluatedValue.value.toString()
+      localTooltipText.value = evaluated.value.toString()
       setTooltipVisibility()
     }
 
-    watch(evaluatedValue, () => {
-      emit('update:input-result', evaluatedValue.value)
+    watch(evaluated, () => {
+      emit('update:input-result', evaluated.value)
       setTooltip()
       // Switch off showing help as soon as we have some input from user
       const threshold = 1
-      if (count_updates < threshold+1) { // emit only once
+      if (count_updates < threshold+1) { // limit the unbound grow of count_updates
         count_updates += 1
         if (props.isShowingHelp && count_updates > threshold) {
           qSelectOptionsHistory.value.unshift(helpExpr.value)
@@ -197,10 +197,22 @@ export default defineComponent({
       if (qSelectOptions.value.length>0) isShowingHelpLocal.value = false
     })
 
-    // eslint-disable-next-line vue/no-setup-props-destructure
-    localQSelectValue.value = props.initialExpression // TODO do we need reactivity from props.initialExpression?
+    watch(props, ()=> {
+      // Using try{} block to drop silently invalid input
+      try {
+        // If props.inputResults changed and is not equal to local
+        // expression localQSelectModel.value, then update local expression
+        const tryEvaluate = Number(evaluate(localQSelectModel.value))
+        if ( !isNaN(tryEvaluate)
+            && props.inputResult != tryEvaluate) {
+          localQSelectModel.value = props.inputResult.toString()
+        }
+      } catch { }
+    })
+
+    localQSelectModel.value = props.initialExpression.toString()
     runEvaluate()
-    localTooltipText.value = localQSelectValue.value
+    localTooltipText.value = localQSelectModel.value
     setTooltip()
     isShowingTooltip.value = false
 
@@ -208,16 +220,11 @@ export default defineComponent({
       localTooltipText, isShowingTooltip,
       isShowingTooltipAppend, isShowingHelpLocal,
       helpExpr,
-      qSelectOptions,  localQSelectValue,
+      qSelectOptions,  localQSelectModel,
 
       handleQSelectBlur(){
         isShowingTooltip.value = false
-        const expr = localQSelectValue.value
-        // Switch off showing help as soon as we have some input from user
-        if (props.isShowingHelp) {
-          qSelectOptionsHistory.value.unshift(helpExpr.value)
-          emit('update:is-showing-help', false)
-        }
+        const expr = localQSelectModel.value
         if (!qSelectOptionsHistory.value.includes(expr)) qSelectOptionsHistory.value.unshift(expr)
         if (qSelectOptionsHistory.value.length > 5) qSelectOptionsHistory.value.pop()
       },
