@@ -1,17 +1,33 @@
 <template>
   <div class="row">
     <div class="col-xs-12 col-sm-auto text-weight-bold text-center q-px-md q-py-sm">
-      Host media
+      Wavelength
     </div>
     <div class="col-xs-auto col-sm">
       <div class="row justify-start items-center">
 
-        <div class="col-auto" ><input-with-units
-            v-model:input-result="simulationSetupGui.hostIndex"
+        <div class="col-auto"><input-with-units
+            v-model:input-result="simulationSetupGui.fromWL"
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
-            :initial-expression="simulationSetupGui.hostIndex.toString()"
-            title="Re(n)"
+            :initial-expression="simulationSetupGui.fromWL.toString()"
+            title="from"
+            units="nm"
+        /></div>
+        <div class="col-auto"><input-with-units
+            v-model:input-result="simulationSetupGui.toWL"
+            v-model:is-showing-help="isShowingHelpForInputWithUnits"
+            :initial-expression="simulationSetupGui.toWL.toString()"
+            title="to"
+            units="nm"
+            active
+        /></div>
+        <div class="col-auto"><input-with-units
+            v-model:input-result="simulationSetupGui.pointsWL"
+            v-model:is-showing-help="isShowingHelpForInputWithUnits"
+            :initial-expression="simulationSetupGui.pointsWL.toString()"
+            title="points"
             units=""
+            active
         /></div>
 
       </div>
@@ -33,7 +49,7 @@ import InputWithUnits from 'components/InputWithUnits.vue'
 
 export default defineComponent({
 
-  name: 'GetHostIndex',
+  name: 'GetSourceParameters',
   components: {InputWithUnits,},
 
   setup() {

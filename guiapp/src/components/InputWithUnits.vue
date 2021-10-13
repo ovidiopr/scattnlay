@@ -44,6 +44,9 @@
               @keydown.enter="handleQSelectBlur"
               @input-value="localQSelectModel=$event"
           >
+            <template v-if="isError" #prepend >
+              <q-icon name="error" class="text-warning"/>
+            </template>
             <template
                 v-if="isShowingTooltipAppend&&!isShowingTooltip"
                 #append
@@ -110,6 +113,10 @@ export default defineComponent({
     isShowingHelp: {
       type: Boolean,
       default: false
+    },
+    isError: {
+      type: Boolean,
+      default:false
     }
   },
   emits: [
