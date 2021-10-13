@@ -1,5 +1,5 @@
 <template>
-  <div class="row">
+  <div class="row items-baseline">
     <div class="col-xs-12 col-sm-auto text-weight-bold text-center q-px-md q-py-sm">
       Host media
     </div>

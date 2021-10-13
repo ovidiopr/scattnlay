@@ -11,7 +11,7 @@ export interface simulationSetupStateInterface {
 }
 
 function setupFactory(hostIndex = 1,
-                      fromWL = 300, toWL=1000, pointsWL=350
+                      fromWL = 300, toWL=1000, pointsWL=100
                      ):simulationSetup {
   return {hostIndex:hostIndex,
     fromWL:fromWL, toWL:toWL, pointsWL:pointsWL }

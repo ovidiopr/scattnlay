@@ -45,6 +45,7 @@
               @input-value="localQSelectModel=$event"
           >
             <template v-if="isError" #prepend >
+              <q-tooltip> Input conflict </q-tooltip>
               <q-icon name="error" class="text-warning"/>
             </template>
             <template

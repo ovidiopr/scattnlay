@@ -2,6 +2,7 @@
   <q-page class="column q-px-md">
     <div class="q-ma-sm"/>
     <GetHostIndex/>
+    <div class="q-ma-xs"/>
     <GetSourceParameters/>
     <div class="col-auto">
       Input result: {{$store.state.simulationSetup.gui.fromWL}}
