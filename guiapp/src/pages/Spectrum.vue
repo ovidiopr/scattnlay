@@ -1,24 +1,63 @@
 <template>
   <q-page class="row items-center justify-evenly">
     <!--    Your code-->
-    <h4>Spectrum</h4>
-          Wavelength
-          <input-with-units
-              v-model:input-result="simulationSetupGui.fromWL"
+
+<!--    <div class="row justify-start items-center">-->
+    <div class="column q-px-md">
+
+      <div class="row">
+        <div class="col-xs-12 col-sm-auto text-weight-bold text-left q-px-md q-py-sm">Host media</div>
+        <div class="col-xs-auto col-sm">
+          <div class="row justify-start items-center">
+            <div class="col-auto" ><input-with-units
+              v-model:input-result="simulationSetupGui.hostIndex"
               v-model:is-showing-help="isShowingHelpForInputWithUnits"
-              :initial-expression="simulationSetupGui.fromWL.toString()"
-              title="from"
-              units="nm"
-          />
-          <input-with-units
-              v-model:input-result="someValue"
-              v-model:is-showing-help="isShowingHelpForInputWithUnits"
-              :initial-expression="someExpr"
-              title=""
+              :initial-expression="simulationSetupGui.hostIndex.toString()"
+              title="Re(n)"
               units=""
-              active
-          />
-    Input result: {{$store.state.simulationSetup.gui.fromWL}}
+          /></div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="row">
+        <div class="col-xs-12 col-sm-auto text-weight-bold text-left q-px-md q-py-sm">Wavelength</div>
+        <div class="col-xs-auto col-sm">
+          <div class="row justify-start items-center">
+            <div class="col-auto"><input-with-units
+                v-model:input-result="simulationSetupGui.fromWL"
+                v-model:is-showing-help="isShowingHelpForInputWithUnits"
+                :initial-expression="simulationSetupGui.fromWL.toString()"
+                title="from"
+                units="nm"
+            /></div>
+            <div class="col-auto"><input-with-units
+                v-model:input-result="simulationSetupGui.toWL"
+                v-model:is-showing-help="isShowingHelpForInputWithUnits"
+                :initial-expression="simulationSetupGui.toWL.toString()"
+                title="to"
+                units="nm"
+                active
+            /></div>
+            <div class="col-auto"><input-with-units
+                v-model:input-result="simulationSetupGui.pointsWL"
+                v-model:is-showing-help="isShowingHelpForInputWithUnits"
+                :initial-expression="simulationSetupGui.pointsWL.toString()"
+                title="points"
+                units=""
+                active
+            /></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row justify-start items-center">
+        <div class="col-auto">
+          Input result: {{$store.state.simulationSetup.gui.fromWL}}
+        </div>
+      </div>
+    </div>
 <!--    tooltip_text="help text"-->
   </q-page>
 </template>
