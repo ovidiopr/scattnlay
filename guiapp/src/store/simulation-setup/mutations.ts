@@ -1,13 +1,28 @@
 import { MutationTree } from 'vuex';
-import { simulationSetupStateInterface, simulationSetup } from './state';
+import { simulationSetupStateInterface as sssi, simulationSetup } from './state';
 import { cloneDeep } from 'lodash'
 
-const mutation: MutationTree<simulationSetupStateInterface> = {
-  setGuiState (state: simulationSetupStateInterface,
+const mutation: MutationTree<sssi> = {
+  setGuiState (state: sssi,
                newVal: simulationSetup) {
-    // your code
     state.gui = cloneDeep(newVal)
-  }
+    // // Possible usage in component
+    // let simulationSetupGui = reactive(cloneDeep($store.state.simulationSetup.gui))
+    // const unsubscribe = $store.subscribe((mutation, /*state*/) => {
+    //   if (mutation.type === 'simulationSetup/setGuiState') {
+    //     let key: keyof typeof simulationSetupGui
+    //     for (key in simulationSetupGui) {
+    //       simulationSetupGui[key] = $store.state.simulationSetup.gui[key]
+    //     }
+    //   }
+    // })
+    // onBeforeUnmount(()=>unsubscribe())
+    // watch(simulationSetupGui, () => $store.commit('simulationSetup/setGuiState',simulationSetupGui))
+  },
+  setHostIndex (state: sssi, val: number) {state.gui.hostIndex = val},
+  setFromWL    (state: sssi, val: number) {state.gui.fromWL    = val},
+  setToWL      (state: sssi, val: number) {state.gui.toWL      = val},
+  setPointsWL  (state: sssi, val: number) {state.gui.pointsWL  = val},
 };
 
 export default mutation;

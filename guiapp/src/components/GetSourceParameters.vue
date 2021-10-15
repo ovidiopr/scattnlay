@@ -7,24 +7,24 @@
       <div class="row justify-start items-center">
 
         <div class="col-auto"><input-with-units
-            v-model:input-result="simulationSetupGui.fromWL"
+            v-model:input-result="fromWL"
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
-            :initial-expression="simulationSetupGui.fromWL.toString()"
+            :initial-expression="fromWL.toString()"
             title="from"
             units="nm"
         /></div>
         <div class="col-auto"><input-with-units
-            v-model:input-result="simulationSetupGui.toWL"
+            v-model:input-result="toWL"
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
-            :initial-expression="simulationSetupGui.toWL.toString()"
+            :initial-expression="toWL.toString()"
             title="to"
             units="nm"
             active
         /></div>
         <div class="col-auto"><input-with-units
-            v-model:input-result="simulationSetupGui.pointsWL"
+            v-model:input-result="pointsWL"
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
-            :initial-expression="simulationSetupGui.pointsWL.toString()"
+            :initial-expression="pointsWL.toString()"
             title="points"
             units=""
             active
@@ -38,13 +38,9 @@
 <script lang="ts">
 import {
   defineComponent,
-  reactive,
   computed,
-  watch,
-  onBeforeUnmount,
   } from 'vue'
 import { useStore } from 'src/store'
-import { cloneDeep } from 'lodash'
 import InputWithUnits from 'components/InputWithUnits.vue'
 
 export default defineComponent({
@@ -55,23 +51,27 @@ export default defineComponent({
   setup() {
     const $store = useStore()
 
-    let simulationSetupGui = reactive(cloneDeep($store.state.simulationSetup.gui))
-    const unsubscribe = $store.subscribe((mutation, /*state*/) => {
-      if (mutation.type === 'simulationSetup/setGuiState') {
-        let key: keyof typeof simulationSetupGui
-        for (key in simulationSetupGui) {
-          simulationSetupGui[key] = $store.state.simulationSetup.gui[key]
-        }
-      }
-    })
-    onBeforeUnmount(()=>unsubscribe())
-    watch(simulationSetupGui, () => $store.commit('simulationSetup/setGuiState',simulationSetupGui))
-
     const isShowingHelpForInputWithUnits = computed({
       get: () => $store.state.plotRuntime.isShowingHelpForInputWithUnits,
       set: val => $store.commit('plotRuntime/setIsShowingHelpForInputWithUnits', val)
     })
-    return { simulationSetupGui, isShowingHelpForInputWithUnits }
+
+    const fromWL = computed({
+      get: () => $store.state.simulationSetup.gui.fromWL,
+      set: val => $store.commit('simulationSetup/setFromWL', val)
+    })
+
+    const toWL = computed({
+      get: () => $store.state.simulationSetup.gui.toWL,
+      set: val => $store.commit('simulationSetup/setToWL', val)
+    })
+
+    const pointsWL = computed({
+      get: () => $store.state.simulationSetup.gui.pointsWL,
+      set: val => $store.commit('simulationSetup/setPointsWL', val)
+    })
+
+    return { fromWL, toWL, pointsWL, isShowingHelpForInputWithUnits }
   },
 })
 </script>

@@ -7,9 +7,9 @@
       <div class="row justify-start items-center">
 
         <div class="col-auto" ><input-with-units
-            v-model:input-result="simulationSetupGui.hostIndex"
+            v-model:input-result="hostIndex"
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
-            :initial-expression="simulationSetupGui.hostIndex.toString()"
+            :initial-expression="hostIndex.toString()"
             title="Re(n)"
             units=""
         /></div>
@@ -22,13 +22,9 @@
 <script lang="ts">
 import {
   defineComponent,
-  reactive,
   computed,
-  watch,
-  onBeforeUnmount,
   } from 'vue'
 import { useStore } from 'src/store'
-import { cloneDeep } from 'lodash'
 import InputWithUnits from 'components/InputWithUnits.vue'
 
 export default defineComponent({
@@ -39,23 +35,17 @@ export default defineComponent({
   setup() {
     const $store = useStore()
 
-    let simulationSetupGui = reactive(cloneDeep($store.state.simulationSetup.gui))
-    const unsubscribe = $store.subscribe((mutation, /*state*/) => {
-      if (mutation.type === 'simulationSetup/setGuiState') {
-        let key: keyof typeof simulationSetupGui
-        for (key in simulationSetupGui) {
-          simulationSetupGui[key] = $store.state.simulationSetup.gui[key]
-        }
-      }
-    })
-    onBeforeUnmount(()=>unsubscribe())
-    watch(simulationSetupGui, () => $store.commit('simulationSetup/setGuiState',simulationSetupGui))
-
     const isShowingHelpForInputWithUnits = computed({
       get: () => $store.state.plotRuntime.isShowingHelpForInputWithUnits,
       set: val => $store.commit('plotRuntime/setIsShowingHelpForInputWithUnits', val)
     })
-    return { simulationSetupGui, isShowingHelpForInputWithUnits }
+
+    const hostIndex = computed({
+      get: () => $store.state.simulationSetup.gui.hostIndex,
+      set: val => $store.commit('simulationSetup/setHostIndex', val)
+    })
+
+    return { hostIndex, isShowingHelpForInputWithUnits }
   },
 })
 </script>
