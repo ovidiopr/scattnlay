@@ -9,6 +9,8 @@
       <div class="row justify-xs-center justify-sm-start items-center">
 
         <div class="col-auto" >
+          <div class="row items-center justify-center">
+            <div class="text-right"> space </div>
           <q-select
               v-model="localUnits"
               :options="unitsOptions"
@@ -20,20 +22,26 @@
               behavior="menu"
           >
           </q-select>
+            <div/>
+          </div>
         </div>
 
         <div class="col-auto" >
-          <div class="row q-py-xs q-px-md items-center justify-center">
-          <div class="q-pr-xs"> Source units </div>
+          <div class="row items-center justify-center">
+            <div class="text-right"> and source </div>
 
             <q-select
                 v-model="localSourceUnits"
                 :options="sourceUnitsOptions"
+                style="width:7em"
+                class="q-pa-xs"
+                :class="{'q-field--disabled': isSourceSameUnits}"
                 outlined
                 dense
                 options-dense
                 option-value="label"
                 option-label="label"
+                behavior="menu"
             >
               <template #option="scope">
                 <q-item :label="scope.opt.title" dense>
@@ -50,7 +58,7 @@
             </q-select>
 
 
-            <div class="row q-py-xs items-center">
+            <div class="row q-py-xs q-px-xs items-center">
               <q-checkbox v-model="isSourceSameUnits" size="sm"/>
               <div>same</div>
             </div>
@@ -70,6 +78,7 @@
 import {
   defineComponent,
   computed,
+  watch
   } from 'vue'
 import { useStore } from 'src/store'
 import { flexRowTitleStyle } from 'components/utils'
@@ -80,10 +89,10 @@ export default defineComponent({
   components: {},
 
   setup() {
-    const unitsOptions = [ 'nm', 'mkm', 'mm', 'cm', 'm', 'km' ]
+    const unitsOptions = [ 'nm', 'mkm', 'mm', 'cm', 'm']
     const sourceUnitsOptions = [
       { title: 'Frequency',
-        children: [{label: 'Hz'},{label: 'kHz'},{label: 'MHz'},{label: 'GHz'},{label: 'THz'}]},
+        children: [{label: 'MHz'},{label: 'GHz'},{label: 'THz'}]},
       { title: 'Energy',
         children: [{label: 'meV'}, {label: 'eV'}]},
       { title: 'Period duration',
@@ -96,6 +105,7 @@ export default defineComponent({
       set: val => $store.commit('guiRuntime/setIsSourceSameUnits', val)
     })
 
+
     const localUnits = computed({
       get: () => $store.state.guiRuntime.units,
       set: val => $store.commit('guiRuntime/setUnits', val)
@@ -105,6 +115,16 @@ export default defineComponent({
       get: () => {return {label:$store.state.guiRuntime.sourceUnits}},
       set: val => $store.commit('guiRuntime/setSourceUnits', val.label)
     })
+
+    watch(isSourceSameUnits, ()=>{
+      if (isSourceSameUnits.value) $store.commit('guiRuntime/setSourceUnits',localUnits.value)
+      else $store.commit('guiRuntime/setSourceUnits','THz')
+    })
+
+    watch(localUnits, ()=>{
+      if (isSourceSameUnits.value) $store.commit('guiRuntime/setSourceUnits',localUnits.value)
+    })
+
 
     return { isSourceSameUnits, flexRowTitleStyle,
       unitsOptions, localUnits,

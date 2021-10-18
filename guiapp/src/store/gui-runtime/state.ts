@@ -10,7 +10,7 @@ function state(): guiRuntimeStateInterface {
     isShowingHelpForInputWithUnits: true,
     units: 'nm',
     sourceUnits: 'nm',
-    isSourceSameUnits: false
+    isSourceSameUnits: true
   }
 }
 
