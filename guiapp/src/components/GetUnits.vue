@@ -116,9 +116,13 @@ export default defineComponent({
       set: val => $store.commit('guiRuntime/setSourceUnits', val.label)
     })
 
+    let prevCustomSourceUnits = 'THz'
     watch(isSourceSameUnits, ()=>{
-      if (isSourceSameUnits.value) $store.commit('guiRuntime/setSourceUnits',units.value)
-      else $store.commit('guiRuntime/setSourceUnits','THz')
+      if (isSourceSameUnits.value) {
+        prevCustomSourceUnits = $store.state.guiRuntime.sourceUnits
+        $store.commit('guiRuntime/setSourceUnits',units.value)
+      }
+      else $store.commit('guiRuntime/setSourceUnits',prevCustomSourceUnits)
     })
 
     watch(units, ()=>{

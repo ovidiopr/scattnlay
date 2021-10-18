@@ -59,14 +59,27 @@ export default defineComponent({
       return $store.state.guiRuntime.sourceUnits
     })
 
+    function isAlmostSame(a:number,b:number) {
+      if ( Math.abs((a-b)/(a+b)) < 1e-15) return true
+      return false
+    }
+
     const fromWavelengthInSourceUnits = computed({
       get: () => toUnits($store.state.simulationSetup.gui.fromWL, sourceUnits.value),
-      set: val => $store.commit('simulationSetup/setFromWL', fromUnits(sourceUnits.value, val))
+      set: val => {
+        if (!isAlmostSame($store.state.simulationSetup.gui.fromWL, fromUnits(sourceUnits.value, val))) {
+          $store.commit('simulationSetup/setFromWL', fromUnits(sourceUnits.value, val))
+        }
+      }
     })
 
     const toWavelengthInSourceUnits = computed({
       get: () => toUnits($store.state.simulationSetup.gui.toWL, sourceUnits.value),
-      set: val => $store.commit('simulationSetup/setToWL', fromUnits(sourceUnits.value, val))
+      set: val => {
+        if (!isAlmostSame($store.state.simulationSetup.gui.toWL, fromUnits(sourceUnits.value, val))) {
+          $store.commit('simulationSetup/setToWL', fromUnits(sourceUnits.value, val))
+        }
+      }
     })
 
     const pointsSource = computed({
