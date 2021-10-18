@@ -1,9 +1,9 @@
 <template>
   <q-page class="column q-px-md">
     <div class="q-ma-sm"/>
-    <GetUnits/>
-    <div class="q-ma-xs"/>
     <GetHostIndex/>
+    <div class="q-ma-xs"/>
+    <GetUnits/>
     <div class="q-ma-xs"/>
     <GetSourceParameters/>
     <div class="col-auto">

@@ -10,9 +10,9 @@
 
         <div class="col-auto" >
           <div class="row items-center justify-center">
-            <div class="text-right"> space </div>
+            <div class="text-right"> length </div>
           <q-select
-              v-model="localUnits"
+              v-model="units"
               :options="unitsOptions"
               class="q-pa-xs"
               outlined
@@ -28,10 +28,10 @@
 
         <div class="col-auto" >
           <div class="row items-center justify-center">
-            <div class="text-right"> and source </div>
+            <div class="text-right q-pl-md">  plane wave </div>
 
             <q-select
-                v-model="localSourceUnits"
+                v-model="sourceUnits"
                 :options="sourceUnitsOptions"
                 style="width:7em"
                 class="q-pa-xs"
@@ -49,7 +49,7 @@
                 </q-item>
                 <template v-for="child in scope.opt.children" :key="child.label">
                   <q-item v-close-popup dense clickable
-                          @click="localSourceUnits = child"
+                          @click="sourceUnits = child"
                   >
                     <q-item-section> <q-item-label class="q-ml-md"> {{child.label}} </q-item-label> </q-item-section>
                   </q-item>
@@ -66,7 +66,7 @@
         </div>
 
 <!--        <div class="col-auto" >-->
-<!--          units: {{localSourceUnits}}-->
+<!--          units: {{sourceUnits}}-->
 <!--          <br> store: {{$store.state.guiRuntime}}-->
 <!--        </div>-->
       </div>
@@ -106,29 +106,29 @@ export default defineComponent({
     })
 
 
-    const localUnits = computed({
+    const units = computed({
       get: () => $store.state.guiRuntime.units,
       set: val => $store.commit('guiRuntime/setUnits', val)
     })
 
-    const localSourceUnits = computed({
+    const sourceUnits = computed({
       get: () => {return {label:$store.state.guiRuntime.sourceUnits}},
       set: val => $store.commit('guiRuntime/setSourceUnits', val.label)
     })
 
     watch(isSourceSameUnits, ()=>{
-      if (isSourceSameUnits.value) $store.commit('guiRuntime/setSourceUnits',localUnits.value)
+      if (isSourceSameUnits.value) $store.commit('guiRuntime/setSourceUnits',units.value)
       else $store.commit('guiRuntime/setSourceUnits','THz')
     })
 
-    watch(localUnits, ()=>{
-      if (isSourceSameUnits.value) $store.commit('guiRuntime/setSourceUnits',localUnits.value)
+    watch(units, ()=>{
+      if (isSourceSameUnits.value) $store.commit('guiRuntime/setSourceUnits',units.value)
     })
 
 
     return { isSourceSameUnits, flexRowTitleStyle,
-      unitsOptions, localUnits,
-      localSourceUnits, sourceUnitsOptions }
+      unitsOptions, units,
+      sourceUnits, sourceUnitsOptions }
   },
 })
 </script>

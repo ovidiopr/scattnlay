@@ -1,35 +1,31 @@
 <template>
   <div class="row items-baseline">
     <div class="col-xs-12 col-sm-auto text-weight-bold text-center q-px-md q-py-sm">
-      <div :style="flexRowTitleStyle">
-        Wavelength
-      </div>
+      <div :style="flexRowTitleStyle"> {{rowTitle}} </div>
     </div>
     <div class="col-xs-grow col-sm">
       <div class="row justify-xs-center justify-sm-start items-center">
 
         <div class="col-auto"><input-with-units
-            v-model:input-result="fromWL"
+            v-model:input-result="fromSource"
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
-            :initial-expression="fromWL.toString()"
+            :initial-expression="fromSource.toString()"
+            :units="sourceUnits"
             title="from"
-            units="nm"
         /></div>
         <div class="col-auto"><input-with-units
-            v-model:input-result="toWL"
+            v-model:input-result="toSource"
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
-            :initial-expression="toWL.toString()"
+            :initial-expression="toSource.toString()"
+            :units="sourceUnits"
             title="to"
-            units="nm"
-            active
         /></div>
         <div class="col-auto"><input-with-units
-            v-model:input-result="pointsWL"
+            v-model:input-result="pointsSource"
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
-            :initial-expression="pointsWL.toString()"
+            :initial-expression="pointsSource.toString()"
             title="points"
             units=""
-            active
         /></div>
 
       </div>
@@ -44,7 +40,7 @@ import {
   } from 'vue'
 import { useStore } from 'src/store'
 import InputWithUnits from 'components/InputWithUnits.vue'
-import { flexRowTitleStyle } from 'components/utils'
+import { flexRowTitleStyle, fromUnits, toUnits } from 'components/utils'
 
 export default defineComponent({
 
@@ -59,22 +55,63 @@ export default defineComponent({
       set: val => $store.commit('plotRuntime/setIsShowingHelpForInputWithUnits', val)
     })
 
-    const fromWL = computed({
-      get: () => $store.state.simulationSetup.gui.fromWL,
-      set: val => $store.commit('simulationSetup/setFromWL', val)
+    const sourceUnits = computed(()=>{
+      return $store.state.guiRuntime.sourceUnits
     })
 
-    const toWL = computed({
-      get: () => $store.state.simulationSetup.gui.toWL,
-      set: val => $store.commit('simulationSetup/setToWL', val)
+    const fromWavelengthInSourceUnits = computed({
+      get: () => toUnits($store.state.simulationSetup.gui.fromWL, sourceUnits.value),
+      set: val => $store.commit('simulationSetup/setFromWL', fromUnits(sourceUnits.value, val))
     })
 
-    const pointsWL = computed({
+    const toWavelengthInSourceUnits = computed({
+      get: () => toUnits($store.state.simulationSetup.gui.toWL, sourceUnits.value),
+      set: val => $store.commit('simulationSetup/setToWL', fromUnits(sourceUnits.value, val))
+    })
+
+    const pointsSource = computed({
       get: () => $store.state.simulationSetup.gui.pointsWL,
       set: val => $store.commit('simulationSetup/setPointsWL', val)
     })
 
-    return { fromWL, toWL, pointsWL, isShowingHelpForInputWithUnits, flexRowTitleStyle }
+
+    const rowTitle = computed(()=>{
+      if (sourceUnits.value.endsWith('Hz')) {return 'Frequency'}
+      if (sourceUnits.value.endsWith('eV')) {return 'Energy'}
+      if (sourceUnits.value.endsWith('s')) {return 'Period'}
+      return 'Wavelength'
+    })
+
+    const directOrder = computed(()=>{
+      if (['Frequency','Energy'].includes(rowTitle.value)) return false
+      return true
+    })
+
+    const fromSource = computed({
+      get: () => {
+        if (directOrder.value) return fromWavelengthInSourceUnits.value
+        return toWavelengthInSourceUnits.value
+      },
+      set: val => {
+        if (directOrder.value) fromWavelengthInSourceUnits.value = val
+        else toWavelengthInSourceUnits.value = val
+      }
+    })
+
+    const toSource = computed({
+      get: () => {
+        if (!directOrder.value) return fromWavelengthInSourceUnits.value
+        return toWavelengthInSourceUnits.value
+      },
+      set: val => {
+        if (!directOrder.value) fromWavelengthInSourceUnits.value = val
+        else toWavelengthInSourceUnits.value = val
+      }
+    })
+
+    return { fromSource, toSource, pointsSource, isShowingHelpForInputWithUnits,
+      flexRowTitleStyle, rowTitle,
+      sourceUnits}
   },
 })
 </script>
