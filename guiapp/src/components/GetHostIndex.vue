@@ -1,10 +1,12 @@
 <template>
   <div class="row items-baseline">
     <div class="col-xs-12 col-sm-auto text-weight-bold text-center q-px-md q-py-sm">
-      Host media
+      <div :style="flexRowTitleStyle">
+        Host media
+      </div>
     </div>
-    <div class="col-xs-auto col-sm">
-      <div class="row justify-start items-center">
+    <div class="col-xs-grow col-sm">
+      <div class="row justify-xs-center justify-sm-start items-center">
 
         <div class="col-auto" ><input-with-units
             v-model:input-result="hostIndex"
@@ -26,6 +28,7 @@ import {
   } from 'vue'
 import { useStore } from 'src/store'
 import InputWithUnits from 'components/InputWithUnits.vue'
+import { flexRowTitleStyle } from 'components/utils'
 
 export default defineComponent({
 
@@ -45,7 +48,7 @@ export default defineComponent({
       set: val => $store.commit('simulationSetup/setHostIndex', val)
     })
 
-    return { hostIndex, isShowingHelpForInputWithUnits }
+    return { hostIndex, isShowingHelpForInputWithUnits, flexRowTitleStyle}
   },
 })
 </script>

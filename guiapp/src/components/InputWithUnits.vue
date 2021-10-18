@@ -21,8 +21,8 @@
       <q-card-section
           class="items-center bg-grey-2"
           horizontal>
-        <div class="side_note text-grey-9 q-px-xs"
-             style="width: 4rem"
+        <div class="side_note text-grey-9 q-px-xs text-center"
+             style="width: 4em"
         >
           {{title}}
         </div>
@@ -36,7 +36,7 @@
               hide-selected
               input-debounce="0"
               options-dense
-              style="width: 10rem"
+              style="width: 10em"
               use-input
               behavior="menu"
               @filter="filterQSelectOptions"
@@ -72,8 +72,8 @@
           </q-select>
         </div>
         <div
-            class="side_note text-grey-9 q-px-xs"
-            style="width: 3rem"
+            class="side_note text-grey-9 q-px-xs text-center"
+            style="width: 3em"
         >
           {{units}}
         </div>

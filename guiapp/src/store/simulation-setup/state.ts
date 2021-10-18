@@ -1,13 +1,13 @@
 import { cloneDeep } from 'lodash'
 export interface simulationSetup {
-  hostIndex: number,
-  fromWL: number, toWL:number, pointsWL:number
+  hostIndex: number
+  fromWL: number; toWL:number; pointsWL:number
 }
 
 export interface simulationSetupStateInterface {
-  library: Map<string,simulationSetup>;
-  gui: simulationSetup;
-  current: simulationSetup;
+  library: Map<string,simulationSetup>
+  gui: simulationSetup
+  current: simulationSetup
 }
 
 function setupFactory(hostIndex = 1,

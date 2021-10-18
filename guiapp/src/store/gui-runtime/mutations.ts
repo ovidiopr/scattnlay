@@ -1,11 +1,11 @@
 import { MutationTree } from 'vuex';
-import { guiRuntimeStateInterface } from './state';
+import { guiRuntimeStateInterface as grsi} from './state';
 
-const mutation: MutationTree<guiRuntimeStateInterface> = {
-  setIsShowingHelpForInputWithUnits (state: guiRuntimeStateInterface, newVal: boolean) {
-    // your code
-    state.isShowingHelpForInputWithUnits = newVal
-  }
+const mutation: MutationTree<grsi> = {
+  setIsShowingHelpForInputWithUnits (state: grsi, val: boolean) {state.isShowingHelpForInputWithUnits = val},
+  setUnits             (state: grsi, val: string ) {state.units             = val},
+  setSourceUnits       (state: grsi, val: string ) {state.sourceUnits       = val},
+  setIsSourceSameUnits (state: grsi, val: boolean) {state.isSourceSameUnits = val},
 };
 
 export default mutation;

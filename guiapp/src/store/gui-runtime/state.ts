@@ -1,11 +1,17 @@
 export interface guiRuntimeStateInterface {
-  isShowingHelpForInputWithUnits: boolean;
+  isShowingHelpForInputWithUnits: boolean
+  units: string
+  sourceUnits: string
+  isSourceSameUnits: boolean
 }
 
 function state(): guiRuntimeStateInterface {
   return {
-    isShowingHelpForInputWithUnits: true
+    isShowingHelpForInputWithUnits: true,
+    units: 'nm',
+    sourceUnits: 'nm',
+    isSourceSameUnits: false
   }
-};
+}
 
 export default state;
