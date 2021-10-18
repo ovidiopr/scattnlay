@@ -5,10 +5,6 @@
     <div class="q-ma-xs"/>
     <GetHostIndex/>
     <div class="q-ma-xs"/>
-    <GetHostIndex/>
-    <div class="q-ma-xs"/>
-    <GetSourceParameters/>
-    <div class="q-ma-xs"/>
     <GetSourceParameters/>
     <div class="col-auto">
       Input result: {{$store.state.simulationSetup.gui.fromWL}}
