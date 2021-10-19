@@ -35,8 +35,9 @@
                 :options="sourceUnitsOptions"
                 style="width:7em"
                 class="q-pa-xs"
-                :class="{'q-field--disabled': isSourceSameUnits}"
-                outlined
+                :disable="isSourceSameUnits"
+                :outlined="!isSourceSameUnits"
+                :filled="isSourceSameUnits"
                 dense
                 options-dense
                 option-value="label"

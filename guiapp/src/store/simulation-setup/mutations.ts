@@ -1,5 +1,5 @@
 import { MutationTree } from 'vuex';
-import { simulationSetupStateInterface as sssi, simulationSetup } from './state';
+import { simulationSetupStateInterface as sssi, simulationSetup, layer } from './state';
 import { cloneDeep } from 'lodash'
 
 const mutation: MutationTree<sssi> = {
@@ -23,6 +23,8 @@ const mutation: MutationTree<sssi> = {
   setFromWL    (state: sssi, val: number) {state.gui.fromWL    = val},
   setToWL      (state: sssi, val: number) {state.gui.toWL      = val},
   setPointsWL  (state: sssi, val: number) {state.gui.pointsWL  = val},
+
+  setLayers    (state: sssi, val: layer[]) {state.gui.layers = cloneDeep(val) }
 };
 
 export default mutation;

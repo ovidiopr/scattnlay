@@ -4,7 +4,7 @@
       <div :style="flexRowTitleStyle"> {{rowTitle}} </div>
     </div>
     <div class="col-xs-grow col-sm">
-      <div class="row justify-xs-center justify-sm-start items-center">
+      <div class="row justify-xs-center justify-sm-start items-baseline">
 
         <div class="col-auto"><input-with-units
             v-model:input-result="fromSource"
@@ -20,13 +20,16 @@
             :units="sourceUnits"
             title="to"
         /></div>
-        <div class="col-auto"><input-with-units
+        <div class="col-auto">
+          <input-with-units
             v-model:input-result="pointsSource"
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
             :initial-expression="pointsSource.toString()"
-            title="points"
-            units=""
-        /></div>
+            :title="isPointsToggle ? `points` : `step`"
+            :units="isPointsToggle ? `` : sourceUnits"
+          />
+          <q-toggle v-model="isPointsToggle" dense class="q-ml-md"/>
+        </div>
 
       </div>
     </div>
@@ -37,6 +40,7 @@
 import {
   defineComponent,
   computed,
+  ref
   } from 'vue'
 import { useStore } from 'src/store'
 import InputWithUnits from 'components/InputWithUnits.vue'
@@ -48,6 +52,8 @@ export default defineComponent({
   components: {InputWithUnits,},
 
   setup() {
+    const isPointsToggle = ref(true)
+
     const $store = useStore()
 
     const isShowingHelpForInputWithUnits = computed({
@@ -81,12 +87,6 @@ export default defineComponent({
         }
       }
     })
-
-    const pointsSource = computed({
-      get: () => $store.state.simulationSetup.gui.pointsWL,
-      set: val => $store.commit('simulationSetup/setPointsWL', val)
-    })
-
 
     const rowTitle = computed(()=>{
       if (sourceUnits.value.endsWith('Hz')) {return 'Frequency'}
@@ -122,9 +122,22 @@ export default defineComponent({
       }
     })
 
+    const pointsSource = computed({
+      get: () => {
+        if (isPointsToggle.value) return $store.state.simulationSetup.gui.pointsWL
+        return (toSource.value-fromSource.value)/($store.state.simulationSetup.gui.pointsWL-1)
+      },
+      set: val => {
+        if (isPointsToggle.value) $store.commit('simulationSetup/setPointsWL', val)
+        else {
+          $store.commit('simulationSetup/setPointsWL', 1+(toSource.value-fromSource.value)/val)
+        }
+      }
+    })
+
     return { fromSource, toSource, pointsSource, isShowingHelpForInputWithUnits,
       flexRowTitleStyle, rowTitle,
-      sourceUnits}
+      sourceUnits, isPointsToggle,  }
   },
 })
 </script>

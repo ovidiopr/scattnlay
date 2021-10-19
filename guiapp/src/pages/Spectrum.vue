@@ -1,13 +1,15 @@
 <template>
   <q-page class="column q-px-md">
-    <div class="q-ma-sm"/>
+    <div class="q-ma-md"/>
     <GetHostIndex/>
     <div class="q-ma-xs"/>
     <GetUnits/>
     <div class="q-ma-xs"/>
     <GetSourceParameters/>
-    <div class="col-auto">
-      Input result: {{$store.state.simulationSetup.gui.fromWL}}
+    <div class="q-ma-xs"/>
+    <GetParticleParameters/>
+    <div class="col-auto q-pa-md">
+      Input result: {{$store.state.simulationSetup.gui.layers}}
     </div>
   </q-page>
 </template>
@@ -19,12 +21,14 @@ import {
 import GetUnits from 'components/GetUnits.vue'
 import GetHostIndex from 'components/GetHostIndex.vue'
 import GetSourceParameters from 'components/GetSourceParameters.vue'
+import GetParticleParameters from 'components/GetParticleParameters.vue'
 // import { useStore } from 'src/store'
 
 
 export default defineComponent({
   name: 'PageIndex',
-  components: {GetUnits, GetHostIndex, GetSourceParameters },
+  components: {GetUnits, GetHostIndex, GetSourceParameters,
+    GetParticleParameters},
   setup() {
     // const $store = useStore()
     return {}
