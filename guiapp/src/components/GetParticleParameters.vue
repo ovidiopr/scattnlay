@@ -39,10 +39,6 @@
           </div>
         </div>
 
-        <div class="col-auto" >
-          layers {{layers}}
-        </div>
-
       </div>
     </div>
   </div>
@@ -55,16 +51,26 @@
     <div class="col-xs-grow col-sm">
       <div class="row justify-xs-center justify-sm-start items-baseline">
 
-        <div class="col-auto"><input-with-units
-            v-model:input-result="layer.layerWidth"
+        <div class="col-auto">
+          <q-tooltip
+              class="bg-primary shadow-4"
+              anchor="center left"
+              self="center middle">
+            {{getTooltipText(index)}}
+          </q-tooltip>
+          <input-with-units
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
-            :initial-expression="layer.layerWidth.toString()"
+            :initial-expression="toUnits(layer.layerWidth, units).toString()"
             :units="units"
-            title="R"
-        /></div>
-        <div class="col-auto" >
-          layer width {{layer.layerWidth}}
+            :input-result="toUnits(layer.layerWidth, units)"
+            @update:input-result="layer.layerWidth = fromUnits(units,$event)"
+            :title=" index==0 ? 'R' : 'h' "
+          />
         </div>
+
+        <div class="col-auto">
+        </div>
+
       </div>
     </div>
   </div>
@@ -150,12 +156,19 @@ export default defineComponent({
     function getLayerTitle (particleType:string, index:number) {
       if (particleType=='core-shell'  && index == 0) return 'core'
       if (particleType=='core-shell'  && index == 1) return 'shell'
-      if (particleType=='multilayer') return 'layer '+index.toString()
+      if (particleType=='multilayer') return 'layer '+ (index+1).toString()
       return 'bulk'
     }
+
+    function getTooltipText(index:number) {
+      if (index == 0) return 'radius'
+      return 'thickness'
+
+    }
+
     return { flexRowTitleStyle, particleType,
-      numberOfLayers, layers, getLayerTitle,
-      units, isShowingHelpForInputWithUnits
+      numberOfLayers, layers, getLayerTitle, getTooltipText,
+      units, toUnits, fromUnits, isShowingHelpForInputWithUnits
       }
   },
 })
