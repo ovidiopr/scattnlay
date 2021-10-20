@@ -25,7 +25,9 @@ export interface simulationSetupStateInterface {
 function setupFactory(hostIndex = 1,
                       fromWL = 300, toWL=1000, pointsWL=101,
                       layers = [
-                        {layerWidth:100, n:4, k:0.01, materialName:'nk', nSpline:undefined, kSpline:undefined},
+                        {layerWidth:100, n:4, k:0.01, materialName:'nk',
+                          nSpline:undefined, kSpline:undefined
+                        },
                       ]
                      ):simulationSetup {
   return {hostIndex:hostIndex,

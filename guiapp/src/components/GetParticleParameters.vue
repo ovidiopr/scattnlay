@@ -40,8 +40,30 @@
         </div>
 
         <div class="col-auto" >
-          numOfLayers: {{numberOfLayers}}
-          <br> layers: {{layers}}
+          layers {{layers}}
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div v-for="(layer, index) in layers" class="row items-baseline">
+    <div class="col-xs-12 col-sm-auto text-center q-px-md q-py-sm">
+      <div :style="flexRowTitleStyle">
+        {{getLayerTitle(particleType, index)}}
+      </div>
+    </div>
+    <div class="col-xs-grow col-sm">
+      <div class="row justify-xs-center justify-sm-start items-baseline">
+
+        <div class="col-auto"><input-with-units
+            v-model:input-result="layer.layerWidth"
+            v-model:is-showing-help="isShowingHelpForInputWithUnits"
+            :initial-expression="layer.layerWidth.toString()"
+            :units="units"
+            title="R"
+        /></div>
+        <div class="col-auto" >
+          layer width {{layer.layerWidth}}
         </div>
       </div>
     </div>
@@ -51,45 +73,43 @@
 <script lang="ts">
 import {
   defineComponent,
-    ref,
-    reactive,
-  // computed,
+  ref,
+  reactive,
+  computed,
   watch
-
   } from 'vue'
 import { useStore } from 'src/store'
-import { flexRowTitleStyle } from 'components/utils'
+import { flexRowTitleStyle, fromUnits, toUnits } from 'components/utils'
 import {cloneDeep} from 'lodash'
-
+import InputWithUnits from "components/InputWithUnits.vue";
 
 export default defineComponent({
-
   name: 'GetHostIndex',
-  components: {},
+  components: {InputWithUnits},
 
   setup() {
     const $store = useStore()
-
-    // const isSourceSameUnits = computed({
-    //   get: () => $store.state.guiRuntime.isSourceSameUnits,
-    //   set: val => $store.commit('guiRuntime/setIsSourceSameUnits', val)
-    // })
-
     const particleType=ref('bulk')
     const numberOfLayers=ref(1)
 
-    // const layers = computed({
-    //   get: () => cloneDeep($store.state.simulationSetup.gui.layers),
-    //   set: /*val*/ () => {
-    //     // // Doesn't work?
-    //     // $store.commit('simulationSetup/setLayers', val)
-    //   }
-    // })
+    const isShowingHelpForInputWithUnits = computed({
+      get: () => $store.state.plotRuntime.isShowingHelpForInputWithUnits,
+      set: val => $store.commit('plotRuntime/setIsShowingHelpForInputWithUnits', val)
+    })
 
-    let layers = reactive(cloneDeep($store.state.simulationSetup.gui.layers))
+    const units = computed({
+      get: () => $store.state.guiRuntime.units,
+      set: val => $store.commit('guiRuntime/setUnits', val)
+    })
+
+    function getReactiveLayers() {
+      return reactive( cloneDeep($store.state.simulationSetup.gui.layers) )
+    }
+
+    let layers = getReactiveLayers()
 
     watch($store.state.simulationSetup.gui.layers, ()=>{
-      layers = reactive(cloneDeep($store.state.simulationSetup.gui.layers))
+      layers = getReactiveLayers()
     })
 
     watch(layers, ()=>{
@@ -125,10 +145,17 @@ export default defineComponent({
             }
         );
       }
-
     })
 
-    return { flexRowTitleStyle, particleType, numberOfLayers, layers
+    function getLayerTitle (particleType:string, index:number) {
+      if (particleType=='core-shell'  && index == 0) return 'core'
+      if (particleType=='core-shell'  && index == 1) return 'shell'
+      if (particleType=='multilayer') return 'layer '+index.toString()
+      return 'bulk'
+    }
+    return { flexRowTitleStyle, particleType,
+      numberOfLayers, layers, getLayerTitle,
+      units, isShowingHelpForInputWithUnits
       }
   },
 })
