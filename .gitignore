@@ -35,6 +35,9 @@ scattnlay-mp
 # Binary
 *.bin
 
+# Python
+*.egg-info/*
+
 # CLion files
 .idea
 cmake-build-*
@@ -72,6 +75,8 @@ backup*
 node_modules
 dist
 surma-ashley-test
+
+*src-electron*
 
 nmiejs.wasm
 nmiejs.js
