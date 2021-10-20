@@ -3,6 +3,7 @@ export interface guiRuntimeStateInterface {
   units: string
   sourceUnits: string
   isSourceSameUnits: boolean
+  activatedMaterials: string[]
 }
 
 function state(): guiRuntimeStateInterface {
@@ -10,7 +11,10 @@ function state(): guiRuntimeStateInterface {
     isShowingHelpForInputWithUnits: true,
     units: 'nm',
     sourceUnits: 'nm',
-    isSourceSameUnits: true
+    isSourceSameUnits: true,
+    activatedMaterials: [
+        // 'PEC',
+      'nk-constant']
   }
 }
 

@@ -42,7 +42,7 @@
       </div>
     </div>
   </div>
-  <div v-for="(layer, index) in layers" class="row items-baseline">
+  <div v-for="(layer, index) in layers" :key="index" class="row items-baseline q-py-xs">
     <div class="col-xs-12 col-sm-auto text-center q-px-md q-py-sm">
       <div :style="flexRowTitleStyle">
         {{getLayerTitle(particleType, index)}}
@@ -62,15 +62,41 @@
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
             :initial-expression="toUnits(layer.layerWidth, units).toString()"
             :units="units"
+            :title=" index==0 ? 'R' : 'h' "
             :input-result="toUnits(layer.layerWidth, units)"
             @update:input-result="layer.layerWidth = fromUnits(units,$event)"
-            :title=" index==0 ? 'R' : 'h' "
           />
         </div>
 
         <div class="col-auto">
+          <q-select
+              v-model="layer.materialName"
+              :options="activatedMaterials"
+              style="width: 17.7em"
+              class="q-px-xs"
+              dense
+              options-dense
+              outlined
+              options-value="value"
+              options-label="label"
+          />
         </div>
 
+      </div>
+      <div v-if="layer.materialName=='nk-constant'"
+               class="row justify-xs-center justify-sm-start items-baseline">
+
+        <div class="col-auto"> <input-with-units
+            v-model:input-result="layer.n"
+            :initial-expression="layer.n.toString()"
+            title="Re(n)"
+        /></div>
+        <div class="col-auto"> <input-with-units
+            v-model:input-result="layer.k"
+            :initial-expression="layer.k.toString()"
+            title="Im(n)"
+
+        /></div>
       </div>
     </div>
   </div>
@@ -87,7 +113,7 @@ import {
 import { useStore } from 'src/store'
 import { flexRowTitleStyle, fromUnits, toUnits } from 'components/utils'
 import {cloneDeep} from 'lodash'
-import InputWithUnits from "components/InputWithUnits.vue";
+import InputWithUnits from 'components/InputWithUnits.vue';
 
 export default defineComponent({
   name: 'GetHostIndex',
@@ -107,6 +133,8 @@ export default defineComponent({
       get: () => $store.state.guiRuntime.units,
       set: val => $store.commit('guiRuntime/setUnits', val)
     })
+
+    const activatedMaterials = computed(() => $store.state.guiRuntime.activatedMaterials)
 
     function getReactiveLayers() {
       return reactive( cloneDeep($store.state.simulationSetup.gui.layers) )
@@ -143,7 +171,7 @@ export default defineComponent({
         layers.push(
             {
               layerWidth: coreR*0.1,
-              materialName: 'nk',
+              materialName: 'nk-constant',
               n: 4.0,
               k: 0.01,
               nSpline: undefined,
@@ -168,7 +196,8 @@ export default defineComponent({
 
     return { flexRowTitleStyle, particleType,
       numberOfLayers, layers, getLayerTitle, getTooltipText,
-      units, toUnits, fromUnits, isShowingHelpForInputWithUnits
+      units, toUnits, fromUnits, isShowingHelpForInputWithUnits,
+      activatedMaterials
       }
   },
 })
