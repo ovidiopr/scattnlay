@@ -29,10 +29,7 @@
 <script lang="ts">
 import {
   defineComponent,
-  ref,
-  reactive,
   computed,
-  watch
   } from 'vue'
 import { useStore } from 'src/store'
 import { flexRowTitleStyle } from 'components/utils'

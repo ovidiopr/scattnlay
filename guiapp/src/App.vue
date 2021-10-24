@@ -24,40 +24,28 @@ import { defineComponent } from 'vue';
 // const nmie = new nmiejs.nmie();
 
 
-import nmiejs from './nmiejs.js';
-// Test nmiejs if working
-void (async () => {
-  const module = await nmiejs();
-  const nmie = new module.nmie();
-  nmie.ClearTarget();
-  let R = 100.0;
-  let reN = 4.0;
-  let imN = 0.01;
-  nmie.AddTargetLayerReIm(R, reN, imN)
-  nmie.SetModeNmaxAndType(-1, -1);
-  let WL = 800;
-  nmie.SetWavelength(WL);
-  nmie.RunMieCalculation();
-  console.log(nmie.GetQsca());
-  // outer_arc_points, radius_points, from_Rho, to_Rho,
-  // from_Theta, to_Theta, from_Phi, to_Phi, isIgnoreAvailableNmax
-  nmie.RunFieldCalculationPolar(2, 2, 0.1, 1.5, 0, 3.1415, 0, 3.1415, 0);
-  console.log('Field Eabs:', nmie.GetFieldEabs());
-
-
-})();
-
-
-// nmie.ClearTarget();
-// let R = 100.0;
-// let reN = 4.0;
-// let imN = 0.01;
-// nmie.AddTargetLayerReIm(R, reN, imN)
-// nmie.SetModeNmaxAndType(-1, -1);
-// let WL = 800;
-// nmie.SetWavelength(WL);
-// nmie.RunMieCalculation();
-// console.log(nmie.GetQsca());
+// import nmiejs from './nmiejs.js';
+// // Test nmiejs if working
+// void (async () => {
+//   const module = await nmiejs();
+//   const nmie = new module.nmie();
+//   nmie.ClearTarget();
+//   let R = 100.0;
+//   let reN = 4.0;
+//   let imN = 0.01;
+//   nmie.AddTargetLayerReIm(R, reN, imN)
+//   nmie.SetModeNmaxAndType(-1, -1);
+//   let WL = 800;
+//   nmie.SetWavelength(WL);
+//   nmie.RunMieCalculation();
+//   console.log(nmie.GetQsca());
+//   // outer_arc_points, radius_points, from_Rho, to_Rho,
+//   // from_Theta, to_Theta, from_Phi, to_Phi, isIgnoreAvailableNmax
+//   nmie.RunFieldCalculationPolar(2, 2, 0.1, 1.5, 0, 3.1415, 0, 3.1415, 0);
+//   console.log('Field Eabs:', nmie.GetFieldEabs());
+//
+//
+// })();
 
 // const extractModule = async (module) => {
 //   const { instance } = await module();

@@ -7,6 +7,10 @@ const mutation: MutationTree<sssi> = {
                newVal: simulationSetup) {
     state.gui = cloneDeep(newVal)
   },
+  setCurrentState (state: sssi,
+               newVal: simulationSetup) {
+    state.current = cloneDeep(newVal)
+  },
   setLayers    (state: sssi,
                 newVal: layer[]) {
     state.gui.layers = cloneDeep(newVal)
