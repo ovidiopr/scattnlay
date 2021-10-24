@@ -5,7 +5,7 @@
         Spherical particle
       </div>
     </div>
-    <div class="col-xs-grow col-sm">
+    <div class="col-xs-grow col-sm  q-px-xs">
       <div class="row justify-xs-center justify-sm-start items-baseline">
 
         <div class="col-auto" >
@@ -116,7 +116,7 @@ import {cloneDeep} from 'lodash'
 import InputWithUnits from 'components/InputWithUnits.vue';
 
 export default defineComponent({
-  name: 'GetHostIndex',
+  name: 'GetParticleParameters',
   components: {InputWithUnits},
 
   setup() {

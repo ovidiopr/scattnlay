@@ -14,6 +14,7 @@ export interface simulationSetup {
   hostIndex: number
   fromWL: number; toWL:number; pointsWL:number
   layers: layer[]
+  numberOfModesToPlot: number
 }
 
 export interface simulationSetupStateInterface {
@@ -29,11 +30,14 @@ function setupFactory(hostIndex = 1,
                           materialName:'nk-constant',
                           nSpline:undefined, kSpline:undefined
                         },
-                      ]
+                      ],
+                      numberOfModesToPlot = 4
                      ):simulationSetup {
   return {hostIndex:hostIndex,
     fromWL:fromWL, toWL:toWL, pointsWL:pointsWL,
-  layers: cloneDeep(layers)}
+    layers: cloneDeep(layers),
+    numberOfModesToPlot: numberOfModesToPlot,
+  }
 }
 
 function state(): simulationSetupStateInterface {
@@ -43,8 +47,8 @@ function state(): simulationSetupStateInterface {
   library.set('default', cloneDeep(gui))
   return {
     library,
-    gui,
-    current
+    gui, // simulation setup config as shown in GUI
+    current // simulation setup used for the latest simulation
   }
 };
 

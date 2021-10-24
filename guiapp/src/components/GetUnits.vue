@@ -5,7 +5,7 @@
         Units
       </div>
     </div>
-    <div class="col-xs-grow col-sm">
+    <div class="col-xs-grow col-sm  q-px-xs">
       <div class="row justify-xs-center justify-sm-start items-center">
 
         <div class="col-auto" >
@@ -86,7 +86,7 @@ import { flexRowTitleStyle } from 'components/utils'
 
 export default defineComponent({
 
-  name: 'GetHostIndex',
+  name: 'GetUnits',
   components: {},
 
   setup() {

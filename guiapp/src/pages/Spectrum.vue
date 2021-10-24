@@ -8,8 +8,10 @@
     <GetSourceParameters/>
     <div class="q-ma-xs"/>
     <GetParticleParameters/>
+    <div class="q-ma-xs"/>
+    <GetNumberOfModes/>
     <div class="col-auto q-pa-md">
-      Input result: {{$store.state.simulationSetup.gui.layers}}
+      Input result: {{$store.state.simulationSetup.gui.numberOfModesToPlot}}
     </div>
   </q-page>
 </template>
@@ -22,13 +24,14 @@ import GetUnits from 'components/GetUnits.vue'
 import GetHostIndex from 'components/GetHostIndex.vue'
 import GetSourceParameters from 'components/GetSourceParameters.vue'
 import GetParticleParameters from 'components/GetParticleParameters.vue'
+import GetNumberOfModes from 'components/GetNumberOfModes.vue'
 // import { useStore } from 'src/store'
 
 
 export default defineComponent({
   name: 'PageIndex',
   components: {GetUnits, GetHostIndex, GetSourceParameters,
-    GetParticleParameters},
+    GetParticleParameters, GetNumberOfModes},
   setup() {
     // const $store = useStore()
     return {}
