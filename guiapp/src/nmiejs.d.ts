@@ -1,4 +1,4 @@
-declare function nmiejs(): Promise<nmieModule>;
+export default function nmiejs(): Promise<nmieModule>;
 
 
 declare interface nmieModule {
@@ -6,7 +6,7 @@ declare interface nmieModule {
 }
 
 
-declare class nmie_class {
+export class nmie_class {
     constructor(path?: string);
     SetWavelength(wavelength: number): void;
     AddTargetLayerReIm(layer_width: number,
@@ -27,5 +27,3 @@ declare class nmie_class {
     GetQext(): number;
 }
 
-
-export = nmiejs;

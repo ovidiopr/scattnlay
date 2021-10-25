@@ -3,6 +3,7 @@
 </template>
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { useStore } from 'src/store'
 
 
 // const fs = require("fs");
@@ -57,6 +58,11 @@ import { defineComponent } from 'vue';
 // });
 
 export default defineComponent({
-  name: 'App'
+  name: 'App',
+  setup(){
+    const $store = useStore()
+    $store.dispatch('simulationSetup/loadScattnlay')
+
+  }
 })
 </script>
