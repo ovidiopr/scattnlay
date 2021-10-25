@@ -1,4 +1,13 @@
 export const flexRowTitleStyle='width:10em; margin: auto;'
+
+export function range(start:number, stop:number, step = 1) {
+    return Array(Math.ceil((stop - start) / step)).fill(start).map((x:number, y:number) => x + y * step)
+}
+
+export function rangeInt(size:number, startAt = 0) {
+    return [...Array(size).keys()].map(i => i + startAt)
+}
+
 // convert value to nm from some units
 export function fromUnits(fromU:string, val:number):number {
     if (fromU === 'nm') return val

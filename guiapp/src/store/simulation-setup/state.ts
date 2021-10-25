@@ -12,7 +12,7 @@ export interface layer {
 
 export interface simulationSetup {
   hostIndex: number
-  fromWL: number; toWL:number; pointsWL:number
+  fromWL: number; toWL:number; pointsWL:number; currentWL:number
   layers: layer[]
   numberOfModesToPlot: number
 }
@@ -24,10 +24,12 @@ export interface simulationSetupStateInterface {
   nmie: import('src/nmiejs').nmie_class|undefined
   isNmieLoaded: boolean
   isNmieRunning: boolean
+  nmieStartedTime: number
+  nmieTotalRunTime: number
 }
 
 function setupFactory(hostIndex = 1,
-                      fromWL = 300, toWL=1000, pointsWL=101,
+                      fromWL = 300, toWL=1000, pointsWL=101, currentWL = 300,
                       layers = [
                         {layerWidth:100, n:4, k:0.01,
                           materialName:'nk-constant',
@@ -38,6 +40,7 @@ function setupFactory(hostIndex = 1,
                      ):simulationSetup {
   return {hostIndex:hostIndex,
     fromWL:fromWL, toWL:toWL, pointsWL:pointsWL,
+    currentWL:currentWL,
     layers: cloneDeep(layers),
     numberOfModesToPlot: numberOfModesToPlot,
   }
@@ -52,12 +55,15 @@ function state(): simulationSetupStateInterface {
   const nmie = undefined
   const isNmieLoaded = false
   const isNmieRunning = false
+  const nmieStartedTime = 0
+  const nmieTotalRunTime = 0
+
   return {
     library,
     gui, // simulation setup config as shown in GUI
     current, // simulation setup used for the latest simulation
     nmie,
-    isNmieLoaded, isNmieRunning
+    isNmieLoaded, isNmieRunning, nmieStartedTime, nmieTotalRunTime
   }
 };
 

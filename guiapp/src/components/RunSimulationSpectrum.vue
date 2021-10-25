@@ -6,7 +6,7 @@
                color="primary"
                no-caps
                :label="isNmieLoaded ? 'Run simulation' : 'Loading...'"
-               @click="runSimulation"
+               @click="runSpectrumSimulation"
       />
     </div>
     <div class="col-xs-grow col-sm q-px-xs">
@@ -27,7 +27,7 @@ import {
   computed,
   } from 'vue'
 import { useStore } from 'src/store'
-import { flexRowTitleStyle } from 'components/utils'
+import { range, rangeInt } from 'components/utils'
 
 export default defineComponent({
   name: 'RunSimulationSpectrum',
@@ -35,37 +35,36 @@ export default defineComponent({
   setup() {
     const $store = useStore()
 
-
-    const numberOfModesToPlot = computed({
-      get: () => $store.state.simulationSetup.gui.numberOfModesToPlot,
+    const isRunning = computed({
+      get: ()=> $store.state.simulationSetup.isNmieRunning,
       set: val => {
-        const intVal = parseInt(val.toString())
-        if (!isNaN(intVal)) $store.commit('simulationSetup/setNumberOfModesToPlot', intVal)
+        val ? $store.commit('simulationSetup/markNmieAsStarted') : $store.commit('simulationSetup/markNmieAsFinished')
       }
     })
 
     const isNmieLoaded = computed(()=>{ return $store.state.simulationSetup.isNmieLoaded })
-    const isRunning = computed({
-      get: ()=> $store.state.simulationSetup.isNmieRunning,
-      set: val => {
-        val ? $store.commit('simulationSetup/markNmieAsRunning') : $store.commit('simulationSetup/markNmieAsFinished')
-      }
-    })
 
+    return { isRunning, isNmieLoaded,
+      //-----------------------------------------------------------------------//
+      //-------------------  Main  --------------------------------------------//
+      //-----------------------------------------------------------------------//
+      runSpectrumSimulation() {
+        isRunning.value = true
+        $store.commit('simulationSetup/copySetupFromGuiToCurrent')
 
-    function runSimulation() {
-      isRunning.value = true
-// simulate a delay
-      setTimeout(() => {
-        // we're done, we reset loading state
+        const host = $store.state.simulationSetup.current.hostIndex
+
+        const fromWL = $store.state.simulationSetup.current.fromWL
+        const toWL = $store.state.simulationSetup.current.toWL
+        const pointsWL = $store.state.simulationSetup.current.pointsWL
+        const stepWL = (toWL-fromWL)/(pointsWL-1)
+        let WLs = range(fromWL, toWL, stepWL);
+
+        const total_mode_n = $store.state.simulationSetup.current.numberOfModesToPlot
+
         isRunning.value = false
-      }, 3000)
-    }
-
-    return { flexRowTitleStyle,
-      numberOfModesToPlot, runSimulation,
-      isRunning, isNmieLoaded
       }
+    }
   },
 })
 </script>

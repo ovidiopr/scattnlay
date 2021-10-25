@@ -9,7 +9,7 @@ export default defineComponent({
   name: 'App',
   setup(){
     const $store = useStore()
-    $store.dispatch('simulationSetup/loadScattnlay')
+    void (async () => $store.dispatch('simulationSetup/loadScattnlay'))()
 
   }
 })

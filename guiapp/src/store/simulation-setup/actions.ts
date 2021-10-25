@@ -16,7 +16,7 @@ const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
       // },3000)
     }
     if (state.nmie && !state.isNmieRunning) {
-      commit('markNmieAsRunning')
+      commit('markNmieAsStarted')
       state.nmie.ClearTarget()
       const R = 100.0
       const reN = 4.0

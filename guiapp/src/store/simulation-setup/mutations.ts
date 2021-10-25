@@ -9,12 +9,22 @@ const mutation: MutationTree<sssi> = {
     state.nmie = markRaw(newVal)
   },
   markNmieAsLoaded  (state: sssi) {state.isNmieLoaded  = true },
-  markNmieAsRunning (state: sssi) {state.isNmieRunning = true },
-  markNmieAsFinished(state: sssi) {state.isNmieRunning = false},
+  markNmieAsStarted (state: sssi) {
+    state.isNmieRunning = true
+    state.nmieStartedTime = performance.now()
+  },
+  markNmieAsFinished(state: sssi) {
+    state.isNmieRunning = false
+    state.nmieTotalRunTime = (performance.now()-state.nmieStartedTime)/1000
+  },
 
   setCurrentState (state: sssi,
                    newVal: simulationSetup) {
     state.current = cloneDeep(newVal)
+  },
+
+  copySetupFromGuiToCurrent (state: sssi) {
+    state.current = cloneDeep(state.gui)
   },
 
   // Mutations for simulation setup as represented\set in GUI
@@ -30,6 +40,7 @@ const mutation: MutationTree<sssi> = {
   setFromWL    (state: sssi, val: number) {state.gui.fromWL    = val},
   setToWL      (state: sssi, val: number) {state.gui.toWL      = val},
   setPointsWL  (state: sssi, val: number) {state.gui.pointsWL  = val},
+  setCurrentWL (state: sssi, val: number) {state.gui.currentWL = val},
   setNumberOfModesToPlot  (state: sssi, val: number) {state.gui.numberOfModesToPlot  = val},
 
 };
