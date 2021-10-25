@@ -87,11 +87,13 @@
                class="row justify-xs-center justify-sm-start items-baseline">
 
         <div class="col-auto"> <input-with-units
+            v-model:is-showing-help="isShowingHelpForInputWithUnits"
             v-model:input-result="layer.n"
             :initial-expression="layer.n.toString()"
             title="Re(n)"
         /></div>
         <div class="col-auto"> <input-with-units
+            v-model:is-showing-help="isShowingHelpForInputWithUnits"
             v-model:input-result="layer.k"
             :initial-expression="layer.k.toString()"
             title="Im(n)"

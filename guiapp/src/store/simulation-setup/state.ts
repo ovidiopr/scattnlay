@@ -22,6 +22,8 @@ export interface simulationSetupStateInterface {
   gui: simulationSetup
   current: simulationSetup
   nmie: import('src/nmiejs').nmie_class|undefined
+  isNmieLoaded: boolean
+  isNmieRunning: boolean
 }
 
 function setupFactory(hostIndex = 1,
@@ -48,11 +50,14 @@ function state(): simulationSetupStateInterface {
   const library = new Map<string,simulationSetup>()
   library.set('default', cloneDeep(gui))
   const nmie = undefined
+  const isNmieLoaded = false
+  const isNmieRunning = false
   return {
     library,
     gui, // simulation setup config as shown in GUI
     current, // simulation setup used for the latest simulation
-    nmie
+    nmie,
+    isNmieLoaded, isNmieRunning
   }
 };
 

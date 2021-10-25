@@ -2,9 +2,10 @@
   <div class="row items-baseline">
     <div class="col-xs-12 col-sm-auto text-weight-bold text-center q-px-md q-py-sm">
         <q-btn :loading="isRunning"
+               :disable="isRunning||!isNmieLoaded"
                color="primary"
                no-caps
-               label="Run simulation"
+               :label="isNmieLoaded ? 'Run simulation' : 'Loading...'"
                @click="runSimulation"
       />
     </div>
@@ -34,7 +35,6 @@ export default defineComponent({
   setup() {
     const $store = useStore()
 
-    const isRunning = ref(false)
 
     const numberOfModesToPlot = computed({
       get: () => $store.state.simulationSetup.gui.numberOfModesToPlot,
@@ -43,6 +43,15 @@ export default defineComponent({
         if (!isNaN(intVal)) $store.commit('simulationSetup/setNumberOfModesToPlot', intVal)
       }
     })
+
+    const isNmieLoaded = computed(()=>{ return $store.state.simulationSetup.isNmieLoaded })
+    const isRunning = computed({
+      get: ()=> $store.state.simulationSetup.isNmieRunning,
+      set: val => {
+        val ? $store.commit('simulationSetup/markNmieAsRunning') : $store.commit('simulationSetup/markNmieAsFinished')
+      }
+    })
+
 
     function runSimulation() {
       isRunning.value = true
@@ -55,7 +64,7 @@ export default defineComponent({
 
     return { flexRowTitleStyle,
       numberOfModesToPlot, runSimulation,
-      isRunning
+      isRunning, isNmieLoaded
       }
   },
 })

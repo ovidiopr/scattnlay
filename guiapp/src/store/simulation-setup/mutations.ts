@@ -8,6 +8,9 @@ const mutation: MutationTree<sssi> = {
            newVal: import('src/nmiejs').nmie_class) {
     state.nmie = markRaw(newVal)
   },
+  markNmieAsLoaded  (state: sssi) {state.isNmieLoaded  = true },
+  markNmieAsRunning (state: sssi) {state.isNmieRunning = true },
+  markNmieAsFinished(state: sssi) {state.isNmieRunning = false},
 
   setCurrentState (state: sssi,
                    newVal: simulationSetup) {

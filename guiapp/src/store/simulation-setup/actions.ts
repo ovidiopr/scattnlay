@@ -11,6 +11,12 @@ const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
     const nmie = new module.nmie()
     commit('setNmie', nmie)
     if (state.nmie) {
+      // setTimeout(()=>{
+      commit('markNmieAsLoaded')
+      // },3000)
+    }
+    if (state.nmie && !state.isNmieRunning) {
+      commit('markNmieAsRunning')
       state.nmie.ClearTarget()
       const R = 100.0
       const reN = 4.0
@@ -27,6 +33,9 @@ const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
           0.1, 1.5, 0, 3.1415, 0, 3.1415,
           0)
       console.log('Field Eabs:', state.nmie.GetFieldEabs())
+      // setTimeout(()=>{
+      commit('markNmieAsFinished')
+      // },3000)
     }
 
   }
