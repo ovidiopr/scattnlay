@@ -1,7 +1,7 @@
 export const flexRowTitleStyle='width:10em; margin: auto;'
 
 export function range(start:number, stop:number, step = 1) {
-    return Array(Math.ceil((stop - start) / step)).fill(start).map((x:number, y:number) => x + y * step)
+    return Array(Math.round(((stop - start) / step)+1)).fill(start).map((x:number, y:number) => x + y * step)
 }
 
 export function rangeInt(size:number, startAt = 0) {
