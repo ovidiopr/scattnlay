@@ -24,7 +24,6 @@ export interface simulationSetupStateInterface {
   nmie: import('src/nmiejs').nmie_class|undefined
   isNmieLoaded: boolean
   isNmieRunning: boolean
-  nmieStartedTime: number
   nmieTotalRunTime: number
 }
 
@@ -55,7 +54,6 @@ function state(): simulationSetupStateInterface {
   const nmie = undefined
   const isNmieLoaded = false
   const isNmieRunning = false
-  const nmieStartedTime = 0
   const nmieTotalRunTime = 0
 
   return {
@@ -63,7 +61,7 @@ function state(): simulationSetupStateInterface {
     gui, // simulation setup config as shown in GUI
     current, // simulation setup used for the latest simulation
     nmie,
-    isNmieLoaded, isNmieRunning, nmieStartedTime, nmieTotalRunTime
+    isNmieLoaded, isNmieRunning, nmieTotalRunTime
   }
 };
 

@@ -11,12 +11,11 @@ const mutation: MutationTree<sssi> = {
   markNmieAsLoaded  (state: sssi) {state.isNmieLoaded  = true },
   markNmieAsStarted (state: sssi) {
     state.isNmieRunning = true
-    state.nmieStartedTime = performance.now()
   },
   markNmieAsFinished(state: sssi) {
     state.isNmieRunning = false
-    state.nmieTotalRunTime = (performance.now()-state.nmieStartedTime)/1000
   },
+  setNmieTotalRunTime(state: sssi, val:number) {state.nmieTotalRunTime = val},
 
   setCurrentState (state: sssi,
                    newVal: simulationSetup) {

@@ -6,15 +6,10 @@ import nmiejs from 'src/nmiejs.js';
 
 const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
   async loadScattnlay ({commit,state}/* context */) {
-    // Test nmiejs if working
     const module = await nmiejs()
     const nmie = new module.nmie()
     commit('setNmie', nmie)
-    if (state.nmie) {
-      // setTimeout(()=>{
-      commit('markNmieAsLoaded')
-      // },3000)
-    }
+    // Test nmiejs if working
     if (state.nmie && !state.isNmieRunning) {
       commit('markNmieAsStarted')
       state.nmie.ClearTarget()
@@ -33,11 +28,11 @@ const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
           0.1, 1.5, 0, 3.1415, 0, 3.1415,
           0)
       console.log('Field Eabs:', state.nmie.GetFieldEabs())
-      // setTimeout(()=>{
       commit('markNmieAsFinished')
-      // },3000)
     }
-
+    if (state.nmie) {
+      commit('markNmieAsLoaded')
+    }
   }
 };
 

@@ -6,8 +6,11 @@
                color="primary"
                no-caps
                :label="isNmieLoaded ? 'Run simulation' : 'Loading...'"
-               @click="runSpectrumSimulation"
-      />
+               @click="runSpectrumSimulation">
+          <template #loading>
+            <q-spinner-gears />
+          </template>
+        </q-btn>
     </div>
     <div class="col-xs-grow col-sm q-px-xs">
       <div class="row justify-xs-center justify-sm-start items-baseline">
@@ -23,10 +26,11 @@
 <script lang="ts">
 import {
   defineComponent,
-  computed,
-  } from 'vue'
+  computed, watch,
+} from 'vue'
 import { useStore } from 'src/store'
 import { range, rangeInt } from 'components/utils'
+import { cloneDeep } from 'lodash'
 
 export default defineComponent({
   name: 'RunSimulationSpectrum',
@@ -71,52 +75,66 @@ export default defineComponent({
     //---------------------  Main  --------------------------------------------//
     //-------------------------------------------------------------------------//
     function runSpectrumSimulation() {
+      if (isRunning.value) {
+        console.log('Some Nmie is already running!')
+        return
+      }
       isRunning.value = true
-      $store.commit('simulationSetup/copySetupFromGuiToCurrent')
+      setTimeout(()=> {
 
-      const host = $store.state.simulationSetup.current.hostIndex
-      const WLs = getWLs()
-      const mode_n = rangeInt($store.state.simulationSetup.current.numberOfModesToPlot, 1);
-      const mode_types = range(0, 1);
-      let {Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n} = initQ(mode_n, mode_types)
+        $store.commit('simulationSetup/copySetupFromGuiToCurrent')
 
-      try {
-        if (!$store.state.simulationSetup.nmie) throw 'ERROR! Scattnlay module was not loaded'
-        const nmie = $store.state.simulationSetup.nmie
+        const host = $store.state.simulationSetup.current.hostIndex
+        const WLs = getWLs()
+        const mode_n = rangeInt($store.state.simulationSetup.current.numberOfModesToPlot, 1);
+        const mode_types = range(0, 1);
+        let {Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n} = initQ(mode_n, mode_types)
 
-        for (const WL of WLs) {
-          nmie.SetWavelength(WL)
+        try {
+          if (!$store.state.simulationSetup.nmie) throw 'ERROR! Scattnlay module was not loaded'
+          const nmie = $store.state.simulationSetup.nmie
+          const nmieStartedTime = performance.now()
+          const layers = cloneDeep($store.state.simulationSetup.current.layers)
+          for (const WL of WLs) {
+            nmie.SetWavelength(WL)
 
-          nmie.ClearTarget()
-          for (const layer of $store.state.simulationSetup.current.layers) {
-            if (layer.nSpline) layer.n = layer.nSpline.at(WL)
-            if (layer.kSpline) layer.k = layer.kSpline.at(WL)
-            nmie.AddTargetLayerReIm( layer.layerWidth*host, layer.n/host, layer.k/host )
-          }
+            nmie.ClearTarget()
+            for (const layer of layers) {
+              if (layer.nSpline) layer.n = layer.nSpline.at(WL)
+              if (layer.kSpline) layer.k = layer.kSpline.at(WL)
+              nmie.AddTargetLayerReIm(layer.layerWidth * host, layer.n / host, layer.k / host)
+            }
 
-          nmie.SetModeNmaxAndType(-1, -1)
-          nmie.RunMieCalculation()
-          Qsca.push(nmie.GetQsca())
-          Qabs.push(nmie.GetQabs())
-          Qext.push(nmie.GetQext())
+            nmie.SetModeNmaxAndType(-1, -1)
+            nmie.RunMieCalculation()
+            Qsca.push(nmie.GetQsca())
+            Qabs.push(nmie.GetQabs())
+            Qext.push(nmie.GetQext())
 
-          for (const mode_type of mode_types) {
-            for (const n of mode_n) {
-              nmie.SetModeNmaxAndType(n, mode_type)
-              nmie.RunMieCalculation()
-              Qsca_n[mode_type][n - 1].push(nmie.GetQsca())
-              Qabs_n[mode_type][n - 1].push(nmie.GetQabs())
-              Qext_n[mode_type][n - 1].push(nmie.GetQext())
+            for (const mode_type of mode_types) {
+              for (const n of mode_n) {
+                nmie.SetModeNmaxAndType(n, mode_type)
+                nmie.RunMieCalculation()
+                Qsca_n[mode_type][n - 1].push(nmie.GetQsca())
+                Qabs_n[mode_type][n - 1].push(nmie.GetQabs())
+                Qext_n[mode_type][n - 1].push(nmie.GetQext())
+              }
             }
           }
-        }
-        isRunning.value = false
-        $store.commit('plotRuntime/setQ', {WLs, Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n})
+          const nmieTotalRunTime = (performance.now()-nmieStartedTime)/1000
+          $store.commit('simulationSetup/setNmieTotalRunTime', nmieTotalRunTime)
+          $store.commit('plotRuntime/setQ', {WLs, Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n})
         } catch (e) {
           console.log(e)
         }
-        // isRunning.value = false
-      }
+        isRunning.value = false
+      },50)
+    }
+
+    watch(isNmieLoaded, ()=>{
+      if (isNmieLoaded.value) runSpectrumSimulation()
+    })
+
     return { isRunning, isNmieLoaded,
       runSpectrumSimulation
     }

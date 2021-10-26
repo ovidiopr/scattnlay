@@ -113,7 +113,7 @@ import {
   watch
   } from 'vue'
 import { useStore } from 'src/store'
-import { flexRowTitleStyle, fromUnits, toUnits } from 'components/utils'
+import {flexRowTitleStyle, fromUnits, isAlmostSame, toUnits} from 'components/utils'
 import {cloneDeep} from 'lodash'
 import InputWithUnits from 'components/InputWithUnits.vue';
 
@@ -149,6 +149,12 @@ export default defineComponent({
     })
 
     watch(layers, ()=>{
+      const storeLayers = $store.state.simulationSetup.gui.layers
+      for (let i = 0; i<layers.length; i++) {
+        if (isAlmostSame(storeLayers[i].layerWidth, layers[i].layerWidth)) {
+          layers[i].layerWidth = storeLayers[i].layerWidth
+        }
+      }
       $store.commit('simulationSetup/setLayers', layers)
     })
 
