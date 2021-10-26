@@ -13,7 +13,7 @@
     <div class="q-ma-xs"/>
     <RunSimulationSpectrum/>
     <div class="col-auto q-pa-md">
-      Input result: {{$store.state.simulationSetup.gui.numberOfModesToPlot}}
+      Input result: {{$store.state.plotRuntime.Qsca}}
     </div>
   </q-page>
 </template>

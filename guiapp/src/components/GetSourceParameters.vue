@@ -44,7 +44,7 @@ import {
   } from 'vue'
 import { useStore } from 'src/store'
 import InputWithUnits from 'components/InputWithUnits.vue'
-import { flexRowTitleStyle, fromUnits, toUnits } from 'components/utils'
+import { flexRowTitleStyle, fromUnits, toUnits, isAlmostSame } from 'components/utils'
 
 export default defineComponent({
 
@@ -57,18 +57,13 @@ export default defineComponent({
     const $store = useStore()
 
     const isShowingHelpForInputWithUnits = computed({
-      get: () => $store.state.plotRuntime.isShowingHelpForInputWithUnits,
-      set: val => $store.commit('plotRuntime/setIsShowingHelpForInputWithUnits', val)
+      get: () => $store.state.guiRuntime.isShowingHelpForInputWithUnits,
+      set: val => $store.commit('guiRuntime/setIsShowingHelpForInputWithUnits', val)
     })
 
     const sourceUnits = computed(()=>{
       return $store.state.guiRuntime.sourceUnits
     })
-
-    function isAlmostSame(a:number,b:number) {
-      if ( Math.abs((a-b)/(a+b)) < 1e-15) return true
-      return false
-    }
 
     const fromWavelengthInSourceUnits = computed({
       get: () => toUnits($store.state.simulationSetup.gui.fromWL, sourceUnits.value),

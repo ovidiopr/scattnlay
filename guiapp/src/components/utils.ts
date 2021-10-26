@@ -1,5 +1,10 @@
 export const flexRowTitleStyle='width:10em; margin: auto;'
 
+export function isAlmostSame(a:number,b:number) {
+    if ( Math.abs((a-b)/(a+b)) < 1e-15) return true
+    return false
+}
+
 export function range(start:number, stop:number, step = 1) {
     return Array(Math.round(((stop - start) / step)+1)).fill(start).map((x:number, y:number) => x + y * step)
 }

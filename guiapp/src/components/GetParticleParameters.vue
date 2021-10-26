@@ -127,8 +127,8 @@ export default defineComponent({
     const numberOfLayers=ref(1)
 
     const isShowingHelpForInputWithUnits = computed({
-      get: () => $store.state.plotRuntime.isShowingHelpForInputWithUnits,
-      set: val => $store.commit('plotRuntime/setIsShowingHelpForInputWithUnits', val)
+      get: () => $store.state.guiRuntime.isShowingHelpForInputWithUnits,
+      set: val => $store.commit('guiRuntime/setIsShowingHelpForInputWithUnits', val)
     })
 
     const units = computed({
