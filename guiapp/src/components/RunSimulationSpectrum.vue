@@ -93,8 +93,8 @@ export default defineComponent({
         try {
           if (!$store.state.simulationSetup.nmie) throw 'ERROR! Scattnlay module was not loaded'
           const nmie = $store.state.simulationSetup.nmie
-          const nmieStartedTime = performance.now()
           const layers = cloneDeep($store.state.simulationSetup.current.layers)
+          const nmieStartedTime = performance.now()
           for (const WL of WLs) {
             nmie.SetWavelength(WL)
 
@@ -122,6 +122,7 @@ export default defineComponent({
             }
           }
           const nmieTotalRunTime = (performance.now()-nmieStartedTime)/1000
+          // console.log('Total simulation time:', nmieTotalRunTime, 's')
           $store.commit('simulationSetup/setNmieTotalRunTime', nmieTotalRunTime)
           $store.commit('plotRuntime/setQ', {WLs, Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n})
         } catch (e) {

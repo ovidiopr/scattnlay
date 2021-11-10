@@ -1,60 +1,57 @@
 <template>
-    <div :ref="uuidLocal"></div>
+  <div id="plotly_chart"></div>
 </template>
+
 <script lang="ts">
-import {Data, Layout, newPlot, react} from 'plotly.js'
+// import * as Plotly from 'plotly.js'
+import { newPlot, Data, Layout, Config } from 'plotly.js'
+
 import {
   defineComponent,
-    PropType,
-  ref,
-    onMounted
-  // watch,
+  PropType,
+  onMounted,
+  onUnmounted,
 } from 'vue'
 
+interface PlotlyChart {
+  uuid: string,
+  data: Data[],
+  layout: Layout,
+  config: Config|undefined
+}
 export default defineComponent({
   name: 'ReactiveChart',
   props: {
-    uuid: {
-      type: String,
+    chart: {
+      type: Object as PropType<PlotlyChart>,
       required: true,
     },
-    traces: {
-      type: Object as PropType<Data[]>,
-      required: true
-    },
-    layout: {
-      type: Object as PropType<Layout>,
-      required: true
-    },
   },
-  // emits: [
-  //   'update:input-result',
-  //   'update:is-showing-help'
-  // ],
-  setup(props,/* {emit} */) {
-    const uuidLocal = ref(props.uuid)
-    onMounted(()=>
-        newPlot(uuidLocal.value, props.traces,
-            props.layout,
-            {responsive: true, showSendToCloud: true, displaylogo: false}
-        )
-    )
+  setup(props) {
 
-      // watch: {
-      //   chart: {
-      //     handler: function () {
-      //       react(
-      //           this.$refs[uuid],
-      //           traces,
-      //           layout
-      //       );
-      //     },
-      //     deep: true
-      //   }
-      // }
-    return {
-      uuidLocal
+    function  handleResize() {
+      const width = window.innerWidth
+      const height = window.innerHeight*0.8
+      // props.chart.layout.width = width * 0.92
+      // props.chart.layout.height = height * 0.95
+      // // if (width < 600) props.chart.layout.width = width
+      // if (height < 600) props.chart.layout.height = height
+      console.log(width, height)
+      console.log('layout', props.chart.layout.width, props.chart.layout.height)
     }
+
+    window.addEventListener('resize', handleResize)
+    handleResize()
+    onUnmounted(()=>{
+      window.removeEventListener('resize', handleResize)
+    })
+    onMounted( async () => {
+      if (props.chart.config == undefined) {
+        await newPlot('plotly_chart', props.chart.data, props.chart.layout)
+      } else {
+        await newPlot('plotly_chart', props.chart.data, props.chart.layout, props.chart.config)
+      }
+    })
     }
 })
 </script>
