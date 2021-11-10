@@ -3,9 +3,7 @@
 </template>
 
 <script lang="ts">
-// import * as Plotly from 'plotly.js'
-import { newPlot, Data, Layout, Config } from 'plotly.js'
-
+import { newPlot, Data, Layout, Config } from 'plotly.js-dist-min'
 import {
   defineComponent,
   PropType,
