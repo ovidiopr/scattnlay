@@ -75,10 +75,11 @@ export default defineComponent({
           x: -.1,
           y: 1.05
         },
-        width: 100,
-        height: 100,
       }
     })
+    setTimeout(()=>{
+      chart.value.layout.yaxis.title='some new title'
+    }, 3000)
     // const $store = useStore()
     return {chart}
   }
