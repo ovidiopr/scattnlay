@@ -35,7 +35,7 @@ import { useStore } from 'src/store'
 import { flexRowTitleStyle } from 'components/utils'
 
 export default defineComponent({
-  name: 'GetNumberOfModes',
+  name: 'GetPlotSettings',
 
   setup() {
     const $store = useStore()

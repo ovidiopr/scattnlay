@@ -1,3 +1,11 @@
+import { Data, Layout, Config } from 'plotly.js-dist-min'
+
+export interface plotlyChart {
+  data: Data[],
+  layout: Partial<Layout>,
+  config: Partial<Config>|undefined
+}
+
 export interface spectraData {
   WLs: number[]
   Qsca:number[]
@@ -16,6 +24,10 @@ export interface plotRuntimeStateInterface {
   Qsca_n:number[][][]
   Qabs_n:number[][][]
   Qext_n:number[][][]
+  spectraPlot: plotlyChart
+  isQscaToggle: boolean
+  isQabsToggle: boolean
+  isQextToggle: boolean
 }
 
 function state(): plotRuntimeStateInterface {
@@ -24,8 +36,44 @@ function state(): plotRuntimeStateInterface {
   const Qsca_n:number[][][] = [[], []]
   const Qabs_n:number[][][] = [[], []]
   const Qext_n:number[][][] = [[], []]
+  const isQscaToggle = true
+  const isQabsToggle = true
+  const isQextToggle = false
+
+  const spectraPlot:plotlyChart = {
+    data: [],
+    layout: {
+      margin: {
+        l: 0,
+        r: 40,
+        b: 50,
+        t: 0
+      },
+      // paper_bgcolor: '#7f7f7f',
+      // plot_bgcolor: '#c7c7c7',
+      // title: 'reactive charts',
+      xaxis: {
+        // will be set on mount
+        title: ''
+      },
+      yaxis: {
+        title: 'Normalized cross-sections'
+      },
+      showlegend: true,
+      legend: {
+        orientation: 'h',
+        x: -.1,
+        y: 1.05
+      },
+    },
+    config: {responsive: true,
+      // showEditInChartStudio: true,
+      displaylogo: false}
+  }
+
   return { WLs,
-    Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n
+    Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n,
+    spectraPlot, isQscaToggle, isQabsToggle, isQextToggle
   }
 }
 

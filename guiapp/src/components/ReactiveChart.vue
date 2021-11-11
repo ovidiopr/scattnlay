@@ -3,7 +3,8 @@
 </template>
 
 <script lang="ts">
-import { newPlot, react, Data, Layout, Config } from 'plotly.js-dist-min'
+import { newPlot, react } from 'plotly.js-dist-min'
+import { plotlyChart } from 'src/store/plot-runtime/state'
 import {
   defineComponent,
   PropType,
@@ -14,16 +15,11 @@ import {
 import {cloneDeep} from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 
-interface PlotlyChart {
-  data: Data[],
-  layout: Layout,
-  config: Config|undefined
-}
 export default defineComponent({
   name: 'ReactiveChart',
   props: {
     chart: {
-      type: Object as PropType<PlotlyChart>,
+      type: Object as PropType<plotlyChart>,
       required: true,
     },
   },

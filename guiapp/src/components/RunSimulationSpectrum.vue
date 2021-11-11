@@ -125,6 +125,7 @@ export default defineComponent({
           // console.log('Total simulation time:', nmieTotalRunTime, 's')
           $store.commit('simulationSetup/setNmieTotalRunTime', nmieTotalRunTime)
           $store.commit('plotRuntime/setQ', {WLs, Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n})
+          $store.commit('plotRuntime/updateSpectraPlot')
         } catch (e) {
           console.log(e)
         }
