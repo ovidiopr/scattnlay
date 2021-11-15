@@ -25,9 +25,11 @@ export interface plotRuntimeStateInterface {
   Qabs_n:number[][][]
   Qext_n:number[][][]
   spectraPlot: plotlyChart
-  isQscaToggle: boolean
-  isQabsToggle: boolean
-  isQextToggle: boolean
+  isPlotQsca: boolean
+  isPlotQabs: boolean
+  isPlotQext: boolean
+  isPlotModeE: boolean[]
+  isPlotModeH: boolean[]
 }
 
 function state(): plotRuntimeStateInterface {
@@ -36,9 +38,11 @@ function state(): plotRuntimeStateInterface {
   const Qsca_n:number[][][] = [[], []]
   const Qabs_n:number[][][] = [[], []]
   const Qext_n:number[][][] = [[], []]
-  const isQscaToggle = true
-  const isQabsToggle = true
-  const isQextToggle = false
+  const isPlotQsca = true
+  const isPlotQabs = true
+  const isPlotQext = false
+  const isPlotModeE:boolean[] = []
+  const isPlotModeH:boolean[] = []
 
   const spectraPlot:plotlyChart = {
     data: [],
@@ -73,7 +77,8 @@ function state(): plotRuntimeStateInterface {
 
   return { WLs,
     Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n,
-    spectraPlot, isQscaToggle, isQabsToggle, isQextToggle
+    spectraPlot, isPlotQsca, isPlotQabs, isPlotQext,
+    isPlotModeE, isPlotModeH
   }
 }
 

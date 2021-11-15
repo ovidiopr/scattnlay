@@ -24,9 +24,16 @@ const mutation: MutationTree<prsi> = {
     state.spectraPlot.data.push(traceQsca)
 
   },
-  setQscaToggle (state: prsi, val: boolean) {state.isQscaToggle = val},
-  setQabsToggle (state: prsi, val: boolean) {state.isQabsToggle = val},
-  setQextToggle (state: prsi, val: boolean) {state.isQextToggle = val},
+  setQscaPlotToggle (state: prsi, val: boolean) {state.isPlotQsca = val},
+  setQabsPlotToggle (state: prsi, val: boolean) {state.isPlotQabs = val},
+  setQextPlotToggle (state: prsi, val: boolean) {state.isPlotQext = val},
+
+  resizeIsPlotMode (state:prsi, val:number) {
+    while (state.isPlotModeE.length > val) state.isPlotModeE.pop();
+    while (state.isPlotModeH.length > val) state.isPlotModeH.pop();
+    while (state.isPlotModeE.length < val) state.isPlotModeE.push(false);
+    while (state.isPlotModeH.length < val) state.isPlotModeH.push(false);
+  }
 }
 
 export default mutation

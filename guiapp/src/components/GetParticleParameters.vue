@@ -170,11 +170,11 @@ export default defineComponent({
       if (numberOfLayers.value < 1) numberOfLayers.value = 1
       if (numberOfLayers.value > 10) numberOfLayers.value = 10
 
-      while (numberOfLayers.value < layers.length) {
+      while (layers.length > numberOfLayers.value) {
         layers.pop();
       }
       let coreR = layers[0].layerWidth;
-      while (numberOfLayers.value > layers.length) {
+      while (layers.length < numberOfLayers.value) {
         // r_prev = r_prev*1.1;
         layers.push(
             {

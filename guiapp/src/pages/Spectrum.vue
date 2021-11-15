@@ -17,7 +17,7 @@
     <div class="q-ma-xs"/>
     <ReactiveChart :chart="$store.state.plotRuntime.spectraPlot"/>
     <div class="col-auto q-pa-md">
-      Input result: {{$store.state.plotRuntime.isQscaToggle}}
+      Input result: {{$store.state.plotRuntime.isPlotModeE}}
     </div>
   </q-page>
 </template>

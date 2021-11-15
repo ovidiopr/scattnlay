@@ -43,8 +43,12 @@ export default defineComponent({
     const numberOfModesToPlot = computed({
       get: () => $store.state.simulationSetup.gui.numberOfModesToPlot,
       set: val => {
-        const intVal = parseInt(val.toString())
-        if (!isNaN(intVal)) $store.commit('simulationSetup/setNumberOfModesToPlot', intVal)
+        let intVal = parseInt(val.toString())
+        if (isNaN(intVal)) return
+        if (intVal<1) intVal = 1
+        if (intVal>10) intVal = 10
+        $store.commit('simulationSetup/setNumberOfModesToPlot', intVal)
+        $store.commit('plotRuntime/resizeIsPlotMode',intVal)
       }
     })
 
