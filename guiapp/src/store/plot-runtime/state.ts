@@ -30,6 +30,7 @@ export interface plotRuntimeStateInterface {
   isPlotQext: boolean
   isPlotModeE: boolean[]
   isPlotModeH: boolean[]
+  isAppendPlots: boolean
 }
 
 function state(): plotRuntimeStateInterface {
@@ -74,11 +75,13 @@ function state(): plotRuntimeStateInterface {
       // showEditInChartStudio: true,
       displaylogo: false}
   }
+  const isAppendPlots = false
 
   return { WLs,
     Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n,
     spectraPlot, isPlotQsca, isPlotQabs, isPlotQext,
-    isPlotModeE, isPlotModeH
+    isPlotModeE, isPlotModeH,
+    isAppendPlots
   }
 }
 

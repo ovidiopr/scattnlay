@@ -28,7 +28,7 @@ const mutation: MutationTree<prsi> = {
   setQabsPlotToggle (state: prsi, val: boolean) {state.isPlotQabs = val},
   setQextPlotToggle (state: prsi, val: boolean) {state.isPlotQext = val},
 
-  resizeIsPlotMode (state:prsi, val:number) {
+  resizeSelectorIsPlotMode (state:prsi, val:number) {
     while (state.isPlotModeE.length > val) state.isPlotModeE.pop();
     while (state.isPlotModeH.length > val) state.isPlotModeH.pop();
     while (state.isPlotModeE.length < val) state.isPlotModeE.push(false);
@@ -41,6 +41,8 @@ const mutation: MutationTree<prsi> = {
   setIsPlotModeH (state:prsi, val:boolean[]) {
     for (let i = 0; i< val.length; ++i) state.isPlotModeH[i] = val[i]
   },
+
+  setIsAppendPlots (state:prsi, val:boolean) {state.isAppendPlots = val},
 
 }
 

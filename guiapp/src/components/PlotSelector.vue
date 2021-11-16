@@ -88,7 +88,7 @@ export default defineComponent({
       return columns
     })
 
-    $store.commit('plotRuntime/resizeIsPlotMode', guiNumberOfModes.value)
+    $store.commit('plotRuntime/resizeSelectorIsPlotMode', guiNumberOfModes.value)
 
     const rows_store = computed({
       get: ()=> {

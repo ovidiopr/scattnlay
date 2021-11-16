@@ -15,6 +15,7 @@ export interface simulationSetup {
   fromWL: number; toWL:number; pointsWL:number; currentWL:number
   layers: layer[]
   numberOfModesToPlot: number
+  plotLabel: string
 }
 
 export interface simulationSetupStateInterface {
@@ -35,13 +36,15 @@ function setupFactory(hostIndex = 1,
                           nSpline:undefined, kSpline:undefined
                         },
                       ],
-                      numberOfModesToPlot = 4
+                      numberOfModesToPlot = 4,
+                      plotLabel = ''
                      ):simulationSetup {
   return {hostIndex:hostIndex,
     fromWL:fromWL, toWL:toWL, pointsWL:pointsWL,
     currentWL:currentWL,
     layers: cloneDeep(layers),
     numberOfModesToPlot: numberOfModesToPlot,
+    plotLabel: plotLabel,
   }
 }
 

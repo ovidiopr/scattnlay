@@ -12,6 +12,9 @@
     <GetPlotSettings/>
     <div class="q-ma-xs"/>
     <RunSimulationSpectrum/>
+    <div class="col-auto q-pa-md">
+      Input result: {{$store.state.simulationSetup.gui.plotLabel}}
+    </div>
     <div class="q-ma-sm"/>
     <PlotSelector/>
     <div class="q-ma-xs"/>
