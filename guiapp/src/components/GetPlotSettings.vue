@@ -14,7 +14,7 @@
                   outlined
                   type="number"
                   min=1
-                  max=100
+                  max=10
                   step=1
                   dense
                   style="width: 6em"
@@ -30,6 +30,7 @@
 import {
   defineComponent,
   computed,
+  watch
   } from 'vue'
 import { useStore } from 'src/store'
 import { flexRowTitleStyle } from 'components/utils'
@@ -39,7 +40,6 @@ export default defineComponent({
 
   setup() {
     const $store = useStore()
-
     const numberOfModesToPlot = computed({
       get: () => $store.state.simulationSetup.gui.numberOfModesToPlot,
       set: val => {
@@ -50,6 +50,13 @@ export default defineComponent({
         $store.commit('simulationSetup/setNumberOfModesToPlot', intVal)
         $store.commit('plotRuntime/resizeIsPlotMode',intVal)
       }
+    })
+
+    watch(numberOfModesToPlot, ()=>{
+      const intVal = parseInt(numberOfModesToPlot.value.toString())
+      if (isNaN(intVal)) return
+      if (intVal<1) numberOfModesToPlot.value = 1
+      if (intVal>10) numberOfModesToPlot.value = 10
     })
 
     return { flexRowTitleStyle,

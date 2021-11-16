@@ -150,7 +150,7 @@ export default defineComponent({
 
     watch(layers, ()=>{
       const storeLayers = $store.state.simulationSetup.gui.layers
-      for (let i = 0; i<layers.length; i++) {
+      for (let i = 0; i<layers.length && i<storeLayers.length; i++) {
         if (isAlmostSame(storeLayers[i].layerWidth, layers[i].layerWidth)) {
           layers[i].layerWidth = storeLayers[i].layerWidth
         }

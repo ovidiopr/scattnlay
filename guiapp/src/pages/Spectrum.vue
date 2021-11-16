@@ -12,13 +12,10 @@
     <GetPlotSettings/>
     <div class="q-ma-xs"/>
     <RunSimulationSpectrum/>
-    <div class="q-ma-xs"/>
+    <div class="q-ma-sm"/>
     <PlotSelector/>
     <div class="q-ma-xs"/>
     <ReactiveChart :chart="$store.state.plotRuntime.spectraPlot"/>
-    <div class="col-auto q-pa-md">
-      Input result: {{$store.state.plotRuntime.isPlotModeE}}
-    </div>
   </q-page>
 </template>
 
@@ -46,7 +43,7 @@ export default defineComponent({
     GetPlotSettings, ReactiveChart, PlotSelector
   },
   // setup() {
-  //
+  //   const $store = useStore()
   // }
 })
 </script>

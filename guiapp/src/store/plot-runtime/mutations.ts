@@ -33,7 +33,15 @@ const mutation: MutationTree<prsi> = {
     while (state.isPlotModeH.length > val) state.isPlotModeH.pop();
     while (state.isPlotModeE.length < val) state.isPlotModeE.push(false);
     while (state.isPlotModeH.length < val) state.isPlotModeH.push(false);
-  }
+  },
+
+  setIsPlotModeE (state:prsi, val:boolean[]) {
+    for (let i = 0; i< val.length; ++i) state.isPlotModeE[i] = val[i]
+  },
+  setIsPlotModeH (state:prsi, val:boolean[]) {
+    for (let i = 0; i< val.length; ++i) state.isPlotModeH[i] = val[i]
+  },
+
 }
 
 export default mutation

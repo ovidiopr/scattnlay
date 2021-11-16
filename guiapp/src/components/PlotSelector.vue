@@ -6,10 +6,6 @@
       <q-toggle v-model="isPlotQext" dense class="q-ml-md">Qext</q-toggle>
     </div>
     <div class="q-ma-sm"/>
-    <q-toggle
-        v-model="rows[0]['1']"
-    />
-
     <div class="row justify-xs-center justify-sm-start items-baseline">
       <q-table
           :rows="rows"
@@ -24,15 +20,16 @@
             <q-th key="name" :props="props">
               {{ props.row.name }}
             </q-th>
-            <q-td v-for="(val, index) in props.row" :key="index" :props="props">
-              <div v-if="index!='name'" >
-                <q-toggle
+            <template v-for="(val, index) in props.row" :key="index" :props="props">
+              <q-td v-if="index!='name'">
+                <q-checkbox
                     v-model="props.row[index.toString()]"
+                    size="sm"
+                    dense
+                    :disable="index>simulatedNumberOfModes"
                 />
-                <!--                    @update:input-result="layer.layerWidth = fromUnits(units,$event)"-->
-                {{ props.row[index.toString()]}}
-              </div>
-            </q-td>
+              </q-td>
+            </template>
           </q-tr>
         </template>
       </q-table>
@@ -44,7 +41,8 @@
 import {
   defineComponent,
   computed,
-  ref
+  ref,
+  watch
   } from 'vue'
 import { useStore } from 'src/store'
 import { cloneDeep } from 'lodash'
@@ -70,43 +68,70 @@ export default defineComponent({
     const guiNumberOfModes = computed(()=> $store.state.simulationSetup.gui.numberOfModesToPlot)
     const simulatedNumberOfModes = computed(()=> $store.state.simulationSetup.current.numberOfModesToPlot)
 
-    $store.commit('plotRuntime/resizeIsPlotMode', guiNumberOfModes)
-
-
     const columns = computed(()=> {
-      let columns = [{ name: 'name', label: '',  align: 'left', field: '' }]
+      let columns = [{ name: 'name', label: '',  align: 'left', field: '', headerStyle:''}]
       for (let i=1; i<=guiNumberOfModes.value; ++i) {
         let label_computed = Math.pow(2, i).toString()
         if (i == 1) label_computed = 'dipole'
         if (i == 2) label_computed = 'quadrupole'
         if (i == 3) label_computed = 'octupole'
+        let text_color = ''
+        if (i > simulatedNumberOfModes.value ) text_color='color:LightGray'
         columns.push({
           name: i.toString(),
           label: label_computed,
-          align:'right',
-          field: i.toString()
+          align:'left',
+          field: i.toString(),
+          headerStyle: text_color
         })
       }
       return columns
     })
 
+    $store.commit('plotRuntime/resizeIsPlotMode', guiNumberOfModes.value)
+
     const rows_store = computed({
       get: ()=> {
         let rows = []
-        let row = {name: 'E'}
-        for (let i = 1; i <= guiNumberOfModes.value; ++i) {
+        let rowE = {name: 'E'}
+        let rowH = {name: 'H'}
+        for (let i = 0; i < guiNumberOfModes.value; ++i) {
           // eslint-disable-next-line
-          (row as any)[i.toString()] = false
+          (rowE as any)[(i+1).toString()] = $store.state.plotRuntime.isPlotModeE[i];
+          // eslint-disable-next-line
+          (rowH as any)[(i+1).toString()] = $store.state.plotRuntime.isPlotModeH[i]
         }
-        rows.push(cloneDeep(row))
-        row.name = 'H'
-        rows.push(cloneDeep(row))
-        console.log(rows)
+        rows.push(cloneDeep(rowE))
+        rows.push(cloneDeep(rowH))
         return rows
       },
-      set: val => { console.log(val)}
+      set: val => {
+        let isPlotModeE: boolean[] = []
+        let isPlotModeH: boolean[] = []
+        const rowE = val[0]
+        const rowH = val[1]
+        for (let i = 0; i < guiNumberOfModes.value; ++i) {
+          // eslint-disable-next-line
+          isPlotModeE.push((rowE as any)[(i+1).toString()])
+          // eslint-disable-next-line
+          isPlotModeH.push((rowH as any)[(i+1).toString()])
+        }
+        $store.commit('plotRuntime/setIsPlotModeE', isPlotModeE)
+        $store.commit('plotRuntime/setIsPlotModeH', isPlotModeH)
+        }
     })
+
     const rows = ref(rows_store.value)
+    watch(rows_store, ()=>{
+      rows.value = rows_store.value
+        },
+        { deep: true }
+    )
+    watch(rows, ()=>{
+      rows_store.value = rows.value
+        },
+        { deep: true }
+    )
 
     return { isPlotQsca, isPlotQabs, isPlotQext,
       guiNumberOfModes, simulatedNumberOfModes,
