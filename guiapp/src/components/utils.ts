@@ -1,5 +1,3 @@
-export const flexRowTitleStyle='width:10em; margin: auto;'
-
 export function isAlmostSame(a:number,b:number) {
     if ( Math.abs((a-b)/(a+b)) < 1e-15) return true
     return false

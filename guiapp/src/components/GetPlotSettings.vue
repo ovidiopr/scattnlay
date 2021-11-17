@@ -9,35 +9,41 @@
       <div class="row justify-xs-center justify-sm-start items-center">
 
         <div class="col-auto">
-          <!--          TODO move to config.ts -> min max
-           -->
               <q-input
                   v-model.number="numberOfModesToPlot"
                   outlined
                   type="number"
                   min=1
-                  max=10
+                  :max='maxModes'
                   step=1
                   dense
-                  style="width: 6em"
+                  :style="'width: '+basicSelectorWidthStyle"
               />
         </div>
+      </div>
+    </div>
+  </div>
+  <div class="row items-center">
+    <div class="col-xs-12 col-sm-auto text-center q-px-md q-py-sm">
+      <div :style="flexRowTitleStyle">
+        <span class="text-weight-bold">Plot label</span> (optional)
+      </div>
+    </div>
+    <div class="col-xs-grow col-sm q-px-xs">
+      <div class="row justify-xs-center justify-sm-start items-center">
         <div class="col-auto">
-<!--          TODO move to config.ts ->                     style="width: 17.7em"
- -->
           <q-input  v-model="plotLabel"
-                    label="plot label"
                     :shadow-text="plotLabel=='' ? shadowText+' (Tab to complete)' : ''"
                     outlined
                     dense
-                    class="q-pa-sm"
-                    style="width: 17.7em"
+                    class="q-py-sm"
+                    :style="'width: '+basicWidthStyle"
                     @keydown="processInputFill"
                     @focus="processInputFill"
           />
         </div>
-        <div class="col-auto">
-          <q-checkbox v-model="isAppendPlots">
+        <div class="col-auto q-pa-sm">
+          <q-checkbox v-model="isAppendPlots" size="sm">
             append new spectra to the plot
           </q-checkbox>
         </div>
@@ -52,13 +58,16 @@ import {
   defineComponent,
   computed,
   watch,
-  ref
   } from 'vue'
 import { event } from 'quasar'
 const { stopAndPrevent } = event
 
 import { useStore } from 'src/store'
-import { flexRowTitleStyle } from 'components/utils'
+import { flexRowTitleStyle,
+  maxNumberOfModesToPlot as maxModes,
+  basicSelectorWidthStyle,
+    basicWidthStyle
+} from 'components/config'
 
 export default defineComponent({
   name: 'GetPlotSettings',
@@ -71,7 +80,7 @@ export default defineComponent({
         let intVal = parseInt(val.toString())
         if (isNaN(intVal)) return
         if (intVal<1) intVal = 1
-        if (intVal>10) intVal = 10
+        if (intVal>maxModes) intVal = maxModes
         $store.commit('simulationSetup/setNumberOfModesToPlot', intVal)
         $store.commit('plotRuntime/resizeSelectorIsPlotMode',intVal)
       }
@@ -101,36 +110,27 @@ export default defineComponent({
       const intVal = parseInt(numberOfModesToPlot.value.toString())
       if (isNaN(intVal)) return
       if (intVal<1) numberOfModesToPlot.value = 1
-      if (intVal>10) numberOfModesToPlot.value = 10
+      if (intVal>maxModes) numberOfModesToPlot.value = maxModes
     })
 
-    const inputFillCancelled = ref(false)
-
-    return { flexRowTitleStyle,
-      numberOfModesToPlot,
+    return { flexRowTitleStyle, basicSelectorWidthStyle, basicWidthStyle,
+      numberOfModesToPlot, maxModes,
       plotLabel, isAppendPlots,
       shadowText,
-      processInputFill (e:any) {
+
+      processInputFill (e:KeyboardEvent) {
         if (e === void 0) {
           return
         }
-
-        if (e.keyCode === 27) {
-          if (inputFillCancelled.value !== true) {
-            inputFillCancelled.value = true
-          }
-        }
-        else if (e.keyCode === 9) {
-          if (inputFillCancelled.value !== true && shadowText.value.length > 0) {
+        if (e.code === 'Tab') {
+          if (shadowText.value.length > 0 && plotLabel.value == '') {
             stopAndPrevent(e)
-            if (plotLabel.value == '') plotLabel.value = shadowText.value
+            plotLabel.value = shadowText.value
           }
-        }
-        else if (inputFillCancelled.value === true) {
-          inputFillCancelled.value = false
         }
       },
-      }
+
+    }
   },
 })
 </script>

@@ -28,7 +28,7 @@ import {
   } from 'vue'
 import { useStore } from 'src/store'
 import InputWithUnits from 'components/InputWithUnits.vue'
-import { flexRowTitleStyle } from 'components/utils'
+import { flexRowTitleStyle } from 'components/config'
 
 export default defineComponent({
 

@@ -18,7 +18,7 @@
               outlined
               dense
               options-dense
-              style="width: 7em"
+              :style="'width: '+basicSelectorWidthStyle"
               behavior="menu"
           >
           </q-select>
@@ -33,7 +33,7 @@
             <q-select
                 v-model="sourceUnits"
                 :options="sourceUnitsOptions"
-                style="width:7em"
+                :style="'width: '+basicSelectorWidthStyle"
                 class="q-pa-xs"
                 :disable="isSourceSameUnits"
                 :outlined="!isSourceSameUnits"
@@ -59,7 +59,7 @@
             </q-select>
 
 
-            <div class="row q-py-xs q-px-xs items-center">
+            <div class="row q-pa-xs items-center">
               <q-checkbox v-model="isSourceSameUnits" size="sm"/>
               <div>same</div>
             </div>
@@ -82,7 +82,7 @@ import {
   watch
   } from 'vue'
 import { useStore } from 'src/store'
-import { flexRowTitleStyle } from 'components/utils'
+import { flexRowTitleStyle, basicSelectorWidthStyle } from 'components/config'
 
 export default defineComponent({
 
@@ -131,7 +131,7 @@ export default defineComponent({
     })
 
 
-    return { isSourceSameUnits, flexRowTitleStyle,
+    return { isSourceSameUnits, flexRowTitleStyle, basicSelectorWidthStyle,
       unitsOptions, units,
       sourceUnits, sourceUnitsOptions }
   },

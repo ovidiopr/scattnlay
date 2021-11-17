@@ -30,10 +30,10 @@
                   type="number"
                   class="q-px-sm"
                   min=1
-                  max=10
+                  :max="maxNumberOfLayers"
                   step=1
                   dense
-                  style="width: 6em"
+                  :style="'width: '+basicSelectorWidthStyle"
               />
             </div>
           </div>
@@ -72,7 +72,7 @@
           <q-select
               v-model="layer.materialName"
               :options="activatedMaterials"
-              style="width: 17.7em"
+              :style="'width: '+basicWidthStyle"
               class="q-px-xs"
               dense
               options-dense
@@ -113,8 +113,9 @@ import {
   watch
   } from 'vue'
 import { useStore } from 'src/store'
-import {flexRowTitleStyle, fromUnits, isAlmostSame, toUnits} from 'components/utils'
-import {cloneDeep} from 'lodash'
+import { fromUnits, isAlmostSame, toUnits } from 'components/utils'
+import { flexRowTitleStyle, basicWidthStyle, basicSelectorWidthStyle, maxNumberOfLayers } from 'components/config'
+import { cloneDeep } from 'lodash'
 import InputWithUnits from 'components/InputWithUnits.vue';
 
 export default defineComponent({
@@ -168,7 +169,7 @@ export default defineComponent({
       numberOfLayers.value = parseInt(numberOfLayers.value.toString())
       if (isNaN(numberOfLayers.value)) numberOfLayers.value = 3
       if (numberOfLayers.value < 1) numberOfLayers.value = 1
-      if (numberOfLayers.value > 10) numberOfLayers.value = 10
+      if (numberOfLayers.value > maxNumberOfLayers) numberOfLayers.value = maxNumberOfLayers
 
       while (layers.length > numberOfLayers.value) {
         layers.pop();
@@ -202,7 +203,9 @@ export default defineComponent({
 
     }
 
-    return { flexRowTitleStyle, particleType,
+    return { flexRowTitleStyle, basicWidthStyle,
+      basicSelectorWidthStyle, maxNumberOfLayers,
+      particleType,
       numberOfLayers, layers, getLayerTitle, getTooltipText,
       units, toUnits, fromUnits, isShowingHelpForInputWithUnits,
       activatedMaterials
