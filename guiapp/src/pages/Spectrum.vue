@@ -18,7 +18,7 @@
     <div class="q-ma-sm"/>
     <PlotSelector/>
     <div class="q-ma-xs"/>
-    <ReactiveChart :chart="$store.state.plotRuntime.spectraPlot"/>
+    <PlotSpectra/>
   </q-page>
 </template>
 
@@ -33,8 +33,8 @@ import GetSourceParameters from 'components/GetSourceParameters.vue'
 import GetParticleParameters from 'components/GetParticleParameters.vue'
 import GetPlotSettings from 'components/GetPlotSettings.vue'
 import RunSimulationSpectrum from 'components/RunSimulationSpectrum.vue'
-import ReactiveChart from 'components/ReactiveChart.vue'
 import PlotSelector from 'components/PlotSelector.vue'
+import PlotSpectra from 'components/PlotSpectra.vue'
 // import { useStore } from 'src/store'
 
 
@@ -43,7 +43,8 @@ export default defineComponent({
   components: {
     RunSimulationSpectrum, GetUnits, GetHostIndex,
     GetSourceParameters, GetParticleParameters,
-    GetPlotSettings, ReactiveChart, PlotSelector
+    GetPlotSettings, PlotSelector,
+    PlotSpectra
   },
   // setup() {
   //   const $store = useStore()

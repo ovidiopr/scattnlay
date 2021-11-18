@@ -5,7 +5,7 @@
         anchor="top middle"
         self="center middle"
     >
-      {{formatNumber(localTooltipText,digits+1)}}
+      {{formatNumber(localTooltipText,inputWithUnitsTooltipDigits)}}
     </q-tooltip>
     <q-tooltip v-if="isShowingHelp"
                v-model = "isShowingHelpLocal"
@@ -22,7 +22,7 @@
           class="items-center bg-grey-2"
           horizontal>
         <div class="side_note text-grey-9 q-px-xs text-center"
-             style="width: 4em"
+             :style="'width: '+inputWithUnitsTitleWidthStyle"
         >
           {{title}}
         </div>
@@ -36,7 +36,7 @@
               hide-selected
               input-debounce="0"
               options-dense
-              style="width: 10em"
+              :style="'width: '+inputWithUnitsBodyWidthStyle"
               use-input
               behavior="menu"
               @filter="filterQSelectOptions"
@@ -56,7 +56,7 @@
                   style="font-size: 12px"
                   class="q-py-sm"
               >
-                {{formatNumber(localTooltipText,digits)}}
+                {{formatNumber(localTooltipText,inputWithUnitsInlineDigits)}}
               </div>
             </template>
             <template #option="scope">
@@ -65,7 +65,7 @@
                   {{scope.opt}}
                 </q-item-section>
                 <q-item-section side>
-                  {{formatNumber(evalString(scope.opt),digits)}}
+                  {{formatNumber(evalString(scope.opt),inputWithUnitsInlineDigits)}}
                 </q-item-section>
               </q-item>
             </template>
@@ -73,7 +73,7 @@
         </div>
         <div
             class="side_note text-grey-9 q-px-xs text-center"
-            style="width: 3em"
+            :style="'width: '+inputWithUnitsUnitsWidthStyle"
         >
           {{units}}
         </div>
@@ -89,6 +89,13 @@ import {
   ref,
   watch,
   } from 'vue'
+import {inputWithUnitsTitleWidthStyle,
+  inputWithUnitsBodyWidthStyle,
+  inputWithUnitsUnitsWidthStyle,
+    inputWithUnitsHistoryLength,
+    inputWithUnitsInlineDigits,
+    inputWithUnitsTooltipDigits
+} from 'components/config'
 
 export default defineComponent({
   name: 'InputWithUnits',
@@ -135,7 +142,6 @@ export default defineComponent({
 
     let evaluated = ref(0)
     let count_updates = 0
-    const digits = 1
 
     // Set some random values to get correct typing with
     // TypeScript and remove them after initialization.
@@ -225,6 +231,8 @@ export default defineComponent({
     isShowingTooltip.value = false
 
     return {
+      inputWithUnitsTitleWidthStyle, inputWithUnitsBodyWidthStyle, inputWithUnitsUnitsWidthStyle,
+      inputWithUnitsHistoryLength, inputWithUnitsInlineDigits, inputWithUnitsTooltipDigits,
       localTooltipText, isShowingTooltip,
       isShowingTooltipAppend, isShowingHelpLocal,
       helpExpr,
@@ -234,7 +242,7 @@ export default defineComponent({
         isShowingTooltip.value = false
         const expr = localQSelectModel.value
         if (!qSelectOptionsHistory.value.includes(expr)) qSelectOptionsHistory.value.unshift(expr)
-        if (qSelectOptionsHistory.value.length > 5) qSelectOptionsHistory.value.pop()
+        if (qSelectOptionsHistory.value.length > inputWithUnitsHistoryLength) qSelectOptionsHistory.value.pop()
       },
 
       filterQSelectOptions (val:string,
@@ -245,8 +253,6 @@ export default defineComponent({
           qSelectOptions.value = qSelectOptionsHistory.value
         })
       },
-
-      digits,
 
       formatNumber (value:string, digits:number):string {
         if (value==='') return ''

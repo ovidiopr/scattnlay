@@ -29,62 +29,47 @@
 import sys
 sys.path.insert(0,'..')  # to be able to import scattnlay from the upper dir
 
-from scattnlay import scattnlay,scattcoeffs,fieldnlay
+from scattnlay import scattnlay,scattcoeffs,fieldnlay, mie
 
 import matplotlib.pyplot as plt
 import numpy as np
 import cmath
 
-
-from_WL = 400
-to_WL = 800
-WL_points= 100
+from_WL = 300
+to_WL = 1000
+WL_points= 1000
 WLs = np.linspace(from_WL, to_WL, WL_points)
-index_NP = 1.5+0.3j
+index_NP = 4+0.01j
 
 x = np.ones((1), dtype = np.float64)
 m = np.ones((1), dtype = np.complex128)
 
-
-core_r = 45000
-
+core_r = 100
 
 Qsca_vec = []
-core_r_vec = []
-an_vec = []
-bn_vec = []
+Qsca_mode_vec = []
 
 for WL in WLs:
-    x[0] = 2.0*np.pi*core_r/WL#/4.0*3.0
+    x[0] = 2.0*np.pi*core_r/WL
     m[0] = index_NP
-    terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
-        np.array(x), np.array(m),
-        mp=True
-    )
-    print(np.array([Qsca]))
-    terms, an, bn = scattcoeffs(x, m,24)
-    # Qsca_vec.append(Qsca*np.pi*core_r**2*1e-5)
-    Qsca_vec.append(Qsca)#*np.pi*core_r**2*1e-5)
-    core_r_vec.append(core_r)
-    an_vec.append(np.abs(an)[0])
-    bn_vec.append(np.abs(bn)[0])
+    mie.SetLayersSize(x)
+    mie.SetLayersIndex(m)
 
-an_vec = np.array(an_vec)
-bn_vec = np.array(bn_vec)
-# print(an_vec)
+    mie.SetModeNmaxAndType(-1,-1)
+    mie.RunMieCalculation()
+    Qsca =  mie.GetQsca()
+
+    mie.SetModeNmaxAndType(1,0)
+    mie.RunMieCalculation()
+    Qsca_mode =  mie.GetQsca()
+
+    print(np.array([Qsca]))
+    Qsca_vec.append(Qsca)
+    Qsca_mode_vec.append(Qsca_mode)
+
 fig, axs2 = plt.subplots(1,1)#, sharey=True, sharex=True)
-axs2.plot(WLs, Qsca_vec, color="black")
-# axs.set_xlabel("D, nm")
-# axs.set_ylabel("$Q_{sca}$")
-# axs2 = axs.twinx()
-# axs2.plot(np.array(core_r_vec)*2,an_vec[:,0],"b.",lw=0.8, markersize=1.9,label="$a_0$")
-# axs2.plot(np.array(core_r_vec)*2,bn_vec[:,0],"b-", markersize=1.9,label="$b_0$")
-# axs2.plot(np.array(core_r_vec)*2,an_vec[:,1],"g.",lw=0.8, markersize=1.9,label="$a_1$")
-# axs2.plot(np.array(core_r_vec)*2,bn_vec[:,1],"g-", markersize=1.9,label="$b_1$")
-# axs2.legend(loc="upper right")
-# axs2.tick_params('y', colors='black')
-# axs2.set_ylim(0,1)
-# axs2.set_ylabel("Mie",color="black")
+axs2.plot(WLs, Qsca_vec, color="blue")
+axs2.plot(WLs, Qsca_mode_vec, color="red")
 plt.savefig("spectra.pdf",pad_inches=0.02, bbox_inches='tight')
 plt.show()
 plt.clf()

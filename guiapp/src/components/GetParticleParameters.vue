@@ -167,7 +167,7 @@ export default defineComponent({
 
     watch(numberOfLayers, ()=>{
       numberOfLayers.value = parseInt(numberOfLayers.value.toString())
-      if (isNaN(numberOfLayers.value)) numberOfLayers.value = 3
+      if (isNaN(numberOfLayers.value)) return
       if (numberOfLayers.value < 1) numberOfLayers.value = 1
       if (numberOfLayers.value > maxNumberOfLayers) numberOfLayers.value = maxNumberOfLayers
 

@@ -15,6 +15,7 @@ const mutation: MutationTree<prsi> = {
   },
 
   updateSpectraPlot (state: prsi) {
+    console.log('updating spectra plot...')
     const traceQsca:Partial<Data> = {
       x: state.WLs,
       y: state.Qsca,
