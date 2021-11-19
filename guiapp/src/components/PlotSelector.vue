@@ -1,13 +1,37 @@
 <template>
-  <div class="col-auto">
-    <div class="row justify-xs-center justify-sm-start items-baseline">
-      <q-toggle v-model="isPlotQsca" dense class="q-ml-md">Qsca</q-toggle>
-      <q-toggle v-model="isPlotQabs" dense class="q-ml-md">Qabs</q-toggle>
-      <q-toggle v-model="isPlotQext" dense class="q-ml-md">Qext</q-toggle>
-    </div>
-    <div class="q-ma-sm"/>
-    <div class="row justify-xs-center justify-sm-start items-baseline">
+  <div class="row items-baseline">
+    <div class="col-xs-grow col-sm-auto q-px-sm">
       <q-table
+              title="Values to plot"
+              title-class="text-h6"
+              :rows="rowsQ"
+              :columns="columnsQ"
+              hide-bottom
+              dense
+              flat
+              row-key="name"
+          >
+            <template #body="props">
+              <q-tr :props="props">
+                <q-th key="name" :props="props">
+                  {{ props.row.name }}
+                </q-th>
+                <template v-for="(val, index) in props.row" :key="index" :props="props">
+                  <q-td v-if="index!='name'">
+                    <q-checkbox
+                        v-model="props.row[index]"
+                        dense
+                    />
+                  </q-td>
+                </template>
+              </q-tr>
+            </template>
+          </q-table>
+    </div>
+    <div v-if="isPlotQabs||isPlotQsca||isPlotQext"  class="col-xs-grow col-sm-auto q-px-sm">
+      <q-table
+          title="Modes to plot"
+          title-class="text-h6"
           :rows="rows"
           :columns="columns"
           hide-bottom
@@ -24,7 +48,6 @@
               <q-td v-if="index!='name'">
                 <q-checkbox
                     v-model="props.row[index.toString()]"
-                    size="sm"
                     dense
                     :disable="index>simulatedNumberOfModes"
                 />
@@ -46,6 +69,9 @@ import {
   } from 'vue'
 import { useStore } from 'src/store'
 import { cloneDeep } from 'lodash'
+import { flexRowTitleStyle,
+} from 'components/config'
+
 
 export default defineComponent({
   name: 'GetPlotSettings',
@@ -64,6 +90,55 @@ export default defineComponent({
       get: () => $store.state.plotRuntime.isPlotQext,
       set: val => $store.commit('plotRuntime/setQextPlotToggle', val)
     })
+
+    const isPlotQscaTotal = computed({
+      get: () => $store.state.plotRuntime.isPlotQscaTotal,
+      set: val => $store.commit('plotRuntime/setQscaTotalPlotToggle', val)
+    })
+    const isPlotQabsTotal = computed({
+      get: () => $store.state.plotRuntime.isPlotQabsTotal,
+      set: val => $store.commit('plotRuntime/setQabsTotalPlotToggle', val)
+    })
+    const isPlotQextTotal = computed({
+      get: () => $store.state.plotRuntime.isPlotQextTotal,
+      set: val => $store.commit('plotRuntime/setQextTotalPlotToggle', val)
+    })
+
+    const columnsQ = computed(()=>{
+      return [
+        { name: 'name', label: '',  align: 'left', field: 'name', headerStyle:''},
+        { name: 'Qsca', label: 'Qsca',  align: 'left', field: 'Qsca', headerStyle:''},
+        { name: 'Qabs', label: 'Qabs',  align: 'left', field: 'Qabs', headerStyle:''},
+        { name: 'Qext', label: 'Qext',  align: 'left', field: 'Qext', headerStyle:''},
+      ]
+    })
+
+    const rowsQ_store = computed({
+    get: ()=>[
+        { name: 'total', Qsca: isPlotQscaTotal.value, Qabs: isPlotQabsTotal.value, Qext: isPlotQextTotal.value},
+        { name: 'modes', Qsca: isPlotQsca.value, Qabs: isPlotQabs.value, Qext: isPlotQext.value},
+    ],
+      set: val =>{
+        $store.commit('plotRuntime/setQscaTotalPlotToggle', val[0].Qsca)
+        $store.commit('plotRuntime/setQabsTotalPlotToggle', val[0].Qabs)
+        $store.commit('plotRuntime/setQextTotalPlotToggle', val[0].Qext)
+        $store.commit('plotRuntime/setQscaPlotToggle', val[1].Qsca)
+        $store.commit('plotRuntime/setQabsPlotToggle', val[1].Qabs)
+        $store.commit('plotRuntime/setQextPlotToggle', val[1].Qext)
+        // console.log(val)
+      }
+    })
+    const rowsQ = ref(rowsQ_store.value)
+    watch(rowsQ_store, ()=>{
+          rowsQ.value = rowsQ_store.value
+        },
+        { deep: true }
+    )
+    watch(rowsQ, ()=>{
+          rowsQ_store.value = rowsQ.value
+        },
+        { deep: true }
+    )
 
     const guiNumberOfModes = computed(()=> $store.state.simulationSetup.gui.numberOfModesToPlot)
     const simulatedNumberOfModes = computed(()=> $store.state.simulationSetup.current.numberOfModesToPlot)
@@ -133,9 +208,11 @@ export default defineComponent({
         { deep: true }
     )
 
-    return { isPlotQsca, isPlotQabs, isPlotQext,
+    return {flexRowTitleStyle,
+      isPlotQsca, isPlotQabs, isPlotQext,
       guiNumberOfModes, simulatedNumberOfModes,
-      columns, rows
+      columns, rows,
+      columnsQ, rowsQ
       }
   },
 })

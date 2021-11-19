@@ -12,12 +12,12 @@
     <GetPlotSettings/>
     <div class="q-ma-xs"/>
     <RunSimulationSpectrum/>
-    <div class="col-auto q-pa-md">
-      Input result: {{$store.state.simulationSetup.gui.plotLabel}}
-    </div>
+<!--    <div class="col-auto q-pa-md">-->
+<!--      Input result: {{$store.state.plotRuntime.isPlotQabs}}-->
+<!--    </div>-->
     <div class="q-ma-sm"/>
     <PlotSelector/>
-    <div class="q-ma-xs"/>
+    <div class="q-ma-sm"/>
     <PlotSpectra/>
   </q-page>
 </template>

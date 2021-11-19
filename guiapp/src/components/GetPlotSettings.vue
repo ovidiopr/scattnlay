@@ -23,7 +23,8 @@
       </div>
     </div>
   </div>
-  <div class="row items-center">
+  <div class="q-ma-xs"/>
+  <div class="row items-baseline">
     <div class="col-xs-12 col-sm-auto text-center q-px-md q-py-sm">
       <div :style="flexRowTitleStyle">
         <span class="text-weight-bold">Plot label</span> (optional)
@@ -36,15 +37,15 @@
                     :shadow-text="plotLabel=='' ? shadowText+' (Tab to complete)' : ''"
                     outlined
                     dense
-                    class="q-py-sm"
+                    class="q-py-xs"
                     :style="'width: '+basicWidthStyle"
                     @keydown="processInputFill"
                     @focus="processInputFill"
           />
         </div>
-        <div class="col-auto q-pa-sm">
-          <q-checkbox v-model="isAppendPlots" size="sm">
-            append new spectra to the plot
+        <div class="col-auto q-py-xs q-px-sm">
+          <q-checkbox v-model="isRemovePlots" size="sm">
+            remove previous spectra
           </q-checkbox>
         </div>
 
@@ -91,9 +92,12 @@ export default defineComponent({
       set: val => $store.commit('simulationSetup/setPlotLabel', val)
     })
 
-    const isAppendPlots = computed({
-      get: ()=> $store.state.plotRuntime.isAppendPlots,
-      set: val => $store.commit('plotRuntime/setIsAppendPlots', val)
+    const isRemovePlots = computed({
+      get: ()=> $store.state.plotRuntime.isRemovePlots,
+      set: val => {
+        $store.commit('plotRuntime/setIsRemovePlots', val)
+        $store.commit('plotRuntime/updateSpectraPlot')
+      }
     })
 
     const shadowText = computed(()=>{
@@ -115,7 +119,7 @@ export default defineComponent({
 
     return { flexRowTitleStyle, basicSelectorWidthStyle, basicWidthStyle,
       numberOfModesToPlot, maxModes,
-      plotLabel, isAppendPlots,
+      plotLabel, isRemovePlots,
       shadowText,
 
       processInputFill (e:KeyboardEvent) {

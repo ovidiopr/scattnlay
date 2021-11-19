@@ -28,9 +28,12 @@ export interface plotRuntimeStateInterface {
   isPlotQsca: boolean
   isPlotQabs: boolean
   isPlotQext: boolean
+  isPlotQscaTotal: boolean
+  isPlotQabsTotal: boolean
+  isPlotQextTotal: boolean
   isPlotModeE: boolean[]
   isPlotModeH: boolean[]
-  isAppendPlots: boolean
+  isRemovePlots: boolean
 }
 
 function state(): plotRuntimeStateInterface {
@@ -42,8 +45,11 @@ function state(): plotRuntimeStateInterface {
   const isPlotQsca = true
   const isPlotQabs = true
   const isPlotQext = false
-  const isPlotModeE:boolean[] = []
-  const isPlotModeH:boolean[] = []
+  const isPlotQscaTotal = true
+  const isPlotQabsTotal = true
+  const isPlotQextTotal = false
+  const isPlotModeE:boolean[] = [true]
+  const isPlotModeH:boolean[] = [true]
 
   const spectraPlot:plotlyChart = {
     data: [],
@@ -75,13 +81,14 @@ function state(): plotRuntimeStateInterface {
       // showEditInChartStudio: true,
       displaylogo: false}
   }
-  const isAppendPlots = false
+  const isRemovePlots = true
 
   return { WLs,
     Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n,
     spectraPlot, isPlotQsca, isPlotQabs, isPlotQext,
+    isPlotQscaTotal, isPlotQabsTotal, isPlotQextTotal,
     isPlotModeE, isPlotModeH,
-    isAppendPlots
+    isRemovePlots
   }
 }
 
