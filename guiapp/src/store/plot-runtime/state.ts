@@ -34,6 +34,8 @@ export interface plotRuntimeStateInterface {
   isPlotModeE: boolean[]
   isPlotModeH: boolean[]
   isRemovePlots: boolean
+  numberOfPlotsFromPreviousSimulations:number
+  commonLabel:string
 }
 
 function state(): plotRuntimeStateInterface {
@@ -50,6 +52,8 @@ function state(): plotRuntimeStateInterface {
   const isPlotQextTotal = false
   const isPlotModeE:boolean[] = [true]
   const isPlotModeH:boolean[] = [true]
+  const numberOfPlotsFromPreviousSimulations = 0
+  const commonLabel=''
 
   const spectraPlot:plotlyChart = {
     data: [],
@@ -88,7 +92,8 @@ function state(): plotRuntimeStateInterface {
     spectraPlot, isPlotQsca, isPlotQabs, isPlotQext,
     isPlotQscaTotal, isPlotQabsTotal, isPlotQextTotal,
     isPlotModeE, isPlotModeH,
-    isRemovePlots
+    isRemovePlots, numberOfPlotsFromPreviousSimulations,
+    commonLabel
   }
 }
 

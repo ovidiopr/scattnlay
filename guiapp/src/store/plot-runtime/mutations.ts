@@ -21,6 +21,7 @@ const mutation: MutationTree<prsi> = {
   setQabsTotalPlotToggle (state: prsi, val: boolean) {state.isPlotQabsTotal = val},
   setQextTotalPlotToggle (state: prsi, val: boolean) {state.isPlotQextTotal = val},
   setIsRemovePlots (state:prsi, val:boolean) {state.isRemovePlots = val},
+  setCommonLabel  (state:prsi, val:string) {state.commonLabel = val},
 
   resizeSelectorIsPlotMode (state:prsi, val:number) {
     while (state.isPlotModeE.length > val) state.isPlotModeE.pop();
@@ -35,15 +36,45 @@ const mutation: MutationTree<prsi> = {
     for (let i = 0; i< val.length; ++i) state.isPlotModeH[i] = val[i]
   },
 
+  updateNumberOfPlotsFromPreviousSimulations(state: prsi) {
+    state.numberOfPlotsFromPreviousSimulations = state.spectraPlot.data.length
+  },
   updateSpectraPlot (state: prsi) {
-    console.log('updating spectra plot...')
-    const traceQsca:Partial<Data> = {
-      x: state.WLs,
-      y: state.Qsca,
-      type: 'scatter',
-      name: 'Qsca'
+    if (state.isRemovePlots) state.numberOfPlotsFromPreviousSimulations = 0
+    state.spectraPlot.data.length = state.numberOfPlotsFromPreviousSimulations
+
+    const label:string = state.commonLabel
+    if (state.isPlotQscaTotal) {
+      const traceQsca: Partial<Data> = {
+        x: state.WLs,
+        y: state.Qsca,
+        type: 'scatter',
+        name: 'Qsca '+label
+      }
+      state.spectraPlot.data.push(traceQsca)
     }
-    state.spectraPlot.data.push(traceQsca)
+
+    if (state.isPlotQabsTotal) {
+      const traceQabs: Partial<Data> = {
+        x: state.WLs,
+        y: state.Qabs,
+        type: 'scatter',
+        name: 'Qabs '+label
+      }
+      state.spectraPlot.data.push(traceQabs)
+    }
+
+    if (state.isPlotQextTotal) {
+      const traceQext: Partial<Data> = {
+        x: state.WLs,
+        y: state.Qext,
+        type: 'scatter',
+        name: 'Qext '+label
+      }
+      state.spectraPlot.data.push(traceQext)
+    }
+
+
 
   },
 

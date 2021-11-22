@@ -9,6 +9,8 @@
     <div class="q-ma-xs"/>
     <GetParticleParameters/>
     <div class="q-ma-xs"/>
+    <GetModesToPlot/>
+    <div class="q-ma-xs"/>
     <GetPlotSettings/>
     <div class="q-ma-xs"/>
     <RunSimulationSpectrum/>
@@ -31,8 +33,9 @@ import GetUnits from 'components/GetUnits.vue'
 import GetHostIndex from 'components/GetHostIndex.vue'
 import GetSourceParameters from 'components/GetSourceParameters.vue'
 import GetParticleParameters from 'components/GetParticleParameters.vue'
-import GetPlotSettings from 'components/GetPlotSettings.vue'
+import GetModesToPlot from 'components/GetModesToPlot.vue'
 import RunSimulationSpectrum from 'components/RunSimulationSpectrum.vue'
+import GetPlotSettings from 'components/GetPlotSettings.vue'
 import PlotSelector from 'components/PlotSelector.vue'
 import PlotSpectra from 'components/PlotSpectra.vue'
 // import { useStore } from 'src/store'
@@ -41,6 +44,7 @@ import PlotSpectra from 'components/PlotSpectra.vue'
 export default defineComponent({
   name: 'PageIndex',
   components: {
+    GetModesToPlot,
     RunSimulationSpectrum, GetUnits, GetHostIndex,
     GetSourceParameters, GetParticleParameters,
     GetPlotSettings, PlotSelector,
