@@ -18,12 +18,6 @@
                     @focus="processInputFill"
           />
         </div>
-        <div class="col-auto q-py-xs q-px-sm">
-          <q-checkbox v-model="isRemovePlots" size="sm">
-            remove previous spectra
-          </q-checkbox>
-        </div>
-
       </div>
     </div>
   </div>
@@ -54,14 +48,6 @@ export default defineComponent({
       set: val => $store.commit('simulationSetup/setPlotLabel', val)
     })
 
-    const isRemovePlots = computed({
-      get: ()=> $store.state.plotRuntime.isRemovePlots,
-      set: val => {
-        $store.commit('plotRuntime/setIsRemovePlots', val)
-        $store.commit('plotRuntime/updateSpectraPlot')
-      }
-    })
-
     const shadowText = computed(()=>{
       const numberOfLayers = $store.state.simulationSetup.gui.layers.length
       let particleType = 'bulk'
@@ -73,8 +59,7 @@ export default defineComponent({
     })
 
     return { flexRowTitleStyle, basicSelectorWidthStyle, basicWidthStyle,
-      plotLabel, isRemovePlots,
-      shadowText,
+      plotLabel, shadowText,
 
       processInputFill (e:KeyboardEvent) {
         if (e === void 0) {

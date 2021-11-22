@@ -29,7 +29,7 @@ import {
   computed, watch,
 } from 'vue'
 import { useStore } from 'src/store'
-import { range, rangeInt } from 'components/utils'
+import {range, rangeInt, toUnits} from 'components/utils'
 import { cloneDeep } from 'lodash'
 
 export default defineComponent({
@@ -47,10 +47,21 @@ export default defineComponent({
 
     const isNmieLoaded = computed(()=>{ return $store.state.simulationSetup.isNmieLoaded })
 
+    const sourceUnits = computed( ()=>$store.state.guiRuntime.sourceUnits)
+
     function getWLs(){
       const fromWL = $store.state.simulationSetup.current.fromWL
       const toWL = $store.state.simulationSetup.current.toWL
       const pointsWL = $store.state.simulationSetup.current.pointsWL
+      if (sourceUnits.value.endsWith('Hz') || sourceUnits.value.endsWith('eV')) {
+        const fromF = 1./fromWL
+        const toF = 1./toWL
+        const stepF = (fromF-toF)/(pointsWL-1)
+        const Fs = range(toF, fromF, stepF);
+        let WLs = []
+        for (const f of Fs) WLs.push(1./f)
+        return WLs
+      }
       const stepWL = (toWL-fromWL)/(pointsWL-1)
       const WLs = range(fromWL, toWL, stepWL);
       return WLs
@@ -124,7 +135,10 @@ export default defineComponent({
           const nmieTotalRunTime = (performance.now()-nmieStartedTime)/1000
           // console.log('Total simulation time:', nmieTotalRunTime, 's')
           $store.commit('simulationSetup/setNmieTotalRunTime', nmieTotalRunTime)
+
           $store.commit('plotRuntime/setQ', {WLs, Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n})
+          $store.commit('plotRuntime/setWLsInUnits', sourceUnits.value)
+
           $store.commit('plotRuntime/updateNumberOfPlotsFromPreviousSimulations')
           $store.commit('plotRuntime/setCommonLabel', $store.state.simulationSetup.current.plotLabel)
           $store.commit('simulationSetup/setPlotLabel', '')

@@ -29,7 +29,7 @@ export interface simulationSetupStateInterface {
 }
 
 function setupFactory(hostIndex = 1,
-                      fromWL = 300, toWL=1000, pointsWL=101, currentWL = 300,
+                      fromWL = 400, toWL=1000, pointsWL=201, currentWL = 400,
                       layers = [
                         {layerWidth:100, n:4, k:0.01,
                           materialName:'nk-constant',

@@ -14,6 +14,7 @@ import {
   computed,
   watch
 } from 'vue'
+import { toUnits } from 'components/utils'
 
 export default defineComponent({
   name: 'PlotSpectra',
@@ -40,6 +41,30 @@ export default defineComponent({
     watch(isPlotModeE, ()=>$store.commit('plotRuntime/updateSpectraPlot'), { deep: true })
     const isPlotModeH = computed( ()=>$store.state.plotRuntime.isPlotModeH)
     watch(isPlotModeH, ()=>$store.commit('plotRuntime/updateSpectraPlot'), { deep: true })
+
+    const sourceUnits = computed( ()=>$store.state.guiRuntime.sourceUnits)
+    function setPlotTitle() {
+      let title=''
+      if (sourceUnits.value.endsWith('Hz')) {
+        title = 'Frequency, ' + sourceUnits.value;
+      } else if (sourceUnits.value.endsWith('eV')) {
+        title = 'Energy, ' + sourceUnits.value;
+      } else if (sourceUnits.value.endsWith('s')) {
+        title = 'Period, ' + sourceUnits.value;
+      } else {
+        title = 'Wavelength, ' + sourceUnits.value;
+      }
+      $store.commit('plotRuntime/updateXAxisTitle', title)
+    }
+
+    function updateSpectraPlotUnits(){
+      setPlotTitle()
+      $store.commit('plotRuntime/setWLsInUnits', sourceUnits.value)
+      $store.commit('plotRuntime/updateSpectraPlot')
+    }
+
+    updateSpectraPlotUnits()
+    watch(sourceUnits, ()=> updateSpectraPlotUnits())
 
     return {}
   }

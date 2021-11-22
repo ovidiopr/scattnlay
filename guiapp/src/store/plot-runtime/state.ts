@@ -18,6 +18,7 @@ export interface spectraData {
 
 export interface plotRuntimeStateInterface {
   WLs: number[]
+  WLsInUnits: number[]
   Qsca:number[]
   Qabs:number[]
   Qext:number[]
@@ -40,15 +41,16 @@ export interface plotRuntimeStateInterface {
 
 function state(): plotRuntimeStateInterface {
   const WLs:number[] = []
+  const WLsInUnits:number[] = []
   const Qsca:number[] = [], Qabs:number[] = [], Qext:number[] = []
   const Qsca_n:number[][][] = [[], []]
   const Qabs_n:number[][][] = [[], []]
   const Qext_n:number[][][] = [[], []]
   const isPlotQsca = true
-  const isPlotQabs = true
+  const isPlotQabs = false
   const isPlotQext = false
   const isPlotQscaTotal = true
-  const isPlotQabsTotal = true
+  const isPlotQabsTotal = false
   const isPlotQextTotal = false
   const isPlotModeE:boolean[] = [true]
   const isPlotModeH:boolean[] = [true]
@@ -87,7 +89,7 @@ function state(): plotRuntimeStateInterface {
   }
   const isRemovePlots = true
 
-  return { WLs,
+  return { WLs, WLsInUnits,
     Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n,
     spectraPlot, isPlotQsca, isPlotQabs, isPlotQext,
     isPlotQscaTotal, isPlotQabsTotal, isPlotQextTotal,

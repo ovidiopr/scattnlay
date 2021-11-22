@@ -19,7 +19,7 @@
 <!--    </div>-->
     <div class="q-ma-sm"/>
     <PlotSelector/>
-    <div class="q-ma-sm"/>
+    <div class="q-ma-xs"/>
     <PlotSpectra/>
   </q-page>
 </template>

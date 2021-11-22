@@ -1,3 +1,10 @@
+export function getModeName(i:number) {
+    if (i == 1) return 'dipole'
+    if (i == 2) return 'quadrupole'
+    if (i == 3) return 'octupole'
+    return  Math.pow(2, i).toString()
+}
+
 export function isAlmostSame(a:number,b:number) {
     if ( Math.abs((a-b)/(a+b)) < 1e-15) return true
     return false

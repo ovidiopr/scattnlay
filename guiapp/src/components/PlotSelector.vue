@@ -1,5 +1,12 @@
 <template>
   <div class="row items-baseline">
+    <div class="col-auto q-py-xs q-px-sm">
+      <q-checkbox v-model="isRemovePlots" size="sm">
+        remove previous spectra
+      </q-checkbox>
+    </div>
+  </div>
+  <div class="row items-baseline">
     <div class="col-xs-grow col-sm-auto q-px-sm">
       <q-table
               title="Values to plot"
@@ -69,6 +76,7 @@ import {
   } from 'vue'
 import { useStore } from 'src/store'
 import { cloneDeep } from 'lodash'
+import { getModeName} from 'components/utils'
 import { flexRowTitleStyle,
 } from 'components/config'
 
@@ -78,6 +86,15 @@ export default defineComponent({
 
   setup() {
     const $store = useStore()
+
+    const isRemovePlots = computed({
+      get: ()=> $store.state.plotRuntime.isRemovePlots,
+      set: val => {
+        $store.commit('plotRuntime/setIsRemovePlots', val)
+        $store.commit('plotRuntime/updateSpectraPlot')
+      }
+    })
+
     const isPlotQsca = computed({
       get: () => $store.state.plotRuntime.isPlotQsca,
       set: val => $store.commit('plotRuntime/setQscaPlotToggle', val)
@@ -146,10 +163,7 @@ export default defineComponent({
     const columns = computed(()=> {
       let columns = [{ name: 'name', label: '',  align: 'left', field: '', headerStyle:''}]
       for (let i=1; i<=guiNumberOfModes.value; ++i) {
-        let label_computed = Math.pow(2, i).toString()
-        if (i == 1) label_computed = 'dipole'
-        if (i == 2) label_computed = 'quadrupole'
-        if (i == 3) label_computed = 'octupole'
+        let label_computed = getModeName(i)
         let text_color = ''
         if (i > simulatedNumberOfModes.value ) text_color='color:LightGray'
         columns.push({
@@ -209,6 +223,7 @@ export default defineComponent({
     )
 
     return {flexRowTitleStyle,
+      isRemovePlots,
       isPlotQsca, isPlotQabs, isPlotQext,
       guiNumberOfModes, simulatedNumberOfModes,
       columns, rows,
