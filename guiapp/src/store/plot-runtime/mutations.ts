@@ -17,8 +17,9 @@ const mutation: MutationTree<prsi> = {
   },
 
   setWLsInUnits (state:prsi, sourceUnits:string) {
-    state.WLsInUnits.length = 0
-    for (const WL of state.WLs) state.WLsInUnits.push(toUnits(WL, sourceUnits))
+    const converted:number[] = []
+    for (const WL of state.WLs) converted.push(toUnits(WL, sourceUnits))
+    state.WLsInUnits = converted //assign it once to avoid multiple reactivity updates of the spectra plot
   },
 
   setQscaPlotToggle (state: prsi, val: boolean) {state.isPlotQsca = val},

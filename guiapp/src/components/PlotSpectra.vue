@@ -14,7 +14,7 @@ import {
   computed,
   watch
 } from 'vue'
-import { toUnits } from 'components/utils'
+// import { toUnits } from 'components/utils'
 
 export default defineComponent({
   name: 'PlotSpectra',
@@ -46,13 +46,13 @@ export default defineComponent({
     function setPlotTitle() {
       let title=''
       if (sourceUnits.value.endsWith('Hz')) {
-        title = 'Frequency, ' + sourceUnits.value;
+        title = 'Frequency [' + sourceUnits.value + ']'
       } else if (sourceUnits.value.endsWith('eV')) {
-        title = 'Energy, ' + sourceUnits.value;
+        title = 'Energy [' + sourceUnits.value + ']'
       } else if (sourceUnits.value.endsWith('s')) {
-        title = 'Period, ' + sourceUnits.value;
+        title = 'Period [' + sourceUnits.value + ']'
       } else {
-        title = 'Wavelength, ' + sourceUnits.value;
+        title = 'Wavelength [' + sourceUnits.value + ']'
       }
       $store.commit('plotRuntime/updateXAxisTitle', title)
     }
