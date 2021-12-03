@@ -16,6 +16,39 @@
     <link rel="icon" type="image/ico" href="favicon.ico">
   </head>
   <body>
+  <style> /*to make it compatible with physics.itmo.ru*/
+#q-app .row, .q-item.row  {
+    margin-left: unset;
+    margin-right: unset;
+    margin-bottom: unset;
+}
+.q-gutter-x-md > *, .q-gutter-md > * {
+    margin-left: 16px !important;
+}
+.q-ml-md {
+    margin-left: 16px !important;
+}
+#q-app header.fixed-top {position: absolute;}
+      .q-header {
+          z-index: 1000 !important;
+      }
+      .q-field__control::before, .q-field__control::after {
+    content: "" !important;
+    }
+      #q-app .row::before, #q-app .row::after {
+          content: none;
+          display: flex; 
+      }
+      #q-app button:hover {
+          font-family: Roboto,-apple-system,Helvetica Neue,Helvetica,Arial,sans-serif;
+      }
+      #q-app a {
+          text-decoration: none;
+      }
+      #q-app a:hover, #q-app a:focus {
+          color: inherit;
+      }
+  </style>
     <!-- DO NOT touch the following DIV -->
     <div id="q-app"></div>
   </body>

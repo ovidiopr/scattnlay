@@ -53,6 +53,10 @@ module.exports = configure(function (ctx) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
+      publicPath: process.env.NODE_ENV === 'production'
+          ? '/themes/custom/physics/mie-next/' //deploy path in Drupal setup at physics.ifmo.ru
+          : '/',
+
       // extendWebpack (cfg, { isServer, isClient }) {
       //   cfg.module.rules.push({
       //     enforce: 'pre',

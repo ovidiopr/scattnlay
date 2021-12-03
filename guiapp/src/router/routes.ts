@@ -10,6 +10,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'nearfield', component: () => import('pages/Near-field.vue') },
       { path: 'farfield', component: () => import('pages/Far-field.vue') },
       { path: 'info', component: () => import('pages/Info.vue') },
+      { path: 'materials', component: () => import('pages/Materials.vue') },
     ],
   },
 

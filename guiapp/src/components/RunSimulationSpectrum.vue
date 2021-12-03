@@ -17,6 +17,7 @@
 
         <div class="col-auto">
           <q-btn
+              color="primary"
               no-caps
               @click="saveSpectrumSimulation"
           >Save</q-btn>
@@ -152,7 +153,7 @@ export default defineComponent({
           console.log(e)
         }
         isRunning.value = false
-      },50)
+      },200)
     }
 
     watch(isNmieLoaded, ()=>{

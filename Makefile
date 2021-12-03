@@ -61,6 +61,7 @@ wasm: $(SRCDIR)/nmie-js-wrapper.cc $(CXX_NMIE_HEADERS)
 	emcc --bind -lm -Wall -pedantic -O2 -std=c++11 -s NO_DISABLE_EXCEPTION_CATCHING -s MODULARIZE=1 -s ASSERTIONS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 #	emcc --bind -lm -Wall -pedantic -Oz -std=c++11 -s NO_DISABLE_EXCEPTION_CATCHING -s MODULARIZE=1 -s ASSERTIONS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 #	emcc --bind -lm -Wall -pedantic -Oz -std=c++11 -s NO_DISABLE_EXCEPTION_CATCHING -s MODULARIZE=1 -s EXPORT_ES6=1 -s ASSERTIONS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
+#	emcc --bind -lm -Wall -pedantic -O2 -std=c++11 -s NO_DISABLE_EXCEPTION_CATCHING -s MODULARIZE=1 -s EXPORT_ES6=1 -s ASSERTIONS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 
 #	emcc --bind -lm -Wall -O3 -std=c++11 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s 'EXPORT_NAME="nmiejs"' -o ./nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 # 	emcc -g --bind -lm -Wall -std=c++11 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
