@@ -1,6 +1,13 @@
 <template>
   <div class="row items-baseline">
+
     <div class="col-xs-12 col-sm-auto text-weight-bold text-center q-px-md q-py-sm">
+      <q-tooltip v-if="isInfoMode"
+                 anchor="top middle"
+                 self="center middle"
+      >
+        current  source settings<br>
+      </q-tooltip>
       <div :style="flexRowTitleStyle"> {{rowTitle}} </div>
     </div>
     <div class="col-xs-grow col-sm">
@@ -11,6 +18,7 @@
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
             :initial-expression="fromSource.toString()"
             :units="sourceUnits"
+            :is-info-mode="isInfoMode"
             title="from"
         /></div>
         <div class="col-auto"><input-with-units
@@ -18,9 +26,10 @@
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
             :initial-expression="toSource.toString()"
             :units="sourceUnits"
+            :is-info-mode="isInfoMode"
             title="to"
         /></div>
-        <div class="col-auto">
+        <div v-if="!isInfoMode" class="col-auto">
           <input-with-units
             v-model:input-result="pointsSource"
             v-model:is-showing-help="isShowingHelpForInputWithUnits"
@@ -51,6 +60,12 @@ export default defineComponent({
 
   name: 'GetSourceParameters',
   components: {InputWithUnits,},
+  props: {
+    isInfoMode: {
+      type: Boolean,
+      default: false
+    },
+  },
 
   setup() {
     const isPointsToggle = ref(true)

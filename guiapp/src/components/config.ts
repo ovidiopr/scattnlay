@@ -1,4 +1,4 @@
-export const flexRowTitleStyle = 'width:10em; margin: auto;'
+export const flexRowTitleStyle = 'width:10em; margin: auto; color:black;'
 export const basicSelectorWidthStyle = '6.5em'
 
 export const inputWithUnitsHistoryLength = 5

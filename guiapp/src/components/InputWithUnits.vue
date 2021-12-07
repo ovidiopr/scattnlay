@@ -7,12 +7,18 @@
     >
       {{formatNumber(localTooltipText,inputWithUnitsTooltipDigits)}}
     </q-tooltip>
-    <q-tooltip v-if="isShowingHelp"
+    <q-tooltip v-if="isShowingHelp && !isInfoMode"
                v-model = "isShowingHelpLocal"
                anchor="bottom middle"
-               self="top middle"
+               self="center middle"
     >
       Input example: <b>{{ helpExpr }}</b><br>
+    </q-tooltip>
+    <q-tooltip v-if="isInfoMode"
+               anchor="top middle"
+               self="center middle"
+    >
+      current settings<br>
     </q-tooltip>
     <q-card
         bordered
@@ -30,6 +36,7 @@
           <q-select
               :model-value="localQSelectModel"
               :options="qSelectOptions"
+              :disable="isInfoMode"
               bg-color="white"
               dense
               fill-input
@@ -125,7 +132,11 @@ export default defineComponent({
     isError: {
       type: Boolean,
       default:false
-    }
+    },
+    isInfoMode: {
+      type: Boolean,
+      default: false
+    },
   },
   emits: [
     'update:input-result',

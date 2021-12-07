@@ -1,0 +1,3 @@
+[submodule "guiapp/public/refractiveindex.info-database"]
+	path = guiapp/public/refractiveindex.info-database
+	url = git@github.com:kostyfisik/refractiveindex.info-database.git
