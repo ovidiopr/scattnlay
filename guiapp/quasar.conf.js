@@ -100,7 +100,6 @@ module.exports = configure(function (ctx) {
     // https://v2.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-framework
     framework: {
       cssAddon: true,
-      config: {},
 
       // iconSet: 'material-icons', // Quasar icon set
       // lang: 'en-US', // Quasar language pack
@@ -113,7 +112,12 @@ module.exports = configure(function (ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: []
+      plugins: [
+        'Loading'
+      ],
+      config: {
+        loading: { /* look at QuasarConfOptions from the API card */ }
+      }
     },
 
     // animations: 'all', // --- includes all animations

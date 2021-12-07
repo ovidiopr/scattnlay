@@ -2,10 +2,17 @@ import { ActionTree } from 'vuex';
 import { StateInterface } from '../index';
 import { simulationSetupStateInterface } from './state';
 import nmiejs from 'src/nmiejs.js';
+import { useQuasar } from 'quasar'
 
 
 const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
   async loadScattnlay ({commit,state}/* context */) {
+    const $q = useQuasar()
+    $q.loading.show({
+      message: 'Loading Mie calculator. Please wait...',
+      boxClass: 'bg-grey-2 text-grey-9',
+      spinnerColor: 'primary'
+    })
     const module = await nmiejs()
     const nmie = new module.nmie()
     commit('setNmie', nmie)
@@ -33,6 +40,7 @@ const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
     if (state.nmie) {
       commit('markNmieAsLoaded')
     }
+    $q.loading.hide()
   }
 };
 

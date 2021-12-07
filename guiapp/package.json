@@ -10,20 +10,20 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
-    "@quasar/extras": "^1.0.0",
+    "@quasar/extras": "^1.12.1",
     "core-js": "^3.6.5",
     "cubic-spline-ts": "^3.0.8",
     "file-saver": "^2.0.5",
     "lodash": "^4.17.21",
     "mathjs": "^9.5.0",
     "plotly.js-dist-min": "^2.6.2",
-    "quasar": "^2.0.0",
+    "quasar": "^2.3.3",
     "uuid": "^8.3.2",
     "vuex": "^4.0.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
-    "@quasar/app": "^3.0.0",
+    "@quasar/app": "^3.2.4",
     "@types/emscripten": "^1.39.5",
     "@types/file-saver": "^2.0.4",
     "@types/lodash": "^4.14.175",

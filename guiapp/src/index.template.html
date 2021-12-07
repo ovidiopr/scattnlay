@@ -14,30 +14,55 @@
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
     <link rel="icon" type="image/ico" href="favicon.ico">
-  </head>
-  <body>
-  <style> /*to make it compatible with physics.itmo.ru*/
-#q-app .row, .q-item.row  {
-    margin-left: unset;
-    margin-right: unset;
-    margin-bottom: unset;
-}
-.q-gutter-x-md > *, .q-gutter-md > * {
-    margin-left: 16px !important;
-}
-.q-ml-md {
-    margin-left: 16px !important;
-}
-#q-app header.fixed-top {position: absolute;}
+          <style>
+              #loader {
+                  border: 12px solid #f3f3f3;
+                  border-radius: 50%;
+                  border-top: 12px solid #444444;
+                  width: 70px;
+                  height: 70px;
+                  animation: spin 1s linear infinite;
+              }
+
+              @keyframes spin {
+                  100% {
+                      transform: rotate(360deg);
+                  }
+              }
+
+              .center {
+                  position: absolute;
+                  top: 0;
+                  bottom: 0;
+                  left: 0;
+                  right: 0;
+                  margin: auto;
+              }
+              .loader-back {
+                  background-color: rgba(55,55,55,0.5);
+              }
+              /*to make it compatible with physics.itmo.ru*/
+      #q-app .row, .q-item.row  {
+          margin-left: unset;
+          margin-right: unset;
+          margin-bottom: unset;
+      }
+      .q-gutter-x-md > *, .q-gutter-md > * {
+          margin-left: 16px !important;
+      }
+      .q-ml-md {
+          margin-left: 16px !important;
+      }
+      #q-app header.fixed-top {position: absolute;}
       .q-header {
           z-index: 1000 !important;
       }
       .q-field__control::before, .q-field__control::after {
-    content: "" !important;
-    }
+          content: "" !important;
+      }
       #q-app .row::before, #q-app .row::after {
           content: none;
-          display: flex; 
+          display: flex;
       }
       #q-app button:hover {
           font-family: Roboto,-apple-system,Helvetica Neue,Helvetica,Arial,sans-serif;
@@ -48,8 +73,26 @@
       #q-app a:hover, #q-app a:focus {
           color: inherit;
       }
-  </style>
-    <!-- DO NOT touch the following DIV -->
+      </style>
+
+  </head>
+  <body class="loader-back">
+      <div id="loader" class="center"></div>
+  <!-- DO NOT touch the following DIV -->
     <div id="q-app"></div>
+  <script>
+      document.onreadystatechange = function() {
+          if (document.readyState !== "complete") {
+              document.querySelector(
+                  "#loader").style.visibility = "visible";
+          } else {
+              document.querySelector(
+                  "#loader").style.display = "none";
+              document.querySelector(
+                  "body").style.backgroundColor = "White";
+
+          }
+      };
+  </script>
   </body>
 </html>
