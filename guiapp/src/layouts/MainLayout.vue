@@ -28,6 +28,23 @@
           <q-item-section></q-item-section>
           <q-item-section avatar side> <q-icon name="close" /> </q-item-section>
         </q-item>
+
+        <q-item
+            clickable
+            to="/materials"
+            @click="toggleLeftDrawer"
+        >
+          <q-item-section
+              avatar
+          >
+            <q-icon name="o_tune" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>            Materials
+            </q-item-label>
+          </q-item-section>
+        </q-item>
+
         <q-item
             clickable
             to="/info"
@@ -43,6 +60,7 @@
             </q-item-label>
           </q-item-section>
         </q-item>
+
         <q-separator inset spaced/>
         <q-item> <q-item-section> <q-item-label> External links</q-item-label> </q-item-section> </q-item>
         <q-item clickable tag="a" target="_blank" href="https://github.com/ovidiopr/scattnlay" >
