@@ -1,12 +1,13 @@
-import { route } from 'quasar/wrappers';
+import { route } from 'quasar/wrappers'
 import {
   createMemoryHistory,
   createRouter,
   createWebHashHistory,
   createWebHistory,
-} from 'vue-router';
-import { StateInterface } from '../store';
-import routes from './routes';
+} from 'vue-router'
+import { StateInterface } from '../store'
+import routes from './routes'
+// import { nextTick } from 'vue'
 
 /*
  * If not building with SSR mode, you can
@@ -26,15 +27,20 @@ export default route<StateInterface>(function (/* { store, ssrContext } */) {
     // scrollBehavior (to, from, savedPosition) {
     //   return { x: 0, y: 0 }
     // },
-    scrollBehavior: (to) => {
-      if (to.hash) {
-        return {
-          selector: to.hash
-          , offset: { x: 0, y: 10 }
-        }
-      }
-      return { left: 0, top: 0 }
-    },
+    // scrollBehavior: (to) => {
+    //   const idToScrollTo = to.hash
+    //   if (idToScrollTo && document.querySelector(idToScrollTo)) {
+    //     const el = document.querySelector(idToScrollTo)
+    //     if (el) el.scrollIntoView()
+    //   }
+    //   // void nextTick(()=>{
+    //   //   if (idToScrollTo && document.querySelector(idToScrollTo)) {
+    //   //     const el = document.querySelector(idToScrollTo)
+    //   //     if (el) el.scrollIntoView()
+    //   //   }
+    //   // })
+    //   return { left: 0, top: 0 }
+    // },
     routes,
 
     // Leave this as is and make changes in quasar.conf.js instead!
