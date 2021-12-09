@@ -42,6 +42,7 @@
       </div>
     </div>
   </div>
+
   <div v-for="(layer, index) in layers" :key="index" class="row items-baseline q-py-xs">
     <div class="col-xs-12 col-sm-auto text-center q-px-md q-py-sm">
       <div :style="flexRowTitleStyle">

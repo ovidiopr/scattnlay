@@ -1,9 +1,9 @@
 <template>
   <q-page class="column q-px-md">
-    <div class="q-ma-md"/>
-    <router-link to="/spectrum#GetSourceParametersHref"> <GetSourceParameters :is-info-mode="true"/> </router-link>
-    <div class="q-ma-xs"/>
+    <div class="q-ma-sm"/>
     <MaterialsSelector/>
+    <div class="q-ma-xs"/>
+    <router-link to="/spectrum#GetSourceParametersHref"> <GetSourceParameters :is-info-mode="true"/> </router-link>
   </q-page>
 </template>
 

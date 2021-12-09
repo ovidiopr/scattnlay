@@ -265,13 +265,14 @@ export default defineComponent({
         })
       },
 
-      formatNumber (value:string, digits:number):string {
+      formatNumber (value:string, digits:number, prepend:string):string {
+        if (!prepend) prepend = '='
         if (value==='') return ''
         const num = parseFloat(value)
         if ( num < Math.pow(10, -digits) ||
             num > 5*Math.pow(10,  digits+2)
-        ) return '='+num.toExponential(digits)
-        return '='+Number(Math.round(
+        ) return prepend+num.toExponential(digits)
+        return prepend+Number(Math.round(
                 parseFloat(value + 'e' + digits.toString())).toString()
             + 'e-' + digits.toString()).toString()
       },

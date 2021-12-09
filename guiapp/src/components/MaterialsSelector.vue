@@ -14,13 +14,13 @@
       >
 
         <template #top>
-          <div>
+          <div class="q-mr-md">
             <q-tooltip anchor="top end" self="center middle" >
-              Using a copy of RefractiveIndex.info. Analytical models are not implemented.
+              Using a copy of RefractiveIndex.info website.<br> Analytical models are not implemented.
             </q-tooltip>
-
             <q-icon size='sm' name="o_info" />
           </div>
+
           <q-input v-model="filter" dense  debounce="300" color="primary" >
             <template #append>
               <q-icon name="search" />
@@ -28,36 +28,56 @@
             <template v-if="filter" #after>
               <q-btn  flat round dense icon="cancel" @click="filter=''"/>
             </template>
-
           </q-input>
+
           <q-space />
         </template>
 
       <template #header="props">
         <q-tr :props="props">
           <q-th auto-width />
-          <q-th class="text-left"> {{ props.cols[1].label }} </q-th>
-          <q-th class="text-left"> {{ props.cols[2].label }} </q-th>
-          <q-th class="text-left"> {{ props.cols[3].label }} </q-th>
+          <q-th auto-width class="text-left"> Material </q-th>
+          <q-th auto-width class="text-left"> Range </q-th>
+          <q-th class="text-left"> Details </q-th>
         </q-tr>
       </template>
 
       <template #body="props">
         <q-tr :props="props">
+
           <q-td auto-width>
             <q-tooltip anchor="top end" self="center middle" >
               Add to simulation</q-tooltip>
-            <q-btn size="sm" color="accent" round dense icon="add" @click="addToSimulation(props.row.id)"/>
-<!--            <q-btn size="sm" color="accent" round dense @click="props.expand = !props.expand" :icon="props.expand ? 'remove' : 'add'" />-->
+            <q-btn size="sm" color="primary" round dense icon="add" @click="addToSimulation(props.row.id)"/>
           </q-td>
-          <q-td auto-width> {{ props.row.bookDivider }} </q-td>
+
           <q-td auto-width>
             <!-- eslint-disable-next-line vue/no-v-html -->
             <div v-html="props.row.bookName"/>
             <q-tooltip anchor="top middle" self="center middle" >
               {{ props.row.shelfDivider }}</q-tooltip>
           </q-td>
-          <q-td> {{ props.row.pageName }} </q-td>
+
+          <q-td auto-width>
+            <q-tooltip
+                v-if="props.row.spectrumRangeStart>=fromWavelengthStore/1000 ||
+                 props.row.spectrumRangeEnd<=toWavelengthStore/1000"
+                anchor="top middle" self="center middle"
+                class="bg-red">
+              Mismatch with spectrum simulation.
+            </q-tooltip>
+            <span :class="props.row.spectrumRangeStart>=fromWavelengthStore/1000?'text-red':'text-black'">
+              {{ props.row.spectrumRangeStart }}
+            </span>
+            <span v-if="props.row.spectrumRangeStart">-</span>
+            <span :class="props.row.spectrumRangeEnd<=toWavelengthStore/1000?'text-red':'text-black'">
+              {{ props.row.spectrumRangeEnd }}
+            </span>
+            <span v-if="props.row.spectrumRangeStart">mkm</span>
+          </q-td>
+
+          <q-td> {{ props.row.bookDivider}}<span v-if="props.row.bookDivider">;&nbsp;</span>{{props.row.pageName }} </q-td>
+
         </q-tr>
       </template>
 
@@ -112,13 +132,15 @@
 
 <script lang="ts">
 import {
-  // computed,
+  computed,
   defineComponent,
-    reactive,
-    ref
+  reactive,
+  ref
 } from 'vue'
-// import { useStore } from 'src/store'
+import { useStore } from 'src/store'
 import { load } from 'js-yaml'
+// import {fromUnits, isAlmostSame, toUnits} from "components/utils";
+
 
 export default defineComponent({
 
@@ -126,18 +148,42 @@ export default defineComponent({
   components: {},
 
   setup: function () {
-    // const $store = useStore()
+    const $store = useStore()
     const loading = ref(true)
+
+    const fromWavelengthStore = computed(()=>$store.state.simulationSetup.gui.fromWL)
+    const toWavelengthStore = computed(()=>$store.state.simulationSetup.gui.toWL)
 
     const columns = [
       // do not change the order without updating the template
       {name: 'id', label: '', field: 'id'},
       {name: 'bookDivider', label: 'State', field: 'bookDivider'},
       {name: 'bookName', label: 'Material', field: 'bookName'},
-      {name: 'pageName', label: 'Authors', field: 'pageName'},
+      {name: 'spectrumRangeStart', label: 'RangeStart', field: 'spectrumRangeStart'},
+      {name: 'spectrumRangeEnd', label: 'RangeEnd', field: 'spectrumRangeEnd'},
+      {name: 'pageName', label: 'Details', field: 'pageName'},
       {name: 'shelfDivider', label: 'Group', field: 'shelfDivider'},
       {name: 'pageData', label: 'file', field: 'pageData'},
     ]
+
+    function GetRange(val:string) {
+      if (val.lastIndexOf('µm') == -1) return [val,'']
+      const rangeStartPosition = val.slice(0,val.lastIndexOf('µm')-1).lastIndexOf(' ')
+      const spectrumRange = val.slice(rangeStartPosition+1,val.lastIndexOf('µm')+2)
+      const newPageName = val.replace(spectrumRange,'')
+      const spectrumRangeStart = spectrumRange.slice(0, spectrumRange.lastIndexOf('-'))
+      const spectrumRangeEnd = spectrumRange.slice(spectrumRange.lastIndexOf('-')+1,
+          spectrumRange.lastIndexOf('µm')-1)
+      return [newPageName,spectrumRangeStart, spectrumRangeEnd]
+    }
+
+    function splitBookName(val:string) {
+      if (val.lastIndexOf('(') == -1) return val
+      const splitPosition = val.lastIndexOf('(')
+      const mainPart = val.slice(0,splitPosition-1)
+      const otherPart = val.slice(splitPosition+1, val.length-1)
+      return mainPart+'<br><span style="font-size: 0.5em;">'+otherPart+'</span>'
+    }
 
     async function GetPagesFromLib() { /* eslint-disable */
       let rows = []
@@ -151,36 +197,39 @@ export default defineComponent({
         let bookName = ''
         for (const bookOrDivider of shelf.content) {
           if (bookOrDivider.DIVIDER) {
+
             shelfDivider = bookOrDivider.DIVIDER
             continue
+
           } else if (bookOrDivider.name) {
 
-            bookName = bookOrDivider.name
+            bookName = splitBookName(bookOrDivider.name)
             let bookDivider = ''
             let pageName = ''
             let pageData = ''
             for (const pageOrDivider of bookOrDivider.content) {
               if (pageOrDivider.DIVIDER) {
-                bookDivider = pageOrDivider.DIVIDER
+
+                bookDivider = pageOrDivider.DIVIDER.replace('Experimental data:','').replace('Experimental data','')
                 continue
+
               } else if (pageOrDivider.name) {
+
                 pageName = pageOrDivider.name
                 pageData = pageOrDivider.data
                 if (bookDivider.includes('Model') || bookDivider.includes('model')
                     || pageName.includes('Model') || pageName.includes('model')) continue
-
-                rows.push({ id: i,
-                  shelfDivider: shelfDivider, bookName: bookName,
-                  bookDivider: bookDivider, pageName: pageName, pageData: pageData
-                })
+                const pageNameSplit = GetRange(pageName)
+                rows.push({ id: i, shelfDivider: shelfDivider, bookName: bookName, bookDivider: bookDivider,
+                  pageName: pageNameSplit[0], spectrumRangeStart: pageNameSplit[1],
+                  spectrumRangeEnd: pageNameSplit[2], pageData: pageData })
                 i = i + 1
-                // console.log (shelfDivider, '==', bookName, '==',bookDivider, '==', pageName, '==', pageData)
-                // console.log (shelfDivider, '==', bookName, '==',bookDivider, '==', pageName, '==', pageData)
+
               } else {
                 console.log('###################### Unknown type in pageOrDivider', pageOrDivider)
               }
-
             }
+
           } else {
             console.log('###################### Unknown type in bookOrDivider', bookOrDivider)
           }
@@ -200,7 +249,7 @@ export default defineComponent({
       loading.value = false
     })
 
-    // const activatedMaterials = computed(() => $store.state.guiRuntime.activatedMaterials)
+    const activatedMaterials = computed(() => $store.state.guiRuntime.activatedMaterials)
     // const columnsQ = computed(()=>{
     //   return [
     //     { name: 'name', label: '',  align: 'left', field: 'name', headerStyle:''},
@@ -213,6 +262,7 @@ export default defineComponent({
 
     const filter = ref('')
     return {columns, rows, loading, filter,
+      fromWavelengthStore, toWavelengthStore,
       addToSimulation(val:number) {
         console.log(rows[val-1])
     }}
