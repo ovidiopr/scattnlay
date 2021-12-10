@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md">
+  <div class="col-12 q-pa-md">
 
     <q-table
           :rows="rows"
@@ -36,8 +36,10 @@
       <template #header="props">
         <q-tr :props="props">
           <q-th auto-width />
-          <q-th auto-width class="text-left"> Material </q-th>
+          <q-th auto-width />
+          <q-th auto-width class="text-left"> Label </q-th>
           <q-th auto-width class="text-left"> Range </q-th>
+          <q-th auto-width class="text-left"> Material </q-th>
           <q-th class="text-left"> Details </q-th>
         </q-tr>
       </template>
@@ -51,11 +53,21 @@
             <q-btn size="sm" color="primary" round dense icon="add" @click="addToSimulation(props.row.id)"/>
           </q-td>
 
+
           <q-td auto-width>
-            <!-- eslint-disable-next-line vue/no-v-html -->
-            <div v-html="props.row.bookName"/>
-            <q-tooltip anchor="top middle" self="center middle" >
-              {{ props.row.shelfDivider }}</q-tooltip>
+            <q-tooltip anchor="top end" self="center middle" >
+              Download *.yml file</q-tooltip>
+            <q-btn flat
+                   size="md"
+                   color="primary"
+                   icon="download"
+                   padding="xs 2px"
+                   @click="downloadPageData(props.row.pageData)"
+            />
+          </q-td>
+
+          <q-td class="">
+            {{composeLabelFromPageData(props.row.pageData)}}
           </q-td>
 
           <q-td auto-width>
@@ -64,16 +76,23 @@
                  props.row.spectrumRangeEnd<=toWavelengthStore/1000"
                 anchor="top middle" self="center middle"
                 class="bg-red">
-              Mismatch with spectrum simulation.
+              Mismatch with spectrum simulation
             </q-tooltip>
             <span :class="props.row.spectrumRangeStart>=fromWavelengthStore/1000?'text-red':'text-black'">
               {{ props.row.spectrumRangeStart }}
             </span>
-            <span v-if="props.row.spectrumRangeStart">-</span>
+            <span v-if="props.row.spectrumRangeStart">&ndash;</span>
             <span :class="props.row.spectrumRangeEnd<=toWavelengthStore/1000?'text-red':'text-black'">
               {{ props.row.spectrumRangeEnd }}
             </span>
-            <span v-if="props.row.spectrumRangeStart">mkm</span>
+            <span v-if="props.row.spectrumRangeStart">&NonBreakingSpace;mkm</span>
+          </q-td>
+
+          <q-td auto-width>
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <div v-html="props.row.bookName"/>
+            <q-tooltip anchor="top middle" self="center middle" >
+              {{ props.row.shelfDivider }}</q-tooltip>
           </q-td>
 
           <q-td> {{ props.row.bookDivider}}<span v-if="props.row.bookDivider">;&nbsp;</span>{{props.row.pageName }} </q-td>
@@ -140,6 +159,7 @@ import {
 import { useStore } from 'src/store'
 import { load } from 'js-yaml'
 // import {fromUnits, isAlmostSame, toUnits} from "components/utils";
+import { saveAs } from 'file-saver'
 
 
 export default defineComponent({
@@ -261,11 +281,33 @@ export default defineComponent({
 
 
     const filter = ref('')
+
+    function composeLabelFromPageData (val:string) {
+      const shelfName = val.slice(0, val.indexOf('/')+1)
+      return val.replace(shelfName, ''
+      ).replace('.yml',''
+      ).replace(new RegExp('[ ]', 'g'),'_'
+      ).replace(new RegExp('[/]', 'g'),'_')
+    }
+
+
     return {columns, rows, loading, filter,
       fromWavelengthStore, toWavelengthStore,
+      composeLabelFromPageData,
       addToSimulation(val:number) {
-        console.log(rows[val-1])
-    }}
+        console.log(rows[val-1].pageData)
+      },
+      async downloadPageData(filepath:string) {
+        const response = await fetch('refractiveindex.info-database/database/data/'+filepath)
+        const data = await response.text()
+
+        const scattnlaySpectra = new Blob([data],
+            {type: 'text/plain;charset=utf-8',
+              endings: 'native'}  //TODO test if newline is correctly written in Windows, MacOS
+        )
+        saveAs(scattnlaySpectra, composeLabelFromPageData(filepath));
+      }
+    }
   },
 })
 </script>
