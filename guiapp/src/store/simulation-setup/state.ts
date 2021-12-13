@@ -1,6 +1,8 @@
 import { cloneDeep } from 'lodash'
 import Spline from 'cubic-spline-ts'
 
+// All numbers with units (e.g. size, radius, wavelength, e.g.) are given in nanometers.
+
 export interface layer {
   layerWidth: number
   materialName: string

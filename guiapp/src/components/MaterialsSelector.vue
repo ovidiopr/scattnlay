@@ -1,6 +1,5 @@
 <template>
   <div class="col-12 q-pa-md">
-
     <q-table
           :rows="rows"
           :columns="columns"
@@ -12,7 +11,6 @@
           title-class="text-h6"
           row-key="id"
       >
-
         <template #top>
           <div class="q-mr-md">
             <q-tooltip anchor="top end" self="center middle" >
@@ -21,9 +19,10 @@
             <q-icon size='sm' name="o_info" />
           </div>
 
-          <q-input v-model="filter" dense  debounce="300" color="primary" >
+          <q-input v-model="filter" dense  debounce="200" color="primary" >
+          <q-tooltip  v-if="!filter" anchor="top middle" self="center middle">filter by any string</q-tooltip>
             <template #append>
-              <q-icon name="search" />
+              <q-icon name="filter_alt" />
             </template>
             <template v-if="filter" #after>
               <q-btn  flat round dense icon="cancel" @click="filter=''"/>
@@ -52,7 +51,6 @@
               Add to simulation</q-tooltip>
             <q-btn size="sm" color="primary" round dense icon="add" @click="addToSimulation(props.row.id)"/>
           </q-td>
-
 
           <q-td auto-width>
             <q-tooltip anchor="top end" self="center middle" >
@@ -100,51 +98,6 @@
         </q-tr>
       </template>
 
-      <template #pagination="scope">
-        <q-btn
-            v-if="scope.pagesNumber > 2"
-            icon="first_page"
-            color="grey-8"
-            round
-            dense
-            flat
-            :disable="scope.isFirstPage"
-            @click="scope.firstPage"
-        />
-
-        <q-btn
-            icon="chevron_left"
-            color="grey-8"
-            round
-            dense
-            flat
-            :disable="scope.isFirstPage"
-            @click="scope.prevPage"
-        />
-        {{scope.pagination.page}} of {{scope.pagesNumber}}
-
-        <q-btn
-            icon="chevron_right"
-            color="grey-8"
-            round
-            dense
-            flat
-            :disable="scope.isLastPage"
-            @click="scope.nextPage"
-        />
-
-        <q-btn
-            v-if="scope.pagesNumber > 2"
-            icon="last_page"
-            color="grey-8"
-            round
-            dense
-            flat
-            :disable="scope.isLastPage"
-            @click="scope.lastPage"
-        />
-      </template>
-
       </q-table>
   </div>
 </template>
@@ -158,7 +111,7 @@ import {
 } from 'vue'
 import { useStore } from 'src/store'
 import { load } from 'js-yaml'
-// import {fromUnits, isAlmostSame, toUnits} from "components/utils";
+import { composeLabelFromPageData } from 'components/utils'
 import { saveAs } from 'file-saver'
 
 
@@ -282,20 +235,12 @@ export default defineComponent({
 
     const filter = ref('')
 
-    function composeLabelFromPageData (val:string) {
-      const shelfName = val.slice(0, val.indexOf('/')+1)
-      return val.replace(shelfName, ''
-      ).replace('.yml',''
-      ).replace(new RegExp('[ ]', 'g'),'_'
-      ).replace(new RegExp('[/]', 'g'),'_')
-    }
-
-
     return {columns, rows, loading, filter,
       fromWavelengthStore, toWavelengthStore,
       composeLabelFromPageData,
       addToSimulation(val:number) {
         console.log(rows[val-1].pageData)
+        $store.commit('guiRuntime/activateMaterial', rows[val-1].pageData)
       },
       async downloadPageData(filepath:string) {
         const response = await fetch('refractiveindex.info-database/database/data/'+filepath)
@@ -311,4 +256,3 @@ export default defineComponent({
   },
 })
 </script>
-e

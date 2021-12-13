@@ -72,7 +72,7 @@
         <div class="col-auto">
           <q-select
               v-model="layer.materialName"
-              :options="activatedMaterials"
+              :options="activatedMaterialsNames"
               :style="'width: '+basicWidthStyle"
               class="q-px-xs"
               dense
@@ -80,7 +80,31 @@
               outlined
               options-value="value"
               options-label="label"
-          />
+          >
+            <template #option="scope">
+              <span v-if="scope.opt =='link'">
+                <q-item v-bind="scope.itemProps"
+                        clickable
+                        to="/materials"
+                >
+                  <q-item-section side>
+                    <q-icon name="settings"/>
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label >Manage materials...</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </span>
+              <span v-else>
+                <q-item v-bind="scope.itemProps" >
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt }}</q-item-label>
+                    <!--                  <q-item-label caption>{{ scope.opt.description }}</q-item-label>-->
+                  </q-item-section>
+                </q-item>
+              </span>
+            </template>
+          </q-select>
         </div>
 
       </div>
@@ -125,8 +149,14 @@ export default defineComponent({
 
   setup() {
     const $store = useStore()
+
+    const numberOfLayers=ref($store.state.simulationSetup.gui.layers.length)
     const particleType=ref('bulk')
-    const numberOfLayers=ref(1)
+    if (numberOfLayers.value == 1) particleType.value='bulk'
+    if (numberOfLayers.value == 2) particleType.value='core-shell'
+    if (numberOfLayers.value == 3) particleType.value='multilayer'
+    // Initially we set numberOfLayers and particleType to match layers in store.
+    // Later on changes to numberOfLayers and particleType lead to update of layers in store.
 
     const isShowingHelpForInputWithUnits = computed({
       get: () => $store.state.guiRuntime.isShowingHelpForInputWithUnits,
@@ -139,26 +169,39 @@ export default defineComponent({
     })
 
     const activatedMaterials = computed(() => $store.state.guiRuntime.activatedMaterials)
-
-    function getReactiveLayers() {
-      return reactive( cloneDeep($store.state.simulationSetup.gui.layers) )
-    }
-
-    let layers = getReactiveLayers()
-
-    watch($store.state.simulationSetup.gui.layers, ()=>{
-      layers = getReactiveLayers()
+    const activatedMaterialsNames = computed(() => {
+      let list = activatedMaterials.value.map(x=>x.name)
+      list.push('link')
+      return list
     })
 
-    watch(layers, ()=>{
-      const storeLayers = $store.state.simulationSetup.gui.layers
-      for (let i = 0; i<layers.length && i<storeLayers.length; i++) {
-        if (isAlmostSame(storeLayers[i].layerWidth, layers[i].layerWidth)) {
-          layers[i].layerWidth = storeLayers[i].layerWidth
-        }
-      }
-      $store.commit('simulationSetup/setLayers', layers)
-    })
+    let layers = reactive( cloneDeep($store.state.simulationSetup.gui.layers) )
+
+    watch($store.state.simulationSetup.gui.layers,
+        ()=>{
+          layers.splice(0, layers.length,
+              ...($store.state.simulationSetup.gui.layers.map(layer=>cloneDeep(layer)))
+          )
+          numberOfLayers.value = $store.state.simulationSetup.gui.layers.length
+        },
+        { deep: true }
+    )
+
+    watch(layers,
+        ()=>{
+          const storeLayers = $store.state.simulationSetup.gui.layers
+          for (let i = 0; i<layers.length && i<storeLayers.length; i++) {
+            if (isAlmostSame(storeLayers[i].layerWidth, layers[i].layerWidth)) {
+              layers[i].layerWidth = storeLayers[i].layerWidth
+            }
+            if (layers[i].materialName == 'link') {
+              layers[i].materialName = storeLayers[i].materialName
+            }
+          }
+          $store.commit('simulationSetup/setLayers', layers)
+        },
+        { deep: true }
+    )
 
     watch(particleType, ()=>{
       if (particleType.value=='bulk') numberOfLayers.value = 1
@@ -209,7 +252,7 @@ export default defineComponent({
       particleType,
       numberOfLayers, layers, getLayerTitle, getTooltipText,
       units, toUnits, fromUnits, isShowingHelpForInputWithUnits,
-      activatedMaterials
+      activatedMaterialsNames
       }
   },
 })

@@ -1,6 +1,10 @@
 <template>
   <q-page class="column q-px-md">
+<!--    <img src="https://www.pikpng.com/pngl/m/8-80773_new-content-coming-soon-website-under-construction-banner.png" alt="New Content Coming Soon - Website Under Construction">-->
+    <q-img src="underconstruction.jpg"  />
+    <div class="q-ma-sm"/>
     Under construction!
+
     <div class="q-ma-sm"/>
     <GetSourceParameters/>
     <GetHostIndex/>

@@ -1,3 +1,11 @@
+export function composeLabelFromPageData (val:string) {
+    const shelfName = val.slice(0, val.indexOf('/')+1)
+    return val.replace(shelfName, ''
+    ).replace('.yml',''
+    ).replace(new RegExp('[ /-]', 'g'),'_'
+    )
+}
+
 export function getModeName(i:number) {
     if (i == 1) return 'dipole'
     if (i == 2) return 'quadrupole'

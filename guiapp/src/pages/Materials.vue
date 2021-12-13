@@ -4,6 +4,8 @@
     <MaterialsSelector/>
     <div class="q-ma-xs"/>
     <router-link to="/spectrum#GetSourceParametersHref"> <GetSourceParameters :is-info-mode="true"/> </router-link>
+    <MaterialsActivated/>
+    <div class="q-ma-xs"/>
   </q-page>
 </template>
 
@@ -13,6 +15,7 @@ import {
 } from 'vue'
 
 import MaterialsSelector from 'components/MaterialsSelector.vue'
+import MaterialsActivated from 'components/MaterialsActivated.vue'
 import GetSourceParameters from 'components/GetSourceParameters.vue'
 // import { useStore } from 'src/store'
 
@@ -20,7 +23,8 @@ import GetSourceParameters from 'components/GetSourceParameters.vue'
 export default defineComponent({
   name: 'PageIndex',
   components: {
-    MaterialsSelector, GetSourceParameters
+    MaterialsSelector, GetSourceParameters,
+    MaterialsActivated
   },
 })
 </script>
