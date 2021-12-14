@@ -1,15 +1,7 @@
-import Spline from 'cubic-spline-ts'
+import { material } from 'src/store/simulation-setup/state'
 
 // All numbers with units (e.g. size, radius, wavelength, e.g.) are given in nanometers.
 
-interface material {
-  name: string
-  fileFullPath:string,
-  spectrumRangeStart:number,
-  spectrumRangeEnd:number
-  nSpline: Spline|undefined
-  kSpline: Spline|undefined
-}
 
 export interface guiRuntimeStateInterface {
   isShowingHelpForInputWithUnits: boolean
@@ -27,6 +19,8 @@ function state(): guiRuntimeStateInterface {
     isSourceSameUnits: true,
     activatedMaterials: [
         // 'PEC',
+      {name:'link', fileFullPath:'', spectrumRangeStart:0, spectrumRangeEnd:1e300,
+        nSpline: undefined, kSpline: undefined},
       {name:'nk-constant', fileFullPath:'', spectrumRangeStart:0, spectrumRangeEnd:1e300,
         nSpline: undefined, kSpline: undefined},
       {name:'Ag_McPeak', fileFullPath:'main/Ag/McPeak.yml', spectrumRangeStart:300, spectrumRangeEnd:1700,

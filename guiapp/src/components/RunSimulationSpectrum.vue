@@ -117,8 +117,8 @@ export default defineComponent({
 
             nmie.ClearTarget()
             for (const layer of layers) {
-              if (layer.nSpline) layer.n = layer.nSpline.at(WL)
-              if (layer.kSpline) layer.k = layer.kSpline.at(WL)
+              if (layer.material.nSpline) layer.n = layer.material.nSpline.at(WL)
+              if (layer.material.kSpline) layer.k = layer.material.kSpline.at(WL)
               nmie.AddTargetLayerReIm(layer.layerWidth * host, layer.n / host, layer.k / host)
             }
 

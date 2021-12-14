@@ -3,13 +3,20 @@ import Spline from 'cubic-spline-ts'
 
 // All numbers with units (e.g. size, radius, wavelength, e.g.) are given in nanometers.
 
-export interface layer {
-  layerWidth: number
-  materialName: string
-  n: number
-  k: number
+export interface material {
+  name: string
+  fileFullPath:string|undefined
+  spectrumRangeStart:number|undefined
+  spectrumRangeEnd:number|undefined
   nSpline: Spline|undefined
   kSpline: Spline|undefined
+}
+
+export interface layer {
+  layerWidth: number
+  material: material
+  n: number
+  k: number
 }
 
 export interface simulationSetup {
@@ -34,8 +41,9 @@ function setupFactory(hostIndex = 1,
                       fromWL = 400, toWL=1000, pointsWL=201, currentWL = 400,
                       layers = [
                         {layerWidth:100, n:4, k:0.01,
-                          materialName:'nk-constant',
-                          nSpline:undefined, kSpline:undefined
+                          material: {name:'nk-constant', fileFullPath:undefined,
+                            spectrumRangeStart:undefined, spectrumRangeEnd: undefined,
+                            nSpline: undefined, kSpline: undefined},
                         },
                       ],
                       numberOfModesToPlot = 4,

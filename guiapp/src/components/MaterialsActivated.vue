@@ -21,16 +21,15 @@
       </template>
 
       <template #body="props">
-        <q-tr :props="props">
-
-
+        <q-tr
+            v-if="props.row.name!='link' && props.row.name!='nk-constant' && props.row.name!='PEC'"
+            :props="props"
+        >
           <q-td auto-width>
-            <span v-if="props.row.name!='nk-constant' && props.row.name!='PEC'">
             <q-tooltip anchor="top start" self="bottom start" >
               Delete from simulation</q-tooltip>
             <q-btn size="sm" padding="5px" color="primary" round dense icon="delete"
                    @click="deleteFromSimulation(props.row.name)"/>
-            </span>
           </q-td>
 
 
@@ -39,10 +38,7 @@
           </q-td>
 
           <q-td auto-width>
-            <span v-if="props.row.name!='nk-constant' && props.row.name!='PEC'">
             <q-tooltip
-                v-if="props.row.spectrumRangeStart>=fromWavelengthStore ||
-                 props.row.spectrumRangeEnd<=toWavelengthStore"
                 anchor="top middle" self="bottom middle"
                 class="bg-red">
               Mismatch with spectrum simulation
@@ -50,22 +46,19 @@
             <span :class="props.row.spectrumRangeStart>=fromWavelengthStore?'text-red':'text-black'">
               {{ props.row.spectrumRangeStart }}
             </span>
-            <span v-if="props.row.spectrumRangeStart">&ndash;</span>
+            &ndash;
             <span :class="props.row.spectrumRangeEnd<=toWavelengthStore?'text-red':'text-black'">
               {{ props.row.spectrumRangeEnd }}
             </span>
-            <span v-if="props.row.spectrumRangeStart">&NonBreakingSpace;nm</span>
-              </span>
+            &NonBreakingSpace;nm
           </q-td>
 
           <q-td class="">
-            <span v-if="props.row.name!='nk-constant' && props.row.name!='PEC'">
-              <span v-if="props.row.nSpline && props.row.kSpline">
-                <q-icon size='sm' color="green" name="done" />
-              </span>
-              <span v-else>
-                <q-icon size='xs' color="red" name="do_not_disturb" />
-              </span>
+            <span v-if="props.row.nSpline && props.row.kSpline">
+              <q-icon size='sm' color="green" name="done" />
+            </span>
+            <span v-else>
+              <q-icon size='xs' color="red" name="do_not_disturb" />
             </span>
           </q-td>
 

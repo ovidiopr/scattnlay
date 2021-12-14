@@ -159,10 +159,16 @@ export default defineComponent({
     }
 
     async function GetPagesFromLib() { /* eslint-disable */
+      //TODO enable eslint, which is disabled now due to unknown result type of load() from js-yaml
+
       let rows = []
       // lib has an irregular structure
       const response = await fetch('refractiveindex.info-database/database/library.yml')
       const data = await response.text()
+
+      const response2 = await fetch('tabulated.txt')
+      const tabulated = await response2.text()
+
       const lib = await load(data) as any
       let i = 1
       for (const shelf of lib) {
@@ -190,6 +196,7 @@ export default defineComponent({
 
                 pageName = pageOrDivider.name
                 pageData = pageOrDivider.data
+                if (tabulated.indexOf(pageData) == -1) continue
                 if (bookDivider.includes('Model') || bookDivider.includes('model')
                     || pageName.includes('Model') || pageName.includes('model')) continue
                 const pageNameSplit = GetRange(pageName)
@@ -239,8 +246,7 @@ export default defineComponent({
       fromWavelengthStore, toWavelengthStore,
       composeLabelFromPageData,
       addToSimulation(val:number) {
-        console.log(rows[val-1].pageData)
-        $store.commit('guiRuntime/activateMaterial', rows[val-1].pageData)
+        $store.dispatch('guiRuntime/activateMaterial', rows[val-1].pageData)
       },
       async downloadPageData(filepath:string) {
         const response = await fetch('refractiveindex.info-database/database/data/'+filepath)

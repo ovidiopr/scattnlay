@@ -71,34 +71,39 @@
 
         <div class="col-auto">
           <q-select
-              v-model="layer.materialName"
-              :options="activatedMaterialsNames"
+              v-model="layer.material"
+              :options="activatedMaterials"
               :style="'width: '+basicWidthStyle"
               class="q-px-xs"
               dense
               options-dense
               outlined
-              options-value="value"
-              options-label="label"
+              options-value="name"
+              options-label="name"
+              :display-value="layer.material.name"
           >
             <template #option="scope">
-              <span v-if="scope.opt =='link'">
-                <q-item v-bind="scope.itemProps"
-                        clickable
+              <span v-if="scope.opt.name =='link'">
+                <q-item clickable dense
                         to="/materials"
                 >
                   <q-item-section side>
-                    <q-icon name="settings"/>
+                    <q-icon size="xs" name="settings"/>
                   </q-item-section>
                   <q-item-section>
                     <q-item-label >Manage materials...</q-item-label>
                   </q-item-section>
                 </q-item>
+                <q-separator inset />
               </span>
               <span v-else>
-                <q-item v-bind="scope.itemProps" >
+                <q-item
+                    v-bind="scope.itemProps"
+                    :disable="(!scope.opt.kSpline || !scope.opt.kSpline)
+                     && !(scope.opt.name=='nk-constant' || scope.opt.name=='PEC')"
+                >
                   <q-item-section>
-                    <q-item-label>{{ scope.opt }}</q-item-label>
+                    <q-item-label>{{ scope.opt.name }}</q-item-label>
                     <!--                  <q-item-label caption>{{ scope.opt.description }}</q-item-label>-->
                   </q-item-section>
                 </q-item>
@@ -108,7 +113,7 @@
         </div>
 
       </div>
-      <div v-if="layer.materialName=='nk-constant'"
+      <div v-if="layer.material.name=='nk-constant'"
                class="row justify-xs-center justify-sm-start items-baseline">
 
         <div class="col-auto"> <input-with-units
@@ -169,11 +174,17 @@ export default defineComponent({
     })
 
     const activatedMaterials = computed(() => $store.state.guiRuntime.activatedMaterials)
-    const activatedMaterialsNames = computed(() => {
-      let list = activatedMaterials.value.map(x=>x.name)
-      list.push('link')
-      return list
-    })
+    // const activatedMaterialsOptions = computed(() => {
+    //   let list = activatedMaterials.value.map(x=>{
+    //     return {
+    //       name: x.name, value: x.name, label: x.name,
+    //       spectrumRangeStart:x.spectrumRangeStart, spectrumRangeEnd:x.spectrumRangeEnd,
+    //       nSpline: x.nSpline, kSpline: x.kSpline
+    //     }
+    //   })
+    //   console.log(list)
+    //   return list
+    // })
 
     let layers = reactive( cloneDeep($store.state.simulationSetup.gui.layers) )
 
@@ -194,9 +205,9 @@ export default defineComponent({
             if (isAlmostSame(storeLayers[i].layerWidth, layers[i].layerWidth)) {
               layers[i].layerWidth = storeLayers[i].layerWidth
             }
-            if (layers[i].materialName == 'link') {
-              layers[i].materialName = storeLayers[i].materialName
-            }
+            // if (layers[i].material.name == 'link') {
+            //   layers[i].material.name = storeLayers[i].material.name
+            // }
           }
           $store.commit('simulationSetup/setLayers', layers)
         },
@@ -224,11 +235,11 @@ export default defineComponent({
         layers.push(
             {
               layerWidth: coreR*0.1,
-              materialName: 'nk-constant',
+              material: {name:'nk-constant', fileFullPath:undefined,
+                spectrumRangeStart:undefined, spectrumRangeEnd: undefined,
+                nSpline: undefined, kSpline: undefined},
               n: 4.0,
               k: 0.01,
-              nSpline: undefined,
-              kSpline: undefined,
             }
         );
       }
@@ -252,7 +263,7 @@ export default defineComponent({
       particleType,
       numberOfLayers, layers, getLayerTitle, getTooltipText,
       units, toUnits, fromUnits, isShowingHelpForInputWithUnits,
-      activatedMaterialsNames
+      activatedMaterials
       }
   },
 })

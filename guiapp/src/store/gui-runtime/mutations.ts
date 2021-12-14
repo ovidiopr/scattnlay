@@ -1,6 +1,5 @@
-import { MutationTree } from 'vuex';
-import { guiRuntimeStateInterface as grsi} from './state';
-import { composeLabelFromPageData } from 'components/utils'
+import { MutationTree } from 'vuex'
+import { guiRuntimeStateInterface as grsi} from './state'
 
 const mutation: MutationTree<grsi> = {
   setIsShowingHelpForInputWithUnits (state: grsi, val: boolean) {state.isShowingHelpForInputWithUnits = val},
@@ -8,8 +7,7 @@ const mutation: MutationTree<grsi> = {
   setSourceUnits       (state: grsi, val: string ) {state.sourceUnits       = val},
   setIsSourceSameUnits (state: grsi, val: boolean) {state.isSourceSameUnits = val},
 
-  activateMaterial(state: grsi, filepath: string) {
-    console.log(composeLabelFromPageData(filepath))
+  addMaterial(state: grsi, filepath: string) {
     return {state, filepath}
   },
 
