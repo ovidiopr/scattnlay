@@ -1,5 +1,17 @@
 import { MutationTree } from 'vuex'
 import { guiRuntimeStateInterface as grsi} from './state'
+import { material } from 'src/store/simulation-setup/state'
+
+function compare( a:material, b:material ) {
+  if (a.name == 'link') return -1
+  if (b.name == 'link') return 1
+  if (a.name == 'nk-constant') return -1
+  if (b.name == 'nk-constant') return 1
+
+  if (a.name < b.name ) return -1
+  if (a.name > b.name) return 1
+  return 0;
+}
 
 const mutation: MutationTree<grsi> = {
   setIsShowingHelpForInputWithUnits (state: grsi, val: boolean) {state.isShowingHelpForInputWithUnits = val},
@@ -7,8 +19,10 @@ const mutation: MutationTree<grsi> = {
   setSourceUnits       (state: grsi, val: string ) {state.sourceUnits       = val},
   setIsSourceSameUnits (state: grsi, val: boolean) {state.isSourceSameUnits = val},
 
-  addMaterial(state: grsi, filepath: string) {
-    return {state, filepath}
+
+  addMaterial(state: grsi, material:material) {
+    state.activatedMaterials.push(material)
+    state.activatedMaterials.sort( compare );
   },
 
   deleteMaterial(state: grsi, label: string) {

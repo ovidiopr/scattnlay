@@ -235,7 +235,7 @@ export default defineComponent({
         layers.push(
             {
               layerWidth: coreR*0.1,
-              material: {name:'nk-constant', fileFullPath:undefined,
+              material: {name:'nk-constant',
                 spectrumRangeStart:undefined, spectrumRangeEnd: undefined,
                 nSpline: undefined, kSpline: undefined},
               n: 4.0,

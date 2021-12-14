@@ -5,7 +5,6 @@ import Spline from 'cubic-spline-ts'
 
 export interface material {
   name: string
-  fileFullPath:string|undefined
   spectrumRangeStart:number|undefined
   spectrumRangeEnd:number|undefined
   nSpline: Spline|undefined
@@ -41,7 +40,7 @@ function setupFactory(hostIndex = 1,
                       fromWL = 400, toWL=1000, pointsWL=201, currentWL = 400,
                       layers = [
                         {layerWidth:100, n:4, k:0.01,
-                          material: {name:'nk-constant', fileFullPath:undefined,
+                          material: {name:'nk-constant',
                             spectrumRangeStart:undefined, spectrumRangeEnd: undefined,
                             nSpline: undefined, kSpline: undefined},
                         },

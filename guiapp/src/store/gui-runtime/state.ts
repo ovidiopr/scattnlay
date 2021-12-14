@@ -19,13 +19,9 @@ function state(): guiRuntimeStateInterface {
     isSourceSameUnits: true,
     activatedMaterials: [
         // 'PEC',
-      {name:'link', fileFullPath:'', spectrumRangeStart:0, spectrumRangeEnd:1e300,
+      {name:'link',  spectrumRangeStart:0, spectrumRangeEnd:1e300,
         nSpline: undefined, kSpline: undefined},
-      {name:'nk-constant', fileFullPath:'', spectrumRangeStart:0, spectrumRangeEnd:1e300,
-        nSpline: undefined, kSpline: undefined},
-      {name:'Ag_McPeak', fileFullPath:'main/Ag/McPeak.yml', spectrumRangeStart:300, spectrumRangeEnd:1700,
-        nSpline: undefined, kSpline: undefined},
-      {name:'Au_McPeak', fileFullPath:'main/Au/McPeak.yml', spectrumRangeStart:300, spectrumRangeEnd:1700,
+      {name:'nk-constant',  spectrumRangeStart:0, spectrumRangeEnd:1e300,
         nSpline: undefined, kSpline: undefined},
     ]
   }

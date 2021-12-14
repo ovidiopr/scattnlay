@@ -70,17 +70,17 @@
 
           <q-td auto-width>
             <q-tooltip
-                v-if="props.row.spectrumRangeStart>=fromWavelengthStore/1000 ||
-                 props.row.spectrumRangeEnd<=toWavelengthStore/1000"
+                v-if="props.row.spectrumRangeStart>fromWavelengthStore/1000 ||
+                 props.row.spectrumRangeEnd<toWavelengthStore/1000"
                 anchor="top middle" self="center middle"
                 class="bg-red">
               Mismatch with spectrum simulation
             </q-tooltip>
-            <span :class="props.row.spectrumRangeStart>=fromWavelengthStore/1000?'text-red':'text-black'">
+            <span :class="props.row.spectrumRangeStart>fromWavelengthStore/1000?'text-red':'text-black'">
               {{ props.row.spectrumRangeStart }}
             </span>
             <span v-if="props.row.spectrumRangeStart">&ndash;</span>
-            <span :class="props.row.spectrumRangeEnd<=toWavelengthStore/1000?'text-red':'text-black'">
+            <span :class="props.row.spectrumRangeEnd<toWavelengthStore/1000?'text-red':'text-black'">
               {{ props.row.spectrumRangeEnd }}
             </span>
             <span v-if="props.row.spectrumRangeStart">&NonBreakingSpace;mkm</span>

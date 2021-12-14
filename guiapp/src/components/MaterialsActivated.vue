@@ -39,16 +39,18 @@
 
           <q-td auto-width>
             <q-tooltip
+                v-if=" props.row.spectrumRangeStart > fromWavelengthStore ||
+                       props.row.spectrumRangeEnd   <   toWavelengthStore"
                 anchor="top middle" self="bottom middle"
                 class="bg-red">
               Mismatch with spectrum simulation
             </q-tooltip>
-            <span :class="props.row.spectrumRangeStart>=fromWavelengthStore?'text-red':'text-black'">
-              {{ props.row.spectrumRangeStart }}
+            <span :class="props.row.spectrumRangeStart>fromWavelengthStore?'text-red':'text-black'">
+              {{ Math.ceil(props.row.spectrumRangeStart) }}
             </span>
             &ndash;
-            <span :class="props.row.spectrumRangeEnd<=toWavelengthStore?'text-red':'text-black'">
-              {{ props.row.spectrumRangeEnd }}
+            <span :class="props.row.spectrumRangeEnd<toWavelengthStore?'text-red':'text-black'">
+              {{ Math.floor(props.row.spectrumRangeEnd) }}
             </span>
             &NonBreakingSpace;nm
           </q-td>
@@ -97,7 +99,6 @@ export default defineComponent({
       {name: 'spectrumRangeStart', label: 'RangeStart', field: 'spectrumRangeStart'},
       {name: 'spectrumRangeEnd', label: 'RangeEnd', field: 'spectrumRangeEnd'},
       {name: 'name', label: 'name', field: 'name'},
-      {name: 'fileFullPath', fileFullPath: 'fileFullPath', field: 'fileFullPath'},
       {name: 'nSpline', nSpline: 'nSpline', field: 'nSpline'},
       {name: 'kSpline', kSpline: 'kSpline', field: 'kSpline'},
     ]
