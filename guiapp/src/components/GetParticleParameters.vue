@@ -103,9 +103,19 @@
                      && !(scope.opt.name=='nk-constant' || scope.opt.name=='PEC')"
                 >
                   <q-item-section>
-                    <q-item-label>{{ scope.opt.name }}</q-item-label>
+                    <q-item-label>{{ scope.opt.name }}
+
+                    </q-item-label>
                     <!--                  <q-item-label caption>{{ scope.opt.description }}</q-item-label>-->
                   </q-item-section>
+                  <q-item-section v-if="!(scope.opt.name=='nk-constant' || scope.opt.name=='PEC')" side>
+                                                  <ShowSpectrumRange
+                                                      class="text-caption"
+                                                      :spectrum-range-start="scope.opt.spectrumRangeStart"
+                                                      :spectrum-range-end="scope.opt.spectrumRangeEnd"
+                                                  />
+                  </q-item-section>
+
                 </q-item>
               </span>
             </template>
@@ -147,10 +157,14 @@ import { fromUnits, isAlmostSame, toUnits } from 'components/utils'
 import { flexRowTitleStyle, basicWidthStyle, basicSelectorWidthStyle, maxNumberOfLayers } from 'components/config'
 import { cloneDeep } from 'lodash'
 import InputWithUnits from 'components/InputWithUnits.vue';
+import ShowSpectrumRange from 'components/ShowSpectrumRange.vue'
 
 export default defineComponent({
   name: 'GetParticleParameters',
-  components: {InputWithUnits},
+  components: {
+    InputWithUnits,
+    ShowSpectrumRange
+  },
 
   setup() {
     const $store = useStore()

@@ -69,21 +69,10 @@
           </q-td>
 
           <q-td auto-width>
-            <q-tooltip
-                v-if="props.row.spectrumRangeStart>fromWavelengthStore/1000 ||
-                 props.row.spectrumRangeEnd<toWavelengthStore/1000"
-                anchor="top middle" self="center middle"
-                class="bg-red">
-              Mismatch with spectrum simulation
-            </q-tooltip>
-            <span :class="props.row.spectrumRangeStart>fromWavelengthStore/1000?'text-red':'text-black'">
-              {{ props.row.spectrumRangeStart }}
-            </span>
-            <span v-if="props.row.spectrumRangeStart">&ndash;</span>
-            <span :class="props.row.spectrumRangeEnd<toWavelengthStore/1000?'text-red':'text-black'">
-              {{ props.row.spectrumRangeEnd }}
-            </span>
-            <span v-if="props.row.spectrumRangeStart">&NonBreakingSpace;mkm</span>
+            <ShowSpectrumRange
+                :spectrum-range-start="props.row.spectrumRangeStart*1000"
+                :spectrum-range-end="props.row.spectrumRangeEnd*1000"
+            />
           </q-td>
 
           <q-td auto-width>
@@ -112,13 +101,14 @@ import {
 import { useStore } from 'src/store'
 import { load } from 'js-yaml'
 import { composeLabelFromPageData } from 'components/utils'
+import ShowSpectrumRange from 'components/ShowSpectrumRange.vue'
 import { saveAs } from 'file-saver'
 
 
 export default defineComponent({
 
   name: 'MaterialsSelector',
-  components: {},
+  components: {ShowSpectrumRange},
 
   setup: function () {
     const $store = useStore()

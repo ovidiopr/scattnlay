@@ -15,9 +15,8 @@ export default defineComponent({
     void $store.dispatch('guiRuntime/activateMaterial', 'main/Al/McPeak.yml')
     void $store.dispatch('guiRuntime/activateMaterial', 'main/Cu/McPeak.yml')
     void $store.dispatch('guiRuntime/activateMaterial', 'main/Si/Green-2008.yml')
-    void $store.dispatch('guiRuntime/activateMaterial', 'main/SiO2/Lemarchand.yml')
-    void $store.dispatch('guiRuntime/activateMaterial', 'main/TiO2/Siefke.yml')
-    void $store.dispatch('guiRuntime/activateMaterial', 'main/Pt/Werner.yml')
+    void $store.dispatch('guiRuntime/activateMaterial', 'main/SiO2/Gao.yml')
+    void $store.dispatch('guiRuntime/activateMaterial', 'main/TiO2/Sarkar.yml')
   }
 })
 </script>
