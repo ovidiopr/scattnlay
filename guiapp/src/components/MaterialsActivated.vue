@@ -1,7 +1,7 @@
 <template>
   <div class="col-12 q-pa-md">
     <q-table
-          :rows="activatedMaterials"
+          :rows="$store.state.guiRuntime.activatedMaterials"
           :columns="columns"
           :rows-per-page-options="[0]"
           hide-pagination
@@ -14,6 +14,7 @@
       <template #header="props">
         <q-tr :props="props">
           <q-th auto-width/>
+          <q-th auto-width> Plot </q-th>
           <q-th auto-width class="text-left"> Label </q-th>
           <q-th auto-width class="text-left"> Range </q-th>
           <q-th class="text-left"> Interpolator </q-th>
@@ -30,6 +31,14 @@
               Delete from simulation</q-tooltip>
             <q-btn size="sm" padding="5px" color="primary" round dense icon="delete"
                    @click="deleteFromSimulation(props.row.name)"/>
+          </q-td>
+
+          <q-td auto-width>
+            <q-checkbox :model-value="props.row.isPlot" size="sm" color="primary" dense
+                        @click="$store.commit('guiRuntime/toggleIsPlot',
+                        props.row.name
+                        )"
+            />
           </q-td>
 
 
@@ -64,12 +73,9 @@
 import {
   computed,
   defineComponent,
-  reactive,
-  watch
 } from 'vue'
 import { useStore } from 'src/store'
 import { composeLabelFromPageData } from 'components/utils'
-import { cloneDeep } from 'lodash'
 import ShowSpectrumRange from 'components/ShowSpectrumRange.vue'
 
 export default defineComponent({
@@ -92,16 +98,7 @@ export default defineComponent({
       {name: 'kSpline', kSpline: 'kSpline', field: 'kSpline'},
     ]
 
-    function getReactiveActivatedMaterials() {
-      return reactive( cloneDeep($store.state.guiRuntime.activatedMaterials) )
-    }
-    let activatedMaterials = getReactiveActivatedMaterials()
-    watch($store.state.guiRuntime.activatedMaterials, ()=>{
-      // to keep reactivity for local activatedMaterials array: remove all old value, add updated values
-      activatedMaterials.splice(0, activatedMaterials.length, ...$store.state.guiRuntime.activatedMaterials)
-    })
-
-    return {columns, activatedMaterials,
+    return {columns,
       fromWavelengthStore, toWavelengthStore,
       composeLabelFromPageData,
       deleteFromSimulation(name:string) {

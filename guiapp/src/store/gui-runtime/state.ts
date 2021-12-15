@@ -20,9 +20,9 @@ function state(): guiRuntimeStateInterface {
     activatedMaterials: [
         // 'PEC',
       {name:'link',  spectrumRangeStart:0, spectrumRangeEnd:1e300,
-        nSpline: undefined, kSpline: undefined},
+        nSpline: undefined, kSpline: undefined, isPlot:false},
       {name:'nk-constant',  spectrumRangeStart:0, spectrumRangeEnd:1e300,
-        nSpline: undefined, kSpline: undefined},
+        nSpline: undefined, kSpline: undefined, isPlot:false},
     ]
   }
 }

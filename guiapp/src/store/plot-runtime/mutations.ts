@@ -45,15 +45,15 @@ const mutation: MutationTree<prsi> = {
   },
 
   updateXAxisTitle (state:prsi, val:string) {
-    if (state.spectraPlot.layout.xaxis) state.spectraPlot.layout.xaxis.title = val
+    if (state.spectrumPlots.layout.xaxis) state.spectrumPlots.layout.xaxis.title = val
   },
 
   updateNumberOfPlotsFromPreviousSimulations(state: prsi) {
-    state.numberOfPlotsFromPreviousSimulations = state.spectraPlot.data.length
+    state.numberOfPlotsFromPreviousSimulations = state.spectrumPlots.data.length
   },
-  updateSpectraPlot (state: prsi) {
+  updateSpectrumPlots (state: prsi) {
     if (state.isRemovePlots) state.numberOfPlotsFromPreviousSimulations = 0
-    state.spectraPlot.data.length = state.numberOfPlotsFromPreviousSimulations
+    state.spectrumPlots.data.length = state.numberOfPlotsFromPreviousSimulations
 
     const label:string = state.commonLabel
     if (state.isPlotQscaTotal) {
@@ -63,7 +63,7 @@ const mutation: MutationTree<prsi> = {
         type: 'scatter',
         name: 'Qsca '+label
       }
-      state.spectraPlot.data.push(traceQsca)
+      state.spectrumPlots.data.push(traceQsca)
     }
 
     if (state.isPlotQabsTotal) {
@@ -73,7 +73,7 @@ const mutation: MutationTree<prsi> = {
         type: 'scatter',
         name: 'Qabs '+label
       }
-      state.spectraPlot.data.push(traceQabs)
+      state.spectrumPlots.data.push(traceQabs)
     }
 
     if (state.isPlotQextTotal) {
@@ -83,7 +83,7 @@ const mutation: MutationTree<prsi> = {
         type: 'scatter',
         name: 'Qext '+label
       }
-      state.spectraPlot.data.push(traceQext)
+      state.spectrumPlots.data.push(traceQext)
     }
 
     const typeNames = ['E', 'H']
@@ -100,7 +100,7 @@ const mutation: MutationTree<prsi> = {
             type: 'scatter',
             name: 'Qsca ' + typeNames[modeType] + ' ' + getModeName(mode_n + 1)+' '+label
           };
-          state.spectraPlot.data.push(traceQsca);
+          state.spectrumPlots.data.push(traceQsca);
         }
         if (state.isPlotQabs) {
           const traceQabs: Partial<Data> = {
@@ -109,7 +109,7 @@ const mutation: MutationTree<prsi> = {
             type: 'scatter',
             name: 'Qabs ' + typeNames[modeType] + ' ' + getModeName(mode_n + 1)+' '+label
           };
-          state.spectraPlot.data.push(traceQabs);
+          state.spectrumPlots.data.push(traceQabs);
         }
         if (state.isPlotQext) {
           const traceQext: Partial<Data> = {
@@ -118,7 +118,7 @@ const mutation: MutationTree<prsi> = {
             type: 'scatter',
             name: 'Qext ' + typeNames[modeType] + ' ' + getModeName(mode_n + 1)+' '+label
           };
-          state.spectraPlot.data.push(traceQext);
+          state.spectrumPlots.data.push(traceQext);
         }
       }
     }

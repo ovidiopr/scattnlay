@@ -249,9 +249,7 @@ export default defineComponent({
         layers.push(
             {
               layerWidth: coreR*0.1,
-              material: {name:'nk-constant',
-                spectrumRangeStart:undefined, spectrumRangeEnd: undefined,
-                nSpline: undefined, kSpline: undefined},
+              material: $store.state.guiRuntime.activatedMaterials[1], //nk-constant
               n: 4.0,
               k: 0.01,
             }

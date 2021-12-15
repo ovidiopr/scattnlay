@@ -29,6 +29,13 @@ const mutation: MutationTree<grsi> = {
     const indexToDelete = state.activatedMaterials.findIndex(val => val.name==label)
     state.activatedMaterials.splice(indexToDelete,1)
   },
+  // @click="$store.commit('guiRuntime/toggleIsPlot',
+  // props.row.name
+
+  toggleIsPlot(state: grsi, label: string) {
+    const indexToToggle = state.activatedMaterials.findIndex(val => val.name==label)
+    state.activatedMaterials[indexToToggle].isPlot = !state.activatedMaterials[indexToToggle].isPlot
+  },
 
 };
 

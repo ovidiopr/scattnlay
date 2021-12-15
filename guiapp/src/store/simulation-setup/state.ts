@@ -9,6 +9,7 @@ export interface material {
   spectrumRangeEnd:number|undefined
   nSpline: Spline|undefined
   kSpline: Spline|undefined
+  isPlot: boolean|undefined
 }
 
 export interface layer {
@@ -42,7 +43,7 @@ function setupFactory(hostIndex = 1,
                         {layerWidth:100, n:4, k:0.01,
                           material: {name:'nk-constant',
                             spectrumRangeStart:undefined, spectrumRangeEnd: undefined,
-                            nSpline: undefined, kSpline: undefined},
+                            nSpline: undefined, kSpline: undefined, isPlot:false},
                         },
                       ],
                       numberOfModesToPlot = 4,

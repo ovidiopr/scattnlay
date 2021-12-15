@@ -17,6 +17,7 @@ export interface spectraData {
 }
 
 export interface plotRuntimeStateInterface {
+  // Spectra plots
   WLs: number[]
   WLsInUnits: number[]
   Qsca:number[]
@@ -25,7 +26,7 @@ export interface plotRuntimeStateInterface {
   Qsca_n:number[][][]
   Qabs_n:number[][][]
   Qext_n:number[][][]
-  spectraPlot: plotlyChart
+  spectrumPlots: plotlyChart
   isPlotQsca: boolean
   isPlotQabs: boolean
   isPlotQext: boolean
@@ -57,7 +58,7 @@ function state(): plotRuntimeStateInterface {
   const numberOfPlotsFromPreviousSimulations = 0
   const commonLabel=''
 
-  const spectraPlot:plotlyChart = {
+  const spectrumPlots:plotlyChart = {
     data: [],
     layout: {
       margin: {
@@ -91,7 +92,7 @@ function state(): plotRuntimeStateInterface {
 
   return { WLs, WLsInUnits,
     Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n,
-    spectraPlot, isPlotQsca, isPlotQabs, isPlotQext,
+    spectrumPlots, isPlotQsca, isPlotQabs, isPlotQext,
     isPlotQscaTotal, isPlotQabsTotal, isPlotQextTotal,
     isPlotModeE, isPlotModeH,
     isRemovePlots, numberOfPlotsFromPreviousSimulations,

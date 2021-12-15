@@ -91,7 +91,7 @@ export default defineComponent({
       get: ()=> $store.state.plotRuntime.isRemovePlots,
       set: val => {
         $store.commit('plotRuntime/setIsRemovePlots', val)
-        $store.commit('plotRuntime/updateSpectraPlot')
+        $store.commit('plotRuntime/updateSpectrumPlots')
       }
     })
 

@@ -148,7 +148,7 @@ export default defineComponent({
           $store.commit('plotRuntime/updateNumberOfPlotsFromPreviousSimulations')
           $store.commit('plotRuntime/setCommonLabel', $store.state.simulationSetup.current.plotLabel)
           $store.commit('simulationSetup/setPlotLabel', '')
-          $store.commit('plotRuntime/updateSpectraPlot')
+          $store.commit('plotRuntime/updateSpectrumPlots')
         } catch (e) {
           console.log(e)
         }
@@ -184,8 +184,8 @@ export default defineComponent({
             '# plt.ylabel(\'Normalized cross-sections\')\n' +
             '# plt.show()\n\n'
         let xTitle = 'x'
-        if ( $store.state.plotRuntime.spectraPlot.layout.xaxis ) {
-          xTitle = String($store.state.plotRuntime.spectraPlot.layout.xaxis.title)
+        if ( $store.state.plotRuntime.spectrumPlots.layout.xaxis ) {
+          xTitle = String($store.state.plotRuntime.spectrumPlots.layout.xaxis.title)
         }
 
         let columnNames = '# ' + xTitle + ', Qsca, Qabs, Qext, '

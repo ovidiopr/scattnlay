@@ -76,7 +76,7 @@ const actions: ActionTree<guiRuntimeStateInterface, StateInterface> = {
     const spectrumRangeEnd = xs[xs.length-1]
     commit('addMaterial', {name:name,
       spectrumRangeStart:spectrumRangeStart, spectrumRangeEnd:spectrumRangeEnd,
-      nSpline:spline_n, kSpline:spline_k})
+      nSpline:spline_n, kSpline:spline_k, isPlot:false})
   },
 
 }
