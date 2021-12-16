@@ -8,6 +8,10 @@
     <div class="q-ma-xs"/>
     <PlotMaterials/>
     <div class="q-ma-xs"/>
+    <!-- place QPageScroller at end of page -->
+    <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
+      <q-btn size="xs" fab icon="keyboard_arrow_up" color="primary" />
+    </q-page-scroller>
   </q-page>
 </template>
 

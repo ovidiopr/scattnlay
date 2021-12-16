@@ -14,7 +14,8 @@ async function loadMaterialData(filename:string):Promise<number[][] | undefined>
   let Ag_data
 
   try {
-    const response = await fetch('refractiveindex.info-database/database/data/'+filename)
+    console.log('Public path:', process.env.publicPath)
+    const response = await fetch(process.env.publicPath+'refractiveindex.info-database/database/data/'+filename)
     const Ag_data = await response.text()
 
     const doc = await load(Ag_data) as any

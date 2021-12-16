@@ -32,6 +32,7 @@
 import {
   defineComponent,
   computed, watch,
+    onActivated
 } from 'vue'
 import { useStore } from 'src/store'
 import { getModeName, range, rangeInt} from 'components/utils'
@@ -158,6 +159,16 @@ export default defineComponent({
 
     watch(isNmieLoaded, ()=>{
       if (isNmieLoaded.value) runSpectrumSimulation()
+    })
+
+    onActivated(()=>{
+      if (isNmieLoaded.value) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        // eslint-disable-next-line
+        const data_x_length = $store.state.plotRuntime.spectrumPlots.data[0].x.length
+        if (!data_x_length) runSpectrumSimulation()
+      }
     })
 
     return { isRunning, isNmieLoaded,

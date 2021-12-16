@@ -153,10 +153,10 @@ export default defineComponent({
 
       let rows = []
       // lib has an irregular structure
-      const response = await fetch('refractiveindex.info-database/database/library.yml')
+      const response = await fetch(process.env.publicPath+'refractiveindex.info-database/database/library.yml')
       const data = await response.text()
 
-      const response2 = await fetch('tabulated.txt')
+      const response2 = await fetch(process.env.publicPath+'tabulated.txt')
       const tabulated = await response2.text()
 
       const lib = await load(data) as any
@@ -239,7 +239,7 @@ export default defineComponent({
         $store.dispatch('guiRuntime/activateMaterial', rows[val-1].pageData)
       },
       async downloadPageData(filepath:string) {
-        const response = await fetch('refractiveindex.info-database/database/data/'+filepath)
+        const response = await fetch(process.env.publicPath+'refractiveindex.info-database/database/data/'+filepath)
         const data = await response.text()
 
         const scattnlaySpectra = new Blob([data],

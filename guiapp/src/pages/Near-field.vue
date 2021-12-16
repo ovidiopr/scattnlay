@@ -1,7 +1,7 @@
 <template>
   <q-page class="column q-px-md">
 <!--    <img src="https://www.pikpng.com/pngl/m/8-80773_new-content-coming-soon-website-under-construction-banner.png" alt="New Content Coming Soon - Website Under Construction">-->
-    <q-img src="underconstruction.jpg"  />
+    <q-img :src="img_path"  />
     <div class="q-ma-sm"/>
     Under construction!
 
@@ -11,6 +11,10 @@
     <div class="col-auto">
       Input result: {{$store.state.simulationSetup.gui.fromWL}}
     </div>
+    <!-- place QPageScroller at end of page -->
+    <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
+      <q-btn size="xs" fab icon="keyboard_arrow_up" color="primary" />
+    </q-page-scroller>
   </q-page>
 </template>
 
@@ -30,8 +34,10 @@ export default defineComponent({
     // GetParticleParameters
   },
   setup() {
+    let img_path = 'underconstruction.jpg'
+    if (process.env.publicPath) img_path = process.env.publicPath.toString()+'underconstruction.jpg'
     // const $store = useStore()
-    return {}
+    return {img_path}
   }
 })
 </script>

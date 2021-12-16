@@ -5,6 +5,11 @@
         remove previous spectra
       </q-checkbox>
     </div>
+    <div class="col-auto q-py-xs q-px-sm">
+      <q-checkbox v-model="isLogPlot" size="sm">
+        plot cross-sections in log scale
+      </q-checkbox>
+    </div>
   </div>
   <div class="row items-baseline">
     <div class="col-xs-grow col-sm-auto q-px-sm">
@@ -91,6 +96,14 @@ export default defineComponent({
       get: ()=> $store.state.plotRuntime.isRemovePlots,
       set: val => {
         $store.commit('plotRuntime/setIsRemovePlots', val)
+        $store.commit('plotRuntime/updateSpectrumPlots')
+      }
+    })
+
+    const isLogPlot = computed({
+      get: ()=> $store.state.plotRuntime.isLogPlot,
+      set: val => {
+        $store.commit('plotRuntime/setIsLogPlot', val)
         $store.commit('plotRuntime/updateSpectrumPlots')
       }
     })
@@ -223,7 +236,7 @@ export default defineComponent({
     )
 
     return {flexRowTitleStyle,
-      isRemovePlots,
+      isRemovePlots, isLogPlot,
       isPlotQsca, isPlotQabs, isPlotQext,
       guiNumberOfModes, simulatedNumberOfModes,
       columns, rows,

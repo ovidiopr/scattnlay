@@ -35,25 +35,29 @@
 
           <q-td auto-width>
             <q-checkbox :model-value="props.row.isPlot" size="sm" color="primary" dense
-                        @click="$store.commit('guiRuntime/toggleIsPlot',
-                        props.row.name
-                        )"
+                        @click="$store.commit('guiRuntime/toggleIsPlot', props.row.name )"
             />
           </q-td>
 
 
-          <q-td auto-width class="">
+          <q-td auto-width class=""
+                @click="$store.commit('guiRuntime/toggleIsPlot', props.row.name )"
+          >
             {{composeLabelFromPageData(props.row.name)}}
           </q-td>
 
-          <q-td auto-width>
+          <q-td auto-width
+                @click="$store.commit('guiRuntime/toggleIsPlot', props.row.name )"
+          >
             <ShowSpectrumRange
                 :spectrum-range-start="props.row.spectrumRangeStart"
                 :spectrum-range-end="props.row.spectrumRangeEnd"
             />
           </q-td>
 
-          <q-td class="">
+          <q-td class=""
+                @click="$store.commit('guiRuntime/toggleIsPlot', props.row.name )"
+          >
             <span v-if="props.row.nSpline && props.row.kSpline">
               <q-icon size='sm' color="green" name="done" />
             </span>

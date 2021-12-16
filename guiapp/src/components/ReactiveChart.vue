@@ -8,6 +8,7 @@ import { plotlyChart } from 'src/store/plot-runtime/state'
 import {
   defineComponent,
   PropType,
+  onActivated,
   watch,
   onMounted,
   onUnmounted,
@@ -25,11 +26,13 @@ export default defineComponent({
   },
   setup(props) {
     const chartUUID = uuidv4()
+    // const chartUUID = 'plotly chart'
     let chartLocal = cloneDeep(props.chart)
 
     // Update (or add if absent) width and height of the layout to fit current window
     // and replot it.
     function plotlyReact () {
+      if (!document.getElementById(chartUUID)) return
       const width = window.innerWidth
       const height = window.innerHeight*0.8
       chartLocal.layout.width = width * 0.92
@@ -44,12 +47,15 @@ export default defineComponent({
       }
     }
 
-    onMounted( async () => {
+    function plotlyNew() {
       if (chartLocal.config == undefined) {
-        await newPlot(chartUUID, chartLocal.data, chartLocal.layout)
+        void newPlot(chartUUID, chartLocal.data, chartLocal.layout)
       } else {
-        await newPlot(chartUUID, chartLocal.data, chartLocal.layout, chartLocal.config)
+        void newPlot(chartUUID, chartLocal.data, chartLocal.layout, chartLocal.config)
       }
+    }
+    onMounted( () => {
+      plotlyNew()
     })
 
     window.addEventListener('resize', plotlyReact)
@@ -58,6 +64,11 @@ export default defineComponent({
     })
 
     watch(props, ()=>{
+      chartLocal = cloneDeep(props.chart)
+      plotlyReact()
+    })
+
+    onActivated(()=>{
       chartLocal = cloneDeep(props.chart)
       plotlyReact()
     })
