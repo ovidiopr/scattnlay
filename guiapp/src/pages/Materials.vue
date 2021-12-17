@@ -3,7 +3,7 @@
     <div class="q-ma-sm"/>
     <MaterialsSelector/>
     <div class="q-ma-xs"/>
-    <router-link to="/spectrum#GetSourceParametersHref"> <GetSourceParameters :is-info-mode="true"/> </router-link>
+    <router-link to="/spectrum"> <GetSourceParameters :is-info-mode="true"/> </router-link>
     <MaterialsActivated/>
     <div class="q-ma-xs"/>
     <PlotMaterials/>

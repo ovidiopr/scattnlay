@@ -10,7 +10,7 @@
       Feel free to use provided software, however, use it at your own risk. We made our best effort to verify
       it is correct, however, we do not provide any warranty.
       <br><br> Report bugs, issues, and feature requests at project's
-      <a href="https://github.com/ovidiopr/scattnlay">GitHub</a>
+      <a href="https://github.com/ovidiopr/scattnlay">GitHub<q-icon name="launch" style="padding-left: 0.1rem; padding-bottom: 1rem" /></a>
       (preferred) or mail to <a href="mailto:k.ladutenko@metalab.ifmo.ru?subject=Mie calculator webapp (Scattnlay)">k.ladutenko@metalab.ifmo.ru</a>.
       <br><br>
       If it was useful for your project, please, cite the following reference:
@@ -35,10 +35,10 @@
       </q-card-section>
       <q-card-section>
         <ul>
-          <li><a href="https://nanocomposix.com/pages/mie-theory-calculator">Bulk or core-shell,</a>   only dipole and quadrupole contributions by Nanocomposix. </li>
-          <li><a href="https://de.ifmo.ru/miecalculator/">Bulk particles</a>   by Ivan Toftul.</li>
-          <li><a href="https://saviot.cnrs.fr/mie/index.en.html">Bulk</a> and <a href="https://saviot.cnrs.fr/miecoat/index.en.html">core-shell</a> calculators by Lucien Saviot.</li>
-          <li><a href="https://omlc.org/calc/mie_calc.html">Angle distribution</a>  by Scott Prahl.</li>
+          <li><a href="https://nanocomposix.com/pages/mie-theory-calculator">Bulk or core-shell<q-icon name="launch" style="padding-left: 0.1rem; padding-bottom: 1rem" />,</a>   only dipole and quadrupole contributions by Nanocomposix. </li>
+          <li><a href="https://de.ifmo.ru/miecalculator/">Bulk particles<q-icon name="launch" style="padding-left: 0.1rem; padding-bottom: 1rem" /></a>   by Ivan Toftul.</li>
+          <li><a href="https://saviot.cnrs.fr/mie/index.en.html">Bulk<q-icon name="launch" style="padding-left: 0.1rem; padding-bottom: 1rem" /></a> and <a href="https://saviot.cnrs.fr/miecoat/index.en.html">core-shell<q-icon name="launch" style="padding-left: 0.1rem; padding-bottom: 1rem" /></a> calculators by Lucien Saviot.</li>
+          <li><a href="https://omlc.org/calc/mie_calc.html">Angle distribution<q-icon name="launch" style="padding-left: 0.1rem; padding-bottom: 1rem" /></a>  by Scott Prahl.</li>
         </ul>
       </q-card-section>
     </q-card>
@@ -50,9 +50,3 @@ export default {
   // name: 'PageName',
 }
 </script>
-<style lang="scss">
- a {
-   margin: 0.2rem;
-
- }
-</style>

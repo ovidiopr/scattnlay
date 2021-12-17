@@ -19,6 +19,10 @@ const mutation: MutationTree<grsi> = {
   setSourceUnits       (state: grsi, val: string ) {state.sourceUnits       = val},
   setIsSourceSameUnits (state: grsi, val: boolean) {state.isSourceSameUnits = val},
 
+  setSafeWL            (state: grsi, val: {safeFromWL:number, safeToWL:number}) {
+    state.safeFromWL = val.safeFromWL
+    state.safeToWL = val.safeToWL
+  },
 
   addMaterial(state: grsi, material:material) {
     state.activatedMaterials.push(material)

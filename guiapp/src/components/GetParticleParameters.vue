@@ -73,15 +73,38 @@
           <q-select
               v-model="layer.material"
               :options="activatedMaterials"
-              :style="'width: '+basicWidthStyle"
+              :style="'min-width: '+basicWidthStyle"
               class="q-px-xs"
               dense
               options-dense
               outlined
               options-value="name"
               options-label="name"
-              :display-value="layer.material.name"
           >
+            <template
+                v-if=" layer.material.spectrumRangeStart > fromWavelengthStore ||
+                       layer.material.spectrumRangeEnd   <   toWavelengthStore"
+                #after
+            >
+              <q-tooltip> Input conflict </q-tooltip>
+              <q-icon name="error" class="text-warning"/>
+            </template>
+
+            <template #selected>
+              <q-item dense class="q-pa-none" style="margin-top: -1px; margin-bottom: -1px;">
+                <q-item-section class="q-pa-none">
+                {{ layer.material.name }}
+                </q-item-section>
+                <q-item-section v-if="!(layer.material.name=='nk-constant' || layer.material.name=='PEC')" side>
+                  <ShowSpectrumRange
+                      class="text-caption"
+                      :spectrum-range-start="layer.material.spectrumRangeStart"
+                      :spectrum-range-end="layer.material.spectrumRangeEnd"
+                  />
+                </q-item-section>
+              </q-item>
+
+            </template>
             <template #option="scope">
               <span v-if="scope.opt.name =='link'">
                 <q-item clickable dense
@@ -169,6 +192,10 @@ export default defineComponent({
   setup() {
     const $store = useStore()
 
+    const fromWavelengthStore = computed(()=>$store.state.simulationSetup.gui.fromWL)
+    const toWavelengthStore = computed(()=>$store.state.simulationSetup.gui.toWL)
+
+
     const numberOfLayers=ref($store.state.simulationSetup.gui.layers.length)
     const particleType=ref('bulk')
     if (numberOfLayers.value == 1) particleType.value='bulk'
@@ -215,15 +242,21 @@ export default defineComponent({
     watch(layers,
         ()=>{
           const storeLayers = $store.state.simulationSetup.gui.layers
+          let safeFromWL = 0
+          let safeToWL = 1e300
           for (let i = 0; i<layers.length && i<storeLayers.length; i++) {
             if (isAlmostSame(storeLayers[i].layerWidth, layers[i].layerWidth)) {
               layers[i].layerWidth = storeLayers[i].layerWidth
             }
-            // if (layers[i].material.name == 'link') {
-            //   layers[i].material.name = storeLayers[i].material.name
-            // }
+            let layerFromWL = layers[i].material.spectrumRangeStart
+            let layerToWL = layers[i].material.spectrumRangeEnd
+            if (layerFromWL && layerFromWL > safeFromWL) safeFromWL = layerFromWL
+            if (layerToWL && layerToWL < safeToWL) safeToWL = layerToWL
+
+
           }
           $store.commit('simulationSetup/setLayers', layers)
+          $store.commit('guiRuntime/setSafeWL', {safeFromWL:safeFromWL, safeToWL:safeToWL})
         },
         { deep: true }
     )
@@ -272,6 +305,7 @@ export default defineComponent({
 
     return { flexRowTitleStyle, basicWidthStyle,
       basicSelectorWidthStyle, maxNumberOfLayers,
+      fromWavelengthStore, toWavelengthStore,
       particleType,
       numberOfLayers, layers, getLayerTitle, getTooltipText,
       units, toUnits, fromUnits, isShowingHelpForInputWithUnits,

@@ -1,6 +1,13 @@
 <template>
   <div class="row items-baseline">
     <div class="col-xs-12 col-sm-auto text-weight-bold text-center q-px-md q-py-sm">
+      <q-tooltip
+          v-if=" $store.state.guiRuntime.safeFromWL > $store.state.simulationSetup.gui.fromWL ||
+                 $store.state.guiRuntime.safeToWL < $store.state.simulationSetup.gui.toWL "
+          anchor="top middle" self="center middle"
+          class="bg-amber-4 text-black shadow-4">
+        Will use materials<br> spectrum range.
+      </q-tooltip>
         <q-btn :loading="isRunning"
                :disable="isRunning||!isNmieLoaded"
                color="primary"
@@ -32,7 +39,8 @@
 import {
   defineComponent,
   computed, watch,
-    onActivated
+    onActivated,
+    nextTick
 } from 'vue'
 import { useStore } from 'src/store'
 import { getModeName, range, rangeInt} from 'components/utils'
@@ -56,9 +64,11 @@ export default defineComponent({
 
     const sourceUnits = computed( ()=>$store.state.guiRuntime.sourceUnits)
 
-    function getWLs(){
-      const fromWL = $store.state.simulationSetup.current.fromWL
-      const toWL = $store.state.simulationSetup.current.toWL
+    function getWLs(safeFromWL:number, safeToWL:number){
+      let fromWL = $store.state.simulationSetup.current.fromWL
+      let toWL = $store.state.simulationSetup.current.toWL
+      if (fromWL < safeFromWL) fromWL=safeFromWL
+      if (toWL > safeToWL) toWL=safeToWL
       const pointsWL = $store.state.simulationSetup.current.pointsWL
       if (sourceUnits.value.endsWith('Hz') || sourceUnits.value.endsWith('eV')) {
         const fromF = 1./fromWL
@@ -98,12 +108,13 @@ export default defineComponent({
         return
       }
       isRunning.value = true
-      setTimeout(()=> {
-
+      void nextTick(()=> {
         $store.commit('simulationSetup/copySetupFromGuiToCurrent')
 
         const host = $store.state.simulationSetup.current.hostIndex
-        const WLs = getWLs()
+        const safeFromWL = $store.state.guiRuntime.safeFromWL
+        const safeToWL = $store.state.guiRuntime.safeToWL
+        const WLs = getWLs(safeFromWL, safeToWL)
         const mode_n = rangeInt($store.state.simulationSetup.current.numberOfModesToPlot, 1);
         const mode_types = range(0, 1);
         let {Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n} = initQ(mode_n, mode_types)
@@ -154,7 +165,7 @@ export default defineComponent({
           console.log(e)
         }
         isRunning.value = false
-      },200)
+      })
     }
 
     watch(isNmieLoaded, ()=>{

@@ -9,6 +9,8 @@ export interface guiRuntimeStateInterface {
   sourceUnits: string
   isSourceSameUnits: boolean
   activatedMaterials: material[]
+  safeFromWL:number
+  safeToWL:number
 }
 
 function state(): guiRuntimeStateInterface {
@@ -17,6 +19,8 @@ function state(): guiRuntimeStateInterface {
     units: 'nm',
     sourceUnits: 'nm',
     isSourceSameUnits: true,
+    safeFromWL:0,
+    safeToWL:1e300,
     activatedMaterials: [
         // 'PEC',
       {name:'link',  spectrumRangeStart:0, spectrumRangeEnd:1e300,

@@ -27,10 +27,17 @@
             :props="props"
         >
           <q-td auto-width>
-            <q-tooltip anchor="top start" self="bottom start" >
-              Delete from simulation</q-tooltip>
+            <span v-if="!$store.state.simulationSetup.gui.layers.find(el=>el.material.name===props.row.name)">
+            <q-tooltip anchor="top middle" self="bottom middle" >
+              Delete</q-tooltip>
             <q-btn size="sm" padding="5px" color="primary" round dense icon="delete"
                    @click="deleteFromSimulation(props.row.name)"/>
+            </span>
+            <span v-else >
+            <q-tooltip anchor="top start" self="bottom start" >
+              Used in spectrum simulation</q-tooltip>
+              <q-btn size="sm" padding="5px" text-color="primary" round dense flat icon="push_pin" to="/spectrum"/>
+            </span>
           </q-td>
 
           <q-td auto-width>

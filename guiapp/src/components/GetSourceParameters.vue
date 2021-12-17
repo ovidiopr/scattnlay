@@ -19,6 +19,7 @@
             :initial-expression="fromSource.toString()"
             :units="sourceUnits"
             :is-info-mode="isInfoMode"
+            :is-error="fromSource<$store.state.guiRuntime.safeFromWL"
             title="from"
         /></div>
         <div class="col-auto"><input-with-units
@@ -27,6 +28,7 @@
             :initial-expression="toSource.toString()"
             :units="sourceUnits"
             :is-info-mode="isInfoMode"
+            :is-error="toSource>$store.state.guiRuntime.safeToWL"
             title="to"
         /></div>
         <div v-if="!isInfoMode" class="col-auto">
