@@ -1,15 +1,9 @@
 <template>
   <q-page class="column q-px-md">
-<!--    <img src="https://www.pikpng.com/pngl/m/8-80773_new-content-coming-soon-website-under-construction-banner.png" alt="New Content Coming Soon - Website Under Construction">-->
-    <q-img :src="img_path"  />
-    <div class="q-ma-sm"/>
-    Under construction!
-
-    <div class="q-ma-sm"/>
-    <GetSourceParameters/>
-    <GetHostIndex/>
+    <div class="q-ma-md"/>
+    <GetWlFromPlot/>
     <div class="col-auto">
-      Input result: {{$store.state.simulationSetup.gui.fromWL}}
+      Input result: {{$store.state.simulationSetup.gui.nearFieldWL}}
     </div>
     <!-- place QPageScroller at end of page -->
     <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
@@ -22,22 +16,20 @@
 import {
   defineComponent
 } from 'vue'
-import GetHostIndex from 'components/GetHostIndex.vue'
-import GetSourceParameters from 'components/GetSourceParameters.vue'
-// import GetParticleParameters from 'components/GetParticleParameters.vue'
+import GetWlFromPlot from 'components/GetWlFromPlot.vue'
 // import { useStore } from 'src/store'
 
 
 export default defineComponent({
   name: 'NearField',
-  components: {GetHostIndex, GetSourceParameters,
-    // GetParticleParameters
+  components: {GetWlFromPlot
   },
   setup() {
-    let img_path = 'underconstruction.jpg'
-    if (process.env.publicPath) img_path = process.env.publicPath.toString()+'underconstruction.jpg'
+
     // const $store = useStore()
-    return {img_path}
+
+    return {
+    }
   }
 })
 </script>

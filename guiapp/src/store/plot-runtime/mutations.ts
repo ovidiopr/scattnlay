@@ -1,9 +1,8 @@
 import { MutationTree } from 'vuex'
 import { cloneDeep } from 'lodash'
-import {AxisType, Data} from 'plotly.js-dist-min'
+import { AxisType, Data } from 'plotly.js-dist-min'
 import { plotRuntimeStateInterface as prsi, spectraData } from './state'
 import { getModeName, toUnits } from 'components/utils'
-import { material } from 'src/store/simulation-setup/state'
 
 
 const mutation: MutationTree<prsi> = {
@@ -48,7 +47,6 @@ const mutation: MutationTree<prsi> = {
 
   updateXAxisTitle (state:prsi, val:string) {
     if (state.spectrumPlots.layout.xaxis) state.spectrumPlots.layout.xaxis.title = val
-    if (state.materialPlots.layout.xaxis) state.materialPlots.layout.xaxis.title = val
   },
 
   updateNumberOfPlotsFromPreviousSimulations(state: prsi) {
@@ -129,95 +127,6 @@ const mutation: MutationTree<prsi> = {
       }
     }
   },
-
-  // TODO move state.materialPlots and updateMaterialPlots to PlotMaterials.vue. At the moment
-  // *.vue have incomplete TypeScript support (e.g. no way to define
-  //     const traceDataReN: Partial<Data>
-  // )
-  updateMaterialPlots(state:prsi, val:{activatedMaterials:material[], sourceUnits:string,
-    fromWL:number, toWL:number, pointsWL:number, plotRange: string,
-    isPlotReN: boolean, isPlotImN: boolean, isPlotInterpolation: boolean })
-  {
-    state.materialPlots.data.length = 0
-    for (const material of val.activatedMaterials) {
-      if (!material.isPlot) continue
-
-      if (!material.nSpline) continue
-      if (val.isPlotReN) {
-        const traceDataReN: Partial<Data> = {
-          x: material.nSpline.xs.map(x => toUnits(x, val.sourceUnits)),
-          y: material.nSpline.ys,
-          mode: 'markers',
-          marker:{size:5},
-          type: 'scatter',
-          name: 'Re(n) ' + material.name + ' data'
-        }
-        state.materialPlots.data.push(traceDataReN)
-      }
-
-      if (!material.kSpline) continue
-      if (val.isPlotImN) {
-        const traceDataImN: Partial<Data> = {
-          x: material.kSpline.xs.map(x => toUnits(x, val.sourceUnits)),
-          y: material.kSpline.ys,
-          mode: 'markers',
-          marker:{size:5},
-          type: 'scatter',
-          name: 'Im(n) ' + material.name + ' data'
-        }
-        state.materialPlots.data.push(traceDataImN)
-      }
-
-      if (val.isPlotInterpolation) {
-        let fromWL = val.fromWL
-        let toWL = val.toWL
-        let pointsWL = val.pointsWL-1
-        if (state.materialPlots.layout.xaxis) state.materialPlots.layout.xaxis.range = [fromWL, toWL]
-        if (val.plotRange == 'material data') {
-          fromWL = material.nSpline.xs[0]
-          toWL = material.nSpline.xs[material.nSpline.xs.length-1]
-          pointsWL = 1000
-          if (state.materialPlots.layout.xaxis) state.materialPlots.layout.xaxis.range = undefined
-        }
-        const stepWL = (toWL-fromWL)/pointsWL
-
-        const WLs:number[] =[]
-        const nSpline:number[] = []
-        const kSpline:number[] = []
-        for (let i=0; i<pointsWL; ++i) {
-          WLs.push(fromWL+i*stepWL)
-          nSpline.push(material.nSpline.at(fromWL+i*stepWL))
-          kSpline.push(material.kSpline.at(fromWL+i*stepWL))
-        }
-        WLs.push(toWL)
-        nSpline.push(material.nSpline.at(toWL))
-        kSpline.push(material.kSpline.at(toWL))
-
-        if (val.isPlotReN) {
-          if (!material.nSpline) continue
-          const traceDataReNi: Partial<Data> = {
-            x: WLs.map(x => toUnits(x, val.sourceUnits)),
-            y: nSpline,
-            type: 'scatter',
-            name: 'Re(n) ' + material.name + ' interpolate'
-          }
-          state.materialPlots.data.push(traceDataReNi)
-        }
-
-        if (val.isPlotImN) {
-          if (!material.nSpline) continue
-          const traceDataImNi: Partial<Data> = {
-            x: WLs.map(x => toUnits(x, val.sourceUnits)),
-            y: kSpline,
-            type: 'scatter',
-            name: 'Im(n) ' + material.name + ' interpolate'
-          }
-          state.materialPlots.data.push(traceDataImNi)
-        }
-
-      }
-    }
-  }
 
 }
 

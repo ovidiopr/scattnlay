@@ -21,7 +21,8 @@ export interface layer {
 
 export interface simulationSetup {
   hostIndex: number
-  fromWL: number; toWL:number; pointsWL:number; currentWL:number
+  fromWL: number; toWL:number; pointsWL:number
+  nearFieldWL:number; farFieldWL:number
   layers: layer[]
   numberOfModesToPlot: number
   plotLabel: string
@@ -38,7 +39,8 @@ export interface simulationSetupStateInterface {
 }
 
 function setupFactory(hostIndex = 1,
-                      fromWL = 400, toWL=1000, pointsWL=201, currentWL = 400,
+                      fromWL = 400, toWL=1000, pointsWL=201,
+                      nearFieldWL = 619, farFieldWL = 619,
                       layers = [
                         {layerWidth:100, n:4, k:0.01,
                           material: {name:'nk-constant',
@@ -51,7 +53,7 @@ function setupFactory(hostIndex = 1,
                      ):simulationSetup {
   return {hostIndex:hostIndex,
     fromWL:fromWL, toWL:toWL, pointsWL:pointsWL,
-    currentWL:currentWL,
+    nearFieldWL:nearFieldWL, farFieldWL:farFieldWL,
     layers: cloneDeep(layers),
     numberOfModesToPlot: numberOfModesToPlot,
     plotLabel: plotLabel,

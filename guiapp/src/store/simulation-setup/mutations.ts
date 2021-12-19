@@ -39,7 +39,8 @@ const mutation: MutationTree<sssi> = {
   setFromWL    (state: sssi, val: number) {state.gui.fromWL    = val},
   setToWL      (state: sssi, val: number) {state.gui.toWL      = val},
   setPointsWL  (state: sssi, val: number) {state.gui.pointsWL  = val},
-  setCurrentWL (state: sssi, val: number) {state.gui.currentWL = val},
+  setNearFieldWL    (state: sssi, val: number) {state.gui.nearFieldWL    = val},
+  setFarFieldWL    (state: sssi, val: number) {state.gui.farFieldWL    = val},
   setNumberOfModesToPlot  (state: sssi, val: number) {state.gui.numberOfModesToPlot  = val},
   setPlotLabel (state: sssi, val: string) {state.gui.plotLabel = val},
 

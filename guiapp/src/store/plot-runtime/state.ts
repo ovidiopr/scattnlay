@@ -27,7 +27,6 @@ export interface plotRuntimeStateInterface {
   Qabs_n:number[][][]
   Qext_n:number[][][]
   spectrumPlots: plotlyChart
-  materialPlots: plotlyChart
   isPlotQsca: boolean
   isPlotQabs: boolean
   isPlotQext: boolean
@@ -92,36 +91,10 @@ function state(): plotRuntimeStateInterface {
   }
   const isRemovePlots = true
   const isLogPlot = false
-  const materialPlots:plotlyChart = {
-    data: [],
-    layout: {
-      margin: {
-        l: 0,
-        r: 40,
-        b: 50,
-        t: 30
-      },
-      xaxis: {
-        title: ''
-      },
-      yaxis: {
-        title: 'Refractive index'
-      },
-      showlegend: true,
-      legend: {
-        orientation: 'h',
-        x: -.1,
-        y: 1.05
-      },
-    },
-    config: {responsive: true,
-      // showEditInChartStudio: true,
-      displaylogo: false}
-  }
 
   return { WLs, WLsInUnits,
     Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n,
-    spectrumPlots, materialPlots,
+    spectrumPlots,
     isPlotQsca, isPlotQabs, isPlotQext,
     isPlotQscaTotal, isPlotQabsTotal, isPlotQextTotal,
     isPlotModeE, isPlotModeH,

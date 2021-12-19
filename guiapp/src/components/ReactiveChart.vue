@@ -24,9 +24,14 @@ export default defineComponent({
       required: true,
     },
   },
-  setup(props) {
+  emits: [
+    'settingID',
+  ],
+
+  setup(props, {emit}) {
     const chartUUID = uuidv4()
     // const chartUUID = 'plotly chart'
+    emit('settingID', chartUUID)
     let chartLocal = cloneDeep(props.chart)
 
     // Update (or add if absent) width and height of the layout to fit current window

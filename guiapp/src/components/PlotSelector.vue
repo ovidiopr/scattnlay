@@ -15,7 +15,7 @@
     <div class="col-xs-grow col-sm-auto q-px-sm">
       <q-table
               title="Values to plot"
-              title-class="text-h6"
+              title-class="text-body1 text-bold"
               :rows="rowsQ"
               :columns="columnsQ"
               hide-bottom
@@ -43,7 +43,7 @@
     <div v-if="isPlotQabs||isPlotQsca||isPlotQext"  class="col-xs-grow col-sm-auto q-px-sm">
       <q-table
           title="Modes to plot"
-          title-class="text-h6"
+          title-class="text-body1 text-bold"
           :rows="rows"
           :columns="columns"
           hide-bottom
