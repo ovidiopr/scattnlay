@@ -29,7 +29,7 @@ import GetSourceParameters from 'components/GetSourceParameters.vue'
 
 
 export default defineComponent({
-  name: 'PageIndex',
+  name: 'NearField',
   components: {GetHostIndex, GetSourceParameters,
     // GetParticleParameters
   },

@@ -47,7 +47,7 @@ import PlotSpectra from 'components/PlotSpectra.vue'
 
 
 export default defineComponent({
-  name: 'PageIndex',
+  name: 'SpectrumPage',
   components: {
     GetModesToPlot,
     RunSimulationSpectrum, GetUnits, GetHostIndex,

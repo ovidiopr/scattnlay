@@ -28,7 +28,7 @@ import PlotMaterials from 'components/PlotMaterials.vue'
 
 
 export default defineComponent({
-  name: 'PageIndex',
+  name: 'MaterialsPage',
   components: {
     MaterialsSelector, GetSourceParameters,
     MaterialsActivated, PlotMaterials
