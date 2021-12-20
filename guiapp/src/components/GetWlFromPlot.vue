@@ -1,45 +1,130 @@
 <template>
   <div>
+    <div class="row items-baseline">
+
+      <div class="col-xs-12 col-sm-auto text-weight-bold text-center q-px-md q-py-sm">
+        <div :style="flexRowTitleStyle"> Source plane wave </div>
+      </div>
+      <div class="col-xs-grow col-sm">
+        <div class="row justify-xs-center justify-sm-start items-baseline">
+
+          <div class="col-auto"><input-with-units
+              v-model:input-result="currentWavelengthInSourceUnits"
+              v-model:is-showing-help="isShowingHelpForInputWithUnits"
+              :initial-expression="currentWavelengthInSourceUnits.toString()"
+              :units="sourceUnits"
+              title="at"
+          /></div>
+          <div class="col-auto"> or <span class="text-bold">click on plot</span> below to select data point</div>
+
+        </div>
+      </div>
+    </div>
+    <div class="q-ma-xs"/>
     <ReactiveChart
-        :chart="$store.state.plotRuntime.spectrumPlots"
-                   @settingID="mangeID($event)"/>
+        :chart="chartContent"
+        :window-height-share="0.4"
+        @plotCreated="mangeID($event)"
+    />
   </div>
 </template>
 
 <script lang="ts">
 import ReactiveChart from 'components/ReactiveChart.vue'
 import { useStore } from 'src/store'
+import { useRouter } from 'vue-router'
 import {
   defineComponent,
   computed,
+    onActivated
   // watch,
-    ref,
+  //   ref,
 } from 'vue'
 import { fromUnits, toUnits } from 'components/utils'
+import InputWithUnits from 'components/InputWithUnits.vue'
+import { flexRowTitleStyle } from 'components/config'
+
+import { PlotlyHTMLElement } from 'plotly.js-dist-min'
+import { cloneDeep } from 'lodash'
+import { useQuasar } from 'quasar'
 
 
 export default defineComponent({
   name: 'GetWlFromPlot',
   components: {
-    ReactiveChart,
+    ReactiveChart, InputWithUnits
   },
   setup () {
+    const $q = useQuasar()
+    const router = useRouter()
+
+    let count = 0
+    onActivated(()=>{
+      if (count < 2) {
+        $q.notify({
+          message: 'Near-field simulation uses settings from spectrum simulation.',
+          multiLine: true,
+          position: 'top-right',
+          icon: 'o_info',
+          progress: true,
+          color: 'white',
+          textColor: 'black',
+          actions: [
+            { icon: 'settings', label: 'Change spectrum settings', color: 'primary',
+              handler: () => { void router.push({path: '/spectrum'}) } },
+            { icon: 'close', label: 'Close', color: 'primary'},
+
+          ],
+          timeout: 10000
+        })
+        count += 1
+      }
+    })
+
     const $store = useStore()
-    const chartID = ref('')
 
     const sourceUnits = computed( ()=>$store.state.guiRuntime.sourceUnits)
+    const isShowingHelpForInputWithUnits = computed({
+      get: () => $store.state.guiRuntime.isShowingHelpForInputWithUnits,
+      set: val => $store.commit('guiRuntime/setIsShowingHelpForInputWithUnits', val)
+    })
+
 
     const currentWavelengthInSourceUnits = computed({
       get: () => toUnits($store.state.simulationSetup.gui.nearFieldWL, sourceUnits.value),
-      set: val => $store.commit('simulationSetup/setFarFieldWL', fromUnits(sourceUnits.value, val))
+      set: val => $store.commit('simulationSetup/setNearFieldWL', fromUnits(sourceUnits.value, val))
     })
 
-    function mangeID(val:string) {
-      chartID.value = val
-      console.log(val)
+    const chartContent = computed( ()=>{
+      let content = cloneDeep($store.state.plotRuntime.spectrumPlots)
+      if (content.layout.yaxis) content.layout.yaxis.title = 'Cross-section'
+      content.layout['shapes'] = [{
+        type: 'line',
+        x0: currentWavelengthInSourceUnits.value,
+        y0: 0,
+        x1: currentWavelengthInSourceUnits.value,
+        yref: 'paper',
+        y1: 1,
+        line: {
+          color: 'red',
+          width: 1.5,
+          dash: 'dot'
+        }
+      }]
+      return content
+    })
+    function mangeID(chartID:string) {
+      const myPlot = document.getElementById(chartID) as PlotlyHTMLElement
+      myPlot.on('plotly_click', function(data){
+        for(let i=0; i < data.points.length; i++){
+          let val = data.points[i].x
+          if (val) currentWavelengthInSourceUnits.value = parseFloat(val.toString())
+        }
+      })
     }
-    return {currentWavelengthInSourceUnits,
-      mangeID, chartID
+    return {currentWavelengthInSourceUnits, sourceUnits,
+      chartContent, flexRowTitleStyle, isShowingHelpForInputWithUnits,
+      mangeID
 
     }
   }

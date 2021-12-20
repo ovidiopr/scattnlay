@@ -23,26 +23,34 @@ export default defineComponent({
       type: Object as PropType<plotlyChart>,
       required: true,
     },
-  },
+    windowWidthShare: {
+      type: Number,
+      required:false,
+      default: 1
+    },
+    windowHeightShare: {
+      type: Number,
+      required:false,
+      default: 0.8
+    },  },
   emits: [
-    'settingID',
+    'plotCreated'
   ],
 
   setup(props, {emit}) {
     const chartUUID = uuidv4()
     // const chartUUID = 'plotly chart'
-    emit('settingID', chartUUID)
     let chartLocal = cloneDeep(props.chart)
 
     // Update (or add if absent) width and height of the layout to fit current window
     // and replot it.
     function plotlyReact () {
       if (!document.getElementById(chartUUID)) return
-      const width = window.innerWidth
-      const height = window.innerHeight*0.8
+      const width = window.innerWidth*props.windowWidthShare
+      const height = window.innerHeight*props.windowHeightShare
       chartLocal.layout.width = width * 0.92
       chartLocal.layout.height = height * 0.95
-      if (height < 600) chartLocal.layout.height = height
+      if (height < 400) chartLocal.layout.height = height
 
       // react(...) is a promise, but we do not care to await it, so mark it with `void` keyword
       if (chartLocal.config == undefined) {
@@ -61,6 +69,7 @@ export default defineComponent({
     }
     onMounted( () => {
       plotlyNew()
+      emit('plotCreated', chartUUID)
     })
 
     window.addEventListener('resize', plotlyReact)

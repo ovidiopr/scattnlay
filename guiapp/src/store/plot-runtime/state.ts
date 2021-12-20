@@ -73,7 +73,7 @@ function state(): plotRuntimeStateInterface {
       // title: 'reactive charts',
       xaxis: {
         // will be set on mount
-        title: ''
+        title: 'Wavelength, nm'
       },
       yaxis: {
         title: 'Normalized cross-sections'
@@ -81,8 +81,8 @@ function state(): plotRuntimeStateInterface {
       showlegend: true,
       legend: {
         orientation: 'h',
-        x: -.1,
-        y: 1.05
+        x: -.15,
+        y: 1.12
       },
     },
     config: {responsive: true,

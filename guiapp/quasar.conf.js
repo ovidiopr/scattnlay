@@ -120,7 +120,7 @@ module.exports = configure(function (ctx) {
 
       // Quasar plugins
       plugins: [
-        'Loading'
+        'Loading','Notify'
       ],
       config: {
         loading: { /* look at QuasarConfOptions from the API card */ }

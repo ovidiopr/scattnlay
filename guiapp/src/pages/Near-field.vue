@@ -1,6 +1,8 @@
 <template>
   <q-page class="column q-px-md">
     <div class="q-ma-md"/>
+    <RunSimulationSpectrum v-show="false"/>
+
     <GetWlFromPlot/>
     <div class="col-auto">
       Input result: {{$store.state.simulationSetup.gui.nearFieldWL}}
@@ -17,12 +19,14 @@ import {
   defineComponent
 } from 'vue'
 import GetWlFromPlot from 'components/GetWlFromPlot.vue'
+import RunSimulationSpectrum from 'components/RunSimulationSpectrum.vue'
+
 // import { useStore } from 'src/store'
 
 
 export default defineComponent({
   name: 'NearField',
-  components: {GetWlFromPlot
+  components: {GetWlFromPlot, RunSimulationSpectrum
   },
   setup() {
 

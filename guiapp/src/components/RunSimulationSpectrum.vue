@@ -174,11 +174,14 @@ export default defineComponent({
 
     onActivated(()=>{
       if (isNmieLoaded.value) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // eslint-disable-next-line
-        const data_x_length = $store.state.plotRuntime.spectrumPlots.data[0].x.length
-        if (!data_x_length) runSpectrumSimulation()
+        if ($store.state.plotRuntime.spectrumPlots.data.length == 0) runSpectrumSimulation()
+        else {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          // eslint-disable-next-line
+          const data_x_length = $store.state.plotRuntime.spectrumPlots.data[0].x.length
+          if (!data_x_length) runSpectrumSimulation()
+        }
       }
     })
 
