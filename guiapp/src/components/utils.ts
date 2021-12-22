@@ -29,7 +29,7 @@ export function rangeInt(size:number, startAt = 0) {
 // convert value to nm from some units
 export function fromUnits(fromU:string, val:number):number {
     if (fromU === 'nm') return val
-    if (fromU === 'mkm') return val*1e3
+    if (fromU === 'µm') return val*1e3
     if (fromU === 'mm') return val*1e6
     if (fromU === 'cm') return val*1e7
     if (fromU === 'm') return val*1e9
@@ -55,7 +55,7 @@ export function fromUnits(fromU:string, val:number):number {
 // convert value from nm to some units
 export function toUnits(val:number, toU:string):number {
     if (toU === 'nm') return val
-    if (toU === 'mkm') return val/1e3
+    if (toU === 'µm') return val/1e3
     if (toU === 'mm') return val/1e6
     if (toU === 'cm') return val/1e7
     if (toU === 'm') return val/1e9

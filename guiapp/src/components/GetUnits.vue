@@ -90,7 +90,7 @@ export default defineComponent({
   components: {},
 
   setup() {
-    const unitsOptions = [ 'nm', 'mkm', 'mm', 'cm', 'm']
+    const unitsOptions = [ 'nm', 'µm', 'mm', 'cm', 'm']
     const sourceUnitsOptions = [
       { title: 'Frequency',
         children: [{label: 'MHz'},{label: 'GHz'},{label: 'THz'}]},
