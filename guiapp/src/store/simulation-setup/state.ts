@@ -19,13 +19,29 @@ export interface layer {
   k: number
 }
 
+export enum nearFieldType {
+  Ek = 'Ek',
+  Hk = 'Hk',
+  both = 'both'
+}
+
+export interface nearFieldSetup {
+  atWL:number
+  relativePlotSize: number
+  plotSideResolution: number
+  crossSection: nearFieldType
+  maxComputeTime: number //in seconds
+}
+
 export interface simulationSetup {
   hostIndex: number
   fromWL: number; toWL:number; pointsWL:number
-  nearFieldWL:number; farFieldWL:number
   layers: layer[]
   numberOfModesToPlot: number
   plotLabel: string
+
+  nearFieldSetup: nearFieldSetup,
+  farFieldWL:number
 }
 
 export interface simulationSetupStateInterface {
@@ -40,7 +56,6 @@ export interface simulationSetupStateInterface {
 
 function setupFactory(hostIndex = 1,
                       fromWL = 400, toWL=1000, pointsWL=201,
-                      nearFieldWL = 619, farFieldWL = 619,
                       layers = [
                         {layerWidth:100, n:4, k:0.01,
                           material: {name:'nk-constant',
@@ -49,14 +64,28 @@ function setupFactory(hostIndex = 1,
                         },
                       ],
                       numberOfModesToPlot = 4,
-                      plotLabel = ''
-                     ):simulationSetup {
+                      plotLabel = '',
+
+                      nearFieldSetup = {
+                        atWL: 619,
+                        relativePlotSize: 2,
+                        plotSideResolution: 64,
+                        crossSection: nearFieldType.both,
+                        maxComputeTime: 5 //in seconds
+                      },
+
+                      farFieldWL = 619,
+
+):simulationSetup {
   return {hostIndex:hostIndex,
     fromWL:fromWL, toWL:toWL, pointsWL:pointsWL,
-    nearFieldWL:nearFieldWL, farFieldWL:farFieldWL,
     layers: cloneDeep(layers),
     numberOfModesToPlot: numberOfModesToPlot,
     plotLabel: plotLabel,
+
+    nearFieldSetup:nearFieldSetup,
+
+    farFieldWL:farFieldWL,
   }
 }
 

@@ -6,8 +6,10 @@
     <div class="q-ma-xs"/>
     <GetNearFieldSettings/>
     <div class="col-auto">
-      Input result: {{$store.state.simulationSetup.gui.nearFieldWL}}
+      Input result: {{$store.state.simulationSetup.gui.nearFieldSetup.crossSection}}
     </div>
+
+    <div class="q-ma-lg"/>
     <!-- place QPageScroller at end of page -->
     <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
       <q-btn size="xs" fab icon="keyboard_arrow_up" color="primary" />

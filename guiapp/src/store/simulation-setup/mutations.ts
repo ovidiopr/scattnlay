@@ -1,5 +1,5 @@
 import { MutationTree } from 'vuex';
-import { simulationSetupStateInterface as sssi, simulationSetup, layer } from './state';
+import { simulationSetupStateInterface as sssi, simulationSetup, layer, nearFieldType } from './state';
 import { cloneDeep } from 'lodash'
 import { markRaw} from 'vue'
 
@@ -39,10 +39,16 @@ const mutation: MutationTree<sssi> = {
   setFromWL    (state: sssi, val: number) {state.gui.fromWL    = val},
   setToWL      (state: sssi, val: number) {state.gui.toWL      = val},
   setPointsWL  (state: sssi, val: number) {state.gui.pointsWL  = val},
-  setNearFieldWL   (state: sssi, val: number) { state.gui.nearFieldWL = val},
-  setFarFieldWL    (state: sssi, val: number) { state.gui.farFieldWL  = val},
-  setNumberOfModesToPlot  (state: sssi, val: number) {state.gui.numberOfModesToPlot  = val},
   setPlotLabel (state: sssi, val: string) {state.gui.plotLabel = val},
+  setNumberOfModesToPlot  (state: sssi, val: number) {state.gui.numberOfModesToPlot  = val},
+
+  setNearFieldWL                 (state: sssi, val: number)        {state.gui.nearFieldSetup.atWL               = val},
+  setNearFieldRelativePlotSize   (state: sssi, val: number)        {state.gui.nearFieldSetup.relativePlotSize   = val},
+  setNearFieldPlotSideResolution (state: sssi, val: number)        {state.gui.nearFieldSetup.plotSideResolution = val},
+  setNearFieldCrossSection       (state: sssi, val: nearFieldType) {state.gui.nearFieldSetup.crossSection       = val},
+  setNearFieldMaxComputeTime     (state: sssi, val: number)        {state.gui.nearFieldSetup.maxComputeTime     = val},
+
+  setFarFieldWL    (state: sssi, val: number) { state.gui.farFieldWL  = val},
 
 };
 

@@ -2,7 +2,7 @@
   <div>
     <div class="row items-baseline">
 
-      <div class="col-xs-12 col-sm-auto text-weight-bold text-center q-px-md q-py-sm">
+      <div class="col-xs-12 col-sm-auto text-weight-bold text-center q-pr-md q-py-sm">
         <div :style="flexRowTitleStyle"> Source plane wave </div>
       </div>
       <div class="col-xs-grow col-sm">
@@ -15,7 +15,7 @@
               :units="sourceUnits"
               title="at"
           /></div>
-          <div class="col-auto"> or <span class="text-bold">click on plot</span> below to select data point</div>
+          <div class="col-auto q-px-sm"> or <span class="text-bold">click on plot</span> below to select a data point</div>
 
         </div>
       </div>
@@ -91,7 +91,7 @@ export default defineComponent({
 
 
     const currentWavelengthInSourceUnits = computed({
-      get: () => toUnits($store.state.simulationSetup.gui.nearFieldWL, sourceUnits.value),
+      get: () => toUnits($store.state.simulationSetup.gui.nearFieldSetup.atWL, sourceUnits.value),
       set: val => $store.commit('simulationSetup/setNearFieldWL', fromUnits(sourceUnits.value, val))
     })
 
