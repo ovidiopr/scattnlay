@@ -44,14 +44,18 @@ export interface simulationSetup {
   farFieldWL:number
 }
 
+export interface nmieModule {
+  //nmie instance
+  instance: import('src/nmiejs').nmie_class|undefined
+  isNmieRunning: boolean
+  nmieTotalRunTime: number
+}
+
 export interface simulationSetupStateInterface {
   library: Map<string,simulationSetup>
   gui: simulationSetup
   current: simulationSetup
-  nmie: import('src/nmiejs').nmie_class|undefined
-  isNmieLoaded: boolean
-  isNmieRunning: boolean
-  nmieTotalRunTime: number
+  nmies: {spectrum: nmieModule, nearField: nmieModule, farField:nmieModule}
 }
 
 function setupFactory(hostIndex = 1,
@@ -95,18 +99,15 @@ function state(): simulationSetupStateInterface {
   const current = cloneDeep(gui)
   const library = new Map<string,simulationSetup>()
   library.set('default', cloneDeep(gui))
-  const nmie = undefined
-  const isNmieLoaded = false
-  const isNmieRunning = false
-  const nmieTotalRunTime = 0
-
+  const nmies = {spectrum: {instance:undefined, isNmieRunning:false, nmieTotalRunTime:0},
+    nearField: {instance:undefined, isNmieRunning:false, nmieTotalRunTime:0},
+    farField: {instance:undefined, isNmieRunning:false, nmieTotalRunTime:0}}
   return {
     library,
     gui, // simulation setup config as shown in GUI
     current, // simulation setup used for the latest simulation
-    nmie,
-    isNmieLoaded, isNmieRunning, nmieTotalRunTime
+    nmies,
   }
-};
+}
 
 export default state;

@@ -5,6 +5,8 @@
     <GetWlFromPlot/>
     <div class="q-ma-xs"/>
     <GetNearFieldSettings/>
+    <div class="q-ma-xs"/>
+<!--    <RunSimulationNearField/>-->
     <div class="col-auto">
       Input result: {{$store.state.simulationSetup.gui.nearFieldSetup.crossSection}}
     </div>
@@ -24,13 +26,16 @@ import {
 import GetWlFromPlot from 'components/GetWlFromPlot.vue'
 import GetNearFieldSettings from 'components/GetNearFieldSettings.vue'
 import RunSimulationSpectrum from 'components/RunSimulationSpectrum.vue'
+// import RunSimulationNearField from 'components/RunSimulationNearField.vue'
 
 // import { useStore } from 'src/store'
 
 
 export default defineComponent({
   name: 'NearField',
-  components: {GetWlFromPlot, RunSimulationSpectrum,
+  components: {
+    // RunSimulationNearField,
+    GetWlFromPlot, RunSimulationSpectrum,
     GetNearFieldSettings,
   },
   setup() {

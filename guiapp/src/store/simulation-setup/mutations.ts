@@ -4,18 +4,24 @@ import { cloneDeep } from 'lodash'
 import { markRaw} from 'vue'
 
 const mutation: MutationTree<sssi> = {
-  setNmie (state: sssi,
-           newVal: import('src/nmiejs').nmie_class) {
-    state.nmie = markRaw(newVal)
+  setNmies (state: sssi,
+           newVal: {spectrum: import('src/nmiejs').nmie_class,
+             nearField: import('src/nmiejs').nmie_class,
+             farField: import('src/nmiejs').nmie_class
+           }) {
+    state.nmies.spectrum.instance = markRaw(newVal.spectrum)
+    state.nmies.nearField.instance = markRaw(newVal.nearField)
+    state.nmies.farField.instance = markRaw(newVal.farField)
   },
-  markNmieAsLoaded  (state: sssi) {state.isNmieLoaded  = true },
   markNmieAsStarted (state: sssi) {
-    state.isNmieRunning = true
+    state.nmies.spectrum.isNmieRunning = true
   },
   markNmieAsFinished(state: sssi) {
-    state.isNmieRunning = false
+    state.nmies.spectrum.isNmieRunning = false
   },
-  setNmieTotalRunTime(state: sssi, val:number) {state.nmieTotalRunTime = val},
+  setNmieTotalRunTime(state: sssi, val:number) {
+    state.nmies.spectrum.nmieTotalRunTime = val
+  },
 
   setCurrentState (state: sssi,
                    newVal: simulationSetup) {

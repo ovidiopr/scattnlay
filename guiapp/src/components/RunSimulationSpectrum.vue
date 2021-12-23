@@ -54,13 +54,13 @@ export default defineComponent({
     const $store = useStore()
 
     const isRunning = computed({
-      get: ()=> $store.state.simulationSetup.isNmieRunning,
+      get: ()=> $store.state.simulationSetup.nmies.spectrum.isNmieRunning,
       set: val => {
         val ? $store.commit('simulationSetup/markNmieAsStarted') : $store.commit('simulationSetup/markNmieAsFinished')
       }
     })
 
-    const isNmieLoaded = computed(()=>{ return $store.state.simulationSetup.isNmieLoaded })
+    const isNmieLoaded = computed(()=>{ return $store.state.simulationSetup.nmies.spectrum.instance })
 
     const sourceUnits = computed( ()=>$store.state.guiRuntime.sourceUnits)
 
@@ -80,8 +80,7 @@ export default defineComponent({
         return WLs
       }
       const stepWL = (toWL-fromWL)/(pointsWL-1)
-      const WLs = range(fromWL, toWL, stepWL);
-      return WLs
+      return range(fromWL, toWL, stepWL)
     }
 
     function initQ(mode_n:number[], mode_types:number[]) {
@@ -120,8 +119,8 @@ export default defineComponent({
         let {Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n} = initQ(mode_n, mode_types)
 
         try {
-          if (!$store.state.simulationSetup.nmie) throw 'ERROR! Scattnlay module was not loaded'
-          const nmie = $store.state.simulationSetup.nmie
+          if (!$store.state.simulationSetup.nmies.spectrum.instance) throw 'ERROR! Scattnlay module was not loaded'
+          const nmie = $store.state.simulationSetup.nmies.spectrum.instance
           const layers = cloneDeep($store.state.simulationSetup.current.layers)
           const nmieStartedTime = performance.now()
           for (const WL of WLs) {

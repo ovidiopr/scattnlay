@@ -6,28 +6,10 @@
       </div>
     </div>
     <div class="col-xs-grow col-sm">
-
       <div class="row justify-center items-baseline">
         <div class="col-auto text-center q-py-xs q-pr-md">
           <div :style="flexRowTitleStyle" >
-        relative size
-          </div>
-        </div>
-        <div class="col-xs-grow col-sm">
-          <div class="row justify-xs-center justify-sm-start items-center">
-            <input-with-units
-            v-model:input-result="relativePlotSize"
-            v-model:is-showing-help="isShowingHelpForInputWithUnits"
-            :initial-expression="relativePlotSize.toString()"
-            title="x / 2R"
-            units=""
-            /></div>
-        </div>
-      </div>
-      <div class="row justify-center items-baseline">
-        <div class="col-auto text-center q-py-xs q-pr-md">
-          <div :style="flexRowTitleStyle" >
-            resolution
+            max side resolution
           </div>
         </div>
         <div class="col-xs-grow col-sm">
@@ -38,6 +20,23 @@
                 :initial-expression="plotSideResolution.toString()"
                 title="points"
                 units=""
+            /></div>
+        </div>
+      </div>
+      <div class="row justify-center items-baseline">
+        <div class="col-auto text-center q-py-xs q-pr-md">
+          <div :style="flexRowTitleStyle" >
+        relative side length
+          </div>
+        </div>
+        <div class="col-xs-grow col-sm">
+          <div class="row justify-xs-center justify-sm-start items-center">
+            <input-with-units
+            v-model:input-result="relativePlotSize"
+            v-model:is-showing-help="isShowingHelpForInputWithUnits"
+            :initial-expression="relativePlotSize.toString()"
+            title="𝐿&thinsp;/&hairsp;𝟐𝑅"
+            units=""
             /></div>
         </div>
       </div>

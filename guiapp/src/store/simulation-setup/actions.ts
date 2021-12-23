@@ -6,7 +6,7 @@ import { useQuasar } from 'quasar'
 
 
 const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
-  async loadScattnlay ({commit,state}/* context */) {
+  async loadScattnlay ({commit/*,state*/}/* context */) {
     const $q = useQuasar()
     $q.loading.show({
       message: 'Loading Mie calculator. Please wait...',
@@ -14,8 +14,10 @@ const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
       spinnerColor: 'primary'
     })
     const module = await nmiejs()
-    const nmie = new module.nmie()
-    commit('setNmie', nmie)
+    const nmies = {spectrum: new module.nmie(),
+      nearField: new module.nmie(),
+      farField: new module.nmie()}
+    commit('setNmies', nmies)
     // // Test nmiejs if working
     // if (state.nmie && !state.isNmieRunning) {
     //   commit('markNmieAsStarted')
@@ -37,9 +39,6 @@ const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
     //   console.log('Field Eabs:', state.nmie.GetFieldEabs())
     //   commit('markNmieAsFinished')
     // }
-    if (state.nmie) {
-      commit('markNmieAsLoaded')
-    }
     $q.loading.hide()
   }
 };

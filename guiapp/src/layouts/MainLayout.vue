@@ -77,7 +77,7 @@
         <q-separator inset spaced/>
 
         <q-item class="q-mt-auto">
-          Last simulation took {{$store.state.simulationSetup.nmieTotalRunTime.toFixed(2)}} s.
+          Last spectrum simulation took {{$store.state.simulationSetup.nmies.spectrum.nmieTotalRunTime.toFixed(2)}} s.
         </q-item>
       </q-list>
 
