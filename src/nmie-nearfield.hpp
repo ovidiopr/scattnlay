@@ -639,31 +639,43 @@ void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int side_point
                                                             const double at_z,
                                                             const bool isMarkUnconverged,
                                                             const int nmax_in) {
-  std::cout << "params:"<<side_points<<' '<<relative_side_length<<' '<<plane_selected<<' '<<
-  at_x<<' '<<at_y<<' '<<at_z<<' '<<isMarkUnconverged<<' '<<nmax_in<<std::endl;
-//  const int planes_number = plane_selected == -1 ? 3 : 1;
-//  const int total_size = side_points*side_points*planes_number;
-//  std::vector<double> Xp(total_size), Yp(total_size), Zp(total_size);
-//  if (size_param_.size()<1) throw "Expect size_param_ to have at least one element before running a simulation";
-//  const double max_coord_value = size_param_.back() * relative_side_length;
-//  double xi = -max_coord_value, yi = -max_coord_value, zi = -max_coord_value;
-//  const double dx = max_coord_value*2/side_points;
-//  const double dy = dx, dz = dx;
-//  for (int plane = 0; plane < planes_number; ++plane) {
-//    int nx = side_points, ny = side_points, nz = side_points;
-//
-//    for (int i = 0; i < nx; i++) {
-//      for (int j = 0; j < ny; j++) {
-//        for (int k = 0; k < nz; k++) {
-//          Xp[i * ny * nz + j * nz + k] = xi + (double) i * dx;
-//          Yp[i * ny * nz + j * nz + k] = yi + (double) j * dy;
-//          Zp[i * ny * nz + j * nz + k] = zi + (double) k * dz;
-//        }
-//      }
-//    }
-//  }
-
-}
+  SetMaxTerms(nmax_in);
+  std::vector<FloatType> Xp(0), Yp(0), Zp(0);
+  if (size_param_.size()<1) throw "Expect size_param_ to have at least one element before running a simulation";
+  const FloatType max_coord_value = size_param_.back() * relative_side_length;
+  const FloatType dx = max_coord_value*2/( (side_points<2 ? 2 : side_points) - 1.0);
+  const FloatType dy = dx, dz = dx;
+  auto push_coords = [&](
+      const int nx, const int ny, const int nz,
+      const FloatType xi, const FloatType yi, const FloatType zi) {
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        for (int k = 0; k < nz; k++) {
+          Xp.push_back(xi + static_cast<FloatType>(i) * dx);
+          Yp.push_back(yi + static_cast<FloatType>(j) * dy);
+          Zp.push_back(zi + static_cast<FloatType>(k) * dz);
+        }
+      }
+    }
+  };
+  if (plane_selected == Planes::kEk ) {
+    push_coords(          side_points,      1,           side_points,
+                -max_coord_value+at_x,   at_y, -max_coord_value+at_z);
+  }
+  if (plane_selected == Planes::kHk ) {
+    push_coords(    1,            side_points,           side_points,
+                 at_x,  -max_coord_value+at_y, -max_coord_value+at_z);
+  }
+  if (plane_selected == Planes::kEH) {
+    push_coords(          side_points,           side_points,    1,
+                -max_coord_value+at_x, -max_coord_value+at_y, at_z);
+  }
+  const unsigned int total_size = side_points*side_points;
+  if (Xp.size() != total_size || Yp.size() != total_size || Zp.size() != total_size)
+    throw std::invalid_argument("Error! Wrong dimension of field monitor points for cartesian grid!");
+  SetFieldCoords({Xp, Yp, Zp});
+  RunFieldCalculation(isMarkUnconverged);
+}  // end of void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(...)
 
 }  // end of namespace nmie
 #endif  // SRC_NMIE_NEARFIELD_HPP_

@@ -135,7 +135,7 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
 
   // constants for per mode evaluation
   enum Modes {kAll = -1, kElectric = 0, kMagnetic = 1};
-  enum Planes {kAllPlanes = -1, kEk = 0, kHk = 1, kEH = 2};
+  enum Planes {kEk = 0, kHk = 1, kEH = 2};
 
   template <typename FloatType = double>
   class MultiLayerMie {
@@ -171,7 +171,7 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
                                   int nmax_in = -1);
     void RunFieldCalculationCartesian(const int side_points = 2,
                                       const double relative_side_length = 2,
-                                      const int plane_selected = Planes::kAllPlanes,
+                                      const int plane_selected = Planes::kEk,
                                       const double at_x = 0, const double at_y = 0,
                                       const double at_z = 0,
                                       const bool isMarkUnconverged = true,

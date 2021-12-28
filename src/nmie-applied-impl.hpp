@@ -304,8 +304,10 @@ namespace nmie {
                                                                  const double from_Theta, const double to_Theta,
                                                                  const double from_Phi, const double to_Phi,
                                                                  const int isIgnoreAvailableNmax) {
-//    ConvertToSP();
-    this->MultiLayerMie<FloatType>::RunFieldCalculationPolar(outer_arc_points, radius_points, from_Rho, to_Rho,
+    ConvertToSP(); // Converts to size parameter units only the particle design,
+    // so we need to convert input parameters too...
+    const a = 2*this->PI_/wavelength_;
+    this->MultiLayerMie<FloatType>::RunFieldCalculationPolar(outer_arc_points, radius_points, a*from_Rho, a*to_Rho,
                                                                from_Theta, to_Theta, from_Phi, to_Phi,
                                                                isIgnoreAvailableNmax == 0 ? false : true);
   }
@@ -318,6 +320,7 @@ void MultiLayerMieApplied<FloatType>::RunFieldCalculationCartesian(const int sid
                                                             const double at_z,
                                                             const int isIgnoreAvailableNmax) {
 //  std::cout<<'test'<<std::endl;
+  ConvertToSP();
   this->MultiLayerMie<FloatType>::RunFieldCalculationCartesian( side_points, relative_side_length, plane_selected,
                                                                 at_x, at_y, at_z,
                                                                 isIgnoreAvailableNmax == 0 ? false : true);

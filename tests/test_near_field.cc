@@ -3,7 +3,34 @@
 #include "../src/nmie-nearfield.hpp"
 #include "test_cases.hpp"
 
-TEST(RunFieldCalculationPolar, HandlesInput) {
+//TEST(RunFieldCalculationCartesian, DISABLED_HandlesInput) {
+TEST(RunFieldCalculationCartesian, HandlesInput) {
+  nmie::MultiLayerMie<nmie::FloatType> nmie;
+//  EXPECT_THROW(nmie.RunFieldCalculationPolar(0), std::invalid_argument);
+//  EXPECT_THROW(nmie.RunFieldCalculationPolar(1,1,10,5), std::invalid_argument);
+  double r = 2*nmie.PI_*100/619;
+//  double r = 1500;
+  nmie.SetLayersSize({r/2, r});
+  nmie.SetLayersIndex({ {4.0,0}, {4.0,0}});
+  nmie.RunMieCalculation();
+  int nmax = 21;
+  // TODO add check of E and H symmetry for X and Y axis inversion
+  nmie.RunFieldCalculationCartesian(2, 2, nmie::Planes::kEk,
+                                    0, 0, 0, true, nmax);
+  nmie.RunFieldCalculationCartesian(2, 2, nmie::Planes::kHk,
+                                    0, 0, 0, true, nmax);
+  nmie.RunFieldCalculationCartesian(2, 2, nmie::Planes::kEH,
+                                    0, 0, 0, true, nmax);
+
+//  EXPECT_EQ(1, nmie.GetMaxTerms());
+//  EXPECT_FALSE(nmie.GetFieldConvergence());
+//  auto Eabs = nmie.GetFieldEabs();
+//  EXPECT_TRUE(std::isnan(static_cast<double>(Eabs[0])));
+
+}
+
+TEST(RunFieldCalculationPolar, DISABLED_HandlesInput) {
+//TEST(RunFieldCalculationPolar, HandlesInput) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
   EXPECT_THROW(nmie.RunFieldCalculationPolar(0), std::invalid_argument);
   EXPECT_THROW(nmie.RunFieldCalculationPolar(1,1,10,5), std::invalid_argument);
@@ -23,7 +50,8 @@ TEST(RunFieldCalculationPolar, HandlesInput) {
 
 }
 //#ifndef MULTI_PRECISION
-TEST(BulkSphere, HandlesInput) {
+TEST(BulkSphere, DISABLED_HandlesInput) {
+//TEST(BulkSphere, HandlesInput) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
   for (const auto &data : parameters_bulk_sphere) {
     auto x = std::get<0>(data);
