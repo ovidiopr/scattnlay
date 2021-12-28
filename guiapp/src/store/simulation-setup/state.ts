@@ -19,17 +19,18 @@ export interface layer {
   k: number
 }
 
-export enum nearFieldType {
-  Ek = 'Ek',
-  Hk = 'Hk',
-  both = 'both'
+export enum nearFieldPlane {
+  all = -1,
+  Ek = 0,
+  Hk,
+  EH = 2
 }
 
 export interface nearFieldSetup {
   atWL:number
   relativePlotSize: number
   plotSideResolution: number
-  crossSection: nearFieldType
+  crossSection: nearFieldPlane
   maxComputeTime: number //in seconds
 }
 
@@ -74,7 +75,7 @@ function setupFactory(hostIndex = 1,
                         atWL: 619,
                         relativePlotSize: 2,
                         plotSideResolution: 64,
-                        crossSection: nearFieldType.both,
+                        crossSection: nearFieldPlane.all,
                         maxComputeTime: 5 //in seconds
                       },
 

@@ -39,6 +39,7 @@
           <li><a href="https://de.ifmo.ru/miecalculator/">Bulk particles<q-icon name="launch" style="padding-left: 0.1rem; padding-bottom: 1rem" /></a>   by Ivan Toftul.</li>
           <li><a href="https://saviot.cnrs.fr/mie/index.en.html">Bulk<q-icon name="launch" style="padding-left: 0.1rem; padding-bottom: 1rem" /></a> and <a href="https://saviot.cnrs.fr/miecoat/index.en.html">core-shell<q-icon name="launch" style="padding-left: 0.1rem; padding-bottom: 1rem" /></a> calculators by Lucien Saviot.</li>
           <li><a href="https://omlc.org/calc/mie_calc.html">Angle distribution<q-icon name="launch" style="padding-left: 0.1rem; padding-bottom: 1rem" /></a>  by Scott Prahl.</li>
+          <li><a href="http://www.philiplaven.com/mieplot.htm">Mie theory and Debye series<q-icon name="launch" style="padding-left: 0.1rem; padding-bottom: 1rem" /></a> mostly for atmospheric optical effects, by Philip Laven (Windows OS only)</li>
         </ul>
       </q-card-section>
     </q-card>

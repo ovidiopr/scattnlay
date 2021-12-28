@@ -50,9 +50,10 @@
         <div class="col-xs-grow col-sm">
           <div class="row justify-xs-center justify-sm-start items-center">
             <div class="q-gutter-md q-py-sm q-px-xs">
-              <q-radio v-model="crossSection" dense size='sm' :val="nearFieldType.both" :label="nearFieldType.both" />
-              <q-radio v-model="crossSection" dense size='sm' :val="nearFieldType.Ek" :label="nearFieldType.Ek" />
-              <q-radio v-model="crossSection" dense size='sm' :val="nearFieldType.Hk" :label="nearFieldType.Hk" />
+              <q-radio v-model="crossSection" dense size='sm' :val="nearFieldPlane.all" label="All" />
+              <q-radio v-model="crossSection" dense size='sm' :val="nearFieldPlane.Ek" label="Ek" />
+              <q-radio v-model="crossSection" dense size='sm' :val="nearFieldPlane.Hk" label="Hk" />
+              <q-radio v-model="crossSection" dense size='sm' :val="nearFieldPlane.EH" label="EH" />
             </div>
           </div>
         </div>
@@ -70,7 +71,7 @@ import {
 import { useStore } from 'src/store'
 import InputWithUnits from 'components/InputWithUnits.vue'
 import { flexRowTitleStyle } from 'components/config'
-import { nearFieldType } from 'src/store/simulation-setup/state';
+import { nearFieldPlane } from 'src/store/simulation-setup/state';
 
 export default defineComponent({
 
@@ -102,11 +103,12 @@ export default defineComponent({
 
     const plotSideResolution = computed({
       get: () => $store.state.simulationSetup.gui.nearFieldSetup.plotSideResolution,
-      set: val => $store.commit('simulationSetup/setNearFieldPlotSideResolution', val)
+      // TODO: make InputWithUnits to handle integer input, so no need to use floor() in the next line.
+      set: val => $store.commit('simulationSetup/setNearFieldPlotSideResolution', Math.floor(val))
     })
 
     return { crossSection, isShowingHelpForInputWithUnits, flexRowTitleStyle,
-    relativePlotSize, maxComputeTime, plotSideResolution, nearFieldType}
+    relativePlotSize, maxComputeTime, plotSideResolution, nearFieldPlane}
   },
 })
 </script>

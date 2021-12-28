@@ -454,6 +454,7 @@ namespace nmie {
     convertFieldsFromSphericalToCartesian();
   }  //  end of MultiLayerMie::RunFieldCalculation()
 
+// TODO do we really need this eval_delta()?
 template <typename FloatType>
 double eval_delta(const unsigned int steps, const double from_value, const double to_value) {
   auto delta = std::abs(from_value - to_value);
@@ -630,7 +631,39 @@ bool MultiLayerMie<FloatType>::GetFieldConvergence () {
   return convergence;
 }
 
+template <typename FloatType>
+void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int side_points,
+                                                            const double relative_side_length,
+                                                            const int plane_selected,
+                                                            const double at_x, const double at_y,
+                                                            const double at_z,
+                                                            const bool isMarkUnconverged,
+                                                            const int nmax_in) {
+  std::cout << "params:"<<side_points<<' '<<relative_side_length<<' '<<plane_selected<<' '<<
+  at_x<<' '<<at_y<<' '<<at_z<<' '<<isMarkUnconverged<<' '<<nmax_in<<std::endl;
+//  const int planes_number = plane_selected == -1 ? 3 : 1;
+//  const int total_size = side_points*side_points*planes_number;
+//  std::vector<double> Xp(total_size), Yp(total_size), Zp(total_size);
+//  if (size_param_.size()<1) throw "Expect size_param_ to have at least one element before running a simulation";
+//  const double max_coord_value = size_param_.back() * relative_side_length;
+//  double xi = -max_coord_value, yi = -max_coord_value, zi = -max_coord_value;
+//  const double dx = max_coord_value*2/side_points;
+//  const double dy = dx, dz = dx;
+//  for (int plane = 0; plane < planes_number; ++plane) {
+//    int nx = side_points, ny = side_points, nz = side_points;
+//
+//    for (int i = 0; i < nx; i++) {
+//      for (int j = 0; j < ny; j++) {
+//        for (int k = 0; k < nz; k++) {
+//          Xp[i * ny * nz + j * nz + k] = xi + (double) i * dx;
+//          Yp[i * ny * nz + j * nz + k] = yi + (double) j * dy;
+//          Zp[i * ny * nz + j * nz + k] = zi + (double) k * dz;
+//        }
+//      }
+//    }
+//  }
 
+}
 
 }  // end of namespace nmie
 #endif  // SRC_NMIE_NEARFIELD_HPP_

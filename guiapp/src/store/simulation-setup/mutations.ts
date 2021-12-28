@@ -1,5 +1,5 @@
 import { MutationTree } from 'vuex';
-import { simulationSetupStateInterface as sssi, simulationSetup, layer, nearFieldType } from './state';
+import { simulationSetupStateInterface as sssi, simulationSetup, layer, nearFieldPlane } from './state';
 import { cloneDeep } from 'lodash'
 import { markRaw} from 'vue'
 
@@ -21,6 +21,26 @@ const mutation: MutationTree<sssi> = {
   },
   setNmieTotalRunTime(state: sssi, val:number) {
     state.nmies.spectrum.nmieTotalRunTime = val
+  },
+
+  markNmieNearFieldAsStarted (state: sssi) {
+    state.nmies.nearField.isNmieRunning = true
+  },
+  markNmieNearFieldAsFinished(state: sssi) {
+    state.nmies.nearField.isNmieRunning = false
+  },
+  setNmieNearFieldTotalRunTime(state: sssi, val:number) {
+    state.nmies.nearField.nmieTotalRunTime = val
+  },
+
+  markNmieFarFieldAsStarted (state: sssi) {
+    state.nmies.farField.isNmieRunning = true
+  },
+  markNmieFarFieldAsFinished(state: sssi) {
+    state.nmies.farField.isNmieRunning = false
+  },
+  setNmieFarFieldTotalRunTime(state: sssi, val:number) {
+    state.nmies.farField.nmieTotalRunTime = val
   },
 
   setCurrentState (state: sssi,
@@ -48,11 +68,11 @@ const mutation: MutationTree<sssi> = {
   setPlotLabel (state: sssi, val: string) {state.gui.plotLabel = val},
   setNumberOfModesToPlot  (state: sssi, val: number) {state.gui.numberOfModesToPlot  = val},
 
-  setNearFieldWL                 (state: sssi, val: number)        {state.gui.nearFieldSetup.atWL               = val},
-  setNearFieldRelativePlotSize   (state: sssi, val: number)        {state.gui.nearFieldSetup.relativePlotSize   = val},
-  setNearFieldPlotSideResolution (state: sssi, val: number)        {state.gui.nearFieldSetup.plotSideResolution = val},
-  setNearFieldCrossSection       (state: sssi, val: nearFieldType) {state.gui.nearFieldSetup.crossSection       = val},
-  setNearFieldMaxComputeTime     (state: sssi, val: number)        {state.gui.nearFieldSetup.maxComputeTime     = val},
+  setNearFieldWL                 (state: sssi, val: number)         {state.gui.nearFieldSetup.atWL               = val},
+  setNearFieldRelativePlotSize   (state: sssi, val: number)         {state.gui.nearFieldSetup.relativePlotSize   = val},
+  setNearFieldPlotSideResolution (state: sssi, val: number)         {state.gui.nearFieldSetup.plotSideResolution = val},
+  setNearFieldCrossSection       (state: sssi, val: nearFieldPlane) {state.gui.nearFieldSetup.crossSection       = val},
+  setNearFieldMaxComputeTime     (state: sssi, val: number)         {state.gui.nearFieldSetup.maxComputeTime     = val},
 
   setFarFieldWL    (state: sssi, val: number) { state.gui.farFieldWL  = val},
 

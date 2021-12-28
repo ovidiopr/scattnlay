@@ -278,114 +278,6 @@ namespace nmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  //**********************************************************************************//
-  // Function CONFRA ported from MIEV0.f (Wiscombe,1979)
-  // Ref. to NCAR Technical Notes, Wiscombe, 1979
-  /*
-c         Compute Bessel function ratio A-sub-N from its
-c         continued fraction using Lentz method
-
-c         ZINV = Reciprocal of argument of A
-
-
-c    I N T E R N A L    V A R I A B L E S
-c    ------------------------------------
-
-c    CAK      Term in continued fraction expansion of A (Eq. R25)
-c     a_k
-
-c    CAPT     Factor used in Lentz iteration for A (Eq. R27)
-c     T_k
-
-c    CNUMER   Numerator   in capT  (Eq. R28A)
-c     N_k
-c    CDENOM   Denominator in capT  (Eq. R28B)
-c     D_k
-
-c    CDTD     Product of two successive denominators of capT factors
-c                 (Eq. R34C)
-c     xi_1
-
-c    CNTN     Product of two successive numerators of capT factors
-c                 (Eq. R34B)
-c     xi_2
-
-c    EPS1     Ill-conditioning criterion
-c    EPS2     Convergence criterion
-
-c    KK       Subscript k of cAk  (Eq. R25B)
-c     k
-
-c    KOUNT    Iteration counter (used to prevent infinite looping)
-
-c    MAXIT    Max. allowed no. of iterations
-
-c    MM + 1  and - 1, alternately
-*/
-  template <typename FloatType>
-  std::complex<FloatType> MultiLayerMieApplied<FloatType>::calcD1confra(const int N, const std::complex<FloatType> z) {
-  // NTMR -> nmax_ - 1  \\TODO nmax_ ?
-    //int N = nmax_ - 1;
-    int KK, KOUNT, MAXIT = 10000, MM;
-    //    FloatType EPS1=1.0e-2;
-    FloatType EPS2=1.0e-8;
-    std::complex<FloatType> CAK, CAPT, CDENOM, CDTD, CNTN, CNUMER;
-    std::complex<FloatType> one = std::complex<FloatType>(1.0,0.0);
-    std::complex<FloatType> ZINV = one/z;
-// c                                 ** Eq. R25a
-    std::complex<FloatType> CONFRA = static_cast<std::complex<FloatType> >(N + 1)*ZINV;   //debug ZINV
-    MM = - 1;
-    KK = 2*N +3; //debug 3
-// c                                 ** Eq. R25b, k=2
-    CAK    = static_cast<std::complex<FloatType> >(MM*KK)*ZINV; //debug -3 ZINV
-    CDENOM = CAK;
-    CNUMER = CDENOM + one/CONFRA; //-3zinv+z
-    KOUNT  = 1;
-    //10 CONTINUE
-    do {      ++KOUNT;
-      if (KOUNT > MAXIT) {
-        printf("re(%g):im(%g)\t\n", CONFRA.real(), CONFRA.imag());
-        throw std::invalid_argument("ConFra--Iteration failed to converge!\n");
-      }
-      MM *= - 1;      KK += 2;  //debug  mm=1 kk=5
-      CAK = static_cast<std::complex<FloatType> >(MM*KK)*ZINV; //    ** Eq. R25b //debug 5zinv
-     //  //c ** Eq. R32    Ill-conditioned case -- stride two terms instead of one
-     //  if (std::abs(CNUMER/CAK) >= EPS1 ||  std::abs(CDENOM/CAK) >= EPS1) {
-     //         //c                       ** Eq. R34
-     //         CNTN   = CAK*CNUMER + 1.0;
-     //         CDTD   = CAK*CDENOM + 1.0;
-     //         CONFRA = (CNTN/CDTD)*CONFRA; // ** Eq. R33
-     //         MM  *= - 1;        KK  += 2;
-     //         CAK = static_cast<std::complex<FloatType> >(MM*KK)*ZINV; // ** Eq. R25b
-     //         //c                        ** Eq. R35
-     //         CNUMER = CAK + CNUMER/CNTN;
-     //         CDENOM = CAK + CDENOM/CDTD;
-     //         ++KOUNT;
-     //         //GO TO  10
-     //         continue;
-     // } else { //c                           *** Well-conditioned case
-      {
-        CAPT   = CNUMER/CDENOM; // ** Eq. R27 //debug (-3zinv + z)/(-3zinv)
-        // printf("re(%g):im(%g)**\t", CAPT.real(), CAPT.imag());
-       CONFRA = CAPT*CONFRA; // ** Eq. R26
-       //if (N == 0) {output=true;printf(" re:");prn(CONFRA.real());printf(" im:"); prn(CONFRA.imag());output=false;};
-       //c                                  ** Check for convergence; Eq. R31
-       if (std::abs(CAPT.real() - 1.0) >= EPS2 ||  std::abs(CAPT.imag()) >= EPS2) {
-//c                                        ** Eq. R30
-         CNUMER = CAK + one/CNUMER;
-         CDENOM = CAK + one/CDENOM;
-         continue;
-         //GO TO  10
-       }  // end of if < eps2
-      }
-      break;
-    } while(1);
-    //if (N == 0)  printf(" return confra for z=(%g,%g)\n", ZINV.real(), ZINV.imag());
-    return CONFRA;
-  }
-  // ********************************************************************** //
-  // ********************************************************************** //
-  // ********************************************************************** //
   template <typename FloatType>
   void MultiLayerMieApplied<FloatType>::ConvertToSP() {
     this->MarkUncalculated();
@@ -417,6 +309,20 @@ c    MM + 1  and - 1, alternately
                                                                from_Theta, to_Theta, from_Phi, to_Phi,
                                                                isIgnoreAvailableNmax == 0 ? false : true);
   }
+
+template <typename FloatType>
+void MultiLayerMieApplied<FloatType>::RunFieldCalculationCartesian(const int side_points,
+                                                            const double relative_side_length,
+                                                            const int plane_selected,
+                                                            const double at_x, const double at_y,
+                                                            const double at_z,
+                                                            const int isIgnoreAvailableNmax) {
+//  std::cout<<'test'<<std::endl;
+  this->MultiLayerMie<FloatType>::RunFieldCalculationCartesian( side_points, relative_side_length, plane_selected,
+                                                                at_x, at_y, at_z,
+                                                                isIgnoreAvailableNmax == 0 ? false : true);
+
+}
 
 //from https://toughengineer.github.io/demo/dsp/fft-perf/
 template <typename FloatType=double>

@@ -51,7 +51,7 @@ const actions: ActionTree<guiRuntimeStateInterface, StateInterface> = {
     let ys1:number[] = data_columns[1]
     let ys2:number[] = data_columns[1].map(()=>0)
     if (data_columns[2]) ys2 = data_columns[2]
-    const maxVal = 350
+    const maxVal = 350 // TODO move it to config.ts
     if (xs.length > maxVal) {
       const delta = Math.floor(xs.length / maxVal);
       let tmp_xs:number[] = []

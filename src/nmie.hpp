@@ -39,9 +39,9 @@
 #include <vector>
 
 #include "nmie-precision.hpp"
-#ifdef MULTI_PRECISION
-#include <boost/math/constants/constants.hpp>
-#endif
+//#ifdef MULTI_PRECISION
+//#include <boost/math/constants/constants.hpp>
+//#endif
 
 namespace nmie {
   int ScattCoeffs(const unsigned int L, const int pl,
@@ -135,6 +135,7 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
 
   // constants for per mode evaluation
   enum Modes {kAll = -1, kElectric = 0, kMagnetic = 1};
+  enum Planes {kAllPlanes = -1, kEk = 0, kHk = 1, kEH = 2};
 
   template <typename FloatType = double>
   class MultiLayerMie {
@@ -161,13 +162,20 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     void RunMieCalculation();
     void RunFieldCalculation(bool isMarkUnconverged=true);
 
-      void RunFieldCalculationPolar(const int outer_arc_points = 1,
+    void RunFieldCalculationPolar(const int outer_arc_points = 1,
                                   const int radius_points=1,
                                   const double from_Rho=0, const double to_Rho=static_cast<double>(1.),
                                   const double from_Theta=0, const double to_Theta=static_cast<double>(3.14159265358979323),
                                   const double from_Phi=0, const double to_Phi=static_cast<double>(3.14159265358979323),
                                   const bool isMarkUnconverged = true,
                                   int nmax_in = -1);
+    void RunFieldCalculationCartesian(const int side_points = 2,
+                                      const double relative_side_length = 2,
+                                      const int plane_selected = Planes::kAllPlanes,
+                                      const double at_x = 0, const double at_y = 0,
+                                      const double at_z = 0,
+                                      const bool isMarkUnconverged = true,
+                                      const int nmax_in = -1);
 
     void calcScattCoeffs();
     void calcExpanCoeffs();
