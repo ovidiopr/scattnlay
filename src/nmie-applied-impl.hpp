@@ -306,7 +306,7 @@ namespace nmie {
                                                                  const int isIgnoreAvailableNmax) {
     ConvertToSP(); // Converts to size parameter units only the particle design,
     // so we need to convert input parameters too...
-    const a = 2*this->PI_/wavelength_;
+    const FloatType a = 2*this->PI_/wavelength_;
     this->MultiLayerMie<FloatType>::RunFieldCalculationPolar(outer_arc_points, radius_points, a*from_Rho, a*to_Rho,
                                                                from_Theta, to_Theta, from_Phi, to_Phi,
                                                                isIgnoreAvailableNmax == 0 ? false : true);

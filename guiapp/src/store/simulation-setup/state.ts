@@ -20,7 +20,6 @@ export interface layer {
 }
 
 export enum nearFieldPlane {
-  all = -1,
   Ek = 0,
   Hk,
   EH = 2
@@ -75,7 +74,7 @@ function setupFactory(hostIndex = 1,
                         atWL: 619,
                         relativePlotSize: 2,
                         plotSideResolution: 64,
-                        crossSection: nearFieldPlane.all,
+                        crossSection: nearFieldPlane.Ek,
                         maxComputeTime: 5 //in seconds
                       },
 

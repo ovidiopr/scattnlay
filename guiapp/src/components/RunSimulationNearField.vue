@@ -36,17 +36,13 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  computed,
-  // watch,
-    onActivated,
-    nextTick
-} from 'vue'
-import { useStore } from 'src/store'
-import { getModeName, range, rangeInt} from 'components/utils'
-import { cloneDeep } from 'lodash'
-import { saveAs } from 'file-saver'
+import {computed, defineComponent, nextTick, watch} from 'vue'
+import {useStore} from 'src/store'
+import {getModeName, range, rangeInt} from 'components/utils'
+import {cloneDeep} from 'lodash'
+import {saveAs} from 'file-saver'
+import {nearFieldPlane} from 'src/store/simulation-setup/state';
+
 
 export default defineComponent({
   name: 'RunSimulationNearField',
@@ -74,49 +70,61 @@ export default defineComponent({
         return
       }
       isRunning.value = true
-      void nextTick(()=> {
-        $store.commit('simulationSetup/copySetupFromGuiToCurrent')
+      void setTimeout(()=> {
+        void nextTick(()=> {
+          $store.commit('simulationSetup/copySetupFromGuiToCurrent')
 
-        const host = $store.state.simulationSetup.current.hostIndex
+          const host = $store.state.simulationSetup.current.hostIndex
+          const plotSideResolution = $store.state.simulationSetup.current.nearFieldSetup.plotSideResolution
+          const relativePlotSize = $store.state.simulationSetup.current.nearFieldSetup.relativePlotSize
+          const crossSection = $store.state.simulationSetup.current.nearFieldSetup.crossSection
+          try {
+            if (!$store.state.simulationSetup.nmies.nearField.instance) throw 'ERROR! Scattnlay module was not loaded'
+            const nmie = $store.state.simulationSetup.nmies.nearField.instance
+            const layers = cloneDeep($store.state.simulationSetup.current.layers)
+            const nmieStartedTime = performance.now()
 
-        try {
-          if (!$store.state.simulationSetup.nmies.nearField.instance) throw 'ERROR! Scattnlay module was not loaded'
-          const nmie = $store.state.simulationSetup.nmies.nearField.instance
-          const layers = cloneDeep($store.state.simulationSetup.current.layers)
-          const nmieStartedTime = performance.now()
+            nmie.SetWavelength(atWL.value)
+            nmie.ClearTarget()
+            for (const layer of layers) {
+              if (layer.material.nSpline) layer.n = layer.material.nSpline.at(atWL.value)
+              if (layer.material.kSpline) layer.k = layer.material.kSpline.at(atWL.value)
+              nmie.AddTargetLayerReIm(layer.layerWidth * host, layer.n / host, layer.k / host)
+            }
 
-          nmie.SetWavelength(atWL.value)
-          nmie.ClearTarget()
-          for (const layer of layers) {
-            if (layer.material.nSpline) layer.n = layer.material.nSpline.at(atWL.value)
-            if (layer.material.kSpline) layer.k = layer.material.kSpline.at(atWL.value)
-            nmie.AddTargetLayerReIm(layer.layerWidth * host, layer.n / host, layer.k / host)
+            nmie.SetModeNmaxAndType(-1, -1)
+
+            nmie.RunFieldCalculationCartesian(
+                plotSideResolution,
+                relativePlotSize,
+                crossSection,
+                0, 0, 0, 1
+            )
+            let Eabs_list = Array.from(nmie.GetFieldEabs())
+            const Eabs = [];
+            while (Eabs_list.length) Eabs.push(Eabs_list.splice(0, plotSideResolution));
+            if (crossSection == nearFieldPlane.Ek) $store.commit('plotRuntime/setNearFieldEk', Eabs)
+            if (crossSection == nearFieldPlane.Hk) $store.commit('plotRuntime/setNearFieldHk', Eabs)
+            if (crossSection == nearFieldPlane.EH) $store.commit('plotRuntime/setNearFieldEH', Eabs)
+            const nmieTotalRunTime = (performance.now() - nmieStartedTime) / 1000
+            // console.log('Total simulation time:', nmieTotalRunTime, 's')
+            $store.commit('simulationSetup/setNmieNearFieldTotalRunTime', nmieTotalRunTime)
+
+          } catch (e) {
+            console.log('Some error:', e)
           }
-
-          nmie.SetModeNmaxAndType(-1, -1)
-
-          nmie.RunFieldCalculationCartesian(
-              $store.state.simulationSetup.current.nearFieldSetup.plotSideResolution,
-              $store.state.simulationSetup.current.nearFieldSetup.relativePlotSize,
-              $store.state.simulationSetup.current.nearFieldSetup.crossSection,
-              0, 0, 0, 0
-          )
-
-
-          const nmieTotalRunTime = (performance.now()-nmieStartedTime)/1000
-          // console.log('Total simulation time:', nmieTotalRunTime, 's')
-          $store.commit('simulationSetup/setNmieNearFieldTotalRunTime', nmieTotalRunTime)
-
-        } catch (e) {
-          console.log('Some error:', e)
-        }
-        isRunning.value = false
-      })
+          isRunning.value = false
+        })
+      }, 100)
     }
 
-    onActivated(()=>{
-      if (isNmieLoaded.value) runNearFieldSimulation()
+    watch(isRunning, ()=>{
+          console.log(isRunning.value)
     })
+
+    // onActivated(()=>{
+    //   if (isNmieLoaded.value) runNearFieldSimulation()
+    // })
 
 
 

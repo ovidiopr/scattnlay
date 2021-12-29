@@ -84,7 +84,7 @@ namespace nmie {
     isExpCoeffsCalc_ = false;
     aln_.clear(); bln_.clear(); cln_.clear(); dln_.clear();
 
-    std::complex<FloatType> c_one(1.0, 0.0), c_zero(0.0, 0.0);
+    std::complex<FloatType> /*c_one(1.0, 0.0),*/ c_zero(0.0, 0.0);
 
     const int L = refractive_index_.size();
 
@@ -104,8 +104,8 @@ namespace nmie {
     for (int n = 0; n < nmax_; n++) {
       aln_[L][n] = an_[n];
       bln_[L][n] = bn_[n];
-      cln_[L][n] = c_one;
-      dln_[L][n] = c_one;
+      cln_[L][n] = c_zero;
+      dln_[L][n] = c_zero;
     }
 
     std::vector<std::complex<FloatType> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
@@ -350,6 +350,23 @@ namespace nmie {
           nmm::isnan(Hdiff_ft.real()) || nmm::isnan(Hdiff_ft.imag())
           ) break;
     }  // end of for all n
+
+    const unsigned L = refractive_index_.size();
+    // Add the incident field
+    if(l==L) {
+      using nmm::sin;
+      using nmm::cos;
+      const auto z = Rho*cos(Theta);
+      const auto Ex = std::complex<FloatType>(cos(z), sin(z));
+      E[0] +=  Ex*cos(Phi)*sin(Theta);
+      E[1] +=  Ex*cos(Phi)*cos(Theta);
+      E[2] += -Ex*sin(Phi);
+      const auto Hy = Ex;
+      H[0] += Hy*sin(Theta)*sin(Phi);
+      H[1] += Hy*cos(Theta)*sin(Phi);
+      H[2] += Hy*cos(Phi);
+    }
+
     if( (!isConvergedE[0] || !isConvergedE[1] ||!isConvergedE[2] ||
         !isConvergedH[0] || !isConvergedH[1] ||!isConvergedH[2] ) && GetFieldConvergence()) {
       std::cout << "Field evaluation failed to converge an nmax = "<< nmax << std::endl;

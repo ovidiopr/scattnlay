@@ -107,6 +107,7 @@ export default defineComponent({
         return
       }
       isRunning.value = true
+      setTimeout(()=>{
       void nextTick(()=> {
         $store.commit('simulationSetup/copySetupFromGuiToCurrent')
 
@@ -165,6 +166,7 @@ export default defineComponent({
         }
         isRunning.value = false
       })
+      }, 100)
     }
 
     watch(isNmieLoaded, ()=>{

@@ -75,9 +75,10 @@
             <q-item-label caption> Requires a GitHub account</q-item-label></q-item-section>
         </q-item>
         <q-separator inset spaced/>
-
-        <q-item class="q-mt-auto">
-          Last spectrum simulation took {{$store.state.simulationSetup.nmies.spectrum.nmieTotalRunTime.toFixed(2)}} s.
+        <q-item class="q-mt-auto text-body2">
+          Last simulation took ...<br>
+           - spectrum  {{$store.state.simulationSetup.nmies.spectrum.nmieTotalRunTime.toFixed(2)}} s.<br>
+           - near-field  {{$store.state.simulationSetup.nmies.nearField.nmieTotalRunTime.toFixed(2)}} s.
         </q-item>
       </q-list>
 
@@ -103,6 +104,8 @@ import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
   name: 'MainLayout',
+  components: {},
+
 
   // components: {
   //   EssentialLink

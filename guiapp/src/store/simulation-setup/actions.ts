@@ -6,7 +6,7 @@ import { useQuasar } from 'quasar'
 
 
 const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
-  async loadScattnlay ({commit/*,state*/}/* context */) {
+  async loadScattnlay ({commit,/*state*/}/* context */) {
     const $q = useQuasar()
     $q.loading.show({
       message: 'Loading Mie calculator. Please wait...',
@@ -18,27 +18,31 @@ const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
       nearField: new module.nmie(),
       farField: new module.nmie()}
     commit('setNmies', nmies)
+
+
     // // Test nmiejs if working
-    // if (state.nmie && !state.isNmieRunning) {
+    // if (state.nmies.spectrum.instance && !state.nmies.spectrum.isNmieRunning) {
     //   commit('markNmieAsStarted')
-    //   state.nmie.ClearTarget()
+    //   state.nmies.spectrum.instance.ClearTarget()
     //   const R = 100.0
     //   const reN = 4.0
     //   const imN = 0.01
-    //   state.nmie.AddTargetLayerReIm(R, reN, imN)
-    //   state.nmie.SetModeNmaxAndType(-1, -1)
+    //   state.nmies.spectrum.instance.AddTargetLayerReIm(R, reN, imN)
+    //   state.nmies.spectrum.instance.SetModeNmaxAndType(-1, -1)
     //   const WL = 800
-    //   state.nmie.SetWavelength(WL)
-    //   state.nmie.RunMieCalculation()
-    //   console.log(state.nmie.GetQsca())
+    //   state.nmies.spectrum.instance.SetWavelength(WL)
+    //   state.nmies.spectrum.instance.RunMieCalculation()
+    //   console.log(state.nmies.spectrum.instance.GetQsca())
     //   // outer_arc_points, radius_points, from_Rho, to_Rho,
     //   // from_Theta, to_Theta, from_Phi, to_Phi, isIgnoreAvailableNmax
-    //   state.nmie.RunFieldCalculationPolar(2, 2,
+    //   state.nmies.spectrum.instance.RunFieldCalculationPolar(2, 2,
     //       0.1, 1.5, 0, 3.1415, 0, 3.1415,
     //       0)
-    //   console.log('Field Eabs:', state.nmie.GetFieldEabs())
+    //   console.log('Field Eabs:', state.nmies.spectrum.instance.GetFieldEabs())
     //   commit('markNmieAsFinished')
     // }
+
+
     $q.loading.hide()
   }
 };

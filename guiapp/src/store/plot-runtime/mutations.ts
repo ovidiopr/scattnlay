@@ -6,6 +6,10 @@ import { getModeName, toUnits } from 'components/utils'
 
 
 const mutation: MutationTree<prsi> = {
+  setNearFieldEk (state: prsi, val: number[][]) {state.nearFieldEk = cloneDeep(val)},
+  setNearFieldHk (state: prsi, val: number[][]) {state.nearFieldHk = cloneDeep(val)},
+  setNearFieldEH (state: prsi, val: number[][]) {state.nearFieldEH = cloneDeep(val)},
+
   setQ (state: prsi, val: spectraData) {
     state.WLs    = cloneDeep(val.WLs)
     state.Qsca   = cloneDeep(val.Qsca)

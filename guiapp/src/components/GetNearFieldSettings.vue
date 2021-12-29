@@ -50,7 +50,6 @@
         <div class="col-xs-grow col-sm">
           <div class="row justify-xs-center justify-sm-start items-center">
             <div class="q-gutter-md q-py-sm q-px-xs">
-              <q-radio v-model="crossSection" dense size='sm' :val="nearFieldPlane.all" label="All" />
               <q-radio v-model="crossSection" dense size='sm' :val="nearFieldPlane.Ek" label="Ek" />
               <q-radio v-model="crossSection" dense size='sm' :val="nearFieldPlane.Hk" label="Hk" />
               <q-radio v-model="crossSection" dense size='sm' :val="nearFieldPlane.EH" label="EH" />

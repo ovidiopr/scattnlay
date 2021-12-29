@@ -17,6 +17,10 @@ export interface spectraData {
 }
 
 export interface plotRuntimeStateInterface {
+  // Near field
+  nearFieldEk:number[][]
+  nearFieldHk:number[][]
+  nearFieldEH:number[][]
   // Spectra plots
   WLs: number[]
   WLsInUnits: number[]
@@ -42,6 +46,9 @@ export interface plotRuntimeStateInterface {
 }
 
 function state(): plotRuntimeStateInterface {
+  const nearFieldEk:number[][] = [[], []]
+  const nearFieldEH:number[][] = [[], []]
+  const nearFieldHk:number[][] = [[], []]
   const WLs:number[] = []
   const WLsInUnits:number[] = []
   const Qsca:number[] = [], Qabs:number[] = [], Qext:number[] = []
@@ -92,7 +99,9 @@ function state(): plotRuntimeStateInterface {
   const isRemovePlots = true
   const isLogPlot = false
 
-  return { WLs, WLsInUnits,
+  return {
+    nearFieldEk, nearFieldHk, nearFieldEH,
+    WLs, WLsInUnits,
     Qsca, Qabs, Qext, Qsca_n, Qabs_n, Qext_n,
     spectrumPlots,
     isPlotQsca, isPlotQabs, isPlotQext,

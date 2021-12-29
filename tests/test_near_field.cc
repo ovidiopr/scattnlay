@@ -29,8 +29,8 @@ TEST(RunFieldCalculationCartesian, HandlesInput) {
 
 }
 
-TEST(RunFieldCalculationPolar, DISABLED_HandlesInput) {
-//TEST(RunFieldCalculationPolar, HandlesInput) {
+//TEST(RunFieldCalculationPolar, DISABLED_HandlesInput) {
+TEST(RunFieldCalculationPolar, HandlesInput) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
   EXPECT_THROW(nmie.RunFieldCalculationPolar(0), std::invalid_argument);
   EXPECT_THROW(nmie.RunFieldCalculationPolar(1,1,10,5), std::invalid_argument);
@@ -50,8 +50,8 @@ TEST(RunFieldCalculationPolar, DISABLED_HandlesInput) {
 
 }
 //#ifndef MULTI_PRECISION
-TEST(BulkSphere, DISABLED_HandlesInput) {
-//TEST(BulkSphere, HandlesInput) {
+//TEST(BulkSphere, DISABLED_HandlesInput) {
+TEST(BulkSphere, HandlesInput) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
   for (const auto &data : parameters_bulk_sphere) {
     auto x = std::get<0>(data);
