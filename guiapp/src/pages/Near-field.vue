@@ -10,9 +10,9 @@
     <RunSimulationNearField/>
     <div class="q-ma-xs"/>
     <PlotNearField/>
-    <div class="col-auto">
-      Input result: {{$store.state.simulationSetup.gui.nearFieldSetup.plotSideResolution}}
-    </div>
+<!--    <div class="col-auto">-->
+<!--      Input result: {{$store.state.simulationSetup.gui.nearFieldSetup.plotSideResolution}}-->
+<!--    </div>-->
 
     <div class="q-ma-lg"/>
     <!-- place QPageScroller at end of page -->

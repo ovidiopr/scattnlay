@@ -16,8 +16,9 @@ import {
   watch
 } from 'vue'
 // import { flexRowTitleStyle } from 'components/config'
+import { toUnits } from 'components/utils'
 import { plotlyChart } from 'src/store/plot-runtime/state'
-import { PlotData, /*, DataTitle*/ } from 'plotly.js-dist-min'
+import { PlotData, DataTitle } from 'plotly.js-dist-min'
 import {nearFieldPlane} from 'src/store/simulation-setup/state';
 
 
@@ -31,6 +32,7 @@ export default defineComponent({
     const nearFieldPlotInit:plotlyChart = {
       data: [],
       layout: {
+        shapes: [],
         margin: {
           l: 0,
           r: 40,
@@ -53,31 +55,68 @@ export default defineComponent({
 
     const nearFieldPlot = reactive(nearFieldPlotInit)
     const crossSection = computed(()=>$store.state.simulationSetup.current.nearFieldSetup.crossSection)
+    const relativePlotSize = computed(()=>$store.state.simulationSetup.current.nearFieldSetup.relativePlotSize)
+    const plotSideResolution = computed(()=>$store.state.simulationSetup.current.nearFieldSetup.plotSideResolution)
+    const layerWidths = computed(()=>$store.state.simulationSetup.current.layers.map(x=>x.layerWidth))
+    const totalR = computed(()=>layerWidths.value.reduce((a, b) => a + b, 0))
+    const x0 = computed(()=>totalR.value*relativePlotSize.value)
+    const dx = computed(()=>x0.value*2.0/(plotSideResolution.value-1))
+    const units = computed(()=>$store.state.guiRuntime.units)
+    const xy = computed(()=> {
+      let x:number[] = []
+      let y:number[] = []
+      for (let i = 0; i< plotSideResolution.value; ++i) {
+          x.push(toUnits(-x0.value + i*dx.value, units.value))
+          y.push(toUnits(-x0.value + i*dx.value, units.value))
+      }
+      return {x:x, y:y}
+    })
+
     const nearFieldEk = computed( ()=>$store.state.plotRuntime.nearFieldEk)
     const nearFieldHk = computed( ()=>$store.state.plotRuntime.nearFieldHk)
     const nearFieldEH = computed( ()=>$store.state.plotRuntime.nearFieldEH)
-    watch([nearFieldEk, nearFieldHk, nearFieldEH], ()=>{
+    watch([nearFieldEk, nearFieldHk, nearFieldEH, xy], ()=>{
       nearFieldPlot.data.length = 0
-      const heatMapSettings: Partial<PlotData> = {type: 'heatmap',  colorscale: 'Jet'}
+      const heatMapSettings: Partial<PlotData> = {type: 'heatmap',
+        colorscale: 'Jet', colorbar:{title:'|𝐸|∕|𝐸𝜊|'}
+      }
       let heatMapData: Partial<PlotData> = {}
       if (crossSection.value == nearFieldPlane.Ek) heatMapData  = { z: nearFieldEk.value}
       if (crossSection.value == nearFieldPlane.Hk) heatMapData  = { z: nearFieldHk.value}
       if (crossSection.value == nearFieldPlane.EH) heatMapData  = { z: nearFieldEH.value}
-      nearFieldPlot.data.push({...heatMapData, ...heatMapSettings})
+      nearFieldPlot.data.push({...xy.value, ...heatMapData, ...heatMapSettings})
 
+      if (nearFieldPlot.layout.shapes) {
+        nearFieldPlot.layout.shapes.length = 0
+        let r = 0
+        for (let widthLayer of layerWidths.value) {
+          r += widthLayer
+          nearFieldPlot.layout.shapes.push({
+            type: 'circle',
+            xref: 'x',
+            yref: 'y',
+            x0: toUnits(-r, units.value),
+            y0: toUnits(-r, units.value),
+            x1: toUnits(r, units.value),
+            y1: toUnits(r, units.value),
+            line: {
+              color: 'rgba(255, 255, 255, 0.7)',
+              width: 3
+            }
+          })
+        }
+      }
     })
-    // const xaxisTitle = computed(()=>{
-    //   let title:string|Partial<DataTitle> = ''
-    //   if ($store.state.plotRuntime.spectrumPlots.layout.xaxis?.title) {
-    //     title = $store.state.plotRuntime.spectrumPlots.layout.xaxis.title
-    //   }
-    //   return title
-    // })
-    // if (nearFieldPlot.layout.xaxis) nearFieldPlot.layout.xaxis.title = xaxisTitle.value
-    // watch( xaxisTitle, ()=>{
-    //   if (nearFieldPlot.layout.xaxis) nearFieldPlot.layout.xaxis.title = xaxisTitle.value
-    // })
-    //
+
+    const xaxisTitle = computed(()=>{
+      let title:string|Partial<DataTitle> = 'x ['+units.value+']'
+      return title
+    })
+    if (nearFieldPlot.layout.xaxis) nearFieldPlot.layout.xaxis.title = xaxisTitle.value
+    watch( xaxisTitle, ()=>{
+      if (nearFieldPlot.layout.xaxis) nearFieldPlot.layout.xaxis.title = xaxisTitle.value
+    })
+
     // const plotRange=ref('material data')
     // const isPlotReN = ref(true)
     // const isPlotImN = ref(true)
@@ -202,7 +241,7 @@ export default defineComponent({
     // onActivated(()=>updateSpectraPlot())
 
     return {
-      nearFieldPlot,
+      nearFieldPlot, totalR
 
     }
   }

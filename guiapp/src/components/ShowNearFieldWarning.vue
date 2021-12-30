@@ -1,8 +1,8 @@
 <template>
-  <div>
-    <q-card v-if="showWarning">
+  <div v-if="count<2">
+    <q-card>
       <div class="q-pa-sm">
-      <div class="text-h6 q-ml-sm text-warning"><q-icon name="warning"/> Warning</div>
+      <div class="text-h6 q-ml-sm"><q-icon name="warning"/> Warning</div>
       <div class="q-ma-sm">Near-field evaluation is an experimental feature. In general, it provides a correct result. However, it is not as tested as spectrum computations, especially for the case of large, multilayer, and absorbing spheres. Please, verify the result before using it.</div>
       <div class="q-ma-xs"/>
       <div class="q-ml-sm text-h6"><q-icon size='sm' name="o_info"/> Usage</div>
@@ -14,7 +14,7 @@
                @click="void router.push({path: '/spectrum'})"/>
       <q-btn icon="close" flat text-color="primary"
                label="Close"
-               @click="showWarning=false"/>
+               @click="count=2"/>
       </div>
     </q-card>
     <div class="q-ma-md"/>
@@ -25,6 +25,7 @@
 import { useRouter } from 'vue-router'
 import {
   defineComponent,
+  onActivated,
   ref,
 } from 'vue'
 
@@ -32,8 +33,8 @@ export default defineComponent({
   name: 'ShowNearFieldWarning',
   setup () {
     const router = useRouter()
-    let showWarning = ref(true)
-
+    let count = ref(0)
+    onActivated(()=> { count.value = count.value + 1 })
     // import { useQuasar } from 'quasar'
     // const $q = useQuasar()
     // onActivated(()=>{
@@ -59,7 +60,7 @@ export default defineComponent({
     // })
     //
 
-    return { showWarning, router }
+    return { count, router }
   }
 })
 </script>
