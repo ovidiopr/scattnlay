@@ -84,7 +84,7 @@ namespace nmie {
     isExpCoeffsCalc_ = false;
     aln_.clear(); bln_.clear(); cln_.clear(); dln_.clear();
 
-    std::complex<FloatType> /*c_one(1.0, 0.0),*/ c_zero(0.0, 0.0);
+    std::complex<FloatType> c_one(1.0, 0.0), c_zero(0.0, 0.0);
 
     const int L = refractive_index_.size();
 
@@ -104,8 +104,8 @@ namespace nmie {
     for (int n = 0; n < nmax_; n++) {
       aln_[L][n] = an_[n];
       bln_[L][n] = bn_[n];
-      cln_[L][n] = c_zero;
-      dln_[L][n] = c_zero;
+      cln_[L][n] = c_one;
+      dln_[L][n] = c_one;
     }
 
     std::vector<std::complex<FloatType> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
@@ -269,6 +269,12 @@ namespace nmie {
       H[i] = c_zero;
     }
 
+    const unsigned L = refractive_index_.size();
+    for (int n = 0; n < nmax_; n++) {
+      cln_[L][n] = c_zero;
+      dln_[L][n] = c_zero;
+    }
+
     unsigned int l;
     GetIndexAtRadius(Rho, ml, l);
 
@@ -351,7 +357,6 @@ namespace nmie {
           ) break;
     }  // end of for all n
 
-    const unsigned L = refractive_index_.size();
     // Add the incident field
     if(l==L) {
 //      using nmm::sin_t;

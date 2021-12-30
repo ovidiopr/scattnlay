@@ -32,22 +32,18 @@
 <script lang="ts">
 import ReactiveChart from 'components/ReactiveChart.vue'
 import { useStore } from 'src/store'
-import { useRouter } from 'vue-router'
 import {
   defineComponent,
   computed,
-    onActivated
+    // onActivated,
   // watch,
   //   ref,
 } from 'vue'
 import { fromUnits, toUnits } from 'components/utils'
 import InputWithUnits from 'components/InputWithUnits.vue'
 import { flexRowTitleStyle } from 'components/config'
-
 import { PlotlyHTMLElement } from 'plotly.js-dist-min'
 import { cloneDeep } from 'lodash'
-import { useQuasar } from 'quasar'
-
 
 export default defineComponent({
   name: 'GetWlFromPlot',
@@ -55,32 +51,6 @@ export default defineComponent({
     ReactiveChart, InputWithUnits
   },
   setup () {
-    const $q = useQuasar()
-    const router = useRouter()
-
-    let count = 0
-    onActivated(()=>{
-      if (count < 2) {
-        $q.notify({
-          message: 'Near-field simulation uses settings from spectrum simulation.',
-          multiLine: true,
-          position: 'top-right',
-          icon: 'o_info',
-          progress: true,
-          color: 'white',
-          textColor: 'black',
-          actions: [
-            { icon: 'settings', label: 'Change spectrum settings', color: 'primary',
-              handler: () => { void router.push({path: '/spectrum'}) } },
-            { icon: 'close', label: 'Close', color: 'primary'},
-
-          ],
-          timeout: 10000
-        })
-        count += 1
-      }
-    })
-
     const $store = useStore()
 
     const sourceUnits = computed( ()=>$store.state.guiRuntime.sourceUnits)
@@ -124,8 +94,7 @@ export default defineComponent({
     }
     return {currentWavelengthInSourceUnits, sourceUnits,
       chartContent, flexRowTitleStyle, isShowingHelpForInputWithUnits,
-      mangeID
-
+      mangeID,
     }
   }
 })

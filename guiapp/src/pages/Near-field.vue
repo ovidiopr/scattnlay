@@ -1,6 +1,7 @@
 <template>
   <q-page class="column q-px-md">
     <div class="q-ma-md"/>
+    <ShowNearFieldWarning/>
     <RunSimulationSpectrum v-show="false"/>
     <GetWlFromPlot/>
     <div class="q-ma-xs"/>
@@ -30,6 +31,7 @@ import GetNearFieldSettings from 'components/GetNearFieldSettings.vue'
 import RunSimulationSpectrum from 'components/RunSimulationSpectrum.vue'
 import RunSimulationNearField from 'components/RunSimulationNearField.vue'
 import PlotNearField from 'components/PlotNearField.vue'
+import ShowNearFieldWarning from 'components/ShowNearFieldWarning.vue'
 
 // import { useStore } from 'src/store'
 
@@ -37,6 +39,7 @@ import PlotNearField from 'components/PlotNearField.vue'
 export default defineComponent({
   name: 'NearField',
   components: {
+    ShowNearFieldWarning,
     PlotNearField,
     RunSimulationNearField,
     GetWlFromPlot, RunSimulationSpectrum,

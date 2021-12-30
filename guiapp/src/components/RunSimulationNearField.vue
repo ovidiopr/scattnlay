@@ -19,24 +19,24 @@
           </template>
         </q-btn>
     </div>
-    <div class="col-xs-grow col-sm q-px-xs">
-      <div class="row justify-xs-center justify-sm-start items-baseline">
+<!--    <div class="col-xs-grow col-sm q-px-xs">-->
+<!--      <div class="row justify-xs-center justify-sm-start items-baseline">-->
 
-        <div class="col-auto">
-          <q-btn
-              color="primary"
-              no-caps
-              @click="saveSpectrumSimulation"
-          >Save</q-btn>
-        </div>
+<!--        <div class="col-auto">-->
+<!--          <q-btn-->
+<!--              color="primary"-->
+<!--              no-caps-->
+<!--              @click="saveSpectrumSimulation"-->
+<!--          >Save</q-btn>-->
+<!--        </div>-->
 
-      </div>
-    </div>
+<!--      </div>-->
+<!--    </div>-->
   </div>
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, nextTick, watch} from 'vue'
+import {computed, defineComponent, nextTick} from 'vue'
 import {useStore} from 'src/store'
 import {getModeName, range, rangeInt} from 'components/utils'
 import {cloneDeep} from 'lodash'
@@ -119,9 +119,9 @@ export default defineComponent({
     }
 
     runNearFieldSimulation()
-    watch(isRunning, ()=>{
-          console.log(isRunning.value)
-    })
+    // watch(isRunning, ()=>{
+    //       console.log(isRunning.value)
+    // })
 
     // onActivated(()=>{
     //   if (isNmieLoaded.value) runNearFieldSimulation()
