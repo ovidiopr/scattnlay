@@ -71,7 +71,7 @@ function setupFactory(hostIndex = 1,
                       plotLabel = '',
 
                       nearFieldSetup = {
-                        atWL: 619,
+                        atWL: 619.3885178,
                         relativePlotSize: 2,
                         plotSideResolution: 64,
                         crossSection: nearFieldPlane.Ek,

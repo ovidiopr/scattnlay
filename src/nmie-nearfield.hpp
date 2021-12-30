@@ -93,10 +93,10 @@ namespace nmie {
     cln_.resize(L + 1);
     dln_.resize(L + 1);
     for (int l = 0; l <= L; l++) {
-      aln_[l].resize(nmax_);
-      bln_[l].resize(nmax_);
-      cln_[l].resize(nmax_);
-      dln_[l].resize(nmax_);
+      aln_[l].resize(nmax_, static_cast<FloatType>(0.0));
+      bln_[l].resize(nmax_, static_cast<FloatType>(0.0));
+      cln_[l].resize(nmax_, static_cast<FloatType>(0.0));
+      dln_[l].resize(nmax_, static_cast<FloatType>(0.0));
     }
 
     // Yang, paragraph under eq. A3
@@ -354,17 +354,17 @@ namespace nmie {
     const unsigned L = refractive_index_.size();
     // Add the incident field
     if(l==L) {
-      using nmm::sin;
-      using nmm::cos;
-      const auto z = Rho*cos(Theta);
-      const auto Ex = std::complex<FloatType>(cos(z), sin(z));
-      E[0] +=  Ex*cos(Phi)*sin(Theta);
-      E[1] +=  Ex*cos(Phi)*cos(Theta);
-      E[2] += -Ex*sin(Phi);
+//      using nmm::sin_t;
+//      using nmm::cos_t;
+      const auto z = Rho*cos_t(Theta);
+      const auto Ex = std::complex<evalType>(cos_t(z), sin_t(z));
+      E[0] +=  Ex*cos_t(Phi)*sin_t(Theta);
+      E[1] +=  Ex*cos_t(Phi)*cos_t(Theta);
+      E[2] += -Ex*sin_t(Phi);
       const auto Hy = Ex;
-      H[0] += Hy*sin(Theta)*sin(Phi);
-      H[1] += Hy*cos(Theta)*sin(Phi);
-      H[2] += Hy*cos(Phi);
+      H[0] += Hy*sin_t(Theta)*sin_t(Phi);
+      H[1] += Hy*cos_t(Theta)*sin_t(Phi);
+      H[2] += Hy*cos_t(Phi);
     }
 
     if( (!isConvergedE[0] || !isConvergedE[1] ||!isConvergedE[2] ||
@@ -545,9 +545,9 @@ void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const double fro
 
     // Skip if not enough terms in Mie series (i.e. required near field nmax > available terms )
     if (near_field_nmax > available_maximal_nmax_)  near_field_nmax = available_maximal_nmax_;
-    Psi[j].resize(near_field_nmax + 1); D1n[j].resize(near_field_nmax + 1);
-    Zeta[j].resize(near_field_nmax + 1); D3n[j].resize(near_field_nmax + 1);
-    PsiZeta[j].resize(near_field_nmax + 1);
+    Psi[j].resize(near_field_nmax + 1, static_cast<FloatType>(0.0)); D1n[j].resize(near_field_nmax + 1, static_cast<FloatType>(0.0));
+    Zeta[j].resize(near_field_nmax + 1, static_cast<FloatType>(0.0)); D3n[j].resize(near_field_nmax + 1, static_cast<FloatType>(0.0));
+    PsiZeta[j].resize(near_field_nmax + 1, static_cast<FloatType>(0.0));
     std::complex<FloatType> ml;
     GetIndexAtRadius(Rho, ml);
     auto z = Rho*ml;

@@ -17,7 +17,7 @@ import {
 } from 'vue'
 // import { flexRowTitleStyle } from 'components/config'
 import { plotlyChart } from 'src/store/plot-runtime/state'
-// import { Data, DataTitle } from 'plotly.js-dist-min'
+import { PlotData, /*, DataTitle*/ } from 'plotly.js-dist-min'
 import {nearFieldPlane} from 'src/store/simulation-setup/state';
 
 
@@ -58,20 +58,12 @@ export default defineComponent({
     const nearFieldEH = computed( ()=>$store.state.plotRuntime.nearFieldEH)
     watch([nearFieldEk, nearFieldHk, nearFieldEH], ()=>{
       nearFieldPlot.data.length = 0
-      if (crossSection.value == nearFieldPlane.Ek) {
-        nearFieldPlot.data.push({ z: $store.state.plotRuntime.nearFieldEk,
-          type: 'heatmap',  colorscale: 'Jet', })
-      }
-      if (crossSection.value == nearFieldPlane.Hk) {
-        nearFieldPlot.data.push({ z: $store.state.plotRuntime.nearFieldHk,
-          type: 'heatmap',  colorscale: 'Jet', })
-      }
-      if (crossSection.value == nearFieldPlane.EH) {
-        nearFieldPlot.data.push({ z: $store.state.plotRuntime.nearFieldEH,
-          type: 'heatmap',  colorscale: 'Jet', })
-      }
-      // if (crossSection.value == nearFieldPlane.Hk) $store.commit('plotRuntime/setNearFieldHk')
-      // if (crossSection.value == nearFieldPlane.EH) $store.commit('plotRuntime/setNearFieldEH')
+      const heatMapSettings: Partial<PlotData> = {type: 'heatmap',  colorscale: 'Jet'}
+      let heatMapData: Partial<PlotData> = {}
+      if (crossSection.value == nearFieldPlane.Ek) heatMapData  = { z: nearFieldEk.value}
+      if (crossSection.value == nearFieldPlane.Hk) heatMapData  = { z: nearFieldHk.value}
+      if (crossSection.value == nearFieldPlane.EH) heatMapData  = { z: nearFieldEH.value}
+      nearFieldPlot.data.push({...heatMapData, ...heatMapSettings})
 
     })
     // const xaxisTitle = computed(()=>{

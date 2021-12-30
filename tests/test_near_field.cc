@@ -8,7 +8,7 @@ TEST(RunFieldCalculationCartesian, HandlesInput) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
 //  EXPECT_THROW(nmie.RunFieldCalculationPolar(0), std::invalid_argument);
 //  EXPECT_THROW(nmie.RunFieldCalculationPolar(1,1,10,5), std::invalid_argument);
-  double r = 2*nmie.PI_*100/619;
+  nmie::FloatType r = 2*nmie.PI_*100/619;
 //  double r = 1500;
   nmie.SetLayersSize({r/2, r});
   nmie.SetLayersIndex({ {4.0,0}, {4.0,0}});

@@ -118,6 +118,7 @@ export default defineComponent({
       }, 100)
     }
 
+    runNearFieldSimulation()
     watch(isRunning, ()=>{
           console.log(isRunning.value)
     })
