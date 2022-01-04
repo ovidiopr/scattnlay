@@ -23,8 +23,8 @@
 import {
   defineComponent
 } from 'vue'
-import GetHostIndex from 'components/GetHostIndex.vue'
-import GetSourceParameters from 'components/GetSourceParameters.vue'
+import GetHostIndex from 'components/spectrum/GetHostIndex.vue'
+import GetSourceParameters from 'components/spectrum/GetSourceParameters.vue'
 // import GetParticleParameters from 'components/GetParticleParameters.vue'
 // import { useStore } from 'src/store'
 

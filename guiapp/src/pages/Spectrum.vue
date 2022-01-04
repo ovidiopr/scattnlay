@@ -35,15 +35,15 @@ import {
   defineComponent,
 } from 'vue'
 
-import GetUnits from 'components/GetUnits.vue'
-import GetHostIndex from 'components/GetHostIndex.vue'
-import GetSourceParameters from 'components/GetSourceParameters.vue'
-import GetParticleParameters from 'components/GetParticleParameters.vue'
-import GetModesToPlot from 'components/GetModesToPlot.vue'
-import RunSimulationSpectrum from 'components/RunSimulationSpectrum.vue'
-import GetPlotSettings from 'components/GetPlotSettings.vue'
-import PlotSelector from 'components/PlotSelector.vue'
-import PlotSpectra from 'components/PlotSpectra.vue'
+import GetUnits from 'components/spectrum/GetUnits.vue'
+import GetHostIndex from 'components/spectrum/GetHostIndex.vue'
+import GetSourceParameters from 'components/spectrum/GetSourceParameters.vue'
+import GetParticleParameters from 'components/spectrum/GetParticleParameters.vue'
+import GetModesToPlot from 'components/spectrum/GetModesToPlot.vue'
+import RunSimulationSpectrum from 'components/spectrum/RunSimulationSpectrum.vue'
+import GetPlotSettings from 'components/spectrum/GetPlotSettings.vue'
+import PlotSelector from 'components/spectrum/PlotSelector.vue'
+import PlotSpectra from 'components/spectrum/PlotSpectra.vue'
 // import { useStore } from 'src/store'
 
 

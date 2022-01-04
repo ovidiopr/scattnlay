@@ -21,10 +21,10 @@ import {
   defineComponent,
 } from 'vue'
 
-import MaterialsSelector from 'components/MaterialsSelector.vue'
-import MaterialsActivated from 'components/MaterialsActivated.vue'
-import GetSourceParameters from 'components/GetSourceParameters.vue'
-import PlotMaterials from 'components/PlotMaterials.vue'
+import MaterialsSelector from 'components/materials/MaterialsSelector.vue'
+import MaterialsActivated from 'components/materials/MaterialsActivated.vue'
+import GetSourceParameters from 'components/spectrum/GetSourceParameters.vue'
+import PlotMaterials from 'components/materials/PlotMaterials.vue'
 // import { useStore } from 'src/store'
 
 

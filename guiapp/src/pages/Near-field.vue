@@ -28,13 +28,13 @@
 import {
   defineComponent
 } from 'vue'
-import GetWlFromPlot from 'components/GetWlFromPlot.vue'
-import GetNearFieldSettings from 'components/GetNearFieldSettings.vue'
-import RunSimulationSpectrum from 'components/RunSimulationSpectrum.vue'
-import RunSimulationNearField from 'components/RunSimulationNearField.vue'
-import PlotNearField from 'components/PlotNearField.vue'
-import ShowNearFieldWarning from 'components/ShowNearFieldWarning.vue'
-import GetNearFieldColorScale from 'components/GetNearFieldColorScale.vue'
+import GetWlFromPlot from 'components/nearfield/GetWlFromPlot.vue'
+import GetNearFieldSettings from 'components/nearfield/GetNearFieldSettings.vue'
+import RunSimulationSpectrum from 'components/spectrum/RunSimulationSpectrum.vue'
+import RunSimulationNearField from 'components/nearfield/RunSimulationNearField.vue'
+import PlotNearField from 'components/nearfield/PlotNearField.vue'
+import ShowNearFieldWarning from 'components/nearfield/ShowNearFieldWarning.vue'
+import GetNearFieldColorScale from 'components/nearfield/GetNearFieldColorScale.vue'
 
 // import { useStore } from 'src/store'
 
