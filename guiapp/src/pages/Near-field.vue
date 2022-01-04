@@ -10,6 +10,8 @@
     <RunSimulationNearField/>
     <div class="q-ma-xs"/>
     <PlotNearField/>
+    <div class="q-ma-xs"/>
+    <GetNearFieldColorScale/>
 <!--    <div class="col-auto">-->
 <!--      Input result: {{$store.state.simulationSetup.gui.nearFieldSetup.plotSideResolution}}-->
 <!--    </div>-->
@@ -32,6 +34,7 @@ import RunSimulationSpectrum from 'components/RunSimulationSpectrum.vue'
 import RunSimulationNearField from 'components/RunSimulationNearField.vue'
 import PlotNearField from 'components/PlotNearField.vue'
 import ShowNearFieldWarning from 'components/ShowNearFieldWarning.vue'
+import GetNearFieldColorScale from 'components/GetNearFieldColorScale.vue'
 
 // import { useStore } from 'src/store'
 
@@ -39,6 +42,7 @@ import ShowNearFieldWarning from 'components/ShowNearFieldWarning.vue'
 export default defineComponent({
   name: 'NearField',
   components: {
+    GetNearFieldColorScale,
     ShowNearFieldWarning,
     PlotNearField,
     RunSimulationNearField,

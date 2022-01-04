@@ -100,9 +100,7 @@ export default defineComponent({
                 crossSection,
                 0, 0, 0, 1
             )
-            let Eabs_list = Array.from(nmie.GetFieldEabs())
-            const Eabs = [];
-            while (Eabs_list.length) Eabs.push(Eabs_list.splice(0, plotSideResolution));
+            const Eabs = nmie.GetFieldEabs()
             if (crossSection == nearFieldPlane.Ek) $store.commit('plotRuntime/setNearFieldEk', Eabs)
             if (crossSection == nearFieldPlane.Hk) $store.commit('plotRuntime/setNearFieldHk', Eabs)
             if (crossSection == nearFieldPlane.EH) $store.commit('plotRuntime/setNearFieldEH', Eabs)

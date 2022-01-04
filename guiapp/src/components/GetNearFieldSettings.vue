@@ -95,10 +95,10 @@ export default defineComponent({
       set: val => $store.commit('simulationSetup/setNearFieldRelativePlotSize', val)
     })
 
-    const maxComputeTime = computed({
-      get: () => $store.state.simulationSetup.gui.nearFieldSetup.maxComputeTime,
-      set: val => $store.commit('simulationSetup/setNearFieldMaxComputeTime', val)
-    })
+    // const maxComputeTime = computed({
+    //   get: () => $store.state.simulationSetup.gui.nearFieldSetup.maxComputeTime,
+    //   set: val => $store.commit('simulationSetup/setNearFieldMaxComputeTime', val)
+    // })
 
     const plotSideResolution = computed({
       get: () => $store.state.simulationSetup.gui.nearFieldSetup.plotSideResolution,
@@ -107,7 +107,9 @@ export default defineComponent({
     })
 
     return { crossSection, isShowingHelpForInputWithUnits, flexRowTitleStyle,
-    relativePlotSize, maxComputeTime, plotSideResolution, nearFieldPlane}
+      relativePlotSize,
+      // maxComputeTime,
+      plotSideResolution, nearFieldPlane}
   },
 })
 </script>

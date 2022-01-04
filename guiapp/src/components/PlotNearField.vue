@@ -16,7 +16,11 @@ import {
   watch
 } from 'vue'
 // import { flexRowTitleStyle } from 'components/config'
-import { toUnits } from 'components/utils'
+import { toUnits,
+  getMaxFromHeatmap,
+  getMinFromHeatmap,
+  limitMap
+} from 'components/utils'
 import { plotlyChart } from 'src/store/plot-runtime/state'
 import { PlotData, DataTitle } from 'plotly.js-dist-min'
 import {nearFieldPlane} from 'src/store/simulation-setup/state';
@@ -66,25 +70,37 @@ export default defineComponent({
       let x:number[] = []
       let y:number[] = []
       for (let i = 0; i< plotSideResolution.value; ++i) {
-          x.push(toUnits(-x0.value + i*dx.value, units.value))
-          y.push(toUnits(-x0.value + i*dx.value, units.value))
+        for (let j = 0; j< plotSideResolution.value; ++j) {
+          x.push(toUnits(-x0.value + j * dx.value, units.value))
+          y.push(toUnits(-x0.value + i * dx.value, units.value))
+        }
       }
       return {x:x, y:y}
     })
 
+    const limitFrom = computed( ()=>$store.state.plotRuntime.nearFieldLimitFrom )
+    const limitTo = computed(()=>$store.state.plotRuntime.nearFieldLimitTo )
+
     const nearFieldEk = computed( ()=>$store.state.plotRuntime.nearFieldEk)
     const nearFieldHk = computed( ()=>$store.state.plotRuntime.nearFieldHk)
     const nearFieldEH = computed( ()=>$store.state.plotRuntime.nearFieldEH)
-    watch([nearFieldEk, nearFieldHk, nearFieldEH, xy], ()=>{
+    const nearFieldProc = computed( ()=>{
+      let nearFieldStore = nearFieldEk.value
+      if (crossSection.value == nearFieldPlane.Hk) nearFieldStore = nearFieldHk.value
+      if (crossSection.value == nearFieldPlane.EH) nearFieldStore = nearFieldEH.value
+      if (!nearFieldStore) return nearFieldStore
+      $store.commit('plotRuntime/setNearFieldDataTo',getMaxFromHeatmap(nearFieldStore))
+      $store.commit('plotRuntime/setNearFieldDataFrom',getMinFromHeatmap(nearFieldStore))
+      return limitMap(nearFieldStore, limitFrom.value, limitTo.value)
+      // return nearFieldStore.map(x=>x>limitTo.value?limitTo.value:x)
+    })
+    watch([nearFieldProc, xy], ()=>{
       nearFieldPlot.data.length = 0
       const heatMapSettings: Partial<PlotData> = {type: 'heatmap',
-        colorscale: 'Jet', colorbar:{title:'|𝐸|∕|𝐸𝜊|'}
+        colorscale: 'Jet', colorbar:{title:'|𝐸|∕|𝐸𝜊|'},
+        z: nearFieldProc.value
       }
-      let heatMapData: Partial<PlotData> = {}
-      if (crossSection.value == nearFieldPlane.Ek) heatMapData  = { z: nearFieldEk.value}
-      if (crossSection.value == nearFieldPlane.Hk) heatMapData  = { z: nearFieldHk.value}
-      if (crossSection.value == nearFieldPlane.EH) heatMapData  = { z: nearFieldEH.value}
-      nearFieldPlot.data.push({...xy.value, ...heatMapData, ...heatMapSettings})
+      nearFieldPlot.data.push({...xy.value, ...heatMapSettings})
 
       if (nearFieldPlot.layout.shapes) {
         nearFieldPlot.layout.shapes.length = 0

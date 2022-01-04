@@ -30,7 +30,7 @@ export interface nearFieldSetup {
   relativePlotSize: number
   plotSideResolution: number
   crossSection: nearFieldPlane
-  maxComputeTime: number //in seconds
+  // maxComputeTime: number //in seconds
 }
 
 export interface simulationSetup {
@@ -75,7 +75,7 @@ function setupFactory(hostIndex = 1,
                         relativePlotSize: 2,
                         plotSideResolution: 64,
                         crossSection: nearFieldPlane.Ek,
-                        maxComputeTime: 5 //in seconds
+                        // maxComputeTime: 5 //in seconds
                       },
 
                       farFieldWL = 619,

@@ -18,7 +18,7 @@ cd ..
 #sed -i 's=[<]base href[=]//themes//custom//physics//mie-next// [>]==g' index.html
 cd ../..
 
-rsync -aue ssh --progress  dist/spa/ physics@physics.ifmo.ru:/var/www/html/physicsifmoru/web/themes/custom/physics/mie-next
+rsync -aue ssh --progress  dist/spa/ physics@physics.ifmo.ru:/var/www/html/physicsifmoru/web/themes/custom/physics/mie
 echo
 cat dist/spa/index.html
 echo

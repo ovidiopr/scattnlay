@@ -25,7 +25,7 @@ export class nmie_class {
                                   at_x: number, at_y: number, at_z: number,
                                   isIgnoreAvailableNmax: number): void;
 
-    GetFieldEabs(): number[];
+    GetFieldEabs(): Float64Array;
     GetQsca(): number;
     GetQabs(): number;
     GetQext(): number;

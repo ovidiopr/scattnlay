@@ -72,7 +72,7 @@ const mutation: MutationTree<sssi> = {
   setNearFieldRelativePlotSize   (state: sssi, val: number)         {state.gui.nearFieldSetup.relativePlotSize   = val},
   setNearFieldPlotSideResolution (state: sssi, val: number)         {state.gui.nearFieldSetup.plotSideResolution = val},
   setNearFieldCrossSection       (state: sssi, val: nearFieldPlane) {state.gui.nearFieldSetup.crossSection       = val},
-  setNearFieldMaxComputeTime     (state: sssi, val: number)         {state.gui.nearFieldSetup.maxComputeTime     = val},
+  // setNearFieldMaxComputeTime     (state: sssi, val: number)         {state.gui.nearFieldSetup.maxComputeTime     = val},
 
   setFarFieldWL    (state: sssi, val: number) { state.gui.farFieldWL  = val},
 
