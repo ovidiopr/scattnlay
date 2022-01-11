@@ -15,11 +15,11 @@ TEST(RunFieldCalculationCartesian, HandlesInput) {
   nmie.RunMieCalculation();
   int nmax = 21;
   // TODO add check of E and H symmetry for X and Y axis inversion
-  nmie.RunFieldCalculationCartesian(2, 2, nmie::Planes::kEk,
+  nmie.RunFieldCalculationCartesian(2, 2, 2, nmie::Planes::kEk,
                                     0, 0, 0, true, nmax);
-  nmie.RunFieldCalculationCartesian(2, 2, nmie::Planes::kHk,
+  nmie.RunFieldCalculationCartesian(2, 2, 2, nmie::Planes::kHk,
                                     0, 0, 0, true, nmax);
-  nmie.RunFieldCalculationCartesian(2, 2, nmie::Planes::kEH,
+  nmie.RunFieldCalculationCartesian(2, 2, 2, nmie::Planes::kEH,
                                     0, 0, 0, true, nmax);
 
 //  EXPECT_EQ(1, nmie.GetMaxTerms());

@@ -5,8 +5,8 @@
 </template>
 
 <script>
-import ReactiveChart from 'guiapp/src/components/ReactiveChart.vue'
-import { useStore } from 'guiapp/src/store'
+import ReactiveChart from 'components/ReactiveChart.vue'
+import { useStore } from 'src/store'
 import {
   defineComponent,
   computed,

@@ -15,9 +15,9 @@
         <div class="col-xs-grow col-sm">
           <div class="row justify-xs-center justify-sm-start items-center">
             <input-with-units
-                v-model:input-result="plotSideResolution"
+                v-model:input-result="plotXSideResolution"
                 v-model:is-showing-help="isShowingHelpForInputWithUnits"
-                :initial-expression="plotSideResolution.toString()"
+                :initial-expression="plotXSideResolution.toString()"
                 title="points"
                 units=""
             /></div>
@@ -66,6 +66,7 @@
 import {
   defineComponent,
   computed,
+  watch
   } from 'vue'
 import { useStore } from 'src/store'
 import InputWithUnits from 'components/InputWithUnits.vue'
@@ -100,16 +101,19 @@ export default defineComponent({
     //   set: val => $store.commit('simulationSetup/setNearFieldMaxComputeTime', val)
     // })
 
-    const plotSideResolution = computed({
-      get: () => $store.state.simulationSetup.gui.nearFieldSetup.plotSideResolution,
+    const plotXSideResolution = computed({
+      get: () => $store.state.simulationSetup.gui.nearFieldSetup.plotXSideResolution,
       // TODO: make InputWithUnits to handle integer input, so no need to use floor() in the next line.
-      set: val => $store.commit('simulationSetup/setNearFieldPlotSideResolution', Math.floor(val))
+      set: val => $store.commit('simulationSetup/setNearFieldPlotXSideResolution', Math.floor(val))
     })
 
+    watch(plotXSideResolution, ()=>{
+      $store.commit('simulationSetup/setNearFieldPlotYSideResolution', plotXSideResolution.value)
+    })
     return { crossSection, isShowingHelpForInputWithUnits, flexRowTitleStyle,
       relativePlotSize,
       // maxComputeTime,
-      plotSideResolution, nearFieldPlane}
+      plotXSideResolution, nearFieldPlane}
   },
 })
 </script>

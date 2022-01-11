@@ -21,7 +21,8 @@ export class nmie_class {
                              from_Theta: number,   to_Theta: number,
                              from_Phi: number,   to_Phi: number,
                              isIgnoreAvailableNmax: number): void;
-    RunFieldCalculationCartesian( side_points: number, relative_side_length: number, plane_selected: number,
+    RunFieldCalculationCartesian( side_1_points: number, side_2_points: number,
+                                  relative_side_length: number, plane_selected: number,
                                   at_x: number, at_y: number, at_z: number,
                                   isIgnoreAvailableNmax: number): void;
 

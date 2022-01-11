@@ -654,7 +654,8 @@ bool MultiLayerMie<FloatType>::GetFieldConvergence () {
 }
 
 template <typename FloatType>
-void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int side_points,
+void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int side_1_points,
+                                                            const int side_2_points,
                                                             const double relative_side_length,
                                                             const int plane_selected,
                                                             const double at_x, const double at_y,
@@ -665,7 +666,7 @@ void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int side_point
   std::vector<FloatType> Xp(0), Yp(0), Zp(0);
   if (size_param_.size()<1) throw "Expect size_param_ to have at least one element before running a simulation";
   const FloatType max_coord_value = size_param_.back() * relative_side_length;
-  const FloatType dx = max_coord_value*2/( (side_points<2 ? 2 : side_points) - 1.0);
+  const FloatType dx = max_coord_value*2/( (side_1_points<2 ? 2 : side_1_points) - 1.0);
   const FloatType dy = dx, dz = dx;
   auto push_coords = [&](
       const int nx, const int ny, const int nz,
@@ -681,18 +682,18 @@ void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int side_point
     }
   };
   if (plane_selected == Planes::kEk ) {
-    push_coords(          side_points,      1,           side_points,
-                -max_coord_value+at_x,   at_y, -max_coord_value+at_z);
+    push_coords(side_1_points, 1, side_2_points,
+                -max_coord_value+at_x, at_y, -max_coord_value+at_z);
   }
   if (plane_selected == Planes::kHk ) {
-    push_coords(    1,            side_points,           side_points,
-                 at_x,  -max_coord_value+at_y, -max_coord_value+at_z);
+    push_coords(1, side_1_points, side_2_points,
+                at_x, -max_coord_value+at_y, -max_coord_value+at_z);
   }
   if (plane_selected == Planes::kEH) {
-    push_coords(          side_points,           side_points,    1,
+    push_coords(side_1_points, side_2_points, 1,
                 -max_coord_value+at_x, -max_coord_value+at_y, at_z);
   }
-  const unsigned int total_size = side_points*side_points;
+  const unsigned int total_size = side_1_points*side_2_points;
   if (Xp.size() != total_size || Yp.size() != total_size || Zp.size() != total_size)
     throw std::invalid_argument("Error! Wrong dimension of field monitor points for cartesian grid!");
   SetFieldCoords({Xp, Yp, Zp});

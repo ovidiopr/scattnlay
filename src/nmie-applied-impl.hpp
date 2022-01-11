@@ -313,7 +313,8 @@ namespace nmie {
   }
 
 template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::RunFieldCalculationCartesian(const int side_points,
+void MultiLayerMieApplied<FloatType>::RunFieldCalculationCartesian(const int side_1_points,
+                                                                   const int side_2_points,
                                                             const double relative_side_length,
                                                             const int plane_selected,
                                                             const double at_x, const double at_y,
@@ -321,7 +322,8 @@ void MultiLayerMieApplied<FloatType>::RunFieldCalculationCartesian(const int sid
                                                             const int isIgnoreAvailableNmax) {
 //  std::cout<<'test'<<std::endl;
   ConvertToSP();
-  this->MultiLayerMie<FloatType>::RunFieldCalculationCartesian( side_points, relative_side_length, plane_selected,
+  this->MultiLayerMie<FloatType>::RunFieldCalculationCartesian( side_1_points, side_2_points,
+                                                                relative_side_length, plane_selected,
                                                                 at_x, at_y, at_z,
                                                                 isIgnoreAvailableNmax == 0 ? false : true);
 

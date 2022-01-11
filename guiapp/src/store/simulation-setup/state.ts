@@ -28,7 +28,13 @@ export enum nearFieldPlane {
 export interface nearFieldSetup {
   atWL:number
   relativePlotSize: number
-  plotSideResolution: number
+  // X0, Y0, and Z0 refers to simulation
+  atRelativeX0: number
+  atRelativeY0: number
+  atRelativeZ0: number
+  // X and Y refers to plot
+  plotXSideResolution: number
+  plotYSideResolution: number
   crossSection: nearFieldPlane
   // maxComputeTime: number //in seconds
 }
@@ -73,7 +79,11 @@ function setupFactory(hostIndex = 1,
                       nearFieldSetup = {
                         atWL: 619.3885178,
                         relativePlotSize: 2,
-                        plotSideResolution: 64,
+                        atRelativeX0: 0,
+                        atRelativeY0: 0,
+                        atRelativeZ0: 0,
+                        plotXSideResolution: 64,
+                        plotYSideResolution: 64,
                         crossSection: nearFieldPlane.Ek,
                         // maxComputeTime: 5 //in seconds
                       },

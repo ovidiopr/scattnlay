@@ -169,7 +169,8 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
                                   const double from_Phi=0, const double to_Phi=static_cast<double>(3.14159265358979323),
                                   const bool isMarkUnconverged = true,
                                   int nmax_in = -1);
-    void RunFieldCalculationCartesian(const int side_points = 2,
+    void RunFieldCalculationCartesian(const int side_1_points = 2,
+                                      const int side_2_points = 2,
                                       const double relative_side_length = 2,
                                       const int plane_selected = Planes::kEk,
                                       const double at_x = 0, const double at_y = 0,
