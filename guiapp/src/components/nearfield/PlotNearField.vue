@@ -67,14 +67,30 @@ export default defineComponent({
     const x0 = computed(()=>totalR.value*relativePlotSize.value)
     const dx = computed(()=>x0.value*2.0/(plotXSideResolution.value-1))
     const units = computed(()=>$store.state.guiRuntime.units)
+    const at_x = computed(()=>{
+      if (crossSection.value == nearFieldPlane.Ek || crossSection.value == nearFieldPlane.Hk) {
+        return $store.state.simulationSetup.current.nearFieldSetup.atRelativeZ0
+      }
+      return $store.state.simulationSetup.current.nearFieldSetup.atRelativeY0
+    })
+
+    const at_y = computed(()=>{
+      if (crossSection.value == nearFieldPlane.Hk) {
+        return $store.state.simulationSetup.current.nearFieldSetup.atRelativeY0
+      }
+      return $store.state.simulationSetup.current.nearFieldSetup.atRelativeX0
+    })
 
     const xy = computed(()=> {
       let x:number[] = []
       let y:number[] = []
+      const xi = at_x.value*totalR.value - dx.value*(plotXSideResolution.value-1)/2;
+      const yi = at_y.value*totalR.value - dx.value*(plotYSideResolution.value-1)/2;
+
       for (let j = 0; j< plotYSideResolution.value; ++j) {
         for (let i = 0; i< plotXSideResolution.value; ++i) {
-          x.push(toUnits(-x0.value + i * dx.value, units.value))
-          y.push(toUnits(-x0.value + j * dx.value, units.value))
+          x.push(toUnits(xi + i * dx.value, units.value))
+          y.push(toUnits(yi + j * dx.value, units.value))
         }
       }
       return {x:x, y:y}
@@ -86,14 +102,19 @@ export default defineComponent({
     const nearFieldEk = computed( ()=>$store.state.plotRuntime.nearFieldEk)
     const nearFieldHk = computed( ()=>$store.state.plotRuntime.nearFieldHk)
     const nearFieldEH = computed( ()=>$store.state.plotRuntime.nearFieldEH)
+    const nearFieldStore = computed(()=>{
+      let nearFieldStoreLocal = nearFieldEk.value
+      if (crossSection.value == nearFieldPlane.Hk) nearFieldStoreLocal = nearFieldHk.value
+      if (crossSection.value == nearFieldPlane.EH) nearFieldStoreLocal = nearFieldEH.value
+      $store.commit('plotRuntime/setNearFieldDataTo', getMaxFromHeatmap(nearFieldStoreLocal))
+      $store.commit('plotRuntime/setNearFieldDataFrom', getMinFromHeatmap(nearFieldStoreLocal))
+      $store.commit('plotRuntime/setNearFieldLimitTo', $store.state.plotRuntime.nearFieldDataTo)
+      $store.commit('plotRuntime/setNearFieldLimitFrom', $store.state.plotRuntime.nearFieldDataFrom)
+      return nearFieldStoreLocal
+    })
     const nearFieldProc = computed( ()=>{
-      let nearFieldStore = nearFieldEk.value
-      if (crossSection.value == nearFieldPlane.Hk) nearFieldStore = nearFieldHk.value
-      if (crossSection.value == nearFieldPlane.EH) nearFieldStore = nearFieldEH.value
-      if (!nearFieldStore) return nearFieldStore
-      $store.commit('plotRuntime/setNearFieldDataTo',getMaxFromHeatmap(nearFieldStore))
-      $store.commit('plotRuntime/setNearFieldDataFrom',getMinFromHeatmap(nearFieldStore))
-      return limitMap(nearFieldStore, limitFrom.value, limitTo.value)
+      if (!nearFieldStore.value) return nearFieldStore.value
+      return limitMap(nearFieldStore.value, limitFrom.value, limitTo.value)
       // return nearFieldStore.map(x=>x>limitTo.value?limitTo.value:x)
     })
     watch([nearFieldProc, xy], ()=>{
@@ -118,7 +139,7 @@ export default defineComponent({
             x1: toUnits(r, units.value),
             y1: toUnits(r, units.value),
             line: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: 'rgba(235, 235, 235, 0.8)',
               width: 3
             }
           })

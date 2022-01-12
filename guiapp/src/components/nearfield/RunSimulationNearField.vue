@@ -72,6 +72,10 @@ export default defineComponent({
           const plotYSideResolution = $store.state.simulationSetup.current.nearFieldSetup.plotYSideResolution
           const relativePlotSize = $store.state.simulationSetup.current.nearFieldSetup.relativePlotSize
           const crossSection = $store.state.simulationSetup.current.nearFieldSetup.crossSection
+          const atX = $store.state.simulationSetup.current.nearFieldSetup.atRelativeX0
+          const atY = $store.state.simulationSetup.current.nearFieldSetup.atRelativeY0
+          const atZ = $store.state.simulationSetup.current.nearFieldSetup.atRelativeZ0
+          const isMarkUnconvergedAsNaN = 1 // 0 - do not mark, else do mark
           try {
             if (!$store.state.simulationSetup.nmies.nearField.instance) throw 'ERROR! Scattnlay module was not loaded'
             const nmie = $store.state.simulationSetup.nmies.nearField.instance
@@ -93,7 +97,8 @@ export default defineComponent({
                 plotXSideResolution, // in simulation z-axis resolution for Ek and Hk cross-sections
                 relativePlotSize,
                 crossSection,
-                0, 0, 0, 1
+                atX, atY, atZ,
+                isMarkUnconvergedAsNaN
             )
             const Eabs = nmie.GetFieldEabs()
             if (crossSection == nearFieldPlane.Ek) $store.commit('plotRuntime/setNearFieldEk', Eabs)

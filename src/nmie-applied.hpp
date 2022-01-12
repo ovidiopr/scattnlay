@@ -64,8 +64,8 @@ namespace nmie {
                                   const double from_Theta, const double to_Theta,
                                   const double from_Phi, const double to_Phi,
                                   const int isIgnoreAvailableNmax);
-    void RunFieldCalculationCartesian(const int side_1_points,
-                                      const int side_2_points,
+    void RunFieldCalculationCartesian(const int first_side_points,
+                                      const int second_side_points,
                                       const double relative_side_length,
                                       const int plane_selected,
                                       const double at_x, const double at_y,
