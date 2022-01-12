@@ -175,13 +175,13 @@ namespace nmie {
         print_count++;
         std::cout<< std::setprecision(print_precision)
                  << "Warning: Potentially unstable calculation of aln[0]["
-                 << n << "] = "<< aln_[0][n] <<std::endl;
+                 << n << "] = "<< aln_[0][n] << " which is expected to be exact zero!"<<std::endl;
       }
       if (cabs(bln_[0][n]) > 1e-10  && print_count < 2)  {
         print_count++;
         std::cout<< std::setprecision(print_precision)
                  << "Warning: Potentially unstable calculation of bln[0]["
-                 << n << "] = "<< bln_[0][n] <<std::endl;
+                 << n << "] = "<< bln_[0][n] << " which is expected to be exact zero!" <<std::endl;
       }
       aln_[0][n] = 0.0;
       bln_[0][n] = 0.0;
@@ -280,6 +280,8 @@ namespace nmie {
 
     isConvergedE = {false, false, false}, isConvergedH = {false, false, false};
 //    evalType E0 = 0, H0=0;
+    std::vector< std::complex<evalType> > Ediff_prev = {{0.,0.},{0.,0.},{0.,0.}},
+        Hdiff_prev = {{0.,0.},{0.,0.},{0.,0.}};
     for (unsigned int n = 0; n < nmax; n++) {
       int n1 = n + 1;
       auto rn = static_cast<evalType>(n1);
@@ -298,7 +300,7 @@ namespace nmie {
       auto cln = ConvertComplex<evalType>(cln_[l][n]);
       auto dln = ConvertComplex<evalType>(dln_[l][n]);
       for (int i = 0; i < 3; i++) {
-        if (isConvergedE[i] && isConvergedH[i]) continue;
+        if (isConvergedE[i] && isConvergedH[i]) continue; // TODO is it safe?
         Ediff = En*(      cln*M1o1n[i] - c_i*dln*N1e1n[i]
                          + c_i*aln*N3e1n[i] -     bln*M3o1n[i]);
         Hdiff = En*(     -dln*M1e1n[i] - c_i*cln*N1o1n[i]
@@ -311,16 +313,19 @@ namespace nmie {
                     << " (of total nmax = "<<nmax<<")!!!"<<std::endl;
           break;
         }
-        if (n!=0) {
-          if (cabs(Ediff) == 0) isConvergedE[i] = true;
-          if (cabs(Hdiff) == 0) isConvergedH[i] = true;
-          if (cabs(E[i]) != 0.)
-            if (cabs(Ediff)/cabs(E[i]) < nearfield_convergence_threshold_) isConvergedE[i] = true;
-          if (cabs(H[i]) != 0.)
-            if (cabs(Hdiff)/cabs(H[i]) < nearfield_convergence_threshold_) isConvergedH[i] = true;
+        if (n>0) {
+          if (
+              (cabs(Ediff_prev[i]) <= cabs(E[i]) * nearfield_convergence_threshold_)
+                  &&  (cabs(Ediff) <= cabs(E[i]) * nearfield_convergence_threshold_)
+              ) isConvergedE[i] = true;
+          if (
+              (cabs(Hdiff_prev[i]) <= cabs(H[i]) * nearfield_convergence_threshold_)
+                  &&  (cabs(Hdiff) <= cabs(H[i]) * nearfield_convergence_threshold_)
+              ) isConvergedH[i] = true;
         }
-        if (isConvergedE[i]) Ediff = c_zero;
-        if (isConvergedH[i]) Hdiff = c_zero;
+        Ediff_prev[i] = Ediff;
+        Hdiff_prev[i] = Hdiff;
+
         if ((!isConvergedH[i] || !isConvergedE[i]) && n==nmax-1 && GetFieldConvergence()) {
           std::cout<<"Econv:"<<cabs(Ediff)/cabs(E[i])<<" Hconv:"<<cabs(Hdiff)/cabs(H[i])<<std::endl;
 
@@ -330,6 +335,9 @@ namespace nmie {
           E[i] += Ediff;
           H[i] += Hdiff;
           continue;
+        }
+        if (n == 0) {
+
         }
         if (n1 == mode_n_) {
           if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
@@ -359,8 +367,6 @@ namespace nmie {
 
     // Add the incident field
     if(l==L) {
-//      using nmm::sin_t;
-//      using nmm::cos_t;
       const auto z = Rho*cos_t(Theta);
       const auto Ex = std::complex<evalType>(cos_t(z), sin_t(z));
       E[0] +=  Ex*cos_t(Phi)*sin_t(Theta);
