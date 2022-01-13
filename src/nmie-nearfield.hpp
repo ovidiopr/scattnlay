@@ -283,6 +283,11 @@ namespace nmie {
     std::vector< std::complex<evalType> > Ediff_prev = {{0.,0.},{0.,0.},{0.,0.}},
         Hdiff_prev = {{0.,0.},{0.,0.},{0.,0.}};
     for (unsigned int n = 0; n < nmax; n++) {
+      if ( isConvergedE[0] && isConvergedE[1] && isConvergedE[2]
+          && isConvergedH[0] && isConvergedH[1] && isConvergedH[2]) {
+        std::cout<<"Near-field early convergence at nmax = "<<n+1<<std::endl;
+        break;
+      }
       int n1 = n + 1;
       auto rn = static_cast<evalType>(n1);
 
