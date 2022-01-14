@@ -6,9 +6,11 @@ import { getModeName, toUnits } from 'components/utils'
 
 
 const mutation: MutationTree<prsi> = {
-  setNearFieldEk (state: prsi, val: Float64Array) {state.nearFieldEk = cloneDeep(val)},
-  setNearFieldHk (state: prsi, val: Float64Array) {state.nearFieldHk = cloneDeep(val)},
-  setNearFieldEH (state: prsi, val: Float64Array) {state.nearFieldEH = cloneDeep(val)},
+  setNearField (state: prsi, val: Float64Array) {state.nearFieldEabs = cloneDeep(val)},
+  setNearFieldCoords (state: prsi, val: {x:number[], y:number[]} ) {
+    state.nearFieldCoordX = cloneDeep(val.x)
+    state.nearFieldCoordY = cloneDeep(val.y)
+  },
   setNearFieldDataFrom (state: prsi, val: number) {state.nearFieldDataFrom = val},
   setNearFieldDataTo (state: prsi, val: number) {state.nearFieldDataTo = val},
   setNearFieldLimitFrom (state: prsi, val: number) {state.nearFieldLimitFrom = val},

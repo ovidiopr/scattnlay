@@ -19,13 +19,13 @@
           </template>
         </q-btn>
     </div>
-<!--    <div class="col-xs-grow col-sm q-px-xs">-->
-<!--      <div class="row justify-xs-center justify-sm-start items-baseline">-->
-<!--        <div class="col-auto">-->
-<!--          <SaveSimulationNearField/>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </div>-->
+    <div class="col-xs-grow col-sm q-px-xs">
+      <div class="row justify-xs-center justify-sm-start items-baseline">
+        <div class="col-auto">
+          <SaveSimulationNearField/>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -33,13 +33,12 @@
 import {computed, defineComponent, nextTick} from 'vue'
 import {useStore} from 'src/store'
 import {cloneDeep} from 'lodash'
-import {nearFieldPlane} from 'src/store/simulation-setup/state';
-// import SaveSimulationNearField from 'components/nearfield/SaveSimulationNearField.vue'
+import SaveSimulationNearField from 'components/nearfield/SaveSimulationNearField.vue'
 
 
 export default defineComponent({
   name: 'RunSimulationNearField',
-  // components: {SaveSimulationNearField},
+  components: {SaveSimulationNearField},
   setup() {
     const $store = useStore()
 
@@ -101,9 +100,7 @@ export default defineComponent({
                 isMarkUnconvergedAsNaN
             )
             const Eabs = nmie.GetFieldEabs()
-            if (crossSection == nearFieldPlane.Ek) $store.commit('plotRuntime/setNearFieldEk', Eabs)
-            if (crossSection == nearFieldPlane.Hk) $store.commit('plotRuntime/setNearFieldHk', Eabs)
-            if (crossSection == nearFieldPlane.EH) $store.commit('plotRuntime/setNearFieldEH', Eabs)
+            $store.commit('plotRuntime/setNearField', Eabs)
             const nmieTotalRunTime = (performance.now() - nmieStartedTime) / 1000
             // console.log('Total simulation time:', nmieTotalRunTime, 's')
             $store.commit('simulationSetup/setNmieNearFieldTotalRunTime', nmieTotalRunTime)

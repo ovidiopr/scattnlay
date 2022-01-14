@@ -9,7 +9,7 @@
       <div class="row justify-center items-baseline">
         <div class="col-auto text-center q-py-xs q-pr-md">
           <div :style="flexRowTitleStyle">
-            <span  class="text-italic">2<sup>&thinsp;nd</sup></span> side resolution
+            y-side resolution
           </div>
         </div>
         <div class="col-xs-grow col-sm">

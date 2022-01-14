@@ -93,19 +93,15 @@ export default defineComponent({
           y.push(toUnits(yi + j * dx.value, units.value))
         }
       }
+      $store.commit('plotRuntime/setNearFieldCoords',{x:x, y:y})
       return {x:x, y:y}
     })
 
     const limitFrom = computed( ()=>$store.state.plotRuntime.nearFieldLimitFrom )
     const limitTo = computed(()=>$store.state.plotRuntime.nearFieldLimitTo )
 
-    const nearFieldEk = computed( ()=>$store.state.plotRuntime.nearFieldEk)
-    const nearFieldHk = computed( ()=>$store.state.plotRuntime.nearFieldHk)
-    const nearFieldEH = computed( ()=>$store.state.plotRuntime.nearFieldEH)
     const nearFieldStore = computed(()=>{
-      let nearFieldStoreLocal = nearFieldEk.value
-      if (crossSection.value == nearFieldPlane.Hk) nearFieldStoreLocal = nearFieldHk.value
-      if (crossSection.value == nearFieldPlane.EH) nearFieldStoreLocal = nearFieldEH.value
+      let nearFieldStoreLocal = $store.state.plotRuntime.nearFieldEabs
       $store.commit('plotRuntime/setNearFieldDataTo', getMaxFromHeatmap(nearFieldStoreLocal))
       $store.commit('plotRuntime/setNearFieldDataFrom', getMinFromHeatmap(nearFieldStoreLocal))
       $store.commit('plotRuntime/setNearFieldLimitTo', $store.state.plotRuntime.nearFieldDataTo)

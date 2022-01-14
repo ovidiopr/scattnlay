@@ -18,9 +18,9 @@ export interface spectraData {
 
 export interface plotRuntimeStateInterface {
   // Near field
-  nearFieldEk:Float64Array|undefined
-  nearFieldHk:Float64Array|undefined
-  nearFieldEH:Float64Array|undefined
+  nearFieldEabs:Float64Array|undefined
+  nearFieldCoordX: number []
+  nearFieldCoordY: number []
   nearFieldDataFrom: number
   nearFieldDataTo: number
   nearFieldLimitFrom: number
@@ -50,9 +50,9 @@ export interface plotRuntimeStateInterface {
 }
 
 function state(): plotRuntimeStateInterface {
-  const nearFieldEk = undefined
-  const nearFieldEH = undefined
-  const nearFieldHk = undefined
+  const nearFieldEabs = undefined
+  const nearFieldCoordX:number[] = []
+  const nearFieldCoordY:number[] = []
   const nearFieldDataFrom = 0
   const nearFieldDataTo = 1e300
   const nearFieldLimitFrom = 0
@@ -109,7 +109,8 @@ function state(): plotRuntimeStateInterface {
   const isLogPlot = false
 
   return {
-    nearFieldEk, nearFieldHk, nearFieldEH,
+    nearFieldEabs: nearFieldEabs,
+    nearFieldCoordX, nearFieldCoordY,
     nearFieldDataFrom,  nearFieldDataTo,
     nearFieldLimitFrom, nearFieldLimitTo,
     WLs, WLsInUnits,
