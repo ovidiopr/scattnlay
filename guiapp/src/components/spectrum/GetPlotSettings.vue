@@ -8,14 +8,17 @@
     <div class="col-xs-grow col-sm q-px-xs">
       <div class="row justify-xs-center justify-sm-start items-center">
         <div class="col-auto">
-          <q-input  v-model="plotLabel"
-                    :shadow-text="plotLabel=='' ? shadowText+' (Tab to complete)' : ''"
-                    outlined
-                    dense
-                    class="q-py-xs"
-                    :style="'width: '+basicWidthStyle"
-                    @keydown="processInputFill"
-                    @focus="processInputFill"
+          <q-input
+            v-model="plotLabel"
+            :shadow-text="
+              plotLabel == '' ? shadowText + ' (Tab to complete)' : ''
+            "
+            outlined
+            dense
+            class="q-py-xs"
+            :style="'width: ' + basicWidthStyle"
+            @keydown="processInputFill"
+            @focus="processInputFill"
           />
         </div>
       </div>
@@ -24,56 +27,58 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  computed,
-  } from 'vue'
-import { event } from 'quasar'
-const { stopAndPrevent } = event
+import { defineComponent, computed } from 'vue';
+import { event } from 'quasar';
+const { stopAndPrevent } = event;
 
-import { useStore } from 'src/store'
-import { flexRowTitleStyle,
+import { useStore } from 'src/store';
+import {
+  flexRowTitleStyle,
   basicSelectorWidthStyle,
-    basicWidthStyle
-} from 'components/config'
+  basicWidthStyle,
+} from 'components/config';
 
 export default defineComponent({
   name: 'GetPlotSettings',
 
   setup() {
-    const $store = useStore()
+    const $store = useStore();
 
     const plotLabel = computed({
-      get: ()=> $store.state.simulationSetup.gui.plotLabel,
-      set: val => $store.commit('simulationSetup/setPlotLabel', val)
-    })
+      get: () => $store.state.simulationSetup.gui.plotLabel,
+      set: (val) => $store.commit('simulationSetup/setPlotLabel', val),
+    });
 
-    const shadowText = computed(()=>{
-      const numberOfLayers = $store.state.simulationSetup.gui.layers.length
-      let particleType = 'bulk'
-      if (numberOfLayers == 2) return 'core-shell'
-      if (numberOfLayers > 2) return 'multilayer'
-      const R = $store.state.simulationSetup.gui.layers[0].layerWidth.toString()
-      const units = $store.state.guiRuntime.units
-      return particleType+' R='+R+units
-    })
+    const shadowText = computed(() => {
+      const numberOfLayers = $store.state.simulationSetup.gui.layers.length;
+      let particleType = 'bulk';
+      if (numberOfLayers == 2) return 'core-shell';
+      if (numberOfLayers > 2) return 'multilayer';
+      const R =
+        $store.state.simulationSetup.gui.layers[0].layerWidth.toString();
+      const units = $store.state.guiRuntime.units;
+      return particleType + ' R=' + R + units;
+    });
 
-    return { flexRowTitleStyle, basicSelectorWidthStyle, basicWidthStyle,
-      plotLabel, shadowText,
+    return {
+      flexRowTitleStyle,
+      basicSelectorWidthStyle,
+      basicWidthStyle,
+      plotLabel,
+      shadowText,
 
-      processInputFill (e:KeyboardEvent) {
+      processInputFill(e: KeyboardEvent) {
         if (e === void 0) {
-          return
+          return;
         }
         if (e.code === 'Tab') {
           if (shadowText.value.length > 0 && plotLabel.value == '') {
-            stopAndPrevent(e)
-            plotLabel.value = shadowText.value
+            stopAndPrevent(e);
+            plotLabel.value = shadowText.value;
           }
         }
       },
-
-    }
+    };
   },
-})
+});
 </script>

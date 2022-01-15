@@ -2,23 +2,23 @@ import { ActionTree } from 'vuex';
 import { StateInterface } from '../index';
 import { simulationSetupStateInterface } from './state';
 import nmiejs from 'src/nmiejs.js';
-import { useQuasar } from 'quasar'
-
+import { useQuasar } from 'quasar';
 
 const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
-  async loadScattnlay ({commit,/*state*/}/* context */) {
-    const $q = useQuasar()
+  async loadScattnlay({ commit /*state*/ } /* context */) {
+    const $q = useQuasar();
     $q.loading.show({
       message: 'Loading Mie calculator. Please wait...',
       boxClass: 'bg-grey-2 text-grey-9',
-      spinnerColor: 'primary'
-    })
-    const module = await nmiejs()
-    const nmies = {spectrum: new module.nmie(),
+      spinnerColor: 'primary',
+    });
+    const module = await nmiejs();
+    const nmies = {
+      spectrum: new module.nmie(),
       nearField: new module.nmie(),
-      farField: new module.nmie()}
-    commit('setNmies', nmies)
-
+      farField: new module.nmie(),
+    };
+    commit('setNmies', nmies);
 
     // // Test nmiejs if working
     // if (state.nmies.spectrum.instance && !state.nmies.spectrum.isNmieRunning) {
@@ -42,9 +42,8 @@ const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
     //   commit('markNmieAsFinished')
     // }
 
-
-    $q.loading.hide()
-  }
+    $q.loading.hide();
+  },
 };
 
 export default actions;

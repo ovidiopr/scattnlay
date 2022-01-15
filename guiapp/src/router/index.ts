@@ -1,12 +1,12 @@
-import { route } from 'quasar/wrappers'
+import { route } from 'quasar/wrappers';
 import {
   createMemoryHistory,
   createRouter,
   createWebHashHistory,
   createWebHistory,
-} from 'vue-router'
-import { StateInterface } from '../store'
-import routes from './routes'
+} from 'vue-router';
+import { StateInterface } from '../store';
+import routes from './routes';
 // import { nextTick } from 'vue'
 
 /*
@@ -21,7 +21,9 @@ import routes from './routes'
 export default route<StateInterface>(function (/* { store, ssrContext } */) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
-    : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory);
+    : process.env.VUE_ROUTER_MODE === 'history'
+    ? createWebHistory
+    : createWebHashHistory;
 
   const Router = createRouter({
     // scrollBehavior (to, from, savedPosition) {

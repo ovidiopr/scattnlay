@@ -1,18 +1,18 @@
-import { store } from 'quasar/wrappers'
-import { InjectionKey } from 'vue'
+import { store } from 'quasar/wrappers';
+import { InjectionKey } from 'vue';
 import {
   createStore,
   Store as VuexStore,
   useStore as vuexUseStore,
-} from 'vuex'
+} from 'vuex';
 
-import guiRuntime from './gui-runtime'
+import guiRuntime from './gui-runtime';
 import { guiRuntimeStateInterface } from './gui-runtime/state';
 
-import plotRuntime from './plot-runtime'
+import plotRuntime from './plot-runtime';
 import { plotRuntimeStateInterface } from './plot-runtime/state';
 
-import simulationSetup from './simulation-setup'
+import simulationSetup from './simulation-setup';
 import { simulationSetupStateInterface } from './simulation-setup/state';
 
 /*
@@ -36,29 +36,30 @@ export interface StateInterface {
 // provide typings for `this.$store`
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
-    $store: VuexStore<StateInterface>
+    $store: VuexStore<StateInterface>;
   }
 }
 
 // provide typings for `useStore` helper
-export const storeKey: InjectionKey<VuexStore<StateInterface>> = Symbol('vuex-key')
+export const storeKey: InjectionKey<VuexStore<StateInterface>> =
+  Symbol('vuex-key');
 
 export default store(function (/* { ssrContext } */) {
   const Store = createStore<StateInterface>({
     modules: {
       guiRuntime,
       plotRuntime,
-      simulationSetup
+      simulationSetup,
     },
 
     // enable strict mode (adds overhead!)
     // for dev mode and --debug builds only
-    strict: !!process.env.DEBUGGING
-  })
+    strict: !!process.env.DEBUGGING,
+  });
 
   return Store;
-})
+});
 
 export function useStore() {
-  return vuexUseStore(storeKey)
+  return vuexUseStore(storeKey);
 }
