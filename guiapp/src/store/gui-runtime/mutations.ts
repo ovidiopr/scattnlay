@@ -1,6 +1,7 @@
 import { MutationTree } from 'vuex';
 import { guiRuntimeStateInterface as grsi } from './state';
 import { material } from 'src/store/simulation-setup/state';
+import { cloneDeep } from 'lodash';
 
 function compare(a: material, b: material) {
   if (a.name == 'link') return -1;
@@ -14,6 +15,9 @@ function compare(a: material, b: material) {
 }
 
 const mutation: MutationTree<grsi> = {
+  setIsSaveWithPythonScript(state: grsi, val: boolean) {
+    state.isSaveWithPythonScript = val;
+  },
   setIsShowingHelpForInputWithUnits(state: grsi, val: boolean) {
     state.isShowingHelpForInputWithUnits = val;
   },
@@ -25,6 +29,13 @@ const mutation: MutationTree<grsi> = {
   },
   setIsSourceSameUnits(state: grsi, val: boolean) {
     state.isSourceSameUnits = val;
+  },
+
+  setNearFieldZoom(
+    state: grsi,
+    val: { fromX: number; toX: number; fromY: number; toY: number }
+  ) {
+    state.nearFieldZoom = cloneDeep(val);
   },
 
   setSafeWL(state: grsi, val: { safeFromWL: number; safeToWL: number }) {

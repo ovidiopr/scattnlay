@@ -15,7 +15,7 @@
     "cubic-spline-ts": "^3.0.8",
     "file-saver": "^2.0.5",
     "js-yaml": "^4.1.0",
-    "lodash": "^4.17.21",
+    "lodash.clonedeep": "^4.5.0",
     "mathjs": "^9.5.0",
     "plotly.js-dist-min": "^2.6.2",
     "quasar": "^2.3.3",

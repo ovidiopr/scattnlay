@@ -28,7 +28,7 @@
     <ReactiveChart
       :chart="chartContent"
       :window-height-share="0.4"
-      @plotCreated="mangeID($event)"
+      @plotCreated="manageID($event)"
     />
   </div>
 </template>
@@ -92,7 +92,7 @@ export default defineComponent({
       ];
       return content;
     });
-    function mangeID(chartID: string) {
+    function manageID(chartID: string) {
       const myPlot = document.getElementById(chartID) as PlotlyHTMLElement;
       myPlot.on('plotly_click', function (data) {
         for (let i = 0; i < data.points.length; i++) {
@@ -108,7 +108,7 @@ export default defineComponent({
       chartContent,
       flexRowTitleStyle,
       isShowingHelpForInputWithUnits,
-      mangeID,
+      manageID,
     };
   },
 });

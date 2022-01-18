@@ -1,6 +1,6 @@
 <template>
   <div>
-    <ReactiveChart :chart="nearFieldPlot" />
+    <ReactiveChart :chart="nearFieldPlot" @plotCreated="manageID($event)" />
   </div>
 </template>
 
@@ -14,15 +14,15 @@ import {
   computed,
   watch,
 } from 'vue';
-// import { flexRowTitleStyle } from 'components/config'
 import {
   toUnits,
   getMaxFromHeatmap,
   getMinFromHeatmap,
   limitMap,
+  fromUnits,
 } from 'components/utils';
 import { plotlyChart } from 'src/store/plot-runtime/state';
-import { PlotData, DataTitle } from 'plotly.js-dist-min';
+import { PlotData, DataTitle, PlotlyHTMLElement } from 'plotly.js-dist-min';
 import { nearFieldPlane } from 'src/store/simulation-setup/state';
 
 export default defineComponent({
@@ -192,9 +192,38 @@ export default defineComponent({
         nearFieldPlot.layout.xaxis.title = xaxisTitle.value;
     });
 
+    function manageID(chartID: string) {
+      const myPlot = document.getElementById(chartID) as PlotlyHTMLElement;
+      myPlot.on('plotly_relayout', function (data) {
+        if (
+          data['xaxis.range[0]'] &&
+          data['xaxis.range[1]'] &&
+          data['yaxis.range[0]'] &&
+          data['yaxis.range[1]']
+        ) {
+          $store.commit('guiRuntime/setNearFieldZoom', {
+            fromX: fromUnits(units.value, data['xaxis.range[0]']),
+            toX: fromUnits(units.value, data['xaxis.range[1]']),
+            fromY: fromUnits(units.value, data['yaxis.range[0]']),
+            toY: fromUnits(units.value, data['yaxis.range[1]']),
+          });
+        } else {
+          $store.commit('guiRuntime/setNearFieldZoom', {
+            fromX: 0,
+            toX: 0,
+            fromY: 0,
+            toY: 0,
+          });
+        }
+        console.log(data['xaxis.range[0]']);
+        console.log($store.state.guiRuntime.nearFieldZoom);
+      });
+    }
+
     return {
       nearFieldPlot,
       totalR,
+      manageID,
     };
   },
 });

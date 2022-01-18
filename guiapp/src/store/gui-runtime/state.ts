@@ -10,6 +10,8 @@ export interface guiRuntimeStateInterface {
   activatedMaterials: material[];
   safeFromWL: number;
   safeToWL: number;
+  isSaveWithPythonScript: boolean;
+  nearFieldZoom: { fromX: number; toX: number; fromY: number; toY: number };
 }
 
 function state(): guiRuntimeStateInterface {
@@ -20,6 +22,8 @@ function state(): guiRuntimeStateInterface {
     isSourceSameUnits: true,
     safeFromWL: 0,
     safeToWL: 1e300,
+    isSaveWithPythonScript: true,
+    nearFieldZoom: { fromX: 0, toX: 1, fromY: 0, toY: 1 },
     activatedMaterials: [
       // 'PEC',
       {

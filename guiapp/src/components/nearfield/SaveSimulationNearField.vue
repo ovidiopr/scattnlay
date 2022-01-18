@@ -6,6 +6,9 @@
     @click="saveSpectrumSimulation"
     >Save</q-btn
   >
+  <q-checkbox v-model="isSaveWithPythonScript" size="sm"
+    >Include *.py plotting script</q-checkbox
+  >
 </template>
 
 <script lang="ts">
@@ -17,16 +20,18 @@ import {
   // nextTick
 } from 'vue';
 import { useStore } from 'src/store';
-// import {getModeName, range, rangeInt} from 'components/utils'
-// import {cloneDeep} from 'lodash'
 import { saveAs } from 'file-saver';
-// import {nearFieldPlane} from 'src/store/simulation-setup/state';
 
 export default defineComponent({
   name: 'SaveSimulationNearField',
 
   setup() {
     const $store = useStore();
+
+    const isSaveWithPythonScript = computed({
+      get: () => $store.state.guiRuntime.isSaveWithPythonScript,
+      set: (val) => $store.commit('guiRuntime/setIsSaveWithPythonScript', val),
+    });
 
     const coordX = computed(() => $store.state.plotRuntime.nearFieldCoordX);
     const coordY = computed(() => $store.state.plotRuntime.nearFieldCoordY);
@@ -53,14 +58,15 @@ export default defineComponent({
     const lengthUnits = computed(() => $store.state.guiRuntime.units);
     return {
       data,
+      isSaveWithPythonScript,
       saveSpectrumSimulation() {
         if (!data.value) return;
-        const fileHeader =
+        const pythonScript =
           '# You can open and plot this file using Python\n' +
           '# (without manually removing this header, it will be skipped), see example below.\n' +
           'import numpy as np\n' +
           'from matplotlib import pyplot as plt\n' +
-          "data = np.genfromtxt('scattnlay-near-field.txt', skip_header=32, names=True, delimiter=', ')\n" +
+          "data = np.genfromtxt('scattnlay-near-field.txt', names=True, delimiter=', ')\n" +
           'x = data[data.dtype.names[0]] # x-axis has units\n' +
           'y = data[data.dtype.names[1]] # x-axis has units\n' +
           'x_size = len(np.unique(x))\n' +
@@ -111,10 +117,16 @@ export default defineComponent({
         }
 
         const scattnlayNearField = new Blob(
-          [fileHeader + columnNames + body],
+          [columnNames + body],
           { type: 'text/plain;charset=utf-8', endings: 'native' } //TODO test if newline is correctly written in Windows, MacOS
         );
         saveAs(scattnlayNearField, 'scattnlay-near-field.txt');
+
+        const scattnlayNearFieldScript = new Blob(
+          [pythonScript],
+          { type: 'text/plain;charset=utf-8', endings: 'native' } //TODO test if newline is correctly written in Windows, MacOS
+        );
+        saveAs(scattnlayNearFieldScript, 'scattnlay-near-field-plot.py');
       },
     };
   },
