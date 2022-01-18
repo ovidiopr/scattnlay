@@ -162,10 +162,10 @@ export default defineComponent({
       nearFieldPlot.data.push({ ...xy.value, ...heatMapSettings });
 
       const isPlotShapes =
-        arrayMin(xy.value.x) < -totalR.value &&
-        arrayMax(xy.value.x) > totalR.value &&
-        arrayMin(xy.value.y) < -totalR.value &&
-        arrayMax(xy.value.y) > totalR.value;
+        arrayMin(xy.value.x) < -toUnits(totalR.value, units.value) &&
+        arrayMax(xy.value.x) > toUnits(totalR.value, units.value) &&
+        arrayMin(xy.value.y) < -toUnits(totalR.value, units.value) &&
+        arrayMax(xy.value.y) > toUnits(totalR.value, units.value);
 
       if (nearFieldPlot.layout.shapes) nearFieldPlot.layout.shapes.length = 0;
       if (nearFieldPlot.layout.shapes && isPlotShapes) {

@@ -37,6 +37,15 @@
             >Save</q-btn
           >
         </div>
+        <div class="col-auto q-px-md">
+          <q-btn
+            icon="arrow_forward"
+            flat
+            text-color="primary"
+            label="near-field"
+            @click="void router.push({ path: '/nearfield' })"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -48,12 +57,14 @@ import { useStore } from 'src/store';
 import { getModeName, range, rangeInt } from 'components/utils';
 import { cloneDeep } from 'lodash';
 import { saveAs } from 'file-saver';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'RunSimulationSpectrum',
 
   setup() {
     const $store = useStore();
+    const router = useRouter();
 
     const isRunning = computed({
       get: () => $store.state.simulationSetup.nmies.spectrum.isNmieRunning,
@@ -233,6 +244,7 @@ export default defineComponent({
     });
 
     return {
+      router,
       isRunning,
       isNmieLoaded,
       runSpectrumSimulation,

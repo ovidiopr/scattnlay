@@ -21,14 +21,57 @@
                 units=""
               />
             </div>
-            <div class="col-auto">
-              <q-checkbox v-model="isSquareNearField" size="sm">
-                square
-              </q-checkbox>
+          </div>
+        </div>
+      </div>
+      <div class="q-ma-xs" />
+      <div class="row justify-center items-center">
+        <div class="col-auto text-center q-py-xs q-pr-md">
+          <div :style="flexRowTitleStyle">ratio</div>
+        </div>
+        <div class="col-xs-grow col-sm">
+          <div class="row justify-xs-center justify-sm-start items-center">
+            <div class="q-gutter-md q-py-sm q-px-xs">
+              <q-radio
+                v-model="plotRatioLabel"
+                dense
+                size="sm"
+                :val="'any'"
+                label="any"
+              />
+              <q-radio
+                v-model="plotRatioLabel"
+                dense
+                size="sm"
+                :val="'fixed'"
+                label="fixed"
+              />
+              <q-radio
+                v-model="plotRatioLabel"
+                dense
+                size="sm"
+                :val="'1:1'"
+                label="1:1"
+              />
+              <q-radio
+                v-model="plotRatioLabel"
+                dense
+                size="sm"
+                :val="'3:2'"
+                label="3:2"
+              />
+              <q-radio
+                v-model="plotRatioLabel"
+                dense
+                size="sm"
+                :val="'2:1'"
+                label="2:1"
+              />
             </div>
           </div>
         </div>
       </div>
+
       <div class="row justify-center items-baseline">
         <div class="col-auto text-center q-py-xs q-pr-md">
           <div :style="flexRowTitleStyle">y-side resolution</div>
@@ -39,7 +82,7 @@
               v-model:input-result="plotYSideResolution"
               v-model:is-showing-help="isShowingHelpForInputWithUnits"
               :initial-expression="plotYSideResolution.toString()"
-              :is-info-mode="isSquareNearField"
+              :is-info-mode="isFixedRatioNearField"
               title="points"
               units=""
             />
@@ -101,7 +144,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, watch } from 'vue';
+import { defineComponent, computed, watch, ref } from 'vue';
 import { useStore } from 'src/store';
 import InputWithUnits from 'components/InputWithUnits.vue';
 import { flexRowTitleStyle } from 'components/config';
@@ -133,9 +176,9 @@ export default defineComponent({
         $store.commit('simulationSetup/setNearFieldRelativePlotSize', val),
     });
 
-    const isSquareNearField = computed({
-      get: () => $store.state.guiRuntime.isSquareNearField,
-      set: (val) => $store.commit('guiRuntime/setIsSquareNearField', val),
+    const isFixedRatioNearField = computed({
+      get: () => $store.state.guiRuntime.isFixedRatioNearField,
+      set: (val) => $store.commit('guiRuntime/setIsFixedRatioNearField', val),
     });
 
     // const maxComputeTime = computed({
@@ -164,15 +207,45 @@ export default defineComponent({
         ),
     });
 
-    watch([plotXSideResolution, isSquareNearField], () => {
-      if (isSquareNearField.value)
-        plotYSideResolution.value = plotXSideResolution.value;
+    const plotRatioLabel = ref('any');
+    const plotRatio = ref(1);
+
+    watch(plotRatioLabel, () => {
+      if (plotRatioLabel.value == 'any') isFixedRatioNearField.value = false;
+      else isFixedRatioNearField.value = true;
+    });
+    watch(isFixedRatioNearField, () => {
+      if (!isFixedRatioNearField.value) plotRatioLabel.value = 'any';
     });
 
+    watch(plotRatioLabel, () => {
+      switch (plotRatioLabel.value) {
+        case '1:1':
+          plotRatio.value = 1;
+          break;
+        case '3:2':
+          plotRatio.value = 2 / 3;
+          break;
+        case '2:1':
+          plotRatio.value = 1 / 2;
+          break;
+        case 'fixed':
+          plotRatio.value =
+            plotYSideResolution.value / plotXSideResolution.value;
+          break;
+        default:
+          break;
+      }
+    });
+    watch([plotXSideResolution, plotRatioLabel], () => {
+      if (isFixedRatioNearField.value)
+        plotYSideResolution.value = plotRatio.value * plotXSideResolution.value;
+    });
     return {
       crossSection,
+      plotRatioLabel,
       isShowingHelpForInputWithUnits,
-      isSquareNearField,
+      isFixedRatioNearField,
       flexRowTitleStyle,
       relativePlotSize,
       // maxComputeTime,

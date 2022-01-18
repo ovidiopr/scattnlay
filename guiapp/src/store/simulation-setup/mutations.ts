@@ -92,12 +92,15 @@ const mutation: MutationTree<sssi> = {
     state.gui.nearFieldSetup.relativePlotSize = val;
   },
   setNearFieldAtRelativeX0(state: sssi, val: number) {
+    if (val < 1e-15) val = 0;
     state.gui.nearFieldSetup.atRelativeX0 = val;
   },
   setNearFieldAtRelativeY0(state: sssi, val: number) {
+    if (val < 1e-15) val = 0;
     state.gui.nearFieldSetup.atRelativeY0 = val;
   },
   setNearFieldAtRelativeZ0(state: sssi, val: number) {
+    if (val < 1e-15) val = 0;
     state.gui.nearFieldSetup.atRelativeZ0 = val;
   },
   setNearFieldPlotXSideResolution(state: sssi, val: number) {

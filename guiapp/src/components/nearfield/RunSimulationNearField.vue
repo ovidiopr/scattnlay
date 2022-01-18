@@ -47,7 +47,7 @@
         :disable="isRunning || !isNmieLoaded"
         color="primary"
         no-caps
-        :label="isNmieLoaded ? 'Refine on zoom' : 'Loading...'"
+        :label="isNmieLoaded ? 'Refine zoomed region' : 'Loading...'"
         @click="refineOnZoom"
       >
         <template #loading>
@@ -242,7 +242,7 @@ export default defineComponent({
 
     function refineOnZoom() {
       if (sideX.value == 0 || sideY.value == 0) return;
-      $store.commit('guiRuntime/setIsSquareNearField', false),
+      $store.commit('guiRuntime/setIsFixedRatioNearField', false),
         $store.commit(
           'simulationSetup/setNearFieldRelativePlotSize',
           sideX.value / 2.0
@@ -253,10 +253,6 @@ export default defineComponent({
       );
       $store.commit(
         'simulationSetup/setNearFieldPlotYSideResolution',
-        floor(Math.sqrt((totalPoints.value * sideY.value) / sideX.value))
-      );
-      console.log(
-        floor(Math.sqrt((totalPoints.value * sideX.value) / sideY.value)),
         floor(Math.sqrt((totalPoints.value * sideY.value) / sideX.value))
       );
       if (crossSection.value == nearFieldPlane.Ek) {
@@ -276,13 +272,11 @@ export default defineComponent({
 
     watch([atX, atY, sideX, sideY], () => {
       if (!isAutoRefineNearField.value) return;
-      console.log(nearFieldZoom.value);
       refineOnZoom();
     });
 
     let count = 0;
     watch([plotXSideResolutionGUI, plotYSideResolutionGUI], () => {
-      console.log(plotXSideResolutionGUI.value, plotYSideResolutionGUI.value);
       if (
         plotYSideResolutionGUI.value * plotXSideResolutionGUI.value >
           150 * 150 &&

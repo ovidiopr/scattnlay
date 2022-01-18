@@ -15,8 +15,8 @@ function compare(a: material, b: material) {
 }
 
 const mutation: MutationTree<grsi> = {
-  setIsSquareNearField(state: grsi, val: boolean) {
-    state.isSquareNearField = val;
+  setIsFixedRatioNearField(state: grsi, val: boolean) {
+    state.isFixedRatioNearField = val;
   },
   setIsSaveWithPythonScript(state: grsi, val: boolean) {
     state.isSaveWithPythonScript = val;

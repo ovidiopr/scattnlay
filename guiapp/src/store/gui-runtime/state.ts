@@ -12,7 +12,7 @@ export interface guiRuntimeStateInterface {
   safeToWL: number;
   isSaveWithPythonScript: boolean;
   isAutoRefineNearField: boolean;
-  isSquareNearField: boolean;
+  isFixedRatioNearField: boolean;
   nearFieldZoom: { fromX: number; toX: number; fromY: number; toY: number };
 }
 
@@ -27,7 +27,7 @@ function state(): guiRuntimeStateInterface {
     isSaveWithPythonScript: true,
     nearFieldZoom: { fromX: 0, toX: 1, fromY: 0, toY: 1 },
     isAutoRefineNearField: true,
-    isSquareNearField: true,
+    isFixedRatioNearField: true,
     activatedMaterials: [
       // 'PEC',
       {
