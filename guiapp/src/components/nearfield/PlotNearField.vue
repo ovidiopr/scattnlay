@@ -18,6 +18,8 @@ import {
   toUnits,
   getMaxFromHeatmap,
   getMinFromHeatmap,
+  arrayMin,
+  arrayMax,
   limitMap,
   fromUnits,
 } from 'components/utils';
@@ -159,8 +161,14 @@ export default defineComponent({
       };
       nearFieldPlot.data.push({ ...xy.value, ...heatMapSettings });
 
-      if (nearFieldPlot.layout.shapes) {
-        nearFieldPlot.layout.shapes.length = 0;
+      const isPlotShapes =
+        arrayMin(xy.value.x) < -totalR.value &&
+        arrayMax(xy.value.x) > totalR.value &&
+        arrayMin(xy.value.y) < -totalR.value &&
+        arrayMax(xy.value.y) > totalR.value;
+
+      if (nearFieldPlot.layout.shapes) nearFieldPlot.layout.shapes.length = 0;
+      if (nearFieldPlot.layout.shapes && isPlotShapes) {
         let r = 0;
         for (let widthLayer of layerWidths.value) {
           r += widthLayer;
@@ -215,8 +223,6 @@ export default defineComponent({
             toY: 0,
           });
         }
-        console.log(data['xaxis.range[0]']);
-        console.log($store.state.guiRuntime.nearFieldZoom);
       });
     }
 

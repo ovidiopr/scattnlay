@@ -76,7 +76,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, watch } from 'vue';
+import { defineComponent, computed } from 'vue';
 import { useStore } from 'src/store';
 import InputWithUnits from 'components/InputWithUnits.vue';
 import { flexRowTitleStyle } from 'components/config';
@@ -124,11 +124,14 @@ export default defineComponent({
         ),
     });
 
-    watch(plotXSideResolution, () => {
-      $store.commit(
-        'simulationSetup/setNearFieldPlotYSideResolution',
-        plotXSideResolution.value
-      );
+    const plotYSideResolution = computed({
+      get: () =>
+        $store.state.simulationSetup.gui.nearFieldSetup.plotYSideResolution,
+      set: (val) =>
+        $store.commit(
+          'simulationSetup/setNearFieldPlotYSideResolution',
+          Math.floor(val)
+        ),
     });
 
     return {

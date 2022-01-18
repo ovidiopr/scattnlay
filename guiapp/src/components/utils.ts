@@ -6,6 +6,28 @@ export function limitMap(arr: Float64Array, minVal: number, maxVal: number) {
 
 // According to https://stackoverflow.com/questions/1669190/find-the-min-max-element-of-an-array-in-javascript
 // getting max and min element is non trivial for large arrays (e.g. 512x512 points heatmap)
+export function arrayMin(arr: number[]) {
+  let len = arr.length,
+    min = Infinity;
+  while (len--) {
+    if (arr[len] < min) {
+      min = arr[len];
+    }
+  }
+  return min;
+}
+
+export function arrayMax(arr: number[]) {
+  let len = arr.length,
+    max = -Infinity;
+  while (len--) {
+    if (arr[len] > max) {
+      max = arr[len];
+    }
+  }
+  return max;
+}
+
 export function getMaxFromHeatmap(val: Float64Array | undefined) {
   let max = -Infinity;
   if (!val) return max;

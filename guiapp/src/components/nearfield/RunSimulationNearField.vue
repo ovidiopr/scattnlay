@@ -38,19 +38,52 @@
       </div>
     </div>
   </div>
+  <div class="row items-baseline">
+    <div
+      class="col-xs-12 col-sm-auto text-weight-bold text-center q-px-md q-py-sm"
+    >
+      <q-btn
+        :loading="isRunning"
+        :disable="isRunning || !isNmieLoaded"
+        color="primary"
+        no-caps
+        :label="isNmieLoaded ? 'Refine on zoom' : 'Loading...'"
+        @click="refineOnZoom"
+      >
+        <template #loading>
+          <q-spinner-gears />
+        </template>
+      </q-btn>
+    </div>
+    <div class="col-xs-grow col-sm q-px-xs">
+      <div class="row justify-xs-center justify-sm-start items-baseline">
+        <div class="col-auto">
+          <q-checkbox v-model="isAutoRefineNearField" size="sm">
+            auto refine
+          </q-checkbox>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, nextTick } from 'vue';
+import { computed, defineComponent, nextTick, watch } from 'vue';
 import { useStore } from 'src/store';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, floor } from 'lodash';
 import SaveSimulationNearField from 'components/nearfield/SaveSimulationNearField.vue';
+import { nearFieldPlane } from 'src/store/simulation-setup/state';
 
 export default defineComponent({
   name: 'RunSimulationNearField',
   components: { SaveSimulationNearField },
   setup() {
     const $store = useStore();
+
+    const isAutoRefineNearField = computed({
+      get: () => $store.state.guiRuntime.isAutoRefineNearField,
+      set: (val) => $store.commit('guiRuntime/setIsAutoRefineNearField', val),
+    });
 
     const isRunning = computed({
       get: () => $store.state.simulationSetup.nmies.nearField.isNmieRunning,
@@ -72,6 +105,11 @@ export default defineComponent({
     //---------------------  Main  --------------------------------------------//
     //-------------------------------------------------------------------------//
     function runNearFieldSimulation() {
+      if (!isNmieLoaded.value) {
+        console.log('Nmie was not loaded yet');
+        return;
+      }
+
       if (isRunning.value) {
         console.log('Some Nmie is already running!');
         return;
@@ -154,7 +192,103 @@ export default defineComponent({
 
     runNearFieldSimulation();
 
-    return { isRunning, isNmieLoaded, runNearFieldSimulation };
+    const layerWidths = computed(() =>
+      $store.state.simulationSetup.current.layers.map((x) => x.layerWidth)
+    );
+    const totalR = computed(() => layerWidths.value.reduce((a, b) => a + b, 0));
+    const nearFieldZoom = computed(() => $store.state.guiRuntime.nearFieldZoom);
+
+    const crossSection = computed(
+      () => $store.state.simulationSetup.current.nearFieldSetup.crossSection
+    );
+    const atX = computed(
+      () =>
+        (nearFieldZoom.value.fromX + nearFieldZoom.value.toX) /
+        2.0 /
+        totalR.value
+    );
+    const atY = computed(
+      () =>
+        (nearFieldZoom.value.fromY + nearFieldZoom.value.toY) /
+        2.0 /
+        totalR.value
+    );
+    const sideX = computed(
+      () => (nearFieldZoom.value.toX - nearFieldZoom.value.fromX) / totalR.value
+    );
+    const sideY = computed(
+      () => (nearFieldZoom.value.toY - nearFieldZoom.value.fromY) / totalR.value
+    );
+
+    const plotXSideResolutionGUI = computed(
+      () => $store.state.simulationSetup.gui.nearFieldSetup.plotXSideResolution
+    );
+    const plotYSideResolutionGUI = computed(
+      () => $store.state.simulationSetup.gui.nearFieldSetup.plotYSideResolution
+    );
+    const totalPoints = computed(
+      () => plotXSideResolutionGUI.value * plotYSideResolutionGUI.value
+    );
+
+    function refineOnZoom() {
+      if (sideX.value == 0 || sideY.value == 0) return;
+      $store.commit(
+        'simulationSetup/setNearFieldRelativePlotSize',
+        sideX.value / 2.0
+      );
+      $store.commit(
+        'simulationSetup/setNearFieldPlotXSideResolution',
+        floor(Math.sqrt((totalPoints.value * sideX.value) / sideY.value))
+      );
+      $store.commit(
+        'simulationSetup/setNearFieldPlotYSideResolution',
+        floor(Math.sqrt((totalPoints.value * sideY.value) / sideX.value))
+      );
+      console.log(
+        floor(Math.sqrt((totalPoints.value * sideX.value) / sideY.value)),
+        floor(Math.sqrt((totalPoints.value * sideY.value) / sideX.value))
+      );
+      if (crossSection.value == nearFieldPlane.Ek) {
+        $store.commit('simulationSetup/setNearFieldAtRelativeZ0', atX.value);
+        $store.commit('simulationSetup/setNearFieldAtRelativeX0', atY.value);
+      }
+      if (crossSection.value == nearFieldPlane.Hk) {
+        $store.commit('simulationSetup/setNearFieldAtRelativeZ0', atX.value);
+        $store.commit('simulationSetup/setNearFieldAtRelativeY0', atY.value);
+      }
+      if (crossSection.value == nearFieldPlane.EH) {
+        $store.commit('simulationSetup/setNearFieldAtRelativeY0', atX.value);
+        $store.commit('simulationSetup/setNearFieldAtRelativeX0', atY.value);
+      }
+      runNearFieldSimulation();
+    }
+
+    watch([atX, atY, sideX, sideY], () => {
+      if (!isAutoRefineNearField.value) return;
+      console.log(nearFieldZoom.value);
+      refineOnZoom();
+    });
+
+    let count = 0;
+    watch([plotXSideResolutionGUI, plotYSideResolutionGUI], () => {
+      console.log(plotXSideResolutionGUI.value, plotYSideResolutionGUI.value);
+      if (
+        plotYSideResolutionGUI.value * plotXSideResolutionGUI.value >
+          150 * 150 &&
+        count == 0
+      ) {
+        isAutoRefineNearField.value = false;
+        count = 1;
+      }
+    });
+
+    return {
+      isRunning,
+      isNmieLoaded,
+      runNearFieldSimulation,
+      refineOnZoom,
+      isAutoRefineNearField,
+    };
   },
 });
 </script>

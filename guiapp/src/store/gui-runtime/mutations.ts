@@ -18,6 +18,9 @@ const mutation: MutationTree<grsi> = {
   setIsSaveWithPythonScript(state: grsi, val: boolean) {
     state.isSaveWithPythonScript = val;
   },
+  setIsAutoRefineNearField(state: grsi, val: boolean) {
+    state.isAutoRefineNearField = val;
+  },
   setIsShowingHelpForInputWithUnits(state: grsi, val: boolean) {
     state.isShowingHelpForInputWithUnits = val;
   },
