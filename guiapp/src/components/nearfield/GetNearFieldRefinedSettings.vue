@@ -8,22 +8,6 @@
     <div class="col-xs-grow col-sm">
       <div class="row justify-center items-baseline">
         <div class="col-auto text-center q-py-xs q-pr-md">
-          <div :style="flexRowTitleStyle">y-side resolution</div>
-        </div>
-        <div class="col-xs-grow col-sm">
-          <div class="row justify-xs-center justify-sm-start items-center">
-            <input-with-units
-              v-model:input-result="plotYSideResolution"
-              v-model:is-showing-help="isShowingHelpForInputWithUnits"
-              :initial-expression="plotYSideResolution.toString()"
-              title="points"
-              units=""
-            />
-          </div>
-        </div>
-      </div>
-      <div class="row justify-center items-baseline">
-        <div class="col-auto text-center q-py-xs q-pr-md">
           <div :style="flexRowTitleStyle">relative center</div>
         </div>
         <div class="col-xs-grow col-sm">

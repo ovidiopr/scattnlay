@@ -8,20 +8,45 @@
     <div class="col-xs-grow col-sm">
       <div class="row justify-center items-baseline">
         <div class="col-auto text-center q-py-xs q-pr-md">
-          <div :style="flexRowTitleStyle">side resolution</div>
+          <div :style="flexRowTitleStyle">x-side resolution</div>
+        </div>
+        <div class="col-xs-grow col-sm">
+          <div class="row justify-xs-center justify-sm-start items-center">
+            <div class="col-auto">
+              <input-with-units
+                v-model:input-result="plotXSideResolution"
+                v-model:is-showing-help="isShowingHelpForInputWithUnits"
+                :initial-expression="plotXSideResolution.toString()"
+                title="points"
+                units=""
+              />
+            </div>
+            <div class="col-auto">
+              <q-checkbox v-model="isSquareNearField" size="sm">
+                square
+              </q-checkbox>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row justify-center items-baseline">
+        <div class="col-auto text-center q-py-xs q-pr-md">
+          <div :style="flexRowTitleStyle">y-side resolution</div>
         </div>
         <div class="col-xs-grow col-sm">
           <div class="row justify-xs-center justify-sm-start items-center">
             <input-with-units
-              v-model:input-result="plotXSideResolution"
+              v-model:input-result="plotYSideResolution"
               v-model:is-showing-help="isShowingHelpForInputWithUnits"
-              :initial-expression="plotXSideResolution.toString()"
+              :initial-expression="plotYSideResolution.toString()"
+              :is-info-mode="isSquareNearField"
               title="points"
               units=""
             />
           </div>
         </div>
       </div>
+
       <div class="row justify-center items-baseline">
         <div class="col-auto text-center q-py-xs q-pr-md">
           <div :style="flexRowTitleStyle">relative side length</div>
@@ -76,7 +101,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue';
+import { defineComponent, computed, watch } from 'vue';
 import { useStore } from 'src/store';
 import InputWithUnits from 'components/InputWithUnits.vue';
 import { flexRowTitleStyle } from 'components/config';
@@ -108,6 +133,11 @@ export default defineComponent({
         $store.commit('simulationSetup/setNearFieldRelativePlotSize', val),
     });
 
+    const isSquareNearField = computed({
+      get: () => $store.state.guiRuntime.isSquareNearField,
+      set: (val) => $store.commit('guiRuntime/setIsSquareNearField', val),
+    });
+
     // const maxComputeTime = computed({
     //   get: () => $store.state.simulationSetup.gui.nearFieldSetup.maxComputeTime,
     //   set: val => $store.commit('simulationSetup/setNearFieldMaxComputeTime', val)
@@ -134,13 +164,20 @@ export default defineComponent({
         ),
     });
 
+    watch([plotXSideResolution, isSquareNearField], () => {
+      if (isSquareNearField.value)
+        plotYSideResolution.value = plotXSideResolution.value;
+    });
+
     return {
       crossSection,
       isShowingHelpForInputWithUnits,
+      isSquareNearField,
       flexRowTitleStyle,
       relativePlotSize,
       // maxComputeTime,
       plotXSideResolution,
+      plotYSideResolution,
       nearFieldPlane,
     };
   },

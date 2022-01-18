@@ -62,6 +62,16 @@
             auto refine
           </q-checkbox>
         </div>
+        <div class="col-auto q-px-sm">
+          <q-btn
+            no-caps
+            flat
+            icon="restart_alt"
+            color="primary"
+            label="reset"
+            @click="resetZoom()"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -232,10 +242,11 @@ export default defineComponent({
 
     function refineOnZoom() {
       if (sideX.value == 0 || sideY.value == 0) return;
-      $store.commit(
-        'simulationSetup/setNearFieldRelativePlotSize',
-        sideX.value / 2.0
-      );
+      $store.commit('guiRuntime/setIsSquareNearField', false),
+        $store.commit(
+          'simulationSetup/setNearFieldRelativePlotSize',
+          sideX.value / 2.0
+        );
       $store.commit(
         'simulationSetup/setNearFieldPlotXSideResolution',
         floor(Math.sqrt((totalPoints.value * sideX.value) / sideY.value))
@@ -288,6 +299,13 @@ export default defineComponent({
       runNearFieldSimulation,
       refineOnZoom,
       isAutoRefineNearField,
+      resetZoom() {
+        $store.commit('simulationSetup/setNearFieldAtRelativeZ0', 0);
+        $store.commit('simulationSetup/setNearFieldAtRelativeY0', 0);
+        $store.commit('simulationSetup/setNearFieldAtRelativeX0', 0);
+        $store.commit('simulationSetup/setNearFieldRelativePlotSize', 3.0);
+        runNearFieldSimulation();
+      },
     };
   },
 });
