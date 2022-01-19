@@ -72,7 +72,10 @@
         </div>
       </div>
 
-      <div class="row justify-center items-baseline">
+      <div
+        v-if="plotRatioLabel == 'any'"
+        class="row justify-center items-baseline"
+      >
         <div class="col-auto text-center q-py-xs q-pr-md">
           <div :style="flexRowTitleStyle">y-side resolution</div>
         </div>
@@ -82,7 +85,7 @@
               v-model:input-result="plotYSideResolution"
               v-model:is-showing-help="isShowingHelpForInputWithUnits"
               :initial-expression="plotYSideResolution.toString()"
-              :is-info-mode="isFixedRatioNearField"
+              :is-info-mode="plotRatioLabel != 'any'"
               title="points"
               units=""
             />
@@ -144,7 +147,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, watch, ref } from 'vue';
+import { defineComponent, computed, watch } from 'vue';
 import { useStore } from 'src/store';
 import InputWithUnits from 'components/InputWithUnits.vue';
 import { flexRowTitleStyle } from 'components/config';
@@ -176,11 +179,6 @@ export default defineComponent({
         $store.commit('simulationSetup/setNearFieldRelativePlotSize', val),
     });
 
-    const isFixedRatioNearField = computed({
-      get: () => $store.state.guiRuntime.isFixedRatioNearField,
-      set: (val) => $store.commit('guiRuntime/setIsFixedRatioNearField', val),
-    });
-
     // const maxComputeTime = computed({
     //   get: () => $store.state.simulationSetup.gui.nearFieldSetup.maxComputeTime,
     //   set: val => $store.commit('simulationSetup/setNearFieldMaxComputeTime', val)
@@ -207,15 +205,13 @@ export default defineComponent({
         ),
     });
 
-    const plotRatioLabel = ref('any');
-    const plotRatio = ref(1);
-
-    watch(plotRatioLabel, () => {
-      if (plotRatioLabel.value == 'any') isFixedRatioNearField.value = false;
-      else isFixedRatioNearField.value = true;
+    const plotRatioLabel = computed({
+      get: () => $store.state.guiRuntime.plotRatioLabel,
+      set: (val) => $store.commit('guiRuntime/setPlotRatioLabel', val),
     });
-    watch(isFixedRatioNearField, () => {
-      if (!isFixedRatioNearField.value) plotRatioLabel.value = 'any';
+    const plotRatio = computed({
+      get: () => $store.state.guiRuntime.plotRatio,
+      set: (val) => $store.commit('guiRuntime/setPlotRatio', val),
     });
 
     watch(plotRatioLabel, () => {
@@ -237,15 +233,14 @@ export default defineComponent({
           break;
       }
     });
-    watch([plotXSideResolution, plotRatioLabel], () => {
-      if (isFixedRatioNearField.value)
+    watch([plotXSideResolution, plotRatioLabel, plotRatio], () => {
+      if (plotRatioLabel.value != 'any')
         plotYSideResolution.value = plotRatio.value * plotXSideResolution.value;
     });
     return {
       crossSection,
       plotRatioLabel,
       isShowingHelpForInputWithUnits,
-      isFixedRatioNearField,
       flexRowTitleStyle,
       relativePlotSize,
       // maxComputeTime,

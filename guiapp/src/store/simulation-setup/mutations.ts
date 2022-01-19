@@ -4,6 +4,7 @@ import {
   simulationSetup,
   layer,
   nearFieldPlane,
+  nearFieldSetup,
 } from './state';
 import { cloneDeep } from 'lodash';
 import { markRaw } from 'vue';
@@ -85,6 +86,9 @@ const mutation: MutationTree<sssi> = {
     state.gui.numberOfModesToPlot = val;
   },
 
+  setNearFieldSetup(state: sssi, val: nearFieldSetup) {
+    state.gui.nearFieldSetup = cloneDeep(val);
+  },
   setNearFieldWL(state: sssi, val: number) {
     state.gui.nearFieldSetup.atWL = val;
   },
@@ -92,15 +96,15 @@ const mutation: MutationTree<sssi> = {
     state.gui.nearFieldSetup.relativePlotSize = val;
   },
   setNearFieldAtRelativeX0(state: sssi, val: number) {
-    if (val < 1e-15) val = 0;
+    if (Math.abs(val) < 1e-15) val = 0;
     state.gui.nearFieldSetup.atRelativeX0 = val;
   },
   setNearFieldAtRelativeY0(state: sssi, val: number) {
-    if (val < 1e-15) val = 0;
+    if (Math.abs(val) < 1e-15) val = 0;
     state.gui.nearFieldSetup.atRelativeY0 = val;
   },
   setNearFieldAtRelativeZ0(state: sssi, val: number) {
-    if (val < 1e-15) val = 0;
+    if (Math.abs(val) < 1e-15) val = 0;
     state.gui.nearFieldSetup.atRelativeZ0 = val;
   },
   setNearFieldPlotXSideResolution(state: sssi, val: number) {

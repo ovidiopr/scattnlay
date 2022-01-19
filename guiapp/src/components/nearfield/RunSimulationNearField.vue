@@ -82,7 +82,10 @@ import { computed, defineComponent, nextTick, watch } from 'vue';
 import { useStore } from 'src/store';
 import { cloneDeep, floor } from 'lodash';
 import SaveSimulationNearField from 'components/nearfield/SaveSimulationNearField.vue';
-import { nearFieldPlane } from 'src/store/simulation-setup/state';
+import {
+  nearFieldPlane,
+  nearFieldSetup,
+} from 'src/store/simulation-setup/state';
 
 export default defineComponent({
   name: 'RunSimulationNearField',
@@ -128,25 +131,18 @@ export default defineComponent({
       void setTimeout(() => {
         void nextTick(() => {
           $store.commit('simulationSetup/copySetupFromGuiToCurrent');
-
           const host = $store.state.simulationSetup.current.hostIndex;
-          const plotXSideResolution =
+          const currentNearFieldSetup = cloneDeep(
             $store.state.simulationSetup.current.nearFieldSetup
-              .plotXSideResolution;
-          const plotYSideResolution =
-            $store.state.simulationSetup.current.nearFieldSetup
-              .plotYSideResolution;
-          const relativePlotSize =
-            $store.state.simulationSetup.current.nearFieldSetup
-              .relativePlotSize;
-          const crossSection =
-            $store.state.simulationSetup.current.nearFieldSetup.crossSection;
-          const atX =
-            $store.state.simulationSetup.current.nearFieldSetup.atRelativeX0;
-          const atY =
-            $store.state.simulationSetup.current.nearFieldSetup.atRelativeY0;
-          const atZ =
-            $store.state.simulationSetup.current.nearFieldSetup.atRelativeZ0;
+          );
+          const plotXSideResolution = currentNearFieldSetup.plotXSideResolution;
+          const plotYSideResolution = currentNearFieldSetup.plotYSideResolution;
+          const relativePlotSize = currentNearFieldSetup.relativePlotSize;
+          const crossSection = currentNearFieldSetup.crossSection;
+          const atX = currentNearFieldSetup.atRelativeX0;
+          const atY = currentNearFieldSetup.atRelativeY0;
+          const atZ = currentNearFieldSetup.atRelativeZ0;
+
           const isMarkUnconvergedAsNaN = 1; // 0 - do not mark, else do mark
           try {
             if (!$store.state.simulationSetup.nmies.nearField.instance)
@@ -240,20 +236,52 @@ export default defineComponent({
       () => plotXSideResolutionGUI.value * plotYSideResolutionGUI.value
     );
 
+    let prevSettingsZoom = cloneDeep(
+      $store.state.simulationSetup.current.nearFieldSetup
+    );
+    let prevSettingsUser = cloneDeep(
+      $store.state.simulationSetup.current.nearFieldSetup
+    );
+
+    function isEqual(a: nearFieldSetup, b: nearFieldSetup) {
+      const keys = Object.keys(a);
+      for (let key of keys) {
+        // prettier-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        // eslint-disable-next-line
+        if (a[key] != b[key]) return false
+      }
+      return true;
+    }
     function refineOnZoom() {
+      const currentSettings = cloneDeep(
+        $store.state.simulationSetup.current.nearFieldSetup
+      );
+      if (!isEqual(currentSettings, prevSettingsZoom)) {
+        // The only reason for current settings of near-field setup
+        // to be different from what was previously set in the end of
+        // refineOnZoom() is some user input... So, remember the state after
+        // last user intervention to use it on press of a 'reset' button.
+        prevSettingsUser = cloneDeep(currentSettings);
+      }
       if (sideX.value == 0 || sideY.value == 0) return;
-      $store.commit('guiRuntime/setIsFixedRatioNearField', false),
-        $store.commit(
-          'simulationSetup/setNearFieldRelativePlotSize',
-          sideX.value / 2.0
-        );
+      $store.commit('guiRuntime/setPlotRatioLabel', 'fixed');
+      $store.commit('guiRuntime/setPlotRatio', sideY.value / sideX.value);
+      $store.commit(
+        'simulationSetup/setNearFieldRelativePlotSize',
+        sideX.value / 2.0
+      );
       $store.commit(
         'simulationSetup/setNearFieldPlotXSideResolution',
         floor(Math.sqrt((totalPoints.value * sideX.value) / sideY.value))
       );
       $store.commit(
         'simulationSetup/setNearFieldPlotYSideResolution',
-        floor(Math.sqrt((totalPoints.value * sideY.value) / sideX.value))
+        floor(
+          $store.state.guiRuntime.plotRatio *
+            $store.state.simulationSetup.gui.nearFieldSetup.plotXSideResolution
+        )
       );
       if (crossSection.value == nearFieldPlane.Ek) {
         $store.commit('simulationSetup/setNearFieldAtRelativeZ0', atX.value);
@@ -267,6 +295,9 @@ export default defineComponent({
         $store.commit('simulationSetup/setNearFieldAtRelativeY0', atX.value);
         $store.commit('simulationSetup/setNearFieldAtRelativeX0', atY.value);
       }
+      prevSettingsZoom = cloneDeep(
+        $store.state.simulationSetup.gui.nearFieldSetup
+      );
       runNearFieldSimulation();
     }
 
@@ -294,10 +325,12 @@ export default defineComponent({
       refineOnZoom,
       isAutoRefineNearField,
       resetZoom() {
-        $store.commit('simulationSetup/setNearFieldAtRelativeZ0', 0);
-        $store.commit('simulationSetup/setNearFieldAtRelativeY0', 0);
-        $store.commit('simulationSetup/setNearFieldAtRelativeX0', 0);
-        $store.commit('simulationSetup/setNearFieldRelativePlotSize', 3.0);
+        $store.commit('simulationSetup/setNearFieldSetup', prevSettingsUser);
+        $store.commit(
+          'guiRuntime/setPlotRatio',
+          prevSettingsUser.plotYSideResolution /
+            prevSettingsUser.plotXSideResolution
+        );
         runNearFieldSimulation();
       },
     };

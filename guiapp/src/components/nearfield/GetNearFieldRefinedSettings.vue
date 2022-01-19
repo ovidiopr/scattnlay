@@ -92,20 +92,9 @@ export default defineComponent({
         $store.commit('simulationSetup/setNearFieldAtRelativeZ0', val),
     });
 
-    const plotYSideResolution = computed({
-      get: () =>
-        $store.state.simulationSetup.gui.nearFieldSetup.plotYSideResolution,
-      set: (val) =>
-        $store.commit(
-          'simulationSetup/setNearFieldPlotYSideResolution',
-          Math.floor(val)
-        ),
-    });
-
     return {
       isShowingHelpForInputWithUnits,
       flexRowTitleStyle,
-      plotYSideResolution,
       atRelativeX0,
       atRelativeY0,
       atRelativeZ0,

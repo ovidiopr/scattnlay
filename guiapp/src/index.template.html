@@ -20,6 +20,7 @@
                   border-radius: 50%;
                   border-top: 12px solid #444444;
                   width: 70px;
+
                   height: 70px;
                   animation: spin 1s linear infinite;
               }
@@ -42,7 +43,7 @@
                   background-color: rgba(55,55,55,0.5);
               }
               /*to make it compatible with physics.itmo.ru*/
-      #q-app .row, .q-item.row  {
+      .row {
           margin-left: unset;
           margin-right: unset;
           margin-bottom: unset;
@@ -72,6 +73,17 @@
       }
       #q-app a:hover, #q-app a:focus {
           color: inherit;
+      }
+      .col-sm-12 {
+          padding-left: unset;
+          padding-right: unset;
+      }
+      .container {
+          padding-left: unset;
+          padding-right: unset;
+      }
+      .q-page-scroller {
+          z-index: 1;
       }
       </style>
 

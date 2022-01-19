@@ -12,7 +12,8 @@ export interface guiRuntimeStateInterface {
   safeToWL: number;
   isSaveWithPythonScript: boolean;
   isAutoRefineNearField: boolean;
-  isFixedRatioNearField: boolean;
+  plotRatio: number;
+  plotRatioLabel: string;
   nearFieldZoom: { fromX: number; toX: number; fromY: number; toY: number };
 }
 
@@ -27,7 +28,8 @@ function state(): guiRuntimeStateInterface {
     isSaveWithPythonScript: true,
     nearFieldZoom: { fromX: 0, toX: 1, fromY: 0, toY: 1 },
     isAutoRefineNearField: true,
-    isFixedRatioNearField: true,
+    plotRatio: 1,
+    plotRatioLabel: 'fixed',
     activatedMaterials: [
       // 'PEC',
       {

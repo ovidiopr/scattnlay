@@ -15,8 +15,11 @@ function compare(a: material, b: material) {
 }
 
 const mutation: MutationTree<grsi> = {
-  setIsFixedRatioNearField(state: grsi, val: boolean) {
-    state.isFixedRatioNearField = val;
+  setPlotRatio(state: grsi, val: number) {
+    state.plotRatio = val;
+  },
+  setPlotRatioLabel(state: grsi, val: string) {
+    state.plotRatioLabel = val;
   },
   setIsSaveWithPythonScript(state: grsi, val: boolean) {
     state.isSaveWithPythonScript = val;
