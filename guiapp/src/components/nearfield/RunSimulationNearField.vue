@@ -63,6 +63,13 @@
           </q-checkbox>
         </div>
         <div class="col-auto q-px-sm">
+          <q-tooltip
+            v-if="isUnusedReset"
+            anchor="top middle"
+            self="center middle"
+          >
+            to previous 'Run simulation' button click</q-tooltip
+          >
           <q-btn
             no-caps
             flat
@@ -78,7 +85,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, nextTick, watch } from 'vue';
+import { computed, defineComponent, nextTick, watch, ref } from 'vue';
 import { useStore } from 'src/store';
 import { cloneDeep, floor } from 'lodash';
 import SaveSimulationNearField from 'components/nearfield/SaveSimulationNearField.vue';
@@ -317,14 +324,16 @@ export default defineComponent({
         count = 1;
       }
     });
-
+    const isUnusedReset = ref(true);
     return {
+      isUnusedReset,
       isRunning,
       isNmieLoaded,
       runNearFieldSimulation,
       refineOnZoom,
       isAutoRefineNearField,
       resetZoom() {
+        isUnusedReset.value = false;
         $store.commit('simulationSetup/setNearFieldSetup', prevSettingsUser);
         $store.commit(
           'guiRuntime/setPlotRatio',
