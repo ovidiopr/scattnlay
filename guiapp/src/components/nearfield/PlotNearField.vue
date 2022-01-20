@@ -126,6 +126,9 @@ export default defineComponent({
     );
     const limitTo = computed(() => $store.state.plotRuntime.nearFieldLimitTo);
 
+    const dataFrom = computed(() => $store.state.plotRuntime.nearFieldDataFrom);
+    const dataTo = computed(() => $store.state.plotRuntime.nearFieldDataTo);
+
     const nearFieldStore = computed(() => {
       let nearFieldStoreLocal = $store.state.plotRuntime.nearFieldEabs;
       $store.commit(
@@ -146,19 +149,58 @@ export default defineComponent({
       );
       return nearFieldStoreLocal;
     });
+    const isLogColorscale = computed(
+      () => $store.state.guiRuntime.isLogColorscale
+    );
     const nearFieldProc = computed(() => {
       if (!nearFieldStore.value) return nearFieldStore.value;
-      return limitMap(nearFieldStore.value, limitFrom.value, limitTo.value);
+      const nearFieldLimited = limitMap(
+        nearFieldStore.value,
+        limitFrom.value,
+        limitTo.value
+      );
+      if (!isLogColorscale.value) return nearFieldLimited;
+      return nearFieldLimited.map((x) => Math.log10(x));
       // return nearFieldStore.map(x=>x>limitTo.value?limitTo.value:x)
     });
-    watch([nearFieldProc, xy], () => {
+
+    const colorscale = computed(() => $store.state.guiRuntime.colorscale);
+
+    watch([nearFieldProc, xy, colorscale], () => {
       nearFieldPlot.data.length = 0;
-      const heatMapSettings: Partial<PlotData> = {
+      let heatMapSettings: Partial<PlotData> = {
         type: 'heatmap',
-        colorscale: 'Jet',
+        colorscale: colorscale.value,
         colorbar: { title: '|𝐸|∕|𝐸𝜊|' },
         z: nearFieldProc.value,
       };
+      if (isLogColorscale.value) {
+        const steps = 4;
+        const valFrom = Math.log10(
+          limitFrom.value > dataFrom.value ? limitFrom.value : dataFrom.value
+        );
+        const valTo = Math.log10(
+          limitTo.value < dataTo.value ? limitTo.value : dataTo.value
+        );
+        const logStep = (valTo - valFrom) / steps;
+
+        let tickvals = [];
+        for (let i = 0; i < steps; ++i) {
+          let val = valFrom + i * logStep;
+          tickvals.push(val);
+        }
+        tickvals.push(valTo);
+
+        let ticktext = [];
+        for (let val of tickvals) ticktext.push(Math.pow(10, val).toFixed(2));
+
+        heatMapSettings.colorbar = {
+          title: '|𝐸|∕|𝐸𝜊|',
+          tickmode: 'array',
+          tickvals: tickvals,
+          ticktext: ticktext,
+        };
+      }
       nearFieldPlot.data.push({ ...xy.value, ...heatMapSettings });
 
       const isPlotShapes =

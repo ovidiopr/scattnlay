@@ -21,6 +21,13 @@ const mutation: MutationTree<grsi> = {
   setPlotRatioLabel(state: grsi, val: string) {
     state.plotRatioLabel = val;
   },
+  setColorscale(state: grsi, val: string) {
+    state.colorscale = val;
+  },
+  setIsLogColorscale(state: grsi, val: boolean) {
+    state.isLogColorscale = val;
+  },
+
   setIsSaveWithPythonScript(state: grsi, val: boolean) {
     state.isSaveWithPythonScript = val;
   },

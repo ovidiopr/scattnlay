@@ -14,6 +14,8 @@ export interface guiRuntimeStateInterface {
   isAutoRefineNearField: boolean;
   plotRatio: number;
   plotRatioLabel: string;
+  colorscale: string;
+  isLogColorscale: boolean;
   nearFieldZoom: { fromX: number; toX: number; fromY: number; toY: number };
 }
 
@@ -30,6 +32,8 @@ function state(): guiRuntimeStateInterface {
     isAutoRefineNearField: true,
     plotRatio: 1,
     plotRatioLabel: 'fixed',
+    colorscale: 'Jet',
+    isLogColorscale: false,
     activatedMaterials: [
       // 'PEC',
       {

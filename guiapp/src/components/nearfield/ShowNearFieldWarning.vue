@@ -1,13 +1,15 @@
 <template>
   <div v-if="count < 2">
-    <q-card>
+    <q-card style="max-width: 40em">
       <div class="q-pa-sm">
         <div class="text-h6 q-ml-sm"><q-icon name="warning" /> Warning</div>
         <div class="q-ma-sm">
           Near-field evaluation is an experimental feature. In general, it
-          provides a correct result. However, it is not as tested as spectrum
-          computations, especially for the case of large, multilayer, and
-          absorbing spheres. Please, verify the result before using it.
+          provides a correct result. However, it is not as well tested as
+          spectrum computations, especially for the case of large, multilayer,
+          and absorbing spheres. <br />
+          <br />
+          Please, verify the result before using it.
         </div>
         <div class="q-ma-xs" />
         <div class="q-ml-sm text-h6">

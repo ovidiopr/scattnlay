@@ -40,6 +40,7 @@
             options-dense
             :style="'width: ' + inputWithUnitsBodyWidthStyle"
             use-input
+            input-class="q-pl-xs"
             behavior="menu"
             @filter="filterQSelectOptions"
             @blur="handleQSelectBlur"
@@ -48,7 +49,7 @@
           >
             <template v-if="isError" #prepend>
               <q-tooltip> Input conflict </q-tooltip>
-              <q-icon name="error" class="text-warning" />
+              <q-icon name="error" class="text-warning q-pl-xs" />
             </template>
             <template
               v-if="isShowingTooltipAppend && !isShowingTooltip"

@@ -2,7 +2,7 @@
   <div class="row items-baseline">
     <div class="col-xs-12 col-sm-auto text-center q-px-md q-py-sm">
       <div :style="flexRowTitleStyle">
-        |&thinsp;𝐸&thinsp;|&emsp13;∕&emsp13;|&thinsp;𝐸𝜊&thinsp;| limits
+        |&thinsp;𝐸&thinsp;|&emsp13;∕&emsp13;|&thinsp;𝐸𝜊&thinsp;|
       </div>
     </div>
     <div class="col-xs-grow col-sm">
@@ -38,10 +38,50 @@
       </div>
     </div>
   </div>
+  <div class="q-ma-xs" />
+  <div class="row items-baseline">
+    <div class="col-xs-12 col-sm-auto text-center q-px-md q-py-sm">
+      <div :style="flexRowTitleStyle"></div>
+    </div>
+    <div class="col-xs-grow col-sm">
+      <div class="row justify-xs-center justify-sm-start items-center">
+        <div class="col-auto">
+          <q-checkbox v-model="isLogColorscale" size="sm">
+            use log scale
+          </q-checkbox>
+        </div>
+        <div class="col-auto q-mx-sm">
+          <q-select
+            v-model="colorscale"
+            :options="colorscaleOptions"
+            options-dense
+            outlined
+            dense
+          />
+        </div>
+        <div class="col-auto">
+          <q-checkbox v-model="moreColors" size="sm">
+            use more colors
+          </q-checkbox>
+        </div>
+        <div class="col-auto q-px-sm">
+          <q-tooltip anchor="top middle" self="center middle">
+            more on color preception
+            <q-icon name="launch" />
+          </q-tooltip>
+          <a
+            href="https://www.semanticscholar.org/paper/Why-We-Use-Bad-Color-Maps-and-What-You-Can-Do-About-Moreland/028423bb486b2a963ee6a330ea5cceab467a5349"
+          >
+            <q-icon name="o_info" size="sm" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, watch, computed } from 'vue';
+import { defineComponent, watch, computed, ref } from 'vue';
 import { useStore } from 'src/store';
 import InputWithUnits from 'components/InputWithUnits.vue';
 import { flexRowTitleStyle } from 'components/config';
@@ -52,6 +92,34 @@ export default defineComponent({
 
   setup() {
     const $store = useStore();
+
+    const colorscale = computed({
+      get: () => $store.state.guiRuntime.colorscale,
+      set: (val) => $store.commit('guiRuntime/setColorscale', val),
+    });
+
+    const isLogColorscale = computed({
+      get: () => $store.state.guiRuntime.isLogColorscale,
+      set: (val) => $store.commit('guiRuntime/setIsLogColorscale', val),
+    });
+
+    const moreColors = ref(false);
+    const basicColors = ['Jet', 'Portland', 'Hot', 'Greys', 'Greens'];
+    const additionalColors = [
+      'YlOrRd',
+      'YlGnBu',
+      'RdBu',
+      'Electric',
+      'Earth',
+      'Picnic',
+      'Bluered',
+      'Blackbody',
+    ];
+
+    const colorscaleOptions = computed(() => {
+      if (moreColors.value) return [...basicColors, ...additionalColors];
+      return basicColors;
+    });
 
     const isShowingHelpForInputWithUnits = computed({
       get: () => $store.state.guiRuntime.isShowingHelpForInputWithUnits,
@@ -90,6 +158,10 @@ export default defineComponent({
         limitTo.value = dataTo.value;
         limitFrom.value = dataFrom.value;
       },
+      colorscale,
+      moreColors,
+      colorscaleOptions,
+      isLogColorscale,
     };
   },
 });

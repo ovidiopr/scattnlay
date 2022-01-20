@@ -54,12 +54,14 @@ module.exports = configure(function (ctx) {
       publicPath:
         process.env.NODE_ENV === 'development'
           ? '/'
-          : '/themes/custom/physics/mie-next/', // deploy path in Drupal setup at physics.ifmo.ru
+          : '/themes/custom/physics/mie/', // deploy path in Drupal setup at physics.ifmo.ru
+      // : '/themes/custom/physics/mie-next/', // deploy path in Drupal setup at physics.ifmo.ru
 
       env: {
         // copy publicPath from above build.publicPath to make it available from inside of the app.
         // publicPath: '/',
-        publicPath: ctx.dev ? '/' : '/themes/custom/physics/mie-next/', //  deploy path in Drupal setup at physics.ifmo.ru
+        publicPath: ctx.dev ? '/' : '/themes/custom/physics/mie/', //  deploy path in Drupal setup at physics.ifmo.ru
+        // publicPath: ctx.dev ? '/' : '/themes/custom/physics/mie-next/', //  deploy path in Drupal setup at physics.ifmo.ru
       },
       // extendWebpack (cfg, { isServer, isClient }) {
       //   cfg.module.rules.push({
