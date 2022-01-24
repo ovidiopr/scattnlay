@@ -28,6 +28,7 @@ TEST(BulkSphere, ArgPi) {
 }
 #endif
 
+//TEST(BulkSphere, DISABLED_HandlesInput) {
 TEST(BulkSphere, HandlesInput) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
   // A list of tests for a bulk sphere from

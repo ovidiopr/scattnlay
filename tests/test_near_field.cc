@@ -55,6 +55,40 @@ TEST(RunFieldCalculationCartesian, HandlesInput) {
 
 }
 
+TEST(LargeBubbleSpectrum, DISABLED_HandlesInput) {
+//TEST(LargeBubbleSpectrum, HandlesInput) { // TODO fix fail...
+  nmie::MultiLayerMie<nmie::FloatType> nmie;
+  nmie::FloatType core_r  = 2*nmie.PI_*100;
+  nmie::FloatType shell_r = 2*nmie.PI_*(100+0.1);
+  nmie.SetLayersIndex({ {1,0}, {1.33,0}});
+  double central_WL = 0.7007;
+  double relative_distance = 1e-10;
+  double dWL = central_WL*relative_distance;
+  std::vector<double> Qsca(5);
+  for (int i = 0; i < 5; ++i) {
+    auto WL = static_cast<nmie::FloatType>(central_WL +(i - 2)*dWL);
+    nmie.SetLayersSize({core_r/WL, shell_r/WL});
+    nmie.RunMieCalculation();
+    Qsca[i] = static_cast<double>(nmie.GetQsca());
+    std::cout<<"Qsca["<<i<<"]="<<Qsca[i]<<std::endl;
+  }
+
+  {
+    // Eabs points are located near the sphere outer border
+    //
+    //    0   1   2   3   4
+    //    ------- WL ------>
+    // distance between points (0) and (4) is 5*relative_distance*central_WL, initial
+    // value used for the test was 5*1e-10*0.7007, so we expect good linear dependence
+    // for points from 0 to 4. In the asserts we check, that the slope doesn't
+    // change too fast inside the curve.
+    using std::abs;
+    EXPECT_TRUE(
+        ( abs(Qsca[0] - Qsca[1]) + abs(Qsca[3] - Qsca[4]) ) >= abs(Qsca[1] - Qsca[2])
+    );
+  }
+}
+
 //TEST(RunFieldCalculationPolar, DISABLED_HandlesInput) {
 TEST(RunFieldCalculationPolar, HandlesInput) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
