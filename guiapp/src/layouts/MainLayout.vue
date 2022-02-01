@@ -1,9 +1,18 @@
 <template>
-  <q-layout view="lHh lpR fFf">
+  <q-layout view="lHr LpR fFf">
     <!--  <q-layout view="hHh Lpr lFr">-->
     <q-header elevated>
-      <q-toolbar>
+      <q-toolbar class="q-px-xs">
+        <!--        <div class="q-tabs&#45;&#45;faded-end">-->
+        <q-tabs align="left" shrink outside-arrows mobile-arrows>
+          <q-route-tab to="/spectrum" label="Spectrum" name="spectrum" />
+          <q-route-tab to="/nearfield" label="Near-field" name="nearfield" />
+          <!--          <q-route-tab to="/farfield" label="Far-field" name="farfield"/>-->
+        </q-tabs>
+        <!--        </div>-->
+        <q-space />
         <q-btn
+          v-if="!leftDrawerOpen"
           flat
           dense
           round
@@ -11,15 +20,10 @@
           aria-label="Menu"
           @click="toggleLeftDrawer"
         />
-        <q-tabs align="right">
-          <q-route-tab to="/spectrum" label="Spectrum" name="spectrum" />
-          <q-route-tab to="/nearfield" label="Near-field" name="nearfield" />
-          <!--          <q-route-tab to="/farfield" label="Far-field" name="farfield"/>-->
-        </q-tabs>
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" bordered>
+    <q-drawer v-model="leftDrawerOpen" bordered side="right">
       <q-list>
         <q-item clickable @click="toggleLeftDrawer">
           <q-item-section></q-item-section>

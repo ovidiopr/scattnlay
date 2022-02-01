@@ -63,17 +63,17 @@
           <q-checkbox v-model="moreColors" size="sm">
             use more colors
           </q-checkbox>
-        </div>
-        <div class="col-auto q-px-sm">
-          <q-tooltip anchor="top middle" self="center middle">
-            more on color preception
-            <q-icon name="launch" />
-          </q-tooltip>
-          <a
-            href="https://www.semanticscholar.org/paper/Why-We-Use-Bad-Color-Maps-and-What-You-Can-Do-About-Moreland/028423bb486b2a963ee6a330ea5cceab467a5349"
-          >
-            <q-icon name="o_info" size="sm" />
-          </a>
+          <span class="q-px-sm">
+            <q-tooltip anchor="top middle" self="center middle">
+              more on color preception
+              <q-icon name="launch" />
+            </q-tooltip>
+            <a
+              href="https://www.semanticscholar.org/paper/Why-We-Use-Bad-Color-Maps-and-What-You-Can-Do-About-Moreland/028423bb486b2a963ee6a330ea5cceab467a5349"
+            >
+              <q-icon name="o_info" size="sm" />
+            </a>
+          </span>
         </div>
       </div>
     </div>

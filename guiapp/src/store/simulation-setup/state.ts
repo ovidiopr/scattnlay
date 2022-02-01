@@ -86,7 +86,7 @@ function setupFactory(
       },
     },
   ],
-  numberOfModesToPlot = 4,
+  numberOfModesToPlot = 3,
   plotLabel = '',
 
   nearFieldSetup = {
