@@ -1,0 +1,61 @@
+{
+  "name": "guiapp",
+  "version": "0.0.1",
+  "description": "Mie scattering simulations",
+  "productName": "Scattnlay",
+  "author": "Konstantin Ladutenko <kostyfisik@gmail.com>",
+  "private": true,
+  "scripts": {
+    "lint": "eslint --ext .js,.ts,.vue ./",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.12.1",
+    "core-js": "^3.6.5",
+    "cubic-spline-ts": "^3.0.8",
+    "file-saver": "^2.0.5",
+    "js-yaml": "^4.1.0",
+    "lodash.clonedeep": "^4.5.0",
+    "mathjs": "^9.5.0",
+    "plotly.js-dist-min": "^2.6.2",
+    "quasar": "^2.3.3",
+    "uuid": "^8.3.2",
+    "vuex": "^4.0.1"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.13.14",
+    "@quasar/app": "^3.2.4",
+    "@types/emscripten": "^1.39.5",
+    "@types/file-saver": "^2.0.4",
+    "@types/js-yaml": "^4.0.5",
+    "@types/lodash": "^4.14.175",
+    "@types/node": "^12.20.21",
+    "@types/plotly.js-dist-min": "^2.3.0",
+    "@types/uuid": "^8.3.1",
+    "@typescript-eslint/eslint-plugin": "^4.16.1",
+    "@typescript-eslint/parser": "^4.16.1",
+    "electron": "^14.0.0",
+    "electron-packager": "^15.3.0",
+    "eslint": "^7.14.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-vue": "^7.0.0",
+    "node-polyfill-webpack-plugin": "^1.1.4",
+    "prettier": "^2.5.1"
+  },
+  "browserslist": [
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ],
+  "engines": {
+    "node": ">= 12.22.1",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  }
+}

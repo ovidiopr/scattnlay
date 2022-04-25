@@ -21,11 +21,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_compile_options(-W -Wall -pedantic -Werror)
 add_compile_options(-funroll-loops -fstrict-aliasing)
 
-# Set options
-option(ENABLE_MP "Use multiple precision" OFF)
-if (${ENABLE_MP})
-    add_compile_options(-DMULTI_PRECISION=100)
-endif ()
 
 # compiler details
 message("  C++ Compiler: ${CMAKE_CXX_COMPILER_ID} "
@@ -42,17 +37,24 @@ if (USE_STATIC_LIBRARIES)
 endif ()
 set(Boost_USE_MULTITHREADED OFF)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost REQUIRED)
-if (Boost_INCLUDE_DIRS)
-    if (${Boost_VERSION} VERSION_LESS 1.60.0)
-        message(FATAL_ERROR
-                "Found Boost library is too old; required is version 1.60.0 or newer!")
+find_package(Boost)
+# Set options
+option(ENABLE_MP "Use multiple precision" OFF)
+if (Boost_FOUND)
+    if (${ENABLE_MP})
+        add_compile_options(-DMULTI_PRECISION=100)
     endif ()
-    message("Found Boost include dir: ${Boost_INCLUDE_DIR}")
-    message("Found Boost library dir: ${Boost_LIBRARY_DIR}")
-    message("Found Boost libraries: ${Boost_LIBRARIES}")
-    include_directories(${Boost_INCLUDE_DIRS})
-endif ()
+    if (Boost_INCLUDE_DIRS)
+        if (${Boost_VERSION} VERSION_LESS 1.60.0)
+            message(FATAL_ERROR
+                    "Found Boost library is too old; required is version 1.60.0 or newer!")
+        endif ()
+        message("Found Boost include dir: ${Boost_INCLUDE_DIR}")
+        message("Found Boost library dir: ${Boost_LIBRARY_DIR}")
+        message("Found Boost libraries: ${Boost_LIBRARIES}")
+        include_directories(${Boost_INCLUDE_DIRS})
+    endif ()
+endif()
 
 #Find Python, NumPy and PyBind11
 find_package(Python COMPONENTS Interpreter Development)

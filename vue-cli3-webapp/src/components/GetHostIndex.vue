@@ -22,7 +22,6 @@
         },
         data () {
             return {
-                // TODO: Is it OK to modify Local later?
                 hostIndexLocal: this.hostIndex,
             }
         },

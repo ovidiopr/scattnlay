@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 #
-#    Copyright (C) 2019  Konstantin Ladutenko <kostyfisik@gmail.com>
+#    Copyright (C) 2019-2021  Konstantin Ladutenko <kostyfisik@gmail.com>
 #
 #    This file is part of python-scattnlay
 #

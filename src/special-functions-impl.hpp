@@ -329,7 +329,7 @@ template <typename FloatType>
 void evalDownwardD1 (const std::complex<FloatType> z,
                      std::vector<std::complex<FloatType> >& D1) {
   int nmax = D1.size() - 1;
-  int valid_digits = 10;
+  int valid_digits = 16;
 #ifdef MULTI_PRECISION
   valid_digits += MULTI_PRECISION;
 #endif

@@ -59,7 +59,6 @@
         name: "GetUnits",
         data () {
             return {
-                // TODO: Is it OK to modify Local later?
                 unitsLocal: this.units,
                 source_unitsLocal: this.source_units,
                 isSourceOtherUnitsLocal: this.isSourceOtherUnits

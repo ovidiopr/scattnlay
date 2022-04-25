@@ -102,7 +102,6 @@ class PyMultiLayerMie : public MultiLayerMie<FloatType> {
   void SetFieldCoords(const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Xp,
                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Yp,
                       const py::array_t<double, py::array::c_style | py::array::forcecast> &py_Zp);
-
 };
 
 // Python interface
