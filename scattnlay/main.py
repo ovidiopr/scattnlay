@@ -31,14 +31,16 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
-from scattnlay_mp import mie_mp as mie_mp_
-from scattnlay_dp import mie_dp
+mie_mp = None
+try:
+    from scattnlay_mp import mie_mp as mie_mp_
+    mie_mp = mie_mp_()
 
+from scattnlay_dp import mie_dp
 mie = mie_dp()
-mie_mp = mie_mp_()
 
 def scattcoeffs_(x, m, nmax=-1, pl=-1, mp=False):
-    if mp:
+    if mp and mie_mp:
         from scattnlay_mp import mie_mp as mie_
     else:
         from scattnlay_dp import mie_dp as mie_
@@ -114,7 +116,7 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
 
 
 def expancoeffs_(x, m, nmax=-1, pl=-1, mp=False):
-    if mp:
+    if mp and mie_mp:
         from scattnlay_mp import mie_mp as mie_
     else:
         from scattnlay_dp import mie_dp as mie_
@@ -199,7 +201,7 @@ def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
 
 
 def scattnlay_(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
-    if mp:
+    if mp and mie_mp:
         from scattnlay_mp import mie_mp as mie_
     else:
         from scattnlay_dp import mie_dp as mie_
@@ -284,7 +286,7 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
 
 
 def fieldnlay_(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
-    if mp:
+    if mp and mie_mp:
         from scattnlay_mp import mie_mp as mie_
     else:
         from scattnlay_dp import mie_dp as mie_

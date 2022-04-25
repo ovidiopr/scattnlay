@@ -93,10 +93,10 @@ namespace nmie {
     cln_.resize(L + 1);
     dln_.resize(L + 1);
     for (int l = 0; l <= L; l++) {
-      aln_[l].resize(nmax_);
-      bln_[l].resize(nmax_);
-      cln_[l].resize(nmax_);
-      dln_[l].resize(nmax_);
+      aln_[l].resize(nmax_, static_cast<FloatType>(0.0));
+      bln_[l].resize(nmax_, static_cast<FloatType>(0.0));
+      cln_[l].resize(nmax_, static_cast<FloatType>(0.0));
+      dln_[l].resize(nmax_, static_cast<FloatType>(0.0));
     }
 
     // Yang, paragraph under eq. A3
@@ -175,13 +175,13 @@ namespace nmie {
         print_count++;
         std::cout<< std::setprecision(print_precision)
                  << "Warning: Potentially unstable calculation of aln[0]["
-                 << n << "] = "<< aln_[0][n] <<std::endl;
+                 << n << "] = "<< aln_[0][n] << " which is expected to be exact zero!"<<std::endl;
       }
       if (cabs(bln_[0][n]) > 1e-10  && print_count < 2)  {
         print_count++;
         std::cout<< std::setprecision(print_precision)
                  << "Warning: Potentially unstable calculation of bln[0]["
-                 << n << "] = "<< bln_[0][n] <<std::endl;
+                 << n << "] = "<< bln_[0][n] << " which is expected to be exact zero!" <<std::endl;
       }
       aln_[0][n] = 0.0;
       bln_[0][n] = 0.0;
@@ -269,12 +269,25 @@ namespace nmie {
       H[i] = c_zero;
     }
 
+    const unsigned L = refractive_index_.size();
+    for (int n = 0; n < nmax_; n++) {
+      cln_[L][n] = c_zero;
+      dln_[L][n] = c_zero;
+    }
+
     unsigned int l;
     GetIndexAtRadius(Rho, ml, l);
 
     isConvergedE = {false, false, false}, isConvergedH = {false, false, false};
 //    evalType E0 = 0, H0=0;
+    std::vector< std::complex<evalType> > Ediff_prev = {{0.,0.},{0.,0.},{0.,0.}},
+        Hdiff_prev = {{0.,0.},{0.,0.},{0.,0.}};
     for (unsigned int n = 0; n < nmax; n++) {
+      if ( isConvergedE[0] && isConvergedE[1] && isConvergedE[2]
+          && isConvergedH[0] && isConvergedH[1] && isConvergedH[2]) {
+        std::cout<<"Near-field early convergence at nmax = "<<n+1<<std::endl;
+        break;
+      }
       int n1 = n + 1;
       auto rn = static_cast<evalType>(n1);
 
@@ -292,7 +305,7 @@ namespace nmie {
       auto cln = ConvertComplex<evalType>(cln_[l][n]);
       auto dln = ConvertComplex<evalType>(dln_[l][n]);
       for (int i = 0; i < 3; i++) {
-        if (isConvergedE[i] && isConvergedH[i]) continue;
+        if (isConvergedE[i] && isConvergedH[i]) continue; // TODO is it safe?
         Ediff = En*(      cln*M1o1n[i] - c_i*dln*N1e1n[i]
                          + c_i*aln*N3e1n[i] -     bln*M3o1n[i]);
         Hdiff = En*(     -dln*M1e1n[i] - c_i*cln*N1o1n[i]
@@ -305,16 +318,19 @@ namespace nmie {
                     << " (of total nmax = "<<nmax<<")!!!"<<std::endl;
           break;
         }
-        if (n!=0) {
-          if (cabs(Ediff) == 0) isConvergedE[i] = true;
-          if (cabs(Hdiff) == 0) isConvergedH[i] = true;
-          if (cabs(E[i]) != 0.)
-            if (cabs(Ediff)/cabs(E[i]) < nearfield_convergence_threshold_) isConvergedE[i] = true;
-          if (cabs(H[i]) != 0.)
-            if (cabs(Hdiff)/cabs(H[i]) < nearfield_convergence_threshold_) isConvergedH[i] = true;
+        if (n>0) {
+          if (
+              (cabs(Ediff_prev[i]) <= cabs(E[i]) * nearfield_convergence_threshold_)
+                  &&  (cabs(Ediff) <= cabs(E[i]) * nearfield_convergence_threshold_)
+              ) isConvergedE[i] = true;
+          if (
+              (cabs(Hdiff_prev[i]) <= cabs(H[i]) * nearfield_convergence_threshold_)
+                  &&  (cabs(Hdiff) <= cabs(H[i]) * nearfield_convergence_threshold_)
+              ) isConvergedH[i] = true;
         }
-        if (isConvergedE[i]) Ediff = c_zero;
-        if (isConvergedH[i]) Hdiff = c_zero;
+        Ediff_prev[i] = Ediff;
+        Hdiff_prev[i] = Hdiff;
+
         if ((!isConvergedH[i] || !isConvergedE[i]) && n==nmax-1 && GetFieldConvergence()) {
           std::cout<<"Econv:"<<cabs(Ediff)/cabs(E[i])<<" Hconv:"<<cabs(Hdiff)/cabs(H[i])<<std::endl;
 
@@ -324,6 +340,9 @@ namespace nmie {
           E[i] += Ediff;
           H[i] += Hdiff;
           continue;
+        }
+        if (n == 0) {
+
         }
         if (n1 == mode_n_) {
           if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
@@ -350,6 +369,20 @@ namespace nmie {
           nmm::isnan(Hdiff_ft.real()) || nmm::isnan(Hdiff_ft.imag())
           ) break;
     }  // end of for all n
+
+    // Add the incident field
+    if(l==L) {
+      const auto z = Rho*cos_t(Theta);
+      const auto Ex = std::complex<evalType>(cos_t(z), sin_t(z));
+      E[0] +=  Ex*cos_t(Phi)*sin_t(Theta);
+      E[1] +=  Ex*cos_t(Phi)*cos_t(Theta);
+      E[2] += -Ex*sin_t(Phi);
+      const auto Hy = Ex;
+      H[0] += Hy*sin_t(Theta)*sin_t(Phi);
+      H[1] += Hy*cos_t(Theta)*sin_t(Phi);
+      H[2] += Hy*cos_t(Phi);
+    }
+
     if( (!isConvergedE[0] || !isConvergedE[1] ||!isConvergedE[2] ||
         !isConvergedH[0] || !isConvergedH[1] ||!isConvergedH[2] ) && GetFieldConvergence()) {
       std::cout << "Field evaluation failed to converge an nmax = "<< nmax << std::endl;
@@ -454,6 +487,7 @@ namespace nmie {
     convertFieldsFromSphericalToCartesian();
   }  //  end of MultiLayerMie::RunFieldCalculation()
 
+// TODO do we really need this eval_delta()?
 template <typename FloatType>
 double eval_delta(const unsigned int steps, const double from_value, const double to_value) {
   auto delta = std::abs(from_value - to_value);
@@ -527,9 +561,9 @@ void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const double fro
 
     // Skip if not enough terms in Mie series (i.e. required near field nmax > available terms )
     if (near_field_nmax > available_maximal_nmax_)  near_field_nmax = available_maximal_nmax_;
-    Psi[j].resize(near_field_nmax + 1); D1n[j].resize(near_field_nmax + 1);
-    Zeta[j].resize(near_field_nmax + 1); D3n[j].resize(near_field_nmax + 1);
-    PsiZeta[j].resize(near_field_nmax + 1);
+    Psi[j].resize(near_field_nmax + 1, static_cast<FloatType>(0.0)); D1n[j].resize(near_field_nmax + 1, static_cast<FloatType>(0.0));
+    Zeta[j].resize(near_field_nmax + 1, static_cast<FloatType>(0.0)); D3n[j].resize(near_field_nmax + 1, static_cast<FloatType>(0.0));
+    PsiZeta[j].resize(near_field_nmax + 1, static_cast<FloatType>(0.0));
     std::complex<FloatType> ml;
     GetIndexAtRadius(Rho, ml);
     auto z = Rho*ml;
@@ -630,7 +664,46 @@ bool MultiLayerMie<FloatType>::GetFieldConvergence () {
   return convergence;
 }
 
-
+template <typename FloatType>
+void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int first_side_points,
+                                                            const int second_side_points,
+                                                            const double relative_side_length,
+                                                            const int plane_selected,
+                                                            const double at_x, const double at_y,
+                                                            const double at_z,
+                                                            const bool isMarkUnconverged,
+                                                            const int nmax_in) {
+  SetMaxTerms(nmax_in);
+  std::vector<FloatType> Xp(0), Yp(0), Zp(0);
+  if (size_param_.size()<1) throw "Expect size_param_ to have at least one element before running a simulation";
+  const FloatType total_R = size_param_.back();
+  const FloatType second_side_max_coord_value = total_R * relative_side_length;
+  // TODO add test if side_1_points <= 1 or side_2_points <= 1
+  const FloatType space_step = second_side_max_coord_value*2/( (second_side_points<2 ? 2 : second_side_points) - 1.0);
+  auto push_coords = [&](const int nx, const int ny, const int nz) {
+    const FloatType xi = at_x*total_R - space_step*(nx-1)/2;
+    const FloatType yi = at_y*total_R - space_step*(ny-1)/2;
+    const FloatType zi = at_z*total_R - space_step*(nz-1)/2;
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        for (int k = 0; k < nz; k++) {
+          Xp.push_back(xi + static_cast<FloatType>(i) * space_step);
+          Yp.push_back(yi + static_cast<FloatType>(j) * space_step);
+          Zp.push_back(zi + static_cast<FloatType>(k) * space_step);
+        }
+      }
+    }
+  };
+  // TODO add test to check that side_2_points is for z-axis
+  if (plane_selected == Planes::kEk) push_coords(first_side_points, 1, second_side_points);
+  if (plane_selected == Planes::kHk) push_coords(1, first_side_points, second_side_points);
+  if (plane_selected == Planes::kEH) push_coords(first_side_points, second_side_points, 1);
+  const unsigned int total_size = first_side_points*second_side_points;
+  if (Xp.size() != total_size || Yp.size() != total_size || Zp.size() != total_size)
+    throw std::invalid_argument("Error! Wrong dimension of field monitor points for cartesian grid!");
+  SetFieldCoords({Xp, Yp, Zp});
+  RunFieldCalculation(isMarkUnconverged);
+}  // end of void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(...)
 
 }  // end of namespace nmie
 #endif  // SRC_NMIE_NEARFIELD_HPP_

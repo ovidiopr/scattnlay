@@ -28,6 +28,7 @@ TEST(BulkSphere, ArgPi) {
 }
 #endif
 
+//TEST(BulkSphere, DISABLED_HandlesInput) {
 TEST(BulkSphere, HandlesInput) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
   // A list of tests for a bulk sphere from
@@ -48,11 +49,9 @@ TEST(BulkSphere, HandlesInput) {
           {1,     {10,  10},   2.532993, 2.049405, 'k'},
           {1000,  {0.75,0},     1.997908, 1.997908, 'd'},
           {100,   {10,  10,},  2.071124, 1.836785, 'l'},
-#ifndef MULTI_PRECISION
           {10000, {1.33,1e-5}, 2.004089, 1.723857, 'f'},
           {10000, {1.5, 1},    2.004368, 1.236574, 'j'},
           {10000, {10,  10},   2.005914, 1.795393, 'm'},
-#endif
       };
   for (const auto &data : parameters_and_results) {
     auto x = std::get<0>(data);
