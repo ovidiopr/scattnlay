@@ -43,6 +43,7 @@ export default {
   },
   data () {
     return {
+      // TODO: Is it OK to modify Local later?
       fromWLLocal: this.fromWL,
       toWLLocal: this.toWL,
       stepWLLocal: this.stepWL,

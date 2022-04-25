@@ -43,6 +43,7 @@
                     <div v-else>
                         <font-awesome-icon icon="ban" class="has-text-danger"/>
                     </div>
+                    <!--  TODO: convert to source units in b-select above-->
 
                 </div>
             </div>

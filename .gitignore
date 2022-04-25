@@ -35,9 +35,6 @@ scattnlay-mp
 # Binary
 *.bin
 
-# Python
-*.egg-info/*
-
 # CLion files
 .idea
 cmake-build-*
@@ -52,8 +49,6 @@ cov-int*
 cov-int
 build*
 .ipynb_checkpoints
-
-# Local results
 tests/python/field.txt
 examples/*.pdf
 examples/*.png
@@ -62,9 +57,6 @@ examples/Egor*
 examples/egor*
 examples/*.txt
 examples/*.pyc
-R*mkm*.jpg
-examples/*/R*mkm.jpg
-__pycache__
 
 backup*
 
@@ -75,8 +67,6 @@ backup*
 node_modules
 dist
 surma-ashley-test
-
-*src-electron*
 
 nmiejs.wasm
 nmiejs.js

@@ -380,7 +380,7 @@ namespace nmie {
   //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
   //   nmax: Maximum number of multipolar expansion terms to be used for the          //
   //         calculations. Only use it if you know what you are doing, otherwise      //
-  //         set this parameter to -1 and the function will calculate it.             //
+  //         set this parameter to 0 (zero) and the function will calculate it.       //
   //   ncoord: Number of coordinate points                                            //
   //   Coords: Array containing all coordinates where the complex electric and        //
   //           magnetic fields will be calculated                                     //

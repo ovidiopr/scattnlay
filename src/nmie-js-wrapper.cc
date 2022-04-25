@@ -40,21 +40,20 @@ using namespace emscripten;
 nmie::MultiLayerMieApplied<double> ml_mie;
 
 EMSCRIPTEN_BINDINGS (c) {
-    class_<nmie::MultiLayerMieApplied<double>>("nmie")
-        .constructor<>()
-        .function("SetWavelength", &nmie::MultiLayerMieApplied<double>::SetWavelength)
-        .function("AddTargetLayerReIm",&nmie::MultiLayerMieApplied<double>::AddTargetLayerReIm)
-        .function("SetModeNmaxAndType",&nmie::MultiLayerMieApplied<double>::SetModeNmaxAndType)
-        .function("ClearTarget",&nmie::MultiLayerMieApplied<double>::ClearTarget)
-        .function("RunMieCalculation",&nmie::MultiLayerMieApplied<double>::RunMieCalculation)
-        .function("RunFieldCalculationPolar",&nmie::MultiLayerMieApplied<double>::RunFieldCalculationPolar)
-        .function("RunFieldCalculationCartesian",&nmie::MultiLayerMieApplied<double>::RunFieldCalculationCartesian)
-        .function("GetFieldEabs",&nmie::MultiLayerMieApplied<double>::GetFieldEabs)
-        .function("GetQsca",&nmie::MultiLayerMieApplied<double>::GetQsca)
-        .function("GetQext",&nmie::MultiLayerMieApplied<double>::GetQext)
-        .function("GetQabs",&nmie::MultiLayerMieApplied<double>::GetQabs)
-//              .function("bf",&nmie::MultiLayerMieApplied<double>::bf)
-    ;
+        class_<nmie::MultiLayerMieApplied<double>>("nmie")
+                .constructor<>()
+                .function("SetWavelength", &nmie::MultiLayerMieApplied<double>::SetWavelength)
+                .function("AddTargetLayerReIm",&nmie::MultiLayerMieApplied<double>::AddTargetLayerReIm)
+                .function("SetModeNmaxAndType",&nmie::MultiLayerMieApplied<double>::SetModeNmaxAndType)
+                .function("ClearTarget",&nmie::MultiLayerMieApplied<double>::ClearTarget)
+                .function("RunMieCalculation",&nmie::MultiLayerMieApplied<double>::RunMieCalculation)
+                .function("RunFieldCalculationPolar",&nmie::MultiLayerMieApplied<double>::RunFieldCalculationPolar)
+                .function("GetFieldEabs",&nmie::MultiLayerMieApplied<double>::GetFieldEabs)
+                .function("GetQsca",&nmie::MultiLayerMieApplied<double>::GetQsca)
+                .function("GetQext",&nmie::MultiLayerMieApplied<double>::GetQext)
+                .function("GetQabs",&nmie::MultiLayerMieApplied<double>::GetQabs)
+//                .function("bf",&nmie::MultiLayerMieApplied<double>::bf)
+        ;
 }
 
 //namespace nmie {

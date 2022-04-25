@@ -1,6 +1,6 @@
 //**********************************************************************************//
-//    Copyright (C) 2009-2022  Ovidio Pena <ovidio@bytesfall.com>                   //
-//    Copyright (C) 2013-2022  Konstantin Ladutenko <kostyfisik@gmail.com>          //
+//    Copyright (C) 2009-2018  Ovidio Pena <ovidio@bytesfall.com>                   //
+//    Copyright (C) 2013-2018  Konstantin Ladutenko <kostyfisik@gmail.com>          //
 //                                                                                  //
 //    This file is part of scattnlay                                                //
 //                                                                                  //
@@ -235,8 +235,8 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    int nmax = nmie::nField(L, -1, x, m, -1, nmie::Modes::kAll, nmie::Modes::kAll, total_points, Xp, Yp, Zp, E, H);
-    printf("Number of multipoles used in Mie series nmax=%i\n", nmax);
+    nmie::nField(L, -1, x, m, -1, nmie::Modes::kAll, nmie::Modes::kAll, total_points, Xp, Yp, Zp, E, H);
+
     if (has_comment)
       printf("%6s\n", comment.c_str());
 

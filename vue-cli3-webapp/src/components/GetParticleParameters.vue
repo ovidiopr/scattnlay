@@ -39,6 +39,7 @@
         },
         data () {
             return {
+                // TODO: Is it OK to modify Local later?
                 particle: 'bulk',
                 layersNum: 1,
                 index: 1

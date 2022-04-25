@@ -512,7 +512,7 @@
         this.simulationRuntime.fromWL = math.evaluate(this.simulationSetup.fromWL);
         this.simulationRuntime.toWL = math.evaluate(this.simulationSetup.toWL);
         this.simulationRuntime.stepWL = this.simulationSetup.stepWL;
-        this.simulationRuntime.layers =this.simulationSetup.layers;
+        this.simulationRuntime.layers =this.simulationSetup.layers; // TODO: not a copy, but we need spline_n.at() method in every layer.
 
         let t0 = performance.now();
         let fromWL = parseFloat(this.simulationRuntime.fromWL);

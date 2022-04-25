@@ -64,13 +64,6 @@ namespace nmie {
                                   const double from_Theta, const double to_Theta,
                                   const double from_Phi, const double to_Phi,
                                   const int isIgnoreAvailableNmax);
-    void RunFieldCalculationCartesian(const int first_side_points,
-                                      const int second_side_points,
-                                      const double relative_side_length,
-                                      const int plane_selected,
-                                      const double at_x, const double at_y,
-                                      const double at_z,
-                                      const int isIgnoreAvailableNmax);
     emscripten::val GetFieldEabs();
 
     void GetFailed();
@@ -182,6 +175,7 @@ namespace nmie {
 	            std::vector<std::complex<FloatType> >& h1np);
     void sphericalBessel(std::complex<FloatType> z, std::vector<std::complex<FloatType> >& bj,
 			             std::vector<std::complex<FloatType> >& by, std::vector<std::complex<FloatType> >& bd);
+    std::complex<FloatType> calcD1confra(int N, const std::complex<FloatType> z);
 
     FloatType wavelength_ = 1.0;
     FloatType total_radius_ = 0.0;

@@ -104,6 +104,7 @@
         },
         data () {
             return {
+                // TODO: Is it OK to modify valueLocal later in <b-input>?
                 valueLocal: math.evaluate(this.value),
               expr: this.value,
               expr_list: [],

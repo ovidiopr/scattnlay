@@ -459,8 +459,8 @@ namespace nmie {
                                                    std::vector<std::vector<FloatType> > &Pi,
                                                    std::vector<std::vector<FloatType> > &Tau) {
     const unsigned int perimeter_points = Pi.size();
-    for (auto &val:Pi) val.resize(available_maximal_nmax_, static_cast<FloatType>(0.0));
-    for (auto &val:Tau) val.resize(available_maximal_nmax_, static_cast<FloatType>(0.0));
+    for (auto &val:Pi) val.resize(available_maximal_nmax_);
+    for (auto &val:Tau) val.resize(available_maximal_nmax_);
     double delta_Theta = eval_delta<double>(perimeter_points, from_Theta, to_Theta);
     for (unsigned int i=0; i < perimeter_points; i++) {
       auto Theta = static_cast<FloatType>(from_Theta + i*delta_Theta);
@@ -614,13 +614,13 @@ namespace nmie {
     std::vector<std::vector<std::complex<FloatType> > > Q(L), Ha(L), Hb(L);
 
     for (int l = 0; l < L; l++) {
-      Q[l].resize(nmax_ + 1, static_cast<FloatType>(0.0));
-      Ha[l].resize(nmax_, static_cast<FloatType>(0.0));
-      Hb[l].resize(nmax_, static_cast<FloatType>(0.0));
+      Q[l].resize(nmax_ + 1);
+      Ha[l].resize(nmax_);
+      Hb[l].resize(nmax_);
     }
 
-    an_.resize(nmax_, static_cast<FloatType>(0.0));
-    bn_.resize(nmax_, static_cast<FloatType>(0.0));
+    an_.resize(nmax_);
+    bn_.resize(nmax_);
 
     std::vector<std::complex<FloatType> > PsiXL(nmax_ + 1), ZetaXL(nmax_ + 1);
 
@@ -733,21 +733,17 @@ namespace nmie {
         bn_[n] = PsiXL[n + 1]/ZetaXL[n + 1];
       }
       if (n == 0) {a0 = cabs(an_[0]); b0 = cabs(bn_[0]);}
-      if (n == nmax_ - 1 && nmax_preset_ <= 0
-          && (cabs(an_[n]) / a0 > convergence_threshold_ &&
-              cabs(bn_[n]) / b0 > convergence_threshold_)) {
+      if (n == nmax_ - 1 && nmax_preset_ <= 0) {
         std::cout << "Failed to converge in Mie series for nmax="<<nmax_ << std::endl;
         std::cout << "convergence threshold: "<< convergence_threshold_ << std::endl;
         std::cout << "Mie series a[nmax]/a[1]:" << cabs(an_[n]) / a0 << " and b[nmax]/b[1]:" << cabs(bn_[n]) / b0 << std::endl;
 
       }
-
-//  // TODO seems to provide not enough terms for near-field calclulation.
-//      if (cabs(an_[n]) / a0 < convergence_threshold_ &&
-//          cabs(bn_[n]) / b0 < convergence_threshold_) {
-//        if (nmax_preset_ <= 0) nmax_ = n;
-//        break;
-//      }
+      if (cabs(an_[n]) / a0 < convergence_threshold_ &&
+          cabs(bn_[n]) / b0 < convergence_threshold_) {
+        if (nmax_preset_ <= 0) nmax_ = n;
+        break;
+      }
 
       if (nmm::isnan(an_[n].real()) || nmm::isnan(an_[n].imag()) ||
           nmm::isnan(bn_[n].real()) || nmm::isnan(bn_[n].imag())
@@ -820,7 +816,7 @@ namespace nmie {
     S1_.swap(tmp1);
     S2_ = S1_;
     // Precalculate cos(theta) - gives about 5% speed up.
-    std::vector<FloatType> costheta(theta_.size(), static_cast<FloatType>(0.0));
+    std::vector<FloatType> costheta(theta_.size(), 0.0);
     for (unsigned int t = 0; t < theta_.size(); t++) {
       costheta[t] = nmm::cos(theta_[t]);
     }
