@@ -161,7 +161,7 @@ inline std::complex<T> my_exp(const std::complex<T> &x) {
     void RunMieCalculation();
     void RunFieldCalculation(bool isMarkUnconverged=true);
 
-      void RunFieldCalculationPolar(const int outer_arc_points = 1,
+    void RunFieldCalculationPolar(const int outer_arc_points = 1,
                                   const int radius_points=1,
                                   const double from_Rho=0, const double to_Rho=static_cast<double>(1.),
                                   const double from_Theta=0, const double to_Theta=static_cast<double>(3.14159265358979323),

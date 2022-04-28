@@ -83,7 +83,7 @@ def SetXM(design):
         epsilon_Ag = -2.0 + 0.28j   #original
         index_Ag = np.sqrt(epsilon_Ag)
         x = np.array([2.0*np.pi*core_r/WL], dtype = np.float64)
-        m = np.array((index_Ag), dtype = np.complex128)
+        m = np.array([index_Ag], dtype = np.complex128)
         return x, m, WL
     elif design==6:
         WL=1052 #nm
@@ -93,7 +93,7 @@ def SetXM(design):
         epsilon_Si = 12.7294053067+0.000835315166667j
         index_Si = np.sqrt(epsilon_Si)
         x = np.array([2.0*np.pi*core_r/WL], dtype = np.float64)
-        m = np.array((index_Si), dtype = np.complex128)
+        m = np.array([index_Si], dtype = np.complex128)
         return x, m, WL
 
 
@@ -104,11 +104,11 @@ def SetXM(design):
     nm = 1.0
     if isSiAgSi:
         x = 2.0*np.pi*np.array([core_r, inner_r, outer_r], dtype = np.float64)/WL
-        m = np.array((index_Si, index_Ag, index_Si), dtype = np.complex128)/nm
+        m = np.array([index_Si, index_Ag, index_Si], dtype = np.complex128)/nm
     else:
         # bilayer
         x = 2.0*np.pi*np.array([inner_r, outer_r], dtype = np.float64)/WL
-        m = np.array((index_Ag, index_Si), dtype = np.complex128)/nm
+        m = np.array([index_Ag, index_Si], dtype = np.complex128)/nm
     return x, m, WL
 
 
@@ -125,8 +125,8 @@ comment='Si-flow'
 x, m, WL = SetXM(design)
 
 WL_units='nm'
-print "x =", x
-print "m =", m
+print("x =", x)
+print("m =", m)
 npts = 501
 factor=2.1
 flow_total = 39
@@ -145,8 +145,8 @@ field_to_plot='Eabs'
 import matplotlib.pyplot as plt
 fig, axs = plt.subplots(1,1)#, sharey=True, sharex=True)
 fig.tight_layout()
-fieldplot(fig, axs, x,m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
-          subplot_label=' ',is_flow_extend=False)
+fieldplot(fig, axs, x, m, WL, comment, WL_units, crossplane, field_to_plot, npts, factor, flow_total,
+          subplot_label=' ')
 
 fig.subplots_adjust(hspace=0.3, wspace=-0.1)
 
