@@ -65,19 +65,19 @@ For details see: O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354."""
                              ["src/pb11_wrapper.cc"],
                              language="c++",
                              include_dirs=[np.get_include(), pb.get_include()],
-                             # extra_compile_args=['-std=c++11']),
-                             extra_compile_args=['-std=c++11', '-O3',
-                                                 '-mavx2', '-mfma',
-                                                 '-finline-limit=1000000', '-ffp-contract=fast']),
+                             extra_compile_args=['-std=c++11']),
+                             # extra_compile_args=['-std=c++11', '-O3',
+                             #                     '-mavx2', '-mfma',
+                             #                     '-finline-limit=1000000', '-ffp-contract=fast']),
 
                    Extension("scattnlay_mp",
                              ["src/pb11_wrapper.cc"],
                              language="c++",
                              include_dirs=[np.get_include(), pb.get_include()],
-                             extra_compile_args=['-std=c++11', '-O3',
-                                                 '-mavx2', '-mfma',
-                                                 '-finline-limit=1000000', '-ffp-contract=fast',
-                                                 '-DMULTI_PRECISION=100']),
-                             # extra_compile_args=['-std=c++11', '-DMULTI_PRECISION=100'])
+                             extra_compile_args=['-std=c++11', '-DMULTI_PRECISION=100'])
+                             # extra_compile_args=['-std=c++11', '-O3',
+                             #                     '-mavx2', '-mfma',
+                             #                     '-finline-limit=1000000', '-ffp-contract=fast',
+                             #                     '-DMULTI_PRECISION=100']),
                    ]
       )

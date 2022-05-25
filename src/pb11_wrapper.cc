@@ -266,8 +266,16 @@ void declare_nmie(py::module &m, const std::string &typestr) {
       .def("RunMieCalculation", &mie_typed::RunMieCalculation)
       .def("calcScattCoeffs", &mie_typed::calcScattCoeffs)
       .def("calcExpanCoeffs", &mie_typed::calcExpanCoeffs)
-      .def("RunFieldCalculation", &mie_typed::RunFieldCalculation)
-      .def("RunFieldCalculationPolar", &mie_typed::RunFieldCalculationPolar)
+      .def("RunFieldCalculation", &mie_typed::RunFieldCalculation,
+                                  py::arg("isMarkUnconverged") = true)
+      .def("RunFieldCalculationPolar", &mie_typed::RunFieldCalculationPolar,
+                                       py::arg("outer_arc_points") = 1,
+                                       py::arg("radius_points") = 1,
+                                       py::arg("from_Rho") = 0, py::arg("to_Rho") = 1,
+                                       py::arg("from_Theta") = 0, py::arg("to_Theta") = 3.14159265358979323,
+                                       py::arg("from_Phi") = 0, py::arg("to_Phi") = 3.14159265358979323,
+                                       py::arg("isMarkUnconverged") = true,
+                                       py::arg("nmax_in") = -1)
       .def("GetPECLayer", &mie_typed::GetPECLayer)
 
       .def("SetLayersSize", static_cast<
