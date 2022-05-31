@@ -8,7 +8,7 @@ TEST(RunFieldCalculationCartesian, HandlesInput) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
 //  EXPECT_THROW(nmie.RunFieldCalculationPolar(0), std::invalid_argument);
 //  EXPECT_THROW(nmie.RunFieldCalculationPolar(1,1,10,5), std::invalid_argument);
-  nmie::FloatType total_r = 2*nmie.PI_*1000/532;
+  nmie::FloatType total_r = 2*nmie::PI_*1000/532;
 //  double r = 1500;
   nmie.SetLayersSize({total_r/2, total_r});
   nmie.SetLayersIndex({ {1.330,0}, {1.33,0}});
@@ -58,8 +58,8 @@ TEST(RunFieldCalculationCartesian, HandlesInput) {
 TEST(LargeBubbleSpectrum, DISABLED_HandlesInput) {
 //TEST(LargeBubbleSpectrum, HandlesInput) { // TODO fix fail...
   nmie::MultiLayerMie<nmie::FloatType> nmie;
-  nmie::FloatType core_r  = 2*nmie.PI_*100;
-  nmie::FloatType shell_r = 2*nmie.PI_*(100+0.1);
+  nmie::FloatType core_r  = 2*nmie::PI_*100;
+  nmie::FloatType shell_r = 2*nmie::PI_*(100+0.1);
   nmie.SetLayersIndex({ {1,0}, {1.33,0}});
   double central_WL = 0.7007;
   double relative_distance = 1e-10;
@@ -121,12 +121,12 @@ TEST(BulkSphere, HandlesInput) {
     nmie.SetMaxTerms(-1);
 //    nmie.RunMieCalculation();
 //    std::cout<<" test case: "<<std::get<2>(data)<<" Qsca="<<nmie.GetQsca()<<std::endl;
-    nmie.RunFieldCalculationPolar(4,3,x,x*3, 0, static_cast<double>(nmie.PI_), 0, static_cast<double>(nmie.PI_),true, -1);
+    nmie.RunFieldCalculationPolar(4,3,x,x*3, 0, static_cast<double>(nmie::PI_), 0, static_cast<double>(nmie::PI_),true, -1);
     auto Eabs = nmie.GetFieldEabs();
     for (auto &E:Eabs) E=nmie::pow2(E);
 //    print(Eabs)
     EXPECT_TRUE(nmie.GetFieldConvergence())<<"Outside test for x="<<x<<" m="<<m<<" test case: "<<std::get<2>(data)<<std::endl;
-    nmie.RunFieldCalculationPolar(4,10,x*0.01,x, 0, static_cast<double>(nmie.PI_), 0, static_cast<double>(nmie.PI_),true, -1);
+    nmie.RunFieldCalculationPolar(4,10,x*0.01,x, 0, static_cast<double>(nmie::PI_), 0, static_cast<double>(nmie::PI_),true, -1);
     EXPECT_TRUE(nmie.GetFieldConvergence())<<"Inside test for x="<<x<<" m="<<m<<" test case: "<<std::get<2>(data)<<std::endl;
   }
 }

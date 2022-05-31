@@ -394,7 +394,7 @@ namespace nmie {
     }
 
     // magnetic field
-    std::complex<evalType> hffact = ml/static_cast<evalType>(cc_*mu_);
+    std::complex<evalType> hffact = ml/static_cast<evalType>(nmie::cc_*nmie::mu_);
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
     }

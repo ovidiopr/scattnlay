@@ -178,11 +178,11 @@ namespace nmie {
     FloatType radius = 0.0;
     for (auto width : target_width_) {
       radius += width;
-      this->size_param_.push_back(2*this->PI_*radius/wavelength_);
+      this->size_param_.push_back(2*nmie::PI_*radius/wavelength_);
     }
     for (auto width : coating_width_) {
       radius += width;
-      this->size_param_.push_back(2*this->PI_*radius/wavelength_);
+      this->size_param_.push_back(2*nmie::PI_*radius/wavelength_);
     }
     this->total_radius_ = radius;
   }  // end of void MultiLayerMieApplied<FloatType>::GenerateSizeParameter();
@@ -306,7 +306,7 @@ namespace nmie {
                                                                  const int isIgnoreAvailableNmax) {
     ConvertToSP(); // Converts to size parameter units only the particle design,
     // so we need to convert input parameters too...
-    const FloatType a = 2*this->PI_/wavelength_;
+    const FloatType a = 2*nmie::PI_/wavelength_;
     this->MultiLayerMie<FloatType>::RunFieldCalculationPolar(outer_arc_points, radius_points, a*from_Rho, a*to_Rho,
                                                                from_Theta, to_Theta, from_Phi, to_Phi,
                                                                isIgnoreAvailableNmax == 0 ? false : true);

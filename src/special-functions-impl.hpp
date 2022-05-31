@@ -94,6 +94,8 @@ int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
 
 // Custom implementation of complex cot function to avoid overflow
 // if Im(z) < 0, then it evaluates cot(z) as conj(cot(conj(z)))
+// see Eqs. 10-12 of [1] for details.
+// [1]H. Du, Mie-Scattering Calculation, Appl. Opt. 43, 1951 (2004).
 template <typename FloatType>
 std::complex<FloatType> complex_cot(const std::complex<FloatType> z) {
   auto Remx = z.real();

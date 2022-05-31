@@ -12,15 +12,15 @@ TEST(BulkSphere, ArgPi) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
   nmie.SetLayersIndex({std::complex<double>(4,0)});
   for (auto WL:WLs) {
-    nmie.SetLayersSize({2*nmie.PI_*host_index*core_radius/(WL+delta)});
+    nmie.SetLayersSize({2*nmie::PI_*host_index*core_radius/(WL+delta)});
     nmie.RunMieCalculation();
     double Qabs_p = std::abs(static_cast<double>(nmie.GetQabs()));
 
-    nmie.SetLayersSize({2*nmie.PI_*host_index*core_radius/(WL-delta)});
+    nmie.SetLayersSize({2*nmie::PI_*host_index*core_radius/(WL-delta)});
     nmie.RunMieCalculation();
     double Qabs_m = std::abs(static_cast<double>(nmie.GetQabs()));
 
-    nmie.SetLayersSize({2*nmie.PI_*host_index*core_radius/(WL)});
+    nmie.SetLayersSize({2*nmie::PI_*host_index*core_radius/(WL)});
     nmie.RunMieCalculation();
     double Qabs = std::abs(static_cast<double>(nmie.GetQabs()));
     EXPECT_GT(Qabs_p+Qabs_m, Qabs);

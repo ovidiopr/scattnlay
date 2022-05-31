@@ -204,7 +204,7 @@ def main():
                                                  # output_dps=7, max_num_elements_of_nlist=51)
                                                  # output_dps=5, max_num_elements_of_nlist=3)
     # sf_evals.run_test(mrb.D1, 'D1')
-    # sf_evals.run_test(mrb.D2, 'D2')
+    #
     # sf_evals.run_test(mrb.D3, 'D3')
     # sf_evals.run_test(mrb.psi, 'psi', is_only_x=True)
     # sf_evals.run_test(mrb.xi, 'xi', is_only_x=True)
