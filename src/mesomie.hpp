@@ -1,5 +1,5 @@
-#ifndef SRC_NMIE_BASIC_HPP_
-#define SRC_NMIE_BASIC_HPP_
+#ifndef SRC_MESOMIE_HPP_
+#define SRC_MESOMIE_HPP_
 //******************************************************************************
 //    Copyright (C) 2009-2022  Ovidio Pena <ovidio@bytesfall.com>
 //    Copyright (C) 2013-2022  Konstantin Ladutenko <kostyfisik@gmail.com>
@@ -48,10 +48,6 @@
 //
 // Hereinafter all equations numbers refer to [2]
 //******************************************************************************
-/*******************************************************************************
- * sdfa
- * sdf
- */
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
@@ -73,7 +69,6 @@ void MesoMie<FloatType>::calc_ab(int nmax,
                                  FloatType d_perp) {
   an_.resize(nmax, static_cast<FloatType>(0.0));
   bn_.resize(nmax, static_cast<FloatType>(0.0));
-
   std::vector<std::complex<FloatType>>      //
       D1_xd(nmax + 1), D3_xd(nmax + 1),     //
       D1_xm(nmax + 1), D3_xm(nmax + 1),     //
@@ -82,6 +77,39 @@ void MesoMie<FloatType>::calc_ab(int nmax,
 
   evalPsiZetaD1D3(std::complex<FloatType>(xd), Psi_xd, Zeta_xd, D1_xd, D3_xd);
   evalPsiZetaD1D3(std::complex<FloatType>(xm), Psi_xm, Zeta_xm, D1_xm, D3_xm);
+
+  for (int n = 1; n <= nmax; n++) {
+    an_[n] = Psi_xd[n] *
+             (                                                       //
+                 eps_m * xd * D1_xd[n] - eps_d * xm * D1_xm[n] +     //
+                 (eps_m - eps_d) *                                   //
+                     (                                               //
+                         n * (n + 1) * d_perp +                      //
+                         xd * D1_xd[n] * xm * D1_xm[n] * d_parallel  //
+                         ) /                                         //
+                     R                                               //
+                 ) /                                                 //
+             Zeta_xd[n] *
+             (                                                       //
+                 eps_m * xd * D3_xd[n] - eps_d * xm * D1_xm[n] +     //
+                 (eps_m - eps_d) *                                   //
+                     (                                               //
+                         n * (n + 1) * d_perp +                      //
+                         xd * D3_xd[n] * xm * D1_xm[n] * d_parallel  //
+                         ) /                                         //
+                     R                                               //
+             );
+    bn_[n] = Psi_xd[n] *
+             (                                         //
+                 xd * D1_xd[n] - xm * D1_xm[n] +       //
+                 (xm * xm - xd * xd) * d_parallel / R  //
+                 ) /                                   //
+             Zeta_xd[n] *
+             (                                         //
+                 xd * D3_xd[n] - xm * D1_xm[n] +       //
+                 (xm * xm - xd * xd) * d_parallel / R  //
+             );                                        //
+  }
 }
 
 }  // namespace nmie
