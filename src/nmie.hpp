@@ -1,35 +1,35 @@
 #ifndef SRC_NMIE_HPP_
 #define SRC_NMIE_HPP_
-//***************************************************************************//
-//    Copyright (C) 2009-2022  Ovidio Pena <ovidio@bytesfall.com>            //
-//    Copyright (C) 2013-202  Konstantin Ladutenko <kostyfisik@gmail.com>    //
-//                                                                           //
-//    This file is part of scattnlay                                         //
-//                                                                           //
-//    This program is free software: you can redistribute it and/or modify   //
-//    it under the terms of the GNU General Public License as published by   //
-//    the Free Software Foundation, either version 3 of the License, or      //
-//    (at your option) any later version.                                    //
-//                                                                           //
-//    This program is distributed in the hope that it will be useful,        //
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of         //
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          //
-//    GNU General Public License for more details.                           //
-//                                                                           //
-//    The only additional remark is that we expect that all publications     //
-//    describing work using this software, or all commercial products        //
-//    using it, cite at least one of the following references:               //
-//    [1] O. Pena and U. Pal, "Scattering of electromagnetic radiation by    //
-//        a multilayered sphere," Computer Physics Communications,           //
-//        vol. 180, Nov. 2009, pp. 2348-2354.                                //
-//    [2] K. Ladutenko, U. Pal, A. Rivera, and O. Pena-Rodriguez, "Mie       //
-//        calculation of electromagnetic near-field for a multilayered       //
-//        sphere," Computer Physics Communications, vol. 214, May 2017,      //
-//        pp. 225-230.                                                       //
-//                                                                           //
-//    You should have received a copy of the GNU General Public License      //
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.  //
-//***************************************************************************//
+//******************************************************************************
+//    Copyright (C) 2009-2022  Ovidio Pena <ovidio@bytesfall.com>
+//    Copyright (C) 2013-2022  Konstantin Ladutenko <kostyfisik@gmail.com>
+//
+//    This file is part of scattnlay
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    The only additional remark is that we expect that all publications
+//    describing work using this software, or all commercial products
+//    using it, cite at least one of the following references:
+//    [1] O. Pena and U. Pal, "Scattering of electromagnetic radiation by
+//        a multilayered sphere," Computer Physics Communications,
+//        vol. 180, Nov. 2009, pp. 2348-2354.
+//    [2] K. Ladutenko, U. Pal, A. Rivera, and O. Pena-Rodriguez, "Mie
+//        calculation of electromagnetic near-field for a multilayered
+//        sphere," Computer Physics Communications, vol. 214, May 2017,
+//        pp. 225-230.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//******************************************************************************
 
 #define VERSION "2.2"  // Compare with Makefile and setup.py
 #include <array>
@@ -44,6 +44,7 @@
 //#endif
 
 namespace nmie {
+//******************************************************************************
 int ScattCoeffs(const unsigned int L,
                 const int pl,
                 const std::vector<double>& x,
@@ -62,7 +63,9 @@ int ExpanCoeffs(const unsigned int L,
                 std::vector<std::vector<std::complex<double>>>& cn,
                 std::vector<std::vector<std::complex<double>>>& dn);
 
+//******************************************************************************
 // helper functions
+//******************************************************************************
 template <typename FloatType>
 double eval_delta(const unsigned int steps,
                   const double from_value,
@@ -90,6 +93,7 @@ int newround(FloatType x) {
   return x >= 0 ? static_cast<int>(x + 0.5) : static_cast<int>(x - 0.5);
   // return x >= 0 ? (x + 0.5).convert_to<int>():(x - 0.5).convert_to<int>();
 }
+
 template <typename T>
 inline std::complex<T> my_exp(const std::complex<T>& x) {
   using std::exp;  // use ADL
@@ -97,6 +101,7 @@ inline std::complex<T> my_exp(const std::complex<T>& x) {
   return std::polar(r, x.imag());
 }
 
+//******************************************************************************
 // pl, nmax, mode_n, mode_type
 int nMie(const unsigned int L,
          const int pl,
@@ -116,6 +121,8 @@ int nMie(const unsigned int L,
          std::vector<std::complex<double>>& S2,
          int mode_n,
          int mode_type);
+
+//******************************************************************************
 // pl and nmax
 int nMie(const unsigned int L,
          const int pl,
@@ -133,6 +140,8 @@ int nMie(const unsigned int L,
          double* Albedo,
          std::vector<std::complex<double>>& S1,
          std::vector<std::complex<double>>& S2);
+
+//******************************************************************************
 // no pl and nmax
 int nMie(const unsigned int L,
          std::vector<double>& x,
@@ -148,6 +157,8 @@ int nMie(const unsigned int L,
          double* Albedo,
          std::vector<std::complex<double>>& S1,
          std::vector<std::complex<double>>& S2);
+
+//******************************************************************************
 // pl
 int nMie(const unsigned int L,
          const int pl,
@@ -164,6 +175,8 @@ int nMie(const unsigned int L,
          double* Albedo,
          std::vector<std::complex<double>>& S1,
          std::vector<std::complex<double>>& S2);
+
+//******************************************************************************
 // nmax
 int nMie(const unsigned int L,
          std::vector<double>& x,
@@ -180,6 +193,8 @@ int nMie(const unsigned int L,
          double* Albedo,
          std::vector<std::complex<double>>& S1,
          std::vector<std::complex<double>>& S2);
+
+//******************************************************************************
 int nField(const unsigned int L,
            const int pl,
            const std::vector<double>& x,
@@ -194,10 +209,13 @@ int nField(const unsigned int L,
            std::vector<std::vector<std::complex<double>>>& E,
            std::vector<std::vector<std::complex<double>>>& H);
 
+//******************************************************************************
 // constants for per mode evaluation
+//******************************************************************************
 enum Modes { kAll = -1, kElectric = 0, kMagnetic = 1 };
 enum Planes { kEk = 0, kHk = 1, kEH = 2 };
 
+//******************************************************************************
 const FloatType PI_ =
     3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132000568127145263560827785771342757789609173637178721468440901224953430146549585371050792279689258923542019956112129021960864034418159813629774771309960518707211349999998372978049951059731732816096318595024459455346908302642522308253344685035261931188171010003137838752886587533208381420617177669147303598253490428755468731159562863882353787593751957781857780532171226806613001927876611195909216420198938095257201065485863278865936153381827968230301952035301852968995773622599413891249721775283479131515574857242454150695950829533116861727855889075098381754637464939319255060400927701671139009848824012858361603563707660104710181942955596198946767837449448255379774726847104047534646208046684259069491293313677028989152104752162056966024058038150193511253382430035587640247496473263914199272604269922796782354781636009341721641219924586315030286182974555706749838505494588586926995690927210797509302955321165344987202755960236480665499119881834797753566369807426542527862551818417574672890977772793800081647060016145249192173217214772350141441973568548161361157352552133475741849468438523323907394143334547762416862518983569485562099219222184272550254256887671790494601653466804988627232791786085784383827967976681454100953883786360950680064225125205117392984896084128488626945604241965285022210661186306744278622039194945047123713786960956364371917287467764657573962413890865832645995813390478027590099465764078951269468398352595709825822620522489407726719478268482601476990902640136394437455305068203496252451749399651431429809190659250937221696461515709858387410597885959772975498930161753928468138268683868942774155991855925245953959431049972524680845987273644695848653836736222626099124608051243884390451244136549762780797715691435997700129616089441694868555848406353422072225828488648158456028506016842739452267467678895252138522549954666727823986456596116354886230577456498035593634568174324112515076069479451096596094025228879710893145669136867228748940560101503308;
 // light speed [m/s]
@@ -205,6 +223,8 @@ const double cc_ = 2.99792458e8;
 // assume non-magnetic (MU=MU0=const) [N/A^2]
 const FloatType mu_ = 4.0 * PI_ * 1.0e-7;
 
+//******************************************************************************
+//******************************************************************************
 template <typename FloatType = double>
 class MultiLayerMie {
  public:
@@ -221,8 +241,8 @@ class MultiLayerMie {
   const double convergence_threshold_ = 1e-25;
   const double nearfield_convergence_threshold_ = 1e-14;
 #endif
-  // Run calculation
   void RunMieCalculation();
+
   void RunFieldCalculation(bool isMarkUnconverged = true);
 
   void RunFieldCalculationPolar(
@@ -236,6 +256,7 @@ class MultiLayerMie {
       const double to_Phi = static_cast<double>(3.14159265358979323),
       const bool isMarkUnconverged = true,
       int nmax_in = -1);
+
   void RunFieldCalculationCartesian(const int first_side_points = 2,
                                     const int second_side_points = 2,
                                     const double relative_side_length = 2,
@@ -247,23 +268,31 @@ class MultiLayerMie {
                                     const int nmax_in = -1);
 
   void calcScattCoeffs();
-
   void calcExpanCoeffs();
+  //****************************************************************************
   // Return calculation results
+  //****************************************************************************
   template <typename outputType = FloatType>
   outputType GetQext();
+
   template <typename outputType = FloatType>
   outputType GetQsca();
+
   template <typename outputType = FloatType>
   outputType GetQabs();
+
   template <typename outputType = FloatType>
   outputType GetQbk();
+
   template <typename outputType = FloatType>
   outputType GetQpr();
+
   template <typename outputType = FloatType>
   outputType GetAsymmetryFactor();
+
   template <typename outputType = FloatType>
   outputType GetAlbedo();
+
   std::vector<std::complex<FloatType>> GetS1();
   std::vector<std::complex<FloatType>> GetS2();
 
@@ -283,8 +312,10 @@ class MultiLayerMie {
     return dln_;
   };
 
+  //****************************************************************************
   // Problem definition
   // Modify size of all layers
+  //****************************************************************************
   void SetLayersSize(const std::vector<FloatType>& layer_size);
   // Modify refractive index of all layers
   void SetLayersIndex(const std::vector<std::complex<FloatType>>& index);
@@ -293,14 +324,19 @@ class MultiLayerMie {
   void GetIndexAtRadius(const evalType Rho,
                         std::complex<evalType>& ml,
                         unsigned int& l);
+
   template <typename evalType = FloatType>
   void GetIndexAtRadius(const evalType Rho, std::complex<evalType>& ml);
+
   // Modify scattering (theta) angles
   void SetAngles(const std::vector<FloatType>& angles);
+
   // Modify coordinates for field calculation
   void SetFieldCoords(const std::vector<std::vector<FloatType>>& coords);
+
   // Modify index of PEC layer
   void SetPECLayer(int layer_position = 0);
+
   // Modify the mode taking into account for evaluation of output variables
   void SetModeNmaxAndType(int mode_n, int mode_type) {
     mode_n_ = mode_n;
@@ -309,12 +345,15 @@ class MultiLayerMie {
 
   // Set a fixed value for the maximum number of terms
   void SetMaxTerms(int nmax);
+
   // Get maximum number of terms
   int GetMaxTerms() { return nmax_; };
 
   bool isMieCalculated() { return isMieCalculated_; };
+
   // Clear layer information
   void ClearLayers();
+
   void MarkUncalculated();
 
   // Read parameters
@@ -374,6 +413,7 @@ class MultiLayerMie {
                                   std::complex<FloatType> ZetaXL,
                                   std::complex<FloatType> PsiXLM1,
                                   std::complex<FloatType> ZetaXLM1);
+
   std::complex<FloatType> calc_bn(int n,
                                   FloatType XL,
                                   std::complex<FloatType> Hb,
@@ -382,25 +422,30 @@ class MultiLayerMie {
                                   std::complex<FloatType> ZetaXL,
                                   std::complex<FloatType> PsiXLM1,
                                   std::complex<FloatType> ZetaXLM1);
+
   std::complex<FloatType> calc_S1(int n,
                                   std::complex<FloatType> an,
                                   std::complex<FloatType> bn,
                                   FloatType Pi,
                                   FloatType Tau);
+
   std::complex<FloatType> calc_S2(int n,
                                   std::complex<FloatType> an,
                                   std::complex<FloatType> bn,
                                   FloatType Pi,
                                   FloatType Tau);
+
   void calcD1D3(std::complex<FloatType> z,
                 std::vector<std::complex<FloatType>>& D1,
                 std::vector<std::complex<FloatType>>& D3);
+
   void calcPsiZeta(std::complex<FloatType> x,
                    std::vector<std::complex<FloatType>>& Psi,
                    std::vector<std::complex<FloatType>>& Zeta);
   void calcPiTau(const FloatType& costheta,
                  std::vector<FloatType>& Pi,
                  std::vector<FloatType>& Tau);
+
   template <typename evalType = FloatType>
   void calcSpherHarm(const std::complex<evalType> Rho,
                      const evalType Theta,
@@ -439,6 +484,7 @@ class MultiLayerMie {
 
   // Scattering angles for scattering pattern in radians
   std::vector<FloatType> theta_;
+
   // Should be -1 if there is no PEC.
   int PEC_layer_position_ = -1;
 
@@ -449,19 +495,24 @@ class MultiLayerMie {
   int nmax_ = -1;
   int nmax_preset_ = -1;
   int available_maximal_nmax_ = -1;
-  /// Store result
+
+  // Store result
   FloatType Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0,
             asymmetry_factor_ = 0.0, albedo_ = 0.0;
-  std::vector<std::vector<std::complex<FloatType>>> E_, H_;  // {X[], Y[], Z[]}
-  std::vector<std::vector<std::complex<FloatType>>> Es_,
-      Hs_;                              // {X[], Y[], Z[]}
-  std::vector<FloatType> Eabs_, Habs_;  // {X[], Y[], Z[]}
+
+  // {X[], Y[], Z[]}
+  std::vector<std::vector<std::complex<FloatType>>> E_, H_;
+  std::vector<std::vector<std::complex<FloatType>>> Es_, Hs_;
+  std::vector<FloatType> Eabs_, Habs_;
+
   std::vector<std::complex<FloatType>> S1_, S2_;
   void calcMieSeriesNeededToConverge(const FloatType Rho, int nmax_in = -1);
+
   void calcPiTauAllTheta(const double from_Theta,
                          const double to_Theta,
                          std::vector<std::vector<FloatType>>& Pi,
                          std::vector<std::vector<FloatType>>& Tau);
+
   void calcRadialOnlyDependantFunctions(
       const double from_Rho,
       const double to_Rho,
@@ -470,15 +521,20 @@ class MultiLayerMie {
       std::vector<std::vector<std::complex<FloatType>>>& Zeta,
       std::vector<std::vector<std::complex<FloatType>>>& D3n,
       int nmax_in = -1);
+
   void convertFieldsFromSphericalToCartesian();
+
   void UpdateConvergenceStatus(std::vector<bool> isConvergedE,
                                std::vector<bool> isConvergedH);
 };  // end of class MultiLayerMie
 
+//******************************************************************************
+//******************************************************************************
 template <typename FloatType = double>
 class MesoMie {
  public:
   std::vector<std::complex<FloatType>> an_, bn_;
+
   void calc_ab(int n,
                FloatType R,
                FloatType xd,

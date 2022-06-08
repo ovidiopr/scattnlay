@@ -1,8 +1,8 @@
 #ifndef SRC_NMIE_BASIC_HPP_
 #define SRC_NMIE_BASIC_HPP_
 //******************************************************************************
-//    Copyright (C) 2009-2018  Ovidio Pena <ovidio@bytesfall.com>
-//    Copyright (C) 2013-2018  Konstantin Ladutenko <kostyfisik@gmail.com>
+//    Copyright (C) 2009-2022  Ovidio Pena <ovidio@bytesfall.com>
+//    Copyright (C) 2013-2022  Konstantin Ladutenko <kostyfisik@gmail.com>
 //
 //    This file is part of scattnlay
 //
@@ -34,7 +34,8 @@
 //******************************************************************************
 // This class implements the algorithm for a multilayered sphere described by:
 //    [1] W. Yang, "Improved recursive algorithm for light scattering by a
-//        multilayered sphere,” Applied Optics, vol. 42, Mar. 2003, pp. 1710-1720.
+//        multilayered sphere,” Applied Optics, vol. 42, Mar. 2003, pp.
+//        1710-1720.
 //
 // You can find the description of all the used equations in:
 //    [2] O. Pena and U. Pal, "Scattering of electromagnetic radiation by
@@ -47,6 +48,10 @@
 //
 // Hereinafter all equations numbers refer to [2]
 //******************************************************************************
+/*******************************************************************************
+ * sdfa
+ * sdf
+ */
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
@@ -57,6 +62,7 @@
 
 namespace nmie {
 template <typename FloatType>
+//******************************************************************************
 void MesoMie<FloatType>::calc_ab(int nmax,
                                  FloatType R,
                                  FloatType xd,
@@ -68,28 +74,14 @@ void MesoMie<FloatType>::calc_ab(int nmax,
   an_.resize(nmax, static_cast<FloatType>(0.0));
   bn_.resize(nmax, static_cast<FloatType>(0.0));
 
-  std::vector<std::complex<FloatType>> D1_xd(nmax + 1), D1_xm(nmax + 1),
-      D3_xd(nmax + 1), D3_xm(nmax + 1);
-  for (int n = 0; n <= nmax_; n++) {
-    D1_xd[n] = std::complex<FloatType>(0.0, -1.0);
-    D1_xm[n] = std::complex<FloatType>(0.0, -1.0);
-    D3_xd[n] = std::complex<FloatType>(0.0, 1.0);
-  }
+  std::vector<std::complex<FloatType>>      //
+      D1_xd(nmax + 1), D3_xd(nmax + 1),     //
+      D1_xm(nmax + 1), D3_xm(nmax + 1),     //
+      Psi_xd(nmax + 1), Zeta_xd(nmax + 1),  //
+      Psi_xm(nmax + 1), Zeta_xm(nmax + 1);
 
-  std::vector<std::complex<FloatType>> Psi_xd(nmax + 1), Zeta_xd(nmax + 1),
-      Psi_xm(nmax + 1), Zeta_xm(nmax + 1), PsiZeta_xd(nmax + 1),
-      PsiZeta_xm(nmax + 1);
-
-  std::complex<FloatType> cxd(xd, 0), cxm(xm, 0);
-  evalDownwardD1(cxd, D1_xd);
-  evalUpwardPsi(cxd, D1_xd, Psi_xd);
-  evalUpwardD3(cxd, D1_xd, D3_xd, PsiZeta_xd);
-  for (unsigned int i = 0; i < Zeta.size(); i++) {
-    Zeta[i] = PsiZeta[i] / Psi[i];
-  }
-
-  evalDownwardD1(cxm, D1_xm);
-  evalUpwardD3(cxm, D1_xm, D3_xm, PsiZeta_xm);
+  evalPsiZetaD1D3(std::complex<FloatType>(xd), Psi_xd, Zeta_xd, D1_xd, D3_xd);
+  evalPsiZetaD1D3(std::complex<FloatType>(xm), Psi_xm, Zeta_xm, D1_xm, D3_xm);
 }
 
 }  // namespace nmie
