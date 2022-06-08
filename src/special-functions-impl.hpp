@@ -426,28 +426,6 @@ void evalUpwardD3(const std::complex<FloatType> z,
 
 //******************************************************************************
 template <typename FloatType>
-void evalPsiZetaD1D3(const std::complex<FloatType> cxd,
-                     std::vector<std::complex<FloatType>>& Psi,
-                     std::vector<std::complex<FloatType>>& Zeta,
-                     std::vector<std::complex<FloatType>>& D1,
-                     std::vector<std::complex<FloatType>>& D3) {
-  int nmax = Psi.size() - 1;
-  std::vector<std::complex<FloatType>> PsiZeta(nmax + 1);
-
-  for (int n = 0; n <= nmax; n++) {
-    D1[n] = std::complex<FloatType>(0.0, -1.0);
-    D3[n] = std::complex<FloatType>(0.0, 1.0);
-  }
-
-  evalDownwardD1(cxd, D1);
-  evalUpwardPsi(cxd, D1, Psi);
-  evalUpwardD3(cxd, D1, D3, PsiZeta);
-  for (unsigned int i = 0; i < Zeta.size(); i++) {
-    Zeta[i] = PsiZeta[i] / Psi[i];
-  }
-}
-//******************************************************************************
-template <typename FloatType>
 std::complex<FloatType> complex_sin(const std::complex<FloatType> z) {
   auto a = z.real();
   auto b = z.imag();
@@ -526,6 +504,28 @@ void evalUpwardZeta(const std::complex<FloatType> z,
 //     Zeta[i] = std::complex<FloatType > (Psi[i], Chi[i]);
 //   }
 // }
+//******************************************************************************
+template <typename FloatType>
+void evalPsiZetaD1D3(const std::complex<FloatType> cxd,
+                     std::vector<std::complex<FloatType>>& Psi,
+                     std::vector<std::complex<FloatType>>& Zeta,
+                     std::vector<std::complex<FloatType>>& D1,
+                     std::vector<std::complex<FloatType>>& D3) {
+  int nmax = Psi.size() - 1;
+  std::vector<std::complex<FloatType>> PsiZeta(nmax + 1);
+
+  for (int n = 0; n <= nmax; n++) {
+    D1[n] = std::complex<FloatType>(0.0, -1.0);
+    D3[n] = std::complex<FloatType>(0.0, 1.0);
+  }
+
+  evalDownwardD1(cxd, D1);
+  evalUpwardPsi(cxd, D1, Psi);
+  evalUpwardD3(cxd, D1, D3, PsiZeta);
+  for (unsigned int i = 0; i < Zeta.size(); i++) {
+    Zeta[i] = PsiZeta[i] / Psi[i];
+  }
+}
 
 }  // end of namespace nmie
 #endif  // SRC_SPECIAL_FUNCTIONS_IMPL_HPP_

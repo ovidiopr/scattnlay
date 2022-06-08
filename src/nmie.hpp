@@ -534,6 +534,8 @@ template <typename FloatType = double>
 class MesoMie {
  public:
   std::vector<std::complex<FloatType>> an_, bn_;
+  std::vector<std::complex<FloatType>> GetAn() { return an_; };
+  std::vector<std::complex<FloatType>> GetBn() { return bn_; };
 
   void calc_ab(int n,
                FloatType R,
