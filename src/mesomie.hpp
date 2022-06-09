@@ -74,22 +74,37 @@ void MesoMie<FloatType>::calc_ab_classic(int nmax,
   evalPsiZetaD1D3(x * m,                       //
                   Psi_mx, Zeta_mx, D1_mx, D3_mx);
   for (int n = 0; n <= nmax; n++) {
+    // D1(x) = 0.573785843449477
+    // D1(mx) = (5.0024999985617e-7 - 0.99999999974975j)
+    // D3(x) = (-9.99900009998611e-7 + 0.999900009999j)
+    // psi_n = -0.867382528698782
+    // ksi_n = (-0.867382528698782 + 0.497742452386882j)
+    if (n < 3) {
+      std::cout << "n = " << n << std::endl;
+      std::cout << "D1(x) = " << D1_x[n] << std::endl;
+      std::cout << "D1(mx) = " << D1_mx[n] << std::endl;
+      std::cout << "D3(x) = " << D3_x[n] << std::endl;
+      std::cout << "psi(x) = " << Psi_x[n] << std::endl;
+      std::cout << "ksi(x) = " << Zeta_x[n] << std::endl;
+    }
     an_cl[n] = Psi_x[n] *
-               (                           //
-                   m * D1_x[n] - D1_mx[n]  //
-                   ) /                     //
-               Zeta_x[n] *
-               (                           //
-                   m * D3_x[n] - D1_mx[n]  //
+               (                                           //
+                   m * D1_x[n] - D1_mx[n]                  //
+                   ) /                                     //
+               (                                           //
+                   Zeta_x[n] * (                           //
+                                   m * D3_x[n] - D1_mx[n]  //
+                                   )                       //
                );
     bn_cl[n] = Psi_x[n] *
-               (                           //
-                   D1_x[n] - m * D1_mx[n]  //
-                   ) /                     //
-               Zeta_x[n] *
-               (                           //
-                   D3_x[n] - m * D1_mx[n]  //
-               );                          //
+               (                                           //
+                   D1_x[n] - m * D1_mx[n]                  //
+                   ) /                                     //
+               (                                           //
+                   Zeta_x[n] * (                           //
+                                   D3_x[n] - m * D1_mx[n]  //
+                                   )                       //
+               );                                          //
   }
 }
 
@@ -116,35 +131,38 @@ void MesoMie<FloatType>::calc_ab(int nmax,
 
   for (int n = 0; n <= nmax; n++) {
     an_[n] = Psi_xd[n] *
-             (                                                           //
-                 eps_m * xd * D1_xd[n] - eps_d * xm * D1_xm[n] +         //
-                 (eps_m - eps_d) *                                       //
-                     (                                                   //
-                         static_cast<FloatType>(n * (n + 1)) * d_perp +  //
-                         xd * D1_xd[n] * xm * D1_xm[n] * d_parallel      //
-                         ) /                                             //
-                     R                                                   //
-                 ) /                                                     //
-             Zeta_xd[n] *
-             (                                                           //
-                 eps_m * xd * D3_xd[n] - eps_d * xm * D1_xm[n] +         //
-                 (eps_m - eps_d) *                                       //
-                     (                                                   //
-                         static_cast<FloatType>(n * (n + 1)) * d_perp +  //
-                         xd * D3_xd[n] * xm * D1_xm[n] * d_parallel      //
-                         ) /                                             //
-                     R                                                   //
+             (                                                               //
+                 eps_m * xd * D1_xd[n] - eps_d * xm * D1_xm[n] +             //
+                 (eps_m - eps_d) *                                           //
+                     (                                                       //
+                         static_cast<FloatType>(n * (n + 1)) * d_perp +      //
+                         xd * D1_xd[n] * xm * D1_xm[n] * d_parallel          //
+                         ) /                                                 //
+                     R                                                       //
+                 ) /                                                         //
+             (                                                               //
+                 Zeta_xd[n] *                                                //
+                 (                                                           //
+                     eps_m * xd * D3_xd[n] - eps_d * xm * D1_xm[n] +         //
+                     (eps_m - eps_d) *                                       //
+                         (                                                   //
+                             static_cast<FloatType>(n * (n + 1)) * d_perp +  //
+                             xd * D3_xd[n] * xm * D1_xm[n] * d_parallel      //
+                             ) /                                             //
+                         R                                                   //
+                     )                                                       //
              );
     bn_[n] = Psi_xd[n] *
-             (                                         //
-                 xd * D1_xd[n] - xm * D1_xm[n] +       //
-                 (xm * xm - xd * xd) * d_parallel / R  //
-                 ) /                                   //
-             Zeta_xd[n] *
-             (                                         //
-                 xd * D3_xd[n] - xm * D1_xm[n] +       //
-                 (xm * xm - xd * xd) * d_parallel / R  //
-             );                                        //
+             (                                                          //
+                 xd * D1_xd[n] - xm * D1_xm[n] +                        //
+                 (xm * xm - xd * xd) * d_parallel / R                   //
+                 ) /                                                    //
+             (                                                          //
+                 Zeta_xd[n] * (                                         //
+                                  xd * D3_xd[n] - xm * D1_xm[n] +       //
+                                  (xm * xm - xd * xd) * d_parallel / R  //
+                                  )                                     //
+             );                                                         //
   }
 }
 
