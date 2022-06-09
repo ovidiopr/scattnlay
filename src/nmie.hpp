@@ -541,10 +541,10 @@ class MesoMie {
                FloatType R,
                FloatType xd,
                FloatType xm,
-               FloatType eps_d,
-               FloatType eps_m,
-               FloatType d_parallel,
-               FloatType d_perp);
+               std::complex<FloatType> eps_d,
+               std::complex<FloatType> eps_m,
+               std::complex<FloatType> d_parallel,
+               std::complex<FloatType> d_perp);
 };  // end of class MesoMie
 
 }  // end of namespace nmie

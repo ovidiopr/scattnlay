@@ -95,11 +95,11 @@ TEST(BulkSphere, MesoMie) {
     nmie.calcScattCoeffs();
     auto an_nmie = nmie.GetAn();
     int nmax = an_nmie.size();
-    mesomie.calc_ab(nmax + 2, 1, 1, x, 1, std::sqrt(m).real(), 0, 0);
-    // auto an_meso = mesomie.GetAn();
+    mesomie.calc_ab(nmax + 2, 1, 2, x, {1, 0}, std::sqrt(m), {0, 0}, {0, 0});
+    auto an_meso = mesomie.GetAn();
     for (int n = 0; n < nmax; n++) {
-      if (an_nmie[n].real() > 0.1)
-        std::cout << an_nmie[n] << std::endl;
+      if (an_meso[n + 1].real() > 0.1)
+        std::cout << an_nmie[n] << ' ' << an_meso[n + 1] << std::endl;
     }
 
     // double Qext = static_cast<double>(nmie.GetQext());

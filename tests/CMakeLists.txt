@@ -27,7 +27,9 @@ target_link_libraries("test_Riccati_Bessel_logarithmic_derivative" ${LIBS})
 add_test(NAME "test_Riccati_Bessel_logarithmic_derivative"
         COMMAND "test_Riccati_Bessel_logarithmic_derivative")
 
-
+#TODO remove -Wno
+set_source_files_properties(test_bulk_sphere.cc
+        PROPERTIES COMPILE_FLAGS "-Wno-overflow -Wno-unused-parameter")
 add_executable("test_bulk_sphere" test_bulk_sphere.cc)
 target_link_libraries("test_bulk_sphere" ${LIBS})
 add_test(NAME "test_bulk_sphere"

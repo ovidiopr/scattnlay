@@ -63,12 +63,12 @@ void MesoMie<FloatType>::calc_ab(int nmax,
                                  FloatType R,
                                  FloatType xd,
                                  FloatType xm,
-                                 FloatType eps_d,
-                                 FloatType eps_m,
-                                 FloatType d_parallel,
-                                 FloatType d_perp) {
-  an_.resize(nmax, static_cast<FloatType>(0.0));
-  bn_.resize(nmax, static_cast<FloatType>(0.0));
+                                 std::complex<FloatType> eps_d,
+                                 std::complex<FloatType> eps_m,
+                                 std::complex<FloatType> d_parallel,
+                                 std::complex<FloatType> d_perp) {
+  an_.resize(nmax + 1, static_cast<FloatType>(0.0));
+  bn_.resize(nmax + 1, static_cast<FloatType>(0.0));
   std::vector<std::complex<FloatType>>      //
       D1_xd(nmax + 1), D3_xd(nmax + 1),     //
       D1_xm(nmax + 1), D3_xm(nmax + 1),     //
@@ -80,24 +80,24 @@ void MesoMie<FloatType>::calc_ab(int nmax,
 
   for (int n = 1; n <= nmax; n++) {
     an_[n] = Psi_xd[n] *
-             (                                                       //
-                 eps_m * xd * D1_xd[n] - eps_d * xm * D1_xm[n] +     //
-                 (eps_m - eps_d) *                                   //
-                     (                                               //
-                         n * (n + 1) * d_perp +                      //
-                         xd * D1_xd[n] * xm * D1_xm[n] * d_parallel  //
-                         ) /                                         //
-                     R                                               //
-                 ) /                                                 //
+             (                                                           //
+                 eps_m * xd * D1_xd[n] - eps_d * xm * D1_xm[n] +         //
+                 (eps_m - eps_d) *                                       //
+                     (                                                   //
+                         static_cast<FloatType>(n * (n + 1)) * d_perp +  //
+                         xd * D1_xd[n] * xm * D1_xm[n] * d_parallel      //
+                         ) /                                             //
+                     R                                                   //
+                 ) /                                                     //
              Zeta_xd[n] *
-             (                                                       //
-                 eps_m * xd * D3_xd[n] - eps_d * xm * D1_xm[n] +     //
-                 (eps_m - eps_d) *                                   //
-                     (                                               //
-                         n * (n + 1) * d_perp +                      //
-                         xd * D3_xd[n] * xm * D1_xm[n] * d_parallel  //
-                         ) /                                         //
-                     R                                               //
+             (                                                           //
+                 eps_m * xd * D3_xd[n] - eps_d * xm * D1_xm[n] +         //
+                 (eps_m - eps_d) *                                       //
+                     (                                                   //
+                         static_cast<FloatType>(n * (n + 1)) * d_perp +  //
+                         xd * D3_xd[n] * xm * D1_xm[n] * d_parallel      //
+                         ) /                                             //
+                     R                                                   //
              );
     bn_[n] = Psi_xd[n] *
              (                                         //
