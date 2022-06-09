@@ -57,12 +57,48 @@
 #include "special-functions-impl.hpp"
 
 namespace nmie {
-template <typename FloatType>
 //******************************************************************************
+template <typename FloatType>
+void MesoMie<FloatType>::calc_ab_classic(int nmax,
+                                         FloatType x,
+                                         std::complex<FloatType> m) {
+  an_cl.resize(nmax + 1, static_cast<FloatType>(0.0));
+  bn_cl.resize(nmax + 1, static_cast<FloatType>(0.0));
+  std::vector<std::complex<FloatType>>         //
+      Psi_mx(nmax + 1), Zeta_mx(nmax + 1),     //
+      Psi_x(nmax + 1), Zeta_x(nmax + 1),       //
+      D1_mx(nmax + 1), D3_mx(nmax + 1),        //
+      D1_x(nmax + 1), D3_x(nmax + 1);          //
+  evalPsiZetaD1D3(std::complex<FloatType>(x),  //
+                  Psi_x, Zeta_x, D1_x, D3_x);  //
+  evalPsiZetaD1D3(x * m,                       //
+                  Psi_mx, Zeta_mx, D1_mx, D3_mx);
+  for (int n = 0; n <= nmax; n++) {
+    an_cl[n] = Psi_x[n] *
+               (                           //
+                   m * D1_x[n] - D1_mx[n]  //
+                   ) /                     //
+               Zeta_x[n] *
+               (                           //
+                   m * D3_x[n] - D1_mx[n]  //
+               );
+    bn_cl[n] = Psi_x[n] *
+               (                           //
+                   D1_x[n] - m * D1_mx[n]  //
+                   ) /                     //
+               Zeta_x[n] *
+               (                           //
+                   D3_x[n] - m * D1_mx[n]  //
+               );                          //
+  }
+}
+
+//******************************************************************************
+template <typename FloatType>
 void MesoMie<FloatType>::calc_ab(int nmax,
                                  FloatType R,
-                                 FloatType xd,
-                                 FloatType xm,
+                                 std::complex<FloatType> xd,
+                                 std::complex<FloatType> xm,
                                  std::complex<FloatType> eps_d,
                                  std::complex<FloatType> eps_m,
                                  std::complex<FloatType> d_parallel,
@@ -78,7 +114,7 @@ void MesoMie<FloatType>::calc_ab(int nmax,
   evalPsiZetaD1D3(std::complex<FloatType>(xd), Psi_xd, Zeta_xd, D1_xd, D3_xd);
   evalPsiZetaD1D3(std::complex<FloatType>(xm), Psi_xm, Zeta_xm, D1_xm, D3_xm);
 
-  for (int n = 1; n <= nmax; n++) {
+  for (int n = 0; n <= nmax; n++) {
     an_[n] = Psi_xd[n] *
              (                                                           //
                  eps_m * xd * D1_xd[n] - eps_d * xm * D1_xm[n] +         //

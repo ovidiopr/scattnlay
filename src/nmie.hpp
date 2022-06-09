@@ -537,14 +537,20 @@ class MesoMie {
   std::vector<std::complex<FloatType>> GetAn() { return an_; };
   std::vector<std::complex<FloatType>> GetBn() { return bn_; };
 
-  void calc_ab(int n,
+  std::vector<std::complex<FloatType>> an_cl, bn_cl;
+  std::vector<std::complex<FloatType>> GetAnClassic() { return an_cl; };
+  std::vector<std::complex<FloatType>> GetBnClassic() { return bn_cl; };
+
+  void calc_ab(int nmax,
                FloatType R,
-               FloatType xd,
-               FloatType xm,
+               std::complex<FloatType> xd,
+               std::complex<FloatType> xm,
                std::complex<FloatType> eps_d,
                std::complex<FloatType> eps_m,
                std::complex<FloatType> d_parallel,
                std::complex<FloatType> d_perp);
+
+  void calc_ab_classic(int nmax, FloatType x, std::complex<FloatType> m);
 };  // end of class MesoMie
 
 }  // end of namespace nmie
