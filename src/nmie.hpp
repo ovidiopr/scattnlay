@@ -534,15 +534,15 @@ template <typename FloatType = double>
 class MesoMie {
  public:
   std::vector<std::complex<FloatType>> an_, bn_;
+  FloatType x_;
+  std::complex<FloatType> m_;
   std::vector<std::complex<FloatType>> GetAn() { return an_; };
   std::vector<std::complex<FloatType>> GetBn() { return bn_; };
 
-  std::vector<std::complex<FloatType>> an_cl, bn_cl;
-  std::vector<std::complex<FloatType>> GetAnClassic() { return an_cl; };
-  std::vector<std::complex<FloatType>> GetBnClassic() { return bn_cl; };
-
-  void calc_ab(int nmax,
-               FloatType R,
+  FloatType Qsca_ = 0.0, Qext_ = 0.0;
+  FloatType GetQsca() { return Qsca_; };
+  FloatType GetQext() { return Qext_; };
+  void calc_ab(FloatType R,
                std::complex<FloatType> xd,
                std::complex<FloatType> xm,
                std::complex<FloatType> eps_d,
@@ -550,7 +550,12 @@ class MesoMie {
                std::complex<FloatType> d_parallel,
                std::complex<FloatType> d_perp);
 
-  void calc_ab_classic(int nmax, FloatType x, std::complex<FloatType> m);
+  void calc_Q();
+  // template <typename outputType = FloatType>
+  // outputType GetQext();
+
+  // template <typename outputType = FloatType>
+  // outputType GetQsca();
 };  // end of class MesoMie
 
 }  // end of namespace nmie

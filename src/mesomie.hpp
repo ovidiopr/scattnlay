@@ -59,65 +59,37 @@
 namespace nmie {
 //******************************************************************************
 template <typename FloatType>
-void MesoMie<FloatType>::calc_ab_classic(int nmax,
-                                         FloatType x,
-                                         std::complex<FloatType> m) {
-  an_cl.resize(nmax + 1, static_cast<FloatType>(0.0));
-  bn_cl.resize(nmax + 1, static_cast<FloatType>(0.0));
-  std::vector<std::complex<FloatType>>         //
-      Psi_mx(nmax + 1), Zeta_mx(nmax + 1),     //
-      Psi_x(nmax + 1), Zeta_x(nmax + 1),       //
-      D1_mx(nmax + 1), D3_mx(nmax + 1),        //
-      D1_x(nmax + 1), D3_x(nmax + 1);          //
-  evalPsiZetaD1D3(std::complex<FloatType>(x),  //
-                  Psi_x, Zeta_x, D1_x, D3_x);  //
-  evalPsiZetaD1D3(x * m,                       //
-                  Psi_mx, Zeta_mx, D1_mx, D3_mx);
-  for (int n = 0; n <= nmax; n++) {
-    // D1(x) = 0.573785843449477
-    // D1(mx) = (5.0024999985617e-7 - 0.99999999974975j)
-    // D3(x) = (-9.99900009998611e-7 + 0.999900009999j)
-    // psi_n = -0.867382528698782
-    // ksi_n = (-0.867382528698782 + 0.497742452386882j)
-    if (n < 3) {
-      std::cout << "n = " << n << std::endl;
-      std::cout << "D1(x) = " << D1_x[n] << std::endl;
-      std::cout << "D1(mx) = " << D1_mx[n] << std::endl;
-      std::cout << "D3(x) = " << D3_x[n] << std::endl;
-      std::cout << "psi(x) = " << Psi_x[n] << std::endl;
-      std::cout << "ksi(x) = " << Zeta_x[n] << std::endl;
-    }
-    an_cl[n] = Psi_x[n] *
-               (                                           //
-                   m * D1_x[n] - D1_mx[n]                  //
-                   ) /                                     //
-               (                                           //
-                   Zeta_x[n] * (                           //
-                                   m * D3_x[n] - D1_mx[n]  //
-                                   )                       //
-               );
-    bn_cl[n] = Psi_x[n] *
-               (                                           //
-                   D1_x[n] - m * D1_mx[n]                  //
-                   ) /                                     //
-               (                                           //
-                   Zeta_x[n] * (                           //
-                                   D3_x[n] - m * D1_mx[n]  //
-                                   )                       //
-               );                                          //
+void MesoMie<FloatType>::calc_Q() {
+  auto nmax = an_.size();
+  Qext_ = 0.0;
+  Qsca_ = 0.0;
+
+  for (int n = nmax - 2; n >= 1; n--) {
+    //      for (int n = 0; n < nmax_; n++) {
+    const int n1 = n;
+    // Equation (27)
+    Qext_ += (n1 + n1 + 1.0) * (an_[n].real() + bn_[n].real());
+    // std::cout << n1 << ": " << Qext_ << "  ";
+    // Equation (28)
+    Qsca_ += (n1 + n1 + 1.0) *
+             (an_[n].real() * an_[n].real() + an_[n].imag() * an_[n].imag() +
+              bn_[n].real() * bn_[n].real() + bn_[n].imag() * bn_[n].imag());
   }
+  Qext_ *= 2 / pow2(x_);
+  Qsca_ *= 2 / pow2(x_);
 }
 
 //******************************************************************************
 template <typename FloatType>
-void MesoMie<FloatType>::calc_ab(int nmax,
-                                 FloatType R,
+void MesoMie<FloatType>::calc_ab(FloatType R,
                                  std::complex<FloatType> xd,
                                  std::complex<FloatType> xm,
                                  std::complex<FloatType> eps_d,
                                  std::complex<FloatType> eps_m,
                                  std::complex<FloatType> d_parallel,
                                  std::complex<FloatType> d_perp) {
+  x_ = R;
+  int nmax = std::round(x_ + 11 * std::pow(x_, (1.0 / 3.0)) + 1);
   an_.resize(nmax + 1, static_cast<FloatType>(0.0));
   bn_.resize(nmax + 1, static_cast<FloatType>(0.0));
   std::vector<std::complex<FloatType>>      //
