@@ -37,6 +37,8 @@ mie_mp = None
 try:
     from scattnlay_mp import mie_mp as mie_mp_
     mie_mp = mie_mp_()
+except:
+    pass
 
 mie = mie_dp()
 

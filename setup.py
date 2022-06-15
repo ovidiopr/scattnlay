@@ -36,7 +36,8 @@ __mod__ = 'python-scattnlay'
 __author__ = 'Ovidio Peña Rodríguez'
 __email__ = 'ovidio@bytesfall.com'
 __url__ = 'https://github.com/ovidiopr/scattnlay'
-__download_url__ = 'https://github.com/ovidiopr/scattnlay/archive/v2.2.0.tar.gz'
+__download_url__ = 'https://github.com/ovidiopr/scattnlay/archive/v' + \
+    __version__+'.0.tar.gz'
 
 from setuptools import setup
 from setuptools.extension import Extension
@@ -62,25 +63,33 @@ ext_mp = Extension("scattnlay_mp",
 #                     '-finline-limit=1000000', '-ffp-contract=fast',
 #                     '-DMULTI_PRECISION=100']),
 
-extensions = [ext_dp]
-setup(name=__mod__,
-      version=__version__,
-      description=__title__,
-      long_description="""The Python version of scattnlay, a computer implementation of the algorithm for the \
-calculation of electromagnetic radiation scattering by a multilayered sphere developed by Yang. It has been \
-shown that the program is effective, resulting in very accurate values of scattering efficiencies for a wide \
-range of size parameters, which is a considerable improvement over previous implementations of similar algorithms. \
-For details see: O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
-      author=__author__,
-      author_email=__email__,
-      maintainer=__author__,
-      maintainer_email=__email__,
-      keywords=['Mie scattering', 'Multilayered sphere',
-                'Efficiency factors', 'Cross-sections'],
-      url=__url__,
-      download_url=__download_url__,
-      license='GPL',
-      platforms='any',
-      packages=['scattnlay'],  # , 'scattnlay_dp', 'scattnlay_mp'],
-      ext_modules=extensions
-      )
+
+def run_setup(extensions):
+    setup(name=__mod__,
+          version=__version__,
+          description=__title__,
+          long_description="""The Python version of scattnlay, a computer implementation of the algorithm for the \
+    calculation of electromagnetic radiation scattering by a multilayered sphere developed by Yang. It has been \
+    shown that the program is effective, resulting in very accurate values of scattering efficiencies for a wide \
+    range of size parameters, which is a considerable improvement over previous implementations of similar algorithms. \
+    For details see: O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
+          author=__author__,
+          author_email=__email__,
+          maintainer=__author__,
+          maintainer_email=__email__,
+          keywords=['Mie scattering', 'Multilayered sphere',
+                    'Efficiency factors', 'Cross-sections'],
+          url=__url__,
+          download_url=__download_url__,
+          license='GPL',
+          platforms='any',
+          packages=['scattnlay'],  # , 'scattnlay_dp', 'scattnlay_mp'],
+          ext_modules=extensions
+          )
+
+
+try:
+    run_setup([ext_dp, ext_mp])
+except:
+    print('Failed to build all extensions... Building only in double precision...')
+    run_setup([ext_dp])
