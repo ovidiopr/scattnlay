@@ -29,20 +29,25 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from scattnlay_dp import mie_dp
 import numpy as np
+import sys
 
 mie_mp = None
 try:
     from scattnlay_mp import mie_mp as mie_mp_
     mie_mp = mie_mp_()
 
-from scattnlay_dp import mie_dp
 mie = mie_dp()
+
 
 def scattcoeffs_(x, m, nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
         from scattnlay_mp import mie_mp as mie_
     else:
+        if mp:
+            print('Failed to load multiprecision module, using double precision instead...',
+                  file=sys.stderr)
         from scattnlay_dp import mie_dp as mie_
         # from scattnlay_mp import mie_mp as mie_
     mie = mie_()
@@ -79,14 +84,17 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     """
 
     if len(m.shape) != 1 and len(m.shape) != 2:
-        raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
+        raise ValueError(
+            'The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
             return scattcoeffs_(x, m, nmax=nmax, pl=pl, mp=mp)
         else:
-            raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
+            raise ValueError(
+                'The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
-        raise ValueError('The size parameter (x) should be a 1-D or 2-D NumPy array.')
+        raise ValueError(
+            'The size parameter (x) should be a 1-D or 2-D NumPy array.')
 
     # Repeat the same m for all wavelengths
     if len(m.shape) == 1:
@@ -119,6 +127,9 @@ def expancoeffs_(x, m, nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
         from scattnlay_mp import mie_mp as mie_
     else:
+        if mp:
+            print('Failed to load multiprecision module, using double precision instead...',
+                  file=sys.stderr)
         from scattnlay_dp import mie_dp as mie_
         # from scattnlay_mp import mie_mp as mie_
     mie = mie_()
@@ -158,14 +169,17 @@ def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
         an, bn, cn, dn: Complex expansion coefficients of each layer
     """
     if len(m.shape) != 1 and len(m.shape) != 2:
-        raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
+        raise ValueError(
+            'The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
             return expancoeffs_(x, m, nmax=nmax, pl=pl, mp=mp)
         else:
-            raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
+            raise ValueError(
+                'The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
-        raise ValueError('The size parameter (x) should be a 1-D or 2-D NumPy array.')
+        raise ValueError(
+            'The size parameter (x) should be a 1-D or 2-D NumPy array.')
 
     # Repeat the same m for all wavelengths
     if len(m.shape) == 1:
@@ -204,6 +218,9 @@ def scattnlay_(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
         from scattnlay_mp import mie_mp as mie_
     else:
+        if mp:
+            print('Failed to load multiprecision module, using double precision instead...',
+                  file=sys.stderr)
         from scattnlay_dp import mie_dp as mie_
     mie = mie_()
     mie.SetLayersSize(x)
@@ -212,13 +229,13 @@ def scattnlay_(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     mie.SetPECLayer(pl)
     mie.SetMaxTerms(nmax)
     mie.RunMieCalculation()
-    Qext =  mie.GetQext()
-    Qsca =  mie.GetQsca()
-    Qabs =  mie.GetQabs()
-    Qbk =  mie.GetQbk()
-    Qpr =  mie.GetQpr()
-    g =  mie.GetAsymmetryFactor()
-    Albedo =  mie.GetAlbedo()
+    Qext = mie.GetQext()
+    Qsca = mie.GetQsca()
+    Qabs = mie.GetQabs()
+    Qbk = mie.GetQbk()
+    Qpr = mie.GetQpr()
+    g = mie.GetAsymmetryFactor()
+    Albedo = mie.GetAlbedo()
     terms = mie.GetMaxTerms()
     S1 = mie.GetS1()
     S2 = mie.GetS2()
@@ -253,16 +270,20 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
         S1, S2: Complex scattering amplitudes
     """
     if len(m.shape) != 1 and len(m.shape) != 2:
-        raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
+        raise ValueError(
+            'The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
             return scattnlay_(x, m, theta, nmax=nmax, pl=pl, mp=mp)
         else:
-            raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
+            raise ValueError(
+                'The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
-        raise ValueError('The size parameter (x) should be a 1-D or 2-D NumPy array.')
+        raise ValueError(
+            'The size parameter (x) should be a 1-D or 2-D NumPy array.')
     if len(theta.shape) != 1:
-        raise ValueError('The scattering angles (theta) should be a 1-D NumPy array.')
+        raise ValueError(
+            'The scattering angles (theta) should be a 1-D NumPy array.')
 
     # Repeat the same m for all wavelengths
     if len(m.shape) == 1:
@@ -280,7 +301,8 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     S2 = np.zeros((x.shape[0], theta.shape[0]), dtype=complex)
 
     for i, xi in enumerate(x):
-        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(xi, m[i], theta, nmax=nmax, pl=pl, mp=mp)
+        terms[i], Qext[i], Qsca[i], Qabs[i], Qbk[i], Qpr[i], g[i], Albedo[i], S1[i], S2[i] = scattnlay_(
+            xi, m[i], theta, nmax=nmax, pl=pl, mp=mp)
 
     return terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2
 
@@ -289,6 +311,9 @@ def fieldnlay_(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
         from scattnlay_mp import mie_mp as mie_
     else:
+        if mp:
+            print('Failed to load multiprecision module, using double precision instead...',
+                  file=sys.stderr)
         from scattnlay_dp import mie_dp as mie_
         # from scattnlay_mp import mie_mp as mie_
     mie = mie_()
@@ -332,14 +357,17 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
            (or structure) and correct it for the following ones
     """
     if len(m.shape) != 1 and len(m.shape) != 2:
-        raise ValueError('The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
+        raise ValueError(
+            'The relative refractive index (m) should be a 1-D or 2-D NumPy array.')
     if len(x.shape) == 1:
         if len(m.shape) == 1:
             return fieldnlay_(x, m, xp, yp, zp, nmax=nmax, pl=pl, mp=mp)
         else:
-            raise ValueError('The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
+            raise ValueError(
+                'The number of of dimensions for the relative refractive index (m) and for the size parameter (x) must be equal.')
     elif len(x.shape) != 2:
-        raise ValueError('The size parameter (x) should be a 1-D or 2-D NumPy array.')
+        raise ValueError(
+            'The size parameter (x) should be a 1-D or 2-D NumPy array.')
 
     # Repeat the same m for all wavelengths
     if len(m.shape) == 1:
@@ -352,7 +380,7 @@ def fieldnlay(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     for i, xi in enumerate(x):
         # (2020/05/12) We assume that the coordinates are referred to the first wavelength
         #              (or structure) and correct it for the following ones
-        terms[i], E[i], H[i] = fieldnlay_(xi, m[i], xp*xi[-1]/x[0, -1], yp*xi[-1]/x[0, -1], zp*xi[-1]/x[0, -1], nmax=nmax, pl=pl, mp=mp)
+        terms[i], E[i], H[i] = fieldnlay_(
+            xi, m[i], xp*xi[-1]/x[0, -1], yp*xi[-1]/x[0, -1], zp*xi[-1]/x[0, -1], nmax=nmax, pl=pl, mp=mp)
 
     return terms, E, H
-

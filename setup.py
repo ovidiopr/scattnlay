@@ -43,6 +43,26 @@ from setuptools.extension import Extension
 import numpy as np
 import pybind11 as pb
 
+
+ext_dp = Extension("scattnlay_dp",
+                   ["src/pb11_wrapper.cc"],
+                   language="c++",
+                   include_dirs=[np.get_include(), pb.get_include()],
+                   extra_compile_args=['-std=c++11'])
+# extra_compile_args=['-std=c++11', '-O3',
+#                     '-mavx2', '-mfma',
+#                     '-finline-limit=1000000', '-ffp-contract=fast']),
+ext_mp = Extension("scattnlay_mp",
+                   ["src/pb11_wrapper.cc"],
+                   language="c++",
+                   include_dirs=[np.get_include(), pb.get_include()],
+                   extra_compile_args=['-std=c++11', '-DMULTI_PRECISION=100'])
+# extra_compile_args=['-std=c++11', '-O3',
+#                     '-mavx2', '-mfma',
+#                     '-finline-limit=1000000', '-ffp-contract=fast',
+#                     '-DMULTI_PRECISION=100']),
+
+extensions = [ext_dp]
 setup(name=__mod__,
       version=__version__,
       description=__title__,
@@ -55,29 +75,12 @@ For details see: O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354."""
       author_email=__email__,
       maintainer=__author__,
       maintainer_email=__email__,
-      keywords=['Mie scattering', 'Multilayered sphere', 'Efficiency factors', 'Cross-sections'],
+      keywords=['Mie scattering', 'Multilayered sphere',
+                'Efficiency factors', 'Cross-sections'],
       url=__url__,
       download_url=__download_url__,
       license='GPL',
       platforms='any',
       packages=['scattnlay'],  # , 'scattnlay_dp', 'scattnlay_mp'],
-      ext_modules=[Extension("scattnlay_dp",
-                             ["src/pb11_wrapper.cc"],
-                             language="c++",
-                             include_dirs=[np.get_include(), pb.get_include()],
-                             extra_compile_args=['-std=c++11']),
-                             # extra_compile_args=['-std=c++11', '-O3',
-                             #                     '-mavx2', '-mfma',
-                             #                     '-finline-limit=1000000', '-ffp-contract=fast']),
-
-                   Extension("scattnlay_mp",
-                             ["src/pb11_wrapper.cc"],
-                             language="c++",
-                             include_dirs=[np.get_include(), pb.get_include()],
-                             extra_compile_args=['-std=c++11', '-DMULTI_PRECISION=100'])
-                             # extra_compile_args=['-std=c++11', '-O3',
-                             #                     '-mavx2', '-mfma',
-                             #                     '-finline-limit=1000000', '-ffp-contract=fast',
-                             #                     '-DMULTI_PRECISION=100']),
-                   ]
+      ext_modules=extensions
       )
