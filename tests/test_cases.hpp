@@ -17,16 +17,14 @@ std::vector<std::tuple<double, std::complex<double>, std::string> >
         {0.055, {1.5, 1}, "Hong Du testcase:g"},
         {0.056, {1.5, 1}, "Hong Du testcase:h"},
         {1, {10, 10}, "Hong Du testcase:k"},
-#ifdef SKIP_LONG_TESTS
         {100, {1.5, 1}, "Hong Du testcase:i"},
         {1000, {0.75, 0}, "Hong Du testcase:d"},
         // passes but takes too long
-        {10000, {1.33, 1e-5}, "Hong Du testcase:f"},
+        // {10000, {1.33, 1e-5}, "Hong Du testcase:f"},
         // fails in any precision, TODO fixme
-        {100, {10, 10}, "Hong Du testcase:l"},
-        {10000, {1.5, 1}, "Hong Du testcase:j"},
-        {10000, {10, 10}, "Hong Du testcase:m"},
-#endif
+        // {100, {10, 10}, "Hong Du testcase:l"},
+        // {10000, {1.5, 1}, "Hong Du testcase:j"},
+        // {10000, {10, 10}, "Hong Du testcase:m"},
     };
 
 #endif  // SCATTNLAY_TESTS_TEST_CASES_HPP_

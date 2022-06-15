@@ -52,7 +52,6 @@ TEST(RunFieldCalculationCartesian, HandlesInput) {
   //  auto Eabs = nmie.GetFieldEabs();
   //  EXPECT_TRUE(std::isnan(static_cast<double>(Eabs[0])));
 }
-#ifdef SKIP_LONG_TESTS
 TEST(LargeBubbleSpectrum, DISABLED_HandlesInput) {
   // TEST(LargeBubbleSpectrum, HandlesInput) { // TODO fix fail...
   nmie::MultiLayerMie<nmie::FloatType> nmie;
@@ -85,7 +84,6 @@ TEST(LargeBubbleSpectrum, DISABLED_HandlesInput) {
                 abs(Qsca[1] - Qsca[2]));
   }
 }
-#endif
 
 // TEST(RunFieldCalculationPolar, DISABLED_HandlesInput) {
 TEST(RunFieldCalculationPolar, HandlesInput) {
