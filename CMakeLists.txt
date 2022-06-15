@@ -55,6 +55,11 @@ if (Boost_FOUND)
         include_directories(${Boost_INCLUDE_DIRS})
     endif ()
 endif()
+OPTION(SKIP_LONG_TESTS "Skip some tests (usefull for multiprecision)" OFF)
+if (SKIP_LONG_TESTS) 
+    message("Skipping long tests for GTest...")
+    add_definitions(-DSKIP_LONG_TESTS)
+endif()
 
 #Find Python, NumPy and PyBind11
 find_package(Python COMPONENTS Interpreter Development)
