@@ -116,5 +116,5 @@ endforeach ()
 
 enable_testing()
 add_subdirectory(tests)
-add_test(NAME BuildPythonSetupPyAndDevelopmentInstall
-   COMMAND ${Python_EXECUTABLE} -m pip install --user -e .)
+add_test(NAME BuildExtWithPythonSetupPy
+   COMMAND ${Python_EXECUTABLE} setup.py build_ext)
