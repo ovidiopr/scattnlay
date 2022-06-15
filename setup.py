@@ -84,6 +84,7 @@ def run_setup(extensions):
           license='GPL',
           platforms='any',
           packages=['scattnlay'],  # , 'scattnlay_dp', 'scattnlay_mp'],
+          test_suite="tests",
           ext_modules=extensions
           )
 
