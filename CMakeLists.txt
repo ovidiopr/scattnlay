@@ -56,47 +56,47 @@ if (Boost_FOUND)
     endif ()
 endif()
 
-#Find Python, NumPy and PyBind11
-find_package(Python COMPONENTS Interpreter Development)
-
-include_directories(${Python_INCLUDE_DIRS})
-
-message("Python_EXECUTABLE: ${Python_EXECUTABLE}")
-message("Python_FOUND: ${Python_FOUND}")
-message("Python_VERSION: ${Python_VERSION}")
-message("Python_Development_FOUND: ${Python_Development_FOUND}")
-message("Python_LIBRARIES: ${Python_LIBRARIES}")
-message("Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
-
-# Ensure that numpy is installed and read its include dir
-exec_program(${Python_EXECUTABLE}
-        ARGS "-c \"import numpy; print(numpy.get_include())\""
-        OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
-        RETURN_VALUE NUMPY_NOT_FOUND
-        )
-if (NUMPY_NOT_FOUND)
-    message(FATAL_ERROR "NumPy headers not found")
-endif ()
-
-# Ensure that pybind11 is installed and read its include dir
-exec_program(${Python_EXECUTABLE}
-        ARGS "-c \"import pybind11; print(pybind11.get_include())\""
-        OUTPUT_VARIABLE PYBIND11_INCLUDE_DIR
-        RETURN_VALUE PYBIND11_NOT_FOUND
-        )
-if (PYBIND11_NOT_FOUND)
-    message(FATAL_ERROR "PyBind11 headers not found")
-endif ()
-
-# Determine correct extension suffix
-exec_program(${Python_EXECUTABLE}
-        ARGS "-c \"import distutils.sysconfig; print(distutils.sysconfig.get_config_var('EXT_SUFFIX'))\""
-        OUTPUT_VARIABLE EXT_SUFFIX
-        RETURN_VALUE SUFFIX_NOT_FOUND
-        )
-if (SUFFIX_NOT_FOUND)
-    message(FATAL_ERROR "Extension suffix not found")
-endif ()
+##Find Python, NumPy and PyBind11
+#find_package(Python COMPONENTS Interpreter Development)
+#
+#include_directories(${Python_INCLUDE_DIRS})
+#
+#message("Python_EXECUTABLE: ${Python_EXECUTABLE}")
+#message("Python_FOUND: ${Python_FOUND}")
+#message("Python_VERSION: ${Python_VERSION}")
+#message("Python_Development_FOUND: ${Python_Development_FOUND}")
+#message("Python_LIBRARIES: ${Python_LIBRARIES}")
+#message("Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+#
+## Ensure that numpy is installed and read its include dir
+#exec_program(${Python_EXECUTABLE}
+#        ARGS "-c \"import numpy; print(numpy.get_include())\""
+#        OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
+#        RETURN_VALUE NUMPY_NOT_FOUND
+#        )
+#if (NUMPY_NOT_FOUND)
+#    message(FATAL_ERROR "NumPy headers not found")
+#endif ()
+#
+## Ensure that pybind11 is installed and read its include dir
+#exec_program(${Python_EXECUTABLE}
+#        ARGS "-c \"import pybind11; print(pybind11.get_include())\""
+#        OUTPUT_VARIABLE PYBIND11_INCLUDE_DIR
+#        RETURN_VALUE PYBIND11_NOT_FOUND
+#        )
+#if (PYBIND11_NOT_FOUND)
+#    message(FATAL_ERROR "PyBind11 headers not found")
+#endif ()
+#
+## Determine correct extension suffix
+#exec_program(${Python_EXECUTABLE}
+#        ARGS "-c \"import distutils.sysconfig; print(distutils.sysconfig.get_config_var('EXT_SUFFIX'))\""
+#        OUTPUT_VARIABLE EXT_SUFFIX
+#        RETURN_VALUE SUFFIX_NOT_FOUND
+#        )
+#if (SUFFIX_NOT_FOUND)
+#    message(FATAL_ERROR "Extension suffix not found")
+#endif ()
 
 #include_directories(src)
 add_subdirectory(src)
@@ -118,7 +118,6 @@ enable_testing()
 add_subdirectory(tests)
 add_test(NAME BuildExtWithPythonSetupPy
    COMMAND ${Python_EXECUTABLE} setup.py build_ext
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}) 
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_test(NAME tox
-    COMMAND tox) 
- 
+    COMMAND tox)
