@@ -63,7 +63,7 @@ jobs:
       ##################################################################
       # Do just the same but now with Boost multiprecision
       ##################################################################
-      - name: install Google Test
+      - name: install Boost (to use multiprecision)
         run: sudo apt install libboost-all-dev
 
       - name: Configure CMake
