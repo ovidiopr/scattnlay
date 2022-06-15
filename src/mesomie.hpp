@@ -89,7 +89,8 @@ void MesoMie<FloatType>::calc_ab(FloatType R,
                                  std::complex<FloatType> d_parallel,
                                  std::complex<FloatType> d_perp) {
   x_ = R;
-  int nmax = std::round(x_ + 11 * std::pow(x_, (1.0 / 3.0)) + 1);
+  double xx = static_cast<double>(x_);
+  int nmax = std::round(xx + 11 * std::pow(xx, (1.0 / 3.0)) + 1);
   an_.resize(nmax + 1, static_cast<FloatType>(0.0));
   bn_.resize(nmax + 1, static_cast<FloatType>(0.0));
   std::vector<std::complex<FloatType>>      //
