@@ -25,6 +25,8 @@ class TestStringMethods(unittest.TestCase):
     def test_bulk(self):
         tol = 3e-7
         for solver in [mie, mie_mp]:
+            if solver is None:
+                continue
             for case in test_cases:
                 solver.SetLayersSize(case[0])
                 solver.SetLayersIndex(case[1])
