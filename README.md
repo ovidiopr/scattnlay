@@ -66,7 +66,16 @@ Compilation options
  - **make deb** - Generate a deb package for Python extension
  - **make standalone** - Create standalone programs (scattnlay and fieldnlay)
  - **make clean** - Delete temporal files
-  
+
+There are also an experimental CMake project and it is possible to compile into JavaScript module (using Emscripten compiler).
+
+Python module
+
+To build and install Python module run from the source code directory:
+
+```bash
+pip install . --user
+```
 
 Binary install
 --------------
