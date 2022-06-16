@@ -21,7 +21,7 @@ std::vector<std::tuple<double, std::complex<double>, std::string> >
         {1000, {0.75, 0}, "Hong Du testcase:d"},
         // passes but takes too long
         // {10000, {1.33, 1e-5}, "Hong Du testcase:f"},
-        // fails in any precision, TODO fixme
+        // fails for nearfield in any precision, TODO fixme
         // {100, {10, 10}, "Hong Du testcase:l"},
         // {10000, {1.5, 1}, "Hong Du testcase:j"},
         // {10000, {10, 10}, "Hong Du testcase:m"},
