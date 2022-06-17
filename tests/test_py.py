@@ -2,8 +2,12 @@ import unittest
 from scattnlay import mie, mie_mp
 from scattnlay import mesomie
 
+# A list of tests for a bulk sphere from
+# Hong Du, "Mie-scattering calculation," Appl. Opt. 43, 1951-1956 (2004)
+# table 1: sphere size and refractive index
+# followed by resulting extinction and scattering efficiencies
 test_cases = [
-    # x, {Re(m), Im(m)}, Qext, Qsca, test_name
+    # x, m, Qext, Qsca #, test_name
     [0.099, 0.75+0j, 7.417859e-06, 7.417859e-06],  # ,'a'],
     [0.101, 0.75+0j, 8.033538e-06, 8.033538e-06],  # ,'b'],
     [10, 0.75+0j, 2.232265, 2.232265],  # ,'c'],
@@ -31,18 +35,16 @@ class TestStringMethods(unittest.TestCase):
             for case in test_cases:
                 x = case[0]
                 m = case[1]
-                solver.calc_ab(x,        # R
-                               x,   # xd
-                               x * m,    # xm
-                               1,   # eps_d
-                               m * m,    # eps_m
-                               0,   # d_parallel
-                               0)   # d_perp
-                # solver.calc_ab()
+                solver.calc_ab(x,      # R
+                               x,      # xd
+                               x * m,  # xm
+                               1,      # eps_d
+                               m * m,  # eps_m
+                               0,      # d_parallel
+                               0)      # d_perp
                 solver.calc_Q()
                 Qext = solver.GetQext()
                 Qsca = solver.GetQsca()
-                # print(Qext)
                 self.assertTrue((case[2]-Qext)/Qext < tol)
                 self.assertTrue((case[3]-Qsca)/Qsca < tol)
 
