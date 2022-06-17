@@ -566,12 +566,12 @@ class MesoMie {
   template <typename outputType = FloatType>
   outputType GetQsca() {
     return static_cast<outputType>(Qsca_);
-  };
+  }
 
   template <typename outputType = FloatType>
   outputType GetQext() {
     return static_cast<outputType>(Qext_);
-  };
+  }
 
   void calc_ab(FloatType R,
                std::complex<FloatType> xd,
