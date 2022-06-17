@@ -36,6 +36,7 @@
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
+//******************************************************************************
 template <typename T>
 std::vector<T> Py2Vector(const py::array_t<T>& py_x) {
   std::vector<T> c_x(py_x.size());
@@ -43,6 +44,7 @@ std::vector<T> Py2Vector(const py::array_t<T>& py_x) {
   return c_x;
 }
 
+//******************************************************************************
 // https://github.com/pybind/pybind11/issues/1042#issuecomment-508582847
 // template <typename Sequence>
 // inline py::array_t<typename Sequence::value_type> Vector2Py(Sequence&& seq) {
@@ -56,11 +58,14 @@ std::vector<T> Py2Vector(const py::array_t<T>& py_x) {
 //                   parent
 //  );
 //}
+
+//******************************************************************************
 template <typename outputType>
 inline py::array_t<outputType> Vector2Py(const std::vector<outputType>& seq) {
   return py::array(seq.size(), seq.data());
 }
 
+//******************************************************************************
 template <typename inputType = double, typename outputType = double>
 py::array_t<std::complex<outputType>> VectorComplex2Py(
     const std::vector<std::complex<inputType>>& cf_x) {
@@ -73,6 +78,7 @@ py::array_t<std::complex<outputType>> VectorComplex2Py(
   return py_x;
 }
 
+//******************************************************************************
 // https://stackoverflow.com/questions/17294629/merging-flattening-sub-vectors-into-a-single-vector-c-converting-2d-to-1d
 template <typename T>
 std::vector<T> flatten(const std::vector<std::vector<T>>& v) {
@@ -86,6 +92,7 @@ std::vector<T> flatten(const std::vector<std::vector<T>>& v) {
   return result;
 }
 
+//******************************************************************************
 template <typename T>
 py::array Vector2DComplex2Py(const std::vector<std::vector<T>>& x) {
   size_t dim1 = x.size();
