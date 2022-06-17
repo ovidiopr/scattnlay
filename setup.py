@@ -46,7 +46,7 @@ import pybind11 as pb
 
 
 ext_dp = Extension("scattnlay_dp",
-                   ["src/pb11_wrapper.cc"],
+                   ["src/pb11-wrapper.cc"],
                    language="c++",
                    include_dirs=[np.get_include(), pb.get_include()],
                    extra_compile_args=['-std=c++11'])
@@ -54,7 +54,7 @@ ext_dp = Extension("scattnlay_dp",
 #                     '-mavx2', '-mfma',
 #                     '-finline-limit=1000000', '-ffp-contract=fast']),
 ext_mp = Extension("scattnlay_mp",
-                   ["src/pb11_wrapper.cc"],
+                   ["src/pb11-wrapper.cc"],
                    language="c++",
                    include_dirs=[np.get_include(), pb.get_include()],
                    extra_compile_args=['-std=c++11', '-DMULTI_PRECISION=100'])
