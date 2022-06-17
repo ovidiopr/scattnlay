@@ -1,6 +1,6 @@
 import unittest
-import numpy as np
-from scattnlay import scattnlay, mie, mie_mp
+from scattnlay import mie, mie_mp
+from scattnlay import mesomie
 
 test_cases = [
     # x, {Re(m), Im(m)}, Qext, Qsca, test_name
@@ -22,11 +22,36 @@ test_cases = [
 
 class TestStringMethods(unittest.TestCase):
 
-    def test_bulk(self):
+    def test_bulk_mesomie(self):
+        tol = 3e-7
+        for solver in [mesomie]:
+            if solver is None:
+                continue
+            print('Using solver: ', solver)
+            for case in test_cases:
+                x = case[0]
+                m = case[1]
+                solver.calc_ab(x,        # R
+                               x,   # xd
+                               x * m,    # xm
+                               1,   # eps_d
+                               m * m,    # eps_m
+                               0,   # d_parallel
+                               0)   # d_perp
+                # solver.calc_ab()
+                solver.calc_Q()
+                Qext = solver.GetQext()
+                Qsca = solver.GetQsca()
+                # print(Qext)
+                self.assertTrue((case[2]-Qext)/Qext < tol)
+                self.assertTrue((case[3]-Qsca)/Qsca < tol)
+
+    def test_bulk_multilayer(self):
         tol = 3e-7
         for solver in [mie, mie_mp]:
             if solver is None:
                 continue
+            print('Using solver: ', solver)
             for case in test_cases:
                 solver.SetLayersSize(case[0])
                 solver.SetLayersIndex(case[1])

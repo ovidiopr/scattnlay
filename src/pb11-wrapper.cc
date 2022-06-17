@@ -30,6 +30,7 @@
 //******************************************************************************
 
 #include <string>
+#include "mesomie.hpp"
 #include "nmie-basic.hpp"
 #include "nmie-nearfield.hpp"
 #include "nmie.hpp"
@@ -41,6 +42,7 @@
 
 namespace py = pybind11;
 
+//******************************************************************************
 template <typename T>
 void declare_nmie(py::module& m, const std::string& typestr) {
   using mie_typed = nmie::PyMultiLayerMie<nmie::FloatType>;
@@ -110,8 +112,22 @@ void declare_nmie(py::module& m, const std::string& typestr) {
       .def("GetLayerBn", &mie_typed::GetLayerBn<double>)
       .def("GetLayerCn", &mie_typed::GetLayerCn<double>)
       .def("GetLayerDn", &mie_typed::GetLayerDn<double>);
-}
 
+  using mesomie = nmie::MesoMie<nmie::FloatType>;
+  pyclass_name = std::string("mesomie") + typestr;
+  py::class_<mesomie>(m, pyclass_name.c_str(), py::buffer_protocol(),
+                      py::dynamic_attr())
+      .def(py::init<>())
+      .def("calc_Q", &mesomie::calc_Q)
+      .def("calc_ab", &mesomie::calc_ab, py::arg("R") = 1, py::arg("xd") = 1,
+           py::arg("xm") = 1, py::arg("eps_d") = 1, py::arg("eps_m") = 1,
+           py::arg("d_parallel") = 0, py::arg("d_perp") = 0)
+      .def("GetQext", &mesomie::GetQext<double>)
+      .def("GetQsca", &mesomie::GetQsca<double>);
+
+}  // end of declare_nmie(..)
+
+//******************************************************************************
 // wrap as Python module
 #ifdef MULTI_PRECISION
 std::string precision_name = "_mp";

@@ -296,8 +296,12 @@ class MultiLayerMie {
   std::vector<std::complex<FloatType>> GetS1();
   std::vector<std::complex<FloatType>> GetS2();
 
-  std::vector<std::complex<FloatType>> GetAn() { return an_; };
-  std::vector<std::complex<FloatType>> GetBn() { return bn_; };
+  std::vector<std::complex<FloatType>> GetAn() {
+    return an_;
+  };
+  std::vector<std::complex<FloatType>> GetBn() {
+    return bn_;
+  };
 
   std::vector<std::vector<std::complex<FloatType>>> GetLayerAn() {
     return aln_;
@@ -347,9 +351,13 @@ class MultiLayerMie {
   void SetMaxTerms(int nmax);
 
   // Get maximum number of terms
-  int GetMaxTerms() { return nmax_; };
+  int GetMaxTerms() {
+    return nmax_;
+  };
 
-  bool isMieCalculated() { return isMieCalculated_; };
+  bool isMieCalculated() {
+    return isMieCalculated_;
+  };
 
   // Clear layer information
   void ClearLayers();
@@ -360,25 +368,39 @@ class MultiLayerMie {
   // Get total size parameter of particle
   FloatType GetSizeParameter();
   // Returns size of all layers
-  std::vector<FloatType> GetLayersSize() { return size_param_; };
+  std::vector<FloatType> GetLayersSize() {
+    return size_param_;
+  };
   // Returns refractive index of all layers
   std::vector<std::complex<FloatType>> GetLayersIndex() {
     return refractive_index_;
   };
   // Returns scattering (theta) angles
-  std::vector<FloatType> GetAngles() { return theta_; };
+  std::vector<FloatType> GetAngles() {
+    return theta_;
+  };
   // Returns coordinates used for field calculation
-  std::vector<std::vector<FloatType>> GetFieldCoords() { return coords_; };
+  std::vector<std::vector<FloatType>> GetFieldCoords() {
+    return coords_;
+  };
   // Returns index of PEC layer
-  int GetPECLayer() { return PEC_layer_position_; };
+  int GetPECLayer() {
+    return PEC_layer_position_;
+  };
 
   std::vector<std::vector<std::complex<FloatType>>> GetFieldE() {
     return E_;
   };  // {X[], Y[], Z[]}
-  std::vector<std::vector<std::complex<FloatType>>> GetFieldH() { return H_; };
+  std::vector<std::vector<std::complex<FloatType>>> GetFieldH() {
+    return H_;
+  };
 
-  std::vector<FloatType> GetFieldEabs() { return Eabs_; };  // {X[], Y[], Z[]}
-  std::vector<FloatType> GetFieldHabs() { return Habs_; };
+  std::vector<FloatType> GetFieldEabs() {
+    return Eabs_;
+  };  // {X[], Y[], Z[]}
+  std::vector<FloatType> GetFieldHabs() {
+    return Habs_;
+  };
   bool GetFieldConvergence();
 
   // Get fields in spherical coordinates.
@@ -540,8 +562,17 @@ class MesoMie {
   std::vector<std::complex<FloatType>> GetBn() { return bn_; };
 
   FloatType Qsca_ = 0.0, Qext_ = 0.0;
-  FloatType GetQsca() { return Qsca_; };
-  FloatType GetQext() { return Qext_; };
+
+  template <typename outputType = FloatType>
+  outputType GetQsca() {
+    return static_cast<outputType>(Qsca_);
+  };
+
+  template <typename outputType = FloatType>
+  outputType GetQext() {
+    return static_cast<outputType>(Qext_);
+  };
+
   void calc_ab(FloatType R,
                std::complex<FloatType> xd,
                std::complex<FloatType> xm,

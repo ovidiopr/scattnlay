@@ -57,8 +57,8 @@ std::vector<std::tuple<double, std::complex<double>, double, double, char> >
         {10000, {10, 10}, 2.005914, 1.795393, 'm'},
     };
 //******************************************************************************
-TEST(BulkSphere, DISABLED_HandlesInput) {
-  // TEST(BulkSphere, HandlesInput) {
+// TEST(BulkSphere, DISABLED_HandlesInput) {
+TEST(BulkSphere, MultiLayerDu) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
   for (const auto& data : parameters_and_results) {
     auto x = std::get<0>(data);
@@ -81,7 +81,7 @@ TEST(BulkSphere, DISABLED_HandlesInput) {
 }
 
 //******************************************************************************
-TEST(BulkSphere, MesoMie) {
+TEST(BulkSphere, MesoMieDu) {
   nmie::MultiLayerMie<nmie::FloatType> nmie;
   nmie::MesoMie<nmie::FloatType> mesomie;
   for (const auto& data : parameters_and_results) {
@@ -94,7 +94,6 @@ TEST(BulkSphere, MesoMie) {
                     m * m,    // eps_m
                     {0, 0},   // d_parallel
                     {0, 0});  // d_perp
-                              // eps_m * xd / (eps_d * xm)
     mesomie.calc_Q();
 
     double Qext = static_cast<double>(mesomie.GetQext());

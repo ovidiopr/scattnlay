@@ -29,18 +29,22 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from scattnlay_dp import mie_dp
+from scattnlay_dp import mie_dp, mesomie_dp
 import numpy as np
 import sys
 
 mie_mp = None
+# mesomie_mp = None
 try:
     from scattnlay_mp import mie_mp as mie_mp_
     mie_mp = mie_mp_()
+    # from scattnlay_mp import mesomie_mp as mesomie_mp_
+    # mesomie_mp = mesomie_mp_()
 except:
     pass
 
 mie = mie_dp()
+mesomie = mesomie_dp()
 
 
 def scattcoeffs_(x, m, nmax=-1, pl=-1, mp=False):

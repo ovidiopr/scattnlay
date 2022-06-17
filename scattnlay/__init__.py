@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 #
-#    Copyright (C) 2009-2019 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
-#    Copyright (C) 2013-2019 Konstantin Ladutenko <kostyfisik@gmail.com>
+#    Copyright (C) 2009-2022 Ovidio Peña Rodríguez <ovidio@bytesfall.com>
+#    Copyright (C) 2013-2022 Konstantin Ladutenko <kostyfisik@gmail.com>
 #
 #    This file is part of scattnlay
 #
@@ -30,4 +30,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from scattnlay.main import scattcoeffs, expancoeffs, scattnlay, fieldnlay, mie, mie_mp
+from scattnlay.main import scattcoeffs, expancoeffs, scattnlay, fieldnlay
+from scattnlay.main import mie, mie_mp
+from scattnlay.main import mesomie  # , mesomie_mp
