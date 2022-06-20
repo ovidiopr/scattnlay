@@ -33,3 +33,5 @@
 from scattnlay.main import scattcoeffs, expancoeffs, scattnlay, fieldnlay
 from scattnlay.main import mie, mie_mp
 from scattnlay.main import mesomie  # , mesomie_mp
+# import scattnlay_dp
+# print('using scattnlay from ', scattnlay_dp.__file__)

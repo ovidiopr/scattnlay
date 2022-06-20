@@ -82,13 +82,14 @@ void MesoMie<FloatType>::calc_Q() {
 //******************************************************************************
 template <typename FloatType>
 void MesoMie<FloatType>::calc_ab(FloatType R,
-                                 std::complex<FloatType> xd,
+                                 FloatType xd,
                                  std::complex<FloatType> xm,
                                  std::complex<FloatType> eps_d,
                                  std::complex<FloatType> eps_m,
                                  std::complex<FloatType> d_parallel,
                                  std::complex<FloatType> d_perp) {
-  x_ = R;
+  x_ = xd;
+  //   std::cout << "xd: " << xd << "  R: " << R << std::endl;
   double xx = static_cast<double>(x_);
   int nmax = std::round(xx + 11 * std::pow(xx, (1.0 / 3.0)) + 1);
   an_.resize(nmax + 1, static_cast<FloatType>(0.0));
@@ -106,36 +107,40 @@ void MesoMie<FloatType>::calc_ab(FloatType R,
     an_[n] = Psi_xd[n] *
              (                                                               //
                  eps_m * xd * D1_xd[n] - eps_d * xm * D1_xm[n] +             //
-                 (eps_m - eps_d) *                                           //
+                 (                                                           //
+                     (eps_m - eps_d) *                                       //
                      (                                                       //
                          static_cast<FloatType>(n * (n + 1)) * d_perp +      //
                          xd * D1_xd[n] * xm * D1_xm[n] * d_parallel          //
                          ) /                                                 //
                      R                                                       //
+                     )                                                       //
                  ) /                                                         //
              (                                                               //
                  Zeta_xd[n] *                                                //
                  (                                                           //
                      eps_m * xd * D3_xd[n] - eps_d * xm * D1_xm[n] +         //
-                     (eps_m - eps_d) *                                       //
+                     (                                                       //
+                         (eps_m - eps_d) *                                   //
                          (                                                   //
                              static_cast<FloatType>(n * (n + 1)) * d_perp +  //
                              xd * D3_xd[n] * xm * D1_xm[n] * d_parallel      //
                              ) /                                             //
                          R                                                   //
+                         )                                                   //
                      )                                                       //
              );
     bn_[n] = Psi_xd[n] *
-             (                                                          //
-                 xd * D1_xd[n] - xm * D1_xm[n] +                        //
-                 (xm * xm - xd * xd) * d_parallel / R                   //
-                 ) /                                                    //
-             (                                                          //
-                 Zeta_xd[n] * (                                         //
-                                  xd * D3_xd[n] - xm * D1_xm[n] +       //
-                                  (xm * xm - xd * xd) * d_parallel / R  //
-                                  )                                     //
-             );                                                         //
+             (                                                            //
+                 xd * D1_xd[n] - xm * D1_xm[n] +                          //
+                 ((xm * xm - xd * xd) * d_parallel / R)                   //
+                 ) /                                                      //
+             (                                                            //
+                 Zeta_xd[n] * (                                           //
+                                  xd * D3_xd[n] - xm * D1_xm[n] +         //
+                                  ((xm * xm - xd * xd) * d_parallel / R)  //
+                                  )                                       //
+             );                                                           //
   }
 }
 

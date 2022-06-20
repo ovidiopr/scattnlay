@@ -87,8 +87,8 @@ TEST(BulkSphere, MesoMieDu) {
   for (const auto& data : parameters_and_results) {
     auto x = std::get<0>(data);
     auto m = std::get<1>(data);
-    mesomie.calc_ab(x,        // R
-                    {x, 0},   // xd
+    mesomie.calc_ab(1e-10,    // R
+                    x,        // xd
                     x * m,    // xm
                     {1, 0},   // eps_d
                     m * m,    // eps_m

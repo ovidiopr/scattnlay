@@ -21,6 +21,7 @@ test_cases = [
     [10000, 1.33+1e-5j, 2.004089, 1.723857],  # ,'f'],
     [10000, 1.5+1j, 2.004368, 1.236574],  # ,'j'],
     [10000, 10+10j, 2.005914, 1.795393],  # ,'m'],
+    # [1.8263846985116234, 0.02867488311561525+1.2957040351341687j, 3, 3]
 ]
 
 
@@ -29,8 +30,6 @@ class TestStringMethods(unittest.TestCase):
     def test_bulk_mesomie(self):
         tol = 3e-7
         for solver in [mesomie]:
-            if solver is None:
-                continue
             print('Using solver: ', solver)
             for case in test_cases:
                 x = case[0]
@@ -45,6 +44,7 @@ class TestStringMethods(unittest.TestCase):
                 solver.calc_Q()
                 Qext = solver.GetQext()
                 Qsca = solver.GetQsca()
+                # print(x, m, Qext)
                 self.assertTrue((case[2]-Qext)/Qext < tol)
                 self.assertTrue((case[3]-Qsca)/Qsca < tol)
 

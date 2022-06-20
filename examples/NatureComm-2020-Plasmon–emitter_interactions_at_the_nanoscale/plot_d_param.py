@@ -14,7 +14,7 @@ xmin_im = np.min(im_d[:, 0])
 xmin_re = np.min(re_d[:, 0])
 xmax_im = np.max(im_d[:, 0])
 xmax_re = np.max(re_d[:, 0])
-x = np.linspace(np.max([xmin_im, xmin_re]), np.min([xmax_im, xmax_re]), 100)
+x = np.linspace(np.max([xmin_im, xmin_re]), np.min([xmax_im, xmax_re]), 1000)
 im_d_y = interpolate.interp1d(im_d[:, 0],  im_d[:, 1])
 re_d_y = interpolate.interp1d(re_d[:, 0],  re_d[:, 1])
 

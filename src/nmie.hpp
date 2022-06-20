@@ -574,7 +574,7 @@ class MesoMie {
   }
 
   void calc_ab(FloatType R,
-               std::complex<FloatType> xd,
+               FloatType xd,
                std::complex<FloatType> xm,
                std::complex<FloatType> eps_d,
                std::complex<FloatType> eps_m,
