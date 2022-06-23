@@ -100,8 +100,12 @@ void MesoMie<FloatType>::calc_ab(FloatType R,
       Psi_xd(nmax + 1), Zeta_xd(nmax + 1),  //
       Psi_xm(nmax + 1), Zeta_xm(nmax + 1);
 
-  evalPsiZetaD1D3(std::complex<FloatType>(xd), Psi_xd, Zeta_xd, D1_xd, D3_xd);
-  evalPsiZetaD1D3(std::complex<FloatType>(xm), Psi_xm, Zeta_xm, D1_xm, D3_xm);
+  evalPsiZetaD1D3(std::complex<FloatType>(xd),  //
+                  Psi_xd, Zeta_xd,              //
+                  D1_xd, D3_xd);                //
+  evalPsiZetaD1D3(std::complex<FloatType>(xm),  //
+                  Psi_xm, Zeta_xm,              //
+                  D1_xm, D3_xm);
 
   for (int n = 0; n <= nmax; n++) {
     an_[n] = Psi_xd[n] *
