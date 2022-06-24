@@ -69,7 +69,7 @@ for i in range(len(omega_star_ratio)):
                     x * m,  # xm
                     1,      # eps_d
                     m * m,  # eps_m
-                    d_parl[i]/2,      # d_parallel
+                    d_parl[i],      # d_parallel
                     d_perp[i])      # d_perp
     mesomie.calc_Q()
     mie.SetLayersSize(x)
