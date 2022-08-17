@@ -15,14 +15,16 @@ from mealpy.physics_based.EO import AdaptiveEO
 from_disk = np.loadtxt('rs4-d_perp_interpolated.txt')
 step = 5
 omega_ratio = np.copy(from_disk[0, ::step])
-d_perp_rs4 = from_disk[1, ::step] + 1j*from_disk[2, ::step]
+d_rs4 = from_disk[1, ::step] + 1j*from_disk[2, ::step]
+
+d_rms = d_rs4
 
 
 def rms(x0):
     d_fit = spectra(omega_ratio, x0)
-    diff_re = np.real(d_perp_rs4 - d_fit)
+    diff_re = np.real(d_rms - d_fit)
     rms = np.sqrt(np.sum(np.abs(diff_re)**2))
-    diff_im = np.imag(d_perp_rs4 - d_fit)
+    diff_im = np.imag(d_rms - d_fit)
     rms += np.sqrt(np.sum(np.abs(diff_im)**2))
     return rms
 
@@ -30,36 +32,29 @@ def rms(x0):
 poles = 1
 dim = poles*4
 x0 = np.random.random(dim)
+d_rms = d_rs4
+# x, es = cma.fmin2(rms, x0, sigma0=0.2)
+x = np.array([0.13421489, 0.82250415, -0.50359304, -0.0591722])
+x1 = x
 
-
-problem_dict1 = {
-    "fit_func": rms,
-    "lb": [0,  0, -10, -10],
-    "ub": [10, 10, 10, 10],
-    "minmax": "min",
-}
-epoch = 300
-pop_size = 10
-model = AdaptiveEO(problem_dict1, epoch, pop_size)
-# x, best_fitness = model.solve()
-# print(f"Solution: {x}, Fitness: {best_fitness}")
-
-x, es = cma.fmin2(rms, x0, sigma0=0.2)
-
+x0 = np.random.random(dim)
+d_rms = d_rs4 - spectra(omega_ratio, x1)
+x, es = cma.fmin2(rms, x0, sigma0=2)
+# x = [0.00051888486267353, 0.9991499897780783,
+#      0.06926055304806265, -0.030608812209114836] # fitness = 4.7
+x2 = x
 
 d_fit = spectra(omega_ratio, x)
-print('first round x =', x)
-
-
-print('x =', x)
-# print('ex =', es)
-
-# print('d_fit =', d_fit)
 
 plt.figure('rs4')
 # plt.title('rms = '+str(rms(x)/x.size))
-plt.plot(omega_ratio, np.real(d_perp_rs4), label='re d')
-plt.plot(omega_ratio, np.imag(d_perp_rs4), label='im d')
+plt.plot(omega_ratio, np.real(d_rms), label='re d')
+plt.plot(omega_ratio, np.imag(d_rms), label='im d')
+
+# plt.plot(omega_ratio, np.real(
+#     d_rs4 - spectra(omega_ratio, x1)), label='diff re d')
+# plt.plot(omega_ratio, np.imag(
+#     d_rs4 - spectra(omega_ratio, x1)), label='diff im d')
 
 plt.plot(omega_ratio, np.real(d_fit), label='re d fit', alpha=0.2, lw=3)
 plt.plot(omega_ratio, np.imag(d_fit), label='im d fit', alpha=0.2, lw=3)
