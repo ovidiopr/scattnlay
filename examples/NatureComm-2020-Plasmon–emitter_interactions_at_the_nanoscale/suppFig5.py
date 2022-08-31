@@ -27,7 +27,7 @@ def eps_m(omega):
     return 1 - omega_p * omega_p / (omega*omega + 1j*omega*gamma)
 
 
-Rs = [2.5, 5, 10, 25]
+Rs = [2.5, 5, 10, 25]  # nm
 y_min = [1e-2, 1e-2, 1e-1, 1e-1]
 y_max = [1e1, 1e1, 5e1, 5e1]
 
@@ -44,7 +44,7 @@ for fig in range(len(Rs)):
         omega = om_rat*omega_p
         m = cmath.sqrt(eps_m(omega))
         x = (omega/c) * R * 1e-9/h_reduced
-        mesomie.calc_ab(R*10,      # R in angstrem
+        mesomie.calc_ab(R*10,      # calc_ab needs R in angstrem
                         x,      # xd
                         x * m,  # xm
                         1,      # eps_d
