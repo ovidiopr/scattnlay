@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-from matplotlib import pyplot as plt
 import cmath
-from scattnlay import mesomie, mie
-from optical_constants import read_refractive_index_from_yaml as read_nk
+
 import numpy as np
 import scipy.io
+from matplotlib import pyplot as plt
+from optical_constants import read_refractive_index_from_yaml as read_nk
+
+from scattnlay import mesomie, mie
 
 from_disk = np.loadtxt('silver-d_perp_interpolated.txt')
 omega_star_ratio = from_disk[0, :]

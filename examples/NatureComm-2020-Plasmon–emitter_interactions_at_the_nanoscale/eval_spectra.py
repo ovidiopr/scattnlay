@@ -12,11 +12,10 @@ def lorentzian(omega, xvec):
     pc = params_count
     res = 0
     poles = len(xvec)//params_count
-    factor = 1
     for i in range(poles):
-        gamma = xvec[pc*i+0] / (factor**i)
-        omega_n = xvec[pc*i+1] / (factor**i)
-        f = (xvec[pc*i+2] + 1j*xvec[pc*i+3]) / (factor**i)
+        gamma = np.abs(xvec[pc*i+0])  # >0
+        omega_n = np.abs(xvec[pc*i+1])  # >0
+        f = (xvec[pc*i+2] + 1j*xvec[pc*i+3])
         if (np.abs(f) == 0):
             return res
         res = res + f / (omega * (omega + 1j*gamma) - omega_n**2)
