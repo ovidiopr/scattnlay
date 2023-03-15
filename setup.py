@@ -49,7 +49,8 @@ ext_dp = Extension("scattnlay_dp",
                    ["src/pb11-wrapper.cc"],
                    language="c++",
                    include_dirs=[np.get_include(), pb.get_include()],
-                   extra_compile_args=['-std=c++11'])
+                   #    extra_compile_args=['-std=c++11']
+                   )
 # extra_compile_args=['-std=c++11', '-O3',
 #                     '-mavx2', '-mfma',
 #                     '-finline-limit=1000000', '-ffp-contract=fast']),
@@ -57,7 +58,8 @@ ext_mp = Extension("scattnlay_mp",
                    ["src/pb11-wrapper.cc"],
                    language="c++",
                    include_dirs=[np.get_include(), pb.get_include()],
-                   extra_compile_args=['-std=c++11', '-DMULTI_PRECISION=100'])
+                   extra_compile_args=[  # '-std=c++11',
+                       '-DMULTI_PRECISION=100'])
 # extra_compile_args=['-std=c++11', '-O3',
 #                     '-mavx2', '-mfma',
 #                     '-finline-limit=1000000', '-ffp-contract=fast',

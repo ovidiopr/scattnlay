@@ -50,7 +50,11 @@ index_Ag = read_nk('Ag-Johnson-1972.yml', WL, kind=1)
 eps_Ag = index_Ag**2
 # print(index_Ag)
 
-factor = 1
+factor = 1  # TODO see app phys b 2017 fig 3, Karpov
+
+# 1. Нужна правильная eps (см выше) + размерный фактор в gamma
+# 2. Варьируем концентрацию
+# 3. На выходе спектр с красным сдвигом. jpcc
 
 
 def eps_m(omega, eps_inf, omega_p_local):
