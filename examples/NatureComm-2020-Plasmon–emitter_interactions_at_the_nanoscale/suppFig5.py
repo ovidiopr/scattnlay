@@ -2,9 +2,8 @@
 # -*- coding: UTF-8 -*-
 from matplotlib import pyplot as plt
 import cmath
-from scattnlay import mesomie, mie
+from evalMie import *
 import numpy as np
-import scipy.io
 min_lim = 0.4
 max_lim = 0.75
 
@@ -27,9 +26,11 @@ def eps_m(omega):
     return 1 - omega_p * omega_p / (omega*omega + 1j*omega*gamma)
 
 
+
+
 Rs = [2.5, 5, 10, 25]  # nm
 y_min = [1e-2, 1e-2, 1e-1, 1e-1]
-y_max = [1e1, 1e1, 5e1, 5e1]
+y_max = [1e1, 5e1, 5e1, 5e1]
 
 # for om_rat in omega_ratio:
 for fig in range(len(Rs)):
@@ -37,6 +38,9 @@ for fig in range(len(Rs)):
     Qext = []
     Qext_mie = []
     om_rat_plot = []
+    x_in = []
+    m_in = []
+    d_perp_in = []
     for i in range(len(omega_ratio)):
         om_rat = omega_ratio[i]
         if om_rat < min_lim or om_rat > max_lim:
@@ -44,26 +48,19 @@ for fig in range(len(Rs)):
         omega = om_rat*omega_p
         m = cmath.sqrt(eps_m(omega))
         x = (omega/c) * R * 1e-9/h_reduced
-        mesomie.calc_ab(R*10,      # calc_ab needs R in angstrem
-                        x,      # xd
-                        x * m,  # xm
-                        1,      # eps_d
-                        m * m,  # eps_m
-                        0,      # d_parallel
-                        d_perp[i])      # d_perp
-        mesomie.calc_Q()
-        mie.SetLayersSize(x)
-        mie.SetLayersIndex(m)
-        mie.RunMieCalculation()
-        Qext.append(mesomie.GetQext())
-        Qext_mie.append(mie.GetQext())
-        # print(x, m, Qext[-1] - mie.GetQext())
-
+        x_in.append(x)
+        m_in.append(m)
         om_rat_plot.append(om_rat)
-    # print(Qext)
+        d_perp_in.append(d_perp[i])
+
+    Qext_mie, _ = eval_mie_spectrum(x_in, m_in)
+    Qext, _ = eval_mesomie_spectrum(x_in, m_in, R, d_perp_in)
+
+    print(Qext)
     plt.figure(fig)
     plt.plot(om_rat_plot, Qext_mie, label='classic', color='gray', lw=4)
     plt.plot(om_rat_plot, Qext, label='non-classic', color='red', lw=4)
+    # plt.plot(om_rat_plot, Qext, label="R="+str(R), lw=1)
     plt.legend()
     plt.yscale('log')
     plt.xlim((0.4, 0.75))
