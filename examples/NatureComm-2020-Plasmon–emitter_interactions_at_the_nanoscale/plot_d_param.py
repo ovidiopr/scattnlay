@@ -21,6 +21,7 @@ d_perp_mat = mat['dperp'][0]*10
 d_parl_mat = mat['dparl'][0]*10
 x = np.linspace(x_mat[0], x_mat[-1], 1001)
 kind = 'linear'
+# kind = 'cubic'
 im_d_y = interpolate.interp1d(x_mat,  np.imag(d_perp_mat), kind=kind)
 re_d_y = interpolate.interp1d(x_mat,  np.real(d_perp_mat))
 data = np.array([x.T, re_d_y(x).T, im_d_y(x).T])
