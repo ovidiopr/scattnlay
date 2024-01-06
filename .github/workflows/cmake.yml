@@ -22,7 +22,8 @@ jobs:
 
       # without GTest and Boost
       - name: Install Python NumPy and Pybind11
-        run: sudo apt install python-numpy python-all-dev python-numpy-dev python3-pybind11 python3-distutils && sudo pip3 install tox
+        # run: sudo apt install python3-numpy python3-all-dev python-numpy-dev python3-pybind11 python3-distutils && sudo pip3 install tox
+        run: sudo apt install python3-numpy python3-all-dev python3-pybind11 python3-distutils && sudo pip3 install tox
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
