@@ -39,8 +39,9 @@ Limited web version is available at https://physics.ifmo.ru/mie/
 Compile Code
 -------------
 To compile the source you will need a C++11 capable compiler. To use
-MultiPrecision feature you need to install Boost.Multiprecision
-library:
+optional MultiPrecision feature you need to install
+Boost.Multiprecision library (package names are given in Ubuntu\Debian
+notation):
 
  - **libboost-all-dev (>= 1.58.0)**
 

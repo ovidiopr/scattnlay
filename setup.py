@@ -30,14 +30,15 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = '2.3'
-__title__ = 'Calculation of the scattering of EM radiation by a multilayered sphere'
-__mod__ = 'python-scattnlay'
-__author__ = 'Ovidio Peña Rodríguez'
-__email__ = 'ovidio@bytesfall.com'
-__url__ = 'https://github.com/ovidiopr/scattnlay'
-__download_url__ = 'https://github.com/ovidiopr/scattnlay/archive/v' + \
-    __version__+'.0.tar.gz'
+__version__ = "2.3"
+__title__ = "Calculation of the scattering of EM radiation by a multilayered sphere"
+__mod__ = "python-scattnlay"
+__author__ = "Ovidio Peña Rodríguez"
+__email__ = "ovidio@bytesfall.com"
+__url__ = "https://github.com/ovidiopr/scattnlay"
+__download_url__ = (
+    "https://github.com/ovidiopr/scattnlay/archive/v" + __version__ + ".0.tar.gz"
+)
 
 from setuptools import setup
 from setuptools.extension import Extension
@@ -45,21 +46,23 @@ import numpy as np
 import pybind11 as pb
 
 
-ext_dp = Extension("scattnlay_dp",
-                   ["src/pb11-wrapper.cc"],
-                   language="c++",
-                   include_dirs=[np.get_include(), pb.get_include()],
-                   #    extra_compile_args=['-std=c++11']
-                   )
+ext_dp = Extension(
+    "scattnlay_dp",
+    ["src/pb11-wrapper.cc"],
+    language="c++",
+    include_dirs=[np.get_include(), pb.get_include()],
+    extra_compile_args=["-std=c++11"],
+)
 # extra_compile_args=['-std=c++11', '-O3',
 #                     '-mavx2', '-mfma',
 #                     '-finline-limit=1000000', '-ffp-contract=fast']),
-ext_mp = Extension("scattnlay_mp",
-                   ["src/pb11-wrapper.cc"],
-                   language="c++",
-                   include_dirs=[np.get_include(), pb.get_include()],
-                   extra_compile_args=[  # '-std=c++11',
-                       '-DMULTI_PRECISION=100'])
+ext_mp = Extension(
+    "scattnlay_mp",
+    ["  src/pb11-wrapper.cc"],
+    language="c++",
+    include_dirs=[np.get_include(), pb.get_include()],
+    extra_compile_args=["-std=c++11", "-DMULTI_PRECISION=100"],
+)
 # extra_compile_args=['-std=c++11', '-O3',
 #                     '-mavx2', '-mfma',
 #                     '-finline-limit=1000000', '-ffp-contract=fast',
@@ -67,33 +70,38 @@ ext_mp = Extension("scattnlay_mp",
 
 
 def run_setup(extensions):
-    setup(name=__mod__,
-          version=__version__,
-          description=__title__,
-          long_description="""The Python version of scattnlay, a computer implementation of the algorithm for the \
+    setup(
+        name=__mod__,
+        version=__version__,
+        description=__title__,
+        long_description="""The Python version of scattnlay, a computer implementation of the algorithm for the \
     calculation of electromagnetic radiation scattering by a multilayered sphere developed by Yang. It has been \
     shown that the program is effective, resulting in very accurate values of scattering efficiencies for a wide \
     range of size parameters, which is a considerable improvement over previous implementations of similar algorithms. \
     For details see: O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
-          author=__author__,
-          author_email=__email__,
-          maintainer=__author__,
-          maintainer_email=__email__,
-          keywords=['Mie scattering', 'Multilayered sphere',
-                    'Efficiency factors', 'Cross-sections'],
-          url=__url__,
-          download_url=__download_url__,
-          license='GPL',
-          platforms='any',
-          packages=['scattnlay'],  # , 'scattnlay_dp', 'scattnlay_mp'],
-          test_suite="tests",
-          ext_modules=extensions,
-          install_requires=['numpy']
-          )
+        author=__author__,
+        author_email=__email__,
+        maintainer=__author__,
+        maintainer_email=__email__,
+        keywords=[
+            "Mie scattering",
+            "Multilayered sphere",
+            "Efficiency factors",
+            "Cross-sections",
+        ],
+        url=__url__,
+        download_url=__download_url__,
+        license="GPL",
+        platforms="any",
+        packages=["scattnlay"],  # , 'scattnlay_dp', 'scattnlay_mp'],
+        test_suite="tests",
+        ext_modules=extensions,
+        install_requires=["numpy"],
+    )
 
 
 try:
     run_setup([ext_dp, ext_mp])
 except:
-    print('Failed to build all extensions... Building only in double precision...')
+    print("Failed to build all extensions... Building only in double precision...")
     run_setup([ext_dp])
