@@ -25,9 +25,13 @@
 //    with this program.  If not, see <http://www.gnu.org/licenses/>.         //
 //**********************************************************************************//
 //   This program evaluates absorption of a triple layered nanoparticle
+#include <cassert>
 #include <complex>
 #include <cstdio>
+#include <iomanip>
+#include <sstream>
 #include <string>
+
 #include "../src/nmie-applied-impl.hpp"
 
 int main(int, char**) {
@@ -50,7 +54,12 @@ int main(int, char**) {
     multi_layer_mie.SetWavelength(WL);
     multi_layer_mie.RunMieCalculation();
     double Qabs = multi_layer_mie.GetQabs();
-    printf("Qabs = %g\n", Qabs);
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(10) << Qabs;
+    auto Qabs_str = stream.str();
+    printf("Qabs = %s\n", Qabs_str.c_str());
+    assert(Qabs_str == "3.1415556912");
+
   } catch (const std::invalid_argument& ia) {
     // Will catch if  multi_layer_mie fails or other errors.
     std::cerr << "Invalid argument: " << ia.what() << std::endl;
