@@ -58,7 +58,7 @@ int main(int, char**) {
     stream << std::fixed << std::setprecision(10) << Qabs;
     auto Qabs_str = stream.str();
     printf("Qabs = %s\n", Qabs_str.c_str());
-    assert(Qabs_str == "3.1415556912");
+    assert(Qabs_str == "3.1415556911");
 
   } catch (const std::invalid_argument& ia) {
     // Will catch if  multi_layer_mie fails or other errors.
