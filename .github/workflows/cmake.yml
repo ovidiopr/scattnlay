@@ -16,7 +16,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Python NumPy and Pybind11
-        # run: sudo apt install python3-numpy python3-all-dev python-numpy-dev python3-pybind11 python3-distutils && sudo pip3 install tox
+        run: pip3 install tox
+
+      - name: Python initial test
+        working-directory: ${{github.workspace}}
+        run: tox run
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Python NumPy and Pybind11
         run: pip3 install tox
 
       - name: Python initial test
@@ -34,7 +44,6 @@ jobs:
 
       # without GTest and Boost
       - name: Install Python NumPy and Pybind11
-        # run: sudo apt install python3-numpy python3-all-dev python-numpy-dev python3-pybind11 python3-distutils && sudo pip3 install tox
         run: sudo apt install python3-numpy python3-all-dev python3-pybind11 python3-distutils && sudo pip3 install tox
 
       - name: Python initial test
