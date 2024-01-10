@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Python NumPy and Pybind11
+      - name: Install tox
         run: pip3 install tox
 
       - name: Python initial test
@@ -35,14 +35,35 @@ jobs:
         working-directory: ${{github.workspace}}
         run: tox run
 
-  build_wo_GTest_Boost:
+  ctest_wo_GTest_Boost:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
       # without GTest and Boost
       - name: Install Python NumPy and Pybind11
-        run: sudo apt install python3-numpy python3-all-dev python3-pybind11 python3-distutils
+        # run: sudo apt install python3-numpy python3-all-dev python3-pybind11 python3-distutils
+        run: sudo apt install python3-all-dev python3-pybind11
+
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
+
+  ctest_wo_Boost:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # without GTest and Boost
+      - name: Install deps
+        # run: sudo apt install python3-numpy python3-all-dev python3-pybind11 python3-distutils
+        run: sudo apt install python3-all-dev python3-pybind11 libgtest-dev
 
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
