@@ -11,6 +11,18 @@ env:
   BUILD_TYPE: Release
 
 jobs:
+  macos:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Python NumPy and Pybind11
+        # run: sudo apt install python3-numpy python3-all-dev python-numpy-dev python3-pybind11 python3-distutils && sudo pip3 install tox
+        run: pip3 install tox
+
+      - name: Python initial test
+        working-directory: ${{github.workspace}}
+        run: tox run
+
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
@@ -23,7 +35,7 @@ jobs:
       # without GTest and Boost
       - name: Install Python NumPy and Pybind11
         # run: sudo apt install python3-numpy python3-all-dev python-numpy-dev python3-pybind11 python3-distutils && sudo pip3 install tox
-        run: sudo apt install python3-numpy python3-all-dev python3-pybind11 python3-distutils && sudo pip3 install tox 
+        run: sudo apt install python3-numpy python3-all-dev python3-pybind11 python3-distutils && sudo pip3 install tox
 
       - name: Python initial test
         working-directory: ${{github.workspace}}
