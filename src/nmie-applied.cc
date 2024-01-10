@@ -34,7 +34,6 @@
 #include <stdexcept>
 #include <vector>
 
-#include "nmie-applied.hpp"
 #include "nmie-applied-impl.hpp"
 
 namespace nmie {

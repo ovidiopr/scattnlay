@@ -10,21 +10,21 @@ PROGRAM='scattnlay-example.bin'
 # echo Compilation done. Running...
 # time ./$PROGRAM
 
-file=test-surf-integral.cc
-echo Compile $file with gcc
-rm -f $PROGRAM
-g++ -Ofast -std=c++11 $file  ../src/shell-generator.cc -lm -lrt -o $PROGRAM -march=native -mtune=native -msse4.2
-# g++ -Ofast -std=c++11 $file ../src/nmie.cc ../src/nmie-applied.cc ../src/shell-generator.cc -lm -lrt -o $PROGRAM -march=native -mtune=native -msse4.2
-echo Compilation done. Running...
-./$PROGRAM
-
-
-# file=example-minimal.cc
+# file=test-surf-integral.cc
 # echo Compile $file with gcc
 # rm -f $PROGRAM
-# g++ -Ofast -std=c++11 $file ../src/nmie.cc ../src/nmie-applied.cc -lm -lrt -o $PROGRAM -march=native -mtune=native -msse4.2
+# g++ -Ofast -std=c++11 $file  ../src/shell-generator.cc -lm -lrt -o $PROGRAM -march=native -mtune=native -msse4.2
+# # g++ -Ofast -std=c++11 $file ../src/nmie.cc ../src/nmie-applied.cc ../src/shell-generator.cc -lm -lrt -o $PROGRAM -march=native -mtune=native -msse4.2
 # echo Compilation done. Running...
 # ./$PROGRAM
+
+
+file=example-minimal.cc
+echo Compile $file with gcc
+rm -f $PROGRAM
+g++ -Ofast -std=c++11 $file ../src/nmie.cc ../src/nmie-applied.cc -lm  -o $PROGRAM -march=native -mtune=native -msse4.2
+echo Compilation done. Running...
+./$PROGRAM
 
 
 # file=example-get-Mie.cc
