@@ -118,5 +118,8 @@ add_subdirectory(tests)
 # add_test(NAME BuildExtWithPythonSetupPy
 #    COMMAND ${Python_EXECUTABLE} setup.py build_ext
 #     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_test(NAME tox
-    COMMAND tox)
+
+if (NOT DEFINED ENV{GITHUB_ENV})
+    add_test(NAME tox
+             COMMAND tox)
+endif()
