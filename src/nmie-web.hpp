@@ -37,8 +37,6 @@
 #include <iostream>
 #include <vector>
 
-#include "nmie-applied.hpp"
-
 #include "nmie-applied-impl.hpp"
 
 #include <emscripten/bind.h>

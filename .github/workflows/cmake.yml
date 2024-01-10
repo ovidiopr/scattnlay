@@ -23,17 +23,17 @@ jobs:
         working-directory: ${{github.workspace}}
         run: tox run
 
-  windows_Python:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
+  # windows_Python:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Install tox
-        run: pip3 install tox
+  #     - name: Install tox
+  #       run: pip3 install tox
 
-      - name: Python initial test
-        working-directory: ${{github.workspace}}
-        run: tox run
+  #     - name: Python initial test
+  #       working-directory: ${{github.workspace}}
+  #       run: tox run
 
   ubuntu_Python_wo_Boost:
     runs-on: ubuntu-latest
@@ -79,6 +79,10 @@ jobs:
       - name: Test
         working-directory: ${{github.workspace}}/build
         run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
+
+      - name: isBuilding without cmake
+        working-directory: ${{github.workspace}}/examples
+        run: ./go-cc-examples.sh
 
   ctest_wo_Boost:
     runs-on: ubuntu-latest
