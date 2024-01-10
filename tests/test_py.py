@@ -56,14 +56,15 @@ class TestStringMethods(unittest.TestCase):
                 continue
             print("Using solver: ", solver)
             for case in test_cases:
-                print("test case:", case)
                 solver.SetLayersSize(case[0])
                 solver.SetLayersIndex(case[1])
                 solver.RunMieCalculation()
                 Qext = solver.GetQext()
                 Qsca = solver.GetQsca()
-                print("ext tol:", (case[2] - Qext) / Qext)
-                print("sca tol:", (case[3] - Qsca) / Qsca)
+                if case == test_cases[0]:
+                    print("test case:", case)
+                    print("ext tol:", (case[2] - Qext) / Qext)
+                    print("sca tol:", (case[3] - Qsca) / Qsca)
                 self.assertTrue((case[2] - Qext) / Qext < tol)
                 self.assertTrue((case[3] - Qsca) / Qsca < tol)
 
