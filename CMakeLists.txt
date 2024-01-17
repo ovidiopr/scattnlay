@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(scattnlay VERSION 2.3)
+project(scattnlay VERSION 2.4)
 
 cmake_host_system_information(RESULT HOSTNAME QUERY HOSTNAME)
 
