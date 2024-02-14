@@ -49,6 +49,57 @@ class MultiLayerMieWeb : public MultiLayerMieApplied<FloatType> {
   // Will throw for any error!
  public:
   emscripten::val GetFieldEabs();
+  void ClearTarget() { this->MultiLayerMieApplied<FloatType>::ClearTarget(); };
+  void SetWavelength(FloatType wavelength) {
+    this->MultiLayerMieApplied<FloatType>::SetWavelength(wavelength);
+  };
+  void SetModeNmaxAndType(int mode_n, int mode_type) {
+    this->MultiLayerMieApplied<FloatType>::SetModeNmaxAndType(mode_n,
+                                                              mode_type);
+  };
+  void AddTargetLayerReIm(FloatType width,
+                          FloatType re_layer_index,
+                          FloatType im_layer_index) {
+    this->MultiLayerMieApplied<FloatType>::AddTargetLayerReIm(
+        width, re_layer_index, im_layer_index);
+  };
+  void RunMieCalculation() {
+    this->MultiLayerMieApplied<FloatType>::RunMieCalculation();
+  };
+  void RunFieldCalculationPolar(const int outer_arc_points,
+                                const int radius_points,
+                                const double from_Rho,
+                                const double to_Rho,
+                                const double from_Theta,
+                                const double to_Theta,
+                                const double from_Phi,
+                                const double to_Phi,
+                                const int isIgnoreAvailableNmax) {
+    this->MultiLayerMieApplied<FloatType>::RunFieldCalculationPolar(
+        outer_arc_points, radius_points, from_Rho, to_Rho, from_Theta, to_Theta,
+        from_Phi, to_Phi, isIgnoreAvailableNmax);
+  };
+  void RunFieldCalculationCartesian(const int first_side_points,
+                                    const int second_side_points,
+                                    const double relative_side_length,
+                                    const int plane_selected,
+                                    const double at_x,
+                                    const double at_y,
+                                    const double at_z,
+                                    const int isIgnoreAvailableNmax) {
+    this->MultiLayerMieApplied<FloatType>::RunFieldCalculationCartesian(
+        first_side_points, second_side_points, relative_side_length,
+        plane_selected, at_x, at_y, at_z, isIgnoreAvailableNmax);
+  };
+  FloatType GetQsca() {
+    return this->MultiLayerMieApplied<FloatType>::GetQsca();
+  };
+  FloatType GetQabs() {
+    return this->MultiLayerMieApplied<FloatType>::GetQabs();
+  };
+  FloatType GetQext() {
+    return this->MultiLayerMieApplied<FloatType>::GetQext();
+  };
 
 };  // end of class MultiLayerMieWeb
 
