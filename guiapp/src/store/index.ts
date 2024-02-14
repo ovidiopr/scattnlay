@@ -1,11 +1,11 @@
-import { store } from 'quasar/wrappers'
-import { InjectionKey } from 'vue'
+import { store } from 'quasar/wrappers';
+import { InjectionKey } from 'vue';
 import { Router } from 'vue-router'
 import {
   createStore,
   Store as VuexStore,
   useStore as vuexUseStore,
-} from 'vuex'
+} from 'vuex';
 
 import guiRuntime from './gui-runtime';
 import { guiRuntimeStateInterface } from './gui-runtime/state';
@@ -37,12 +37,13 @@ export interface StateInterface {
 // provide typings for `this.$store`
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
-    $store: VuexStore<StateInterface>
+    $store: VuexStore<StateInterface>;
   }
 }
 
 // provide typings for `useStore` helper
-export const storeKey: InjectionKey<VuexStore<StateInterface>> = Symbol('vuex-key')
+export const storeKey: InjectionKey<VuexStore<StateInterface>> =
+ Symbol('vuex-key');
 
 // Provide typings for `this.$router` inside Vuex stores
 declare module 'vuex' {
@@ -58,17 +59,16 @@ export default store(function (/* { ssrContext } */) {
       guiRuntime,
       plotRuntime,
       simulationSetup,
-      // example
     },
 
     // enable strict mode (adds overhead!)
     // for dev mode and --debug builds only
-    strict: !!process.env.DEBUGGING
-  })
+    strict: !!process.env.DEBUGGING,
+  });
 
   return Store;
-})
+});
 
 export function useStore() {
-  return vuexUseStore(storeKey)
+  return vuexUseStore(storeKey);
 }
