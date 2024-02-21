@@ -1,3 +1,7 @@
+PageSpeed at github.io
+  - webpack 37/57
+  - vite 36/60 2024-02-21 
+
 # Scattnlay (guiapp)
 
 Mie scattering simulations
