@@ -89,7 +89,7 @@ export function fromUnits(fromU: string, val: number): number {
   if (fromU === 'km') return val * 1e12;
 
   const c = 299792458; // m/s
-  const hc = 1239841930.092394328e-15; // m*eV
+  const hc = 1239841930.092394e-15; // m*eV
   if (fromU === 'THz') return (c / (val * 1e12)) * 1e9;
   if (fromU === 'GHz') return (c / (val * 1e9)) * 1e9;
   if (fromU === 'MHz') return (c / (val * 1e6)) * 1e9;
@@ -115,7 +115,7 @@ export function toUnits(val: number, toU: string): number {
   if (toU === 'km') return val / 1e12;
 
   const c = 299792458; // m/s
-  const hc = 1239841930.092394328e-15; // m*eV
+  const hc = 1239841930.092394e-15; // m*eV
   if (toU === 'THz') return c / (val / 1e9) / 1e12;
   if (toU === 'GHz') return c / (val / 1e9) / 1e9;
   if (toU === 'MHz') return c / (val / 1e9) / 1e6;

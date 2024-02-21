@@ -36,15 +36,16 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 import inspect
+
 print("Using scattnlay from ", inspect.getfile(scattnlay))
 
 npts = 11
 # npts = 11
-factor = 2 # plot extent compared to sphere radius
-index_H2O = 1.33+(1e-6)*1j
+factor = 2  # plot extent compared to sphere radius
+index_H2O = 1.33 + (1e-6) * 1j
 
-WL = 0.532 #mkm
-total_r = 125 #mkm
+WL = 0.532  # mkm
+total_r = 125  # mkm
 # isMP = False
 isMP = True
 
@@ -56,7 +57,7 @@ nm = 1.0  # host medium
 x = 2.0 * np.pi * np.array([total_r], dtype=np.float64) / WL
 m = np.array((index_H2O), dtype=np.complex128) / nm
 
-nmax = int(np.max(x*factor + 11 * (x*factor)**(1.0 / 3.0) + 1))
+nmax = int(np.max(x * factor + 11 * (x * factor) ** (1.0 / 3.0) + 1))
 # return std::round(x + 11 * std::pow(x, (1.0 / 3.0)) + 1);
 
 # nmax = -1
@@ -64,14 +65,16 @@ nmax = int(np.max(x*factor + 11 * (x*factor)**(1.0 / 3.0) + 1))
 print("x =", x)
 print("m =", m)
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
-    np.array([x]), np.array([m]))
-print("   Qsca = " + str(Qsca)+" terms = "+str(terms))
+    np.array([x]), np.array([m])
+)
+print("   Qsca = " + str(Qsca) + " terms = " + str(terms))
 terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
-    np.array([x]), np.array([m]), mp=True)
-print("mp Qsca = " + str(Qsca)+" terms = "+str(terms))
+    np.array([x]), np.array([m]), mp=True
+)
+print("mp Qsca = " + str(Qsca) + " terms = " + str(terms))
 
-scan = np.linspace(-factor*x[-1], factor*x[-1], npts)
-zero = np.zeros(npts*npts, dtype = np.float64)
+scan = np.linspace(-factor * x[-1], factor * x[-1], npts)
+zero = np.zeros(npts * npts, dtype=np.float64)
 
 coordX, coordZ = np.meshgrid(scan, scan)
 coordX.resize(npts * npts)
@@ -79,27 +82,30 @@ coordZ.resize(npts * npts)
 coordY = zero
 
 terms, E, H = fieldnlay(
-    np.array([x]), np.array([m]),
-    coordX, coordY, coordZ,
-    mp=isMP,
-    nmax=nmax
+    np.array([x]), np.array([m]), coordX, coordY, coordZ, mp=isMP, nmax=nmax
 )
 Ec = E[0, :, :]
 Er = np.absolute(Ec)
-Eabs2 = (Er[:, 0]**2 + Er[:, 1]**2 + Er[:, 2]**2)
+Eabs2 = Er[:, 0] ** 2 + Er[:, 1] ** 2 + Er[:, 2] ** 2
 Eabs_data = np.resize(Eabs2, (npts, npts))
-label = r'$|E|^2$'
-pos = plt.imshow(Eabs_data.T,
-           cmap='gnuplot',
-                 # cmap='jet',
-           vmin=0., vmax=14
-
-           )
+label = r"$|E|^2$"
+pos = plt.imshow(
+    Eabs_data.T,
+    cmap="gnuplot",
+    # cmap='jet',
+    vmin=0.0,
+    vmax=14,
+)
 plt.colorbar(pos)
-print(np.min(Eabs_data), np.max(Eabs_data)," terms = "+str(terms), ' size=', Eabs_data.size)
-mp = ''
-if isMP: mp = '_mp'
-plt.savefig("R"+str(total_r)+"mkm"+mp+".jpg",
-            dpi=300
-            )
+print(
+    np.min(Eabs_data),
+    np.max(Eabs_data),
+    " terms = " + str(terms),
+    " size=",
+    Eabs_data.size,
+)
+mp = ""
+if isMP:
+    mp = "_mp"
+plt.savefig("R" + str(total_r) + "mkm" + mp + ".jpg", dpi=300)
 # plt.show()

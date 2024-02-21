@@ -37,6 +37,7 @@ scattnlay-mp
 
 # Python
 *.egg-info/*
+.tox
 
 # CLion files
 .idea

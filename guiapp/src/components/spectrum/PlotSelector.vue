@@ -31,7 +31,6 @@
             <template
               v-for="(val, index) in props.row"
               :key="index"
-              :props="props"
             >
               <q-td v-if="index != 'name'">
                 <q-checkbox v-model="props.row[index]" dense />
@@ -63,7 +62,6 @@
             <template
               v-for="(val, index) in props.row"
               :key="index"
-              :props="props"
             >
               <q-td v-if="index != 'name'">
                 <q-checkbox

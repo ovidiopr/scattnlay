@@ -8,12 +8,9 @@ import Spline from 'cubic-spline-ts';
 async function loadMaterialData(
   filename: string
 ): Promise<number[][] | undefined> {
-  /* eslint-disable */
   // TODO enable eslint, which is disabled now due to unknown result type of load() from js-yaml
   // TODO implement formulas
   // TODO implement multiple '- type:' in one file (e.g. it can be 'tabulated n' and 'tabulated k'
-
-  let Ag_data;
 
   try {
     const response = await fetch(
@@ -30,15 +27,15 @@ async function loadMaterialData(
     ) {
       const csv = doc.DATA[0].data;
       const rows: string[] = csv.split('\n');
-      let data = rows.map((row) => row.split(' '));
+      const data = rows.map((row) => row.split(' '));
       data.pop();
-      let data_num = data.map((elem) => elem.map((elem2) => parseFloat(elem2)));
+      const data_num = data.map((elem) => elem.map((elem2) => parseFloat(elem2)));
 
       function transpose(array: number[][]) {
         return array[0].map((col, i) => array.map((row) => row[i]));
       }
 
-      let data_columns = transpose(data_num);
+      const data_columns = transpose(data_num);
       // Convert from default refractiveindex.info mkm to nm
 
       for (let i = 0; i < data_columns[0].length; i++)
@@ -64,9 +61,9 @@ const actions: ActionTree<guiRuntimeStateInterface, StateInterface> = {
     const maxVal = 350; // TODO move it to config.ts
     if (xs.length > maxVal) {
       const delta = Math.floor(xs.length / maxVal);
-      let tmp_xs: number[] = [];
-      let tmp_ys1: number[] = [];
-      let tmp_ys2: number[] = [];
+      const tmp_xs: number[] = [];
+      const tmp_ys1: number[] = [];
+      const tmp_ys2: number[] = [];
       for (let i = 0; i < xs.length; i = i + delta) {
         tmp_xs.push(xs[i]);
         tmp_ys1.push(ys1[i]);

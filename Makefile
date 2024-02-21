@@ -58,7 +58,27 @@ wasm: $(SRCDIR)/nmie-js-wrapper.cc $(CXX_NMIE_HEADERS)
 #	emcc --bind -lm -Wall -O2 -std=c++11 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['addOnPostRun']" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 # 	emcc --bind -lm -Wall -O2 -std=c++11 -s MODULARIZE=1 -s WASM=1 -o nmie.js $(SRCDIR)/nmie-js-wrapper.cc
 
-	emcc --bind -lm -Wall -pedantic -O2 -std=c++11 -s NO_DISABLE_EXCEPTION_CATCHING -s MODULARIZE=1 -s ASSERTIONS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
+# working as 2024-01-31 16:47:23
+	# emcc --bind -lm -Wall -pedantic -O2 -std=c++11 -s NO_DISABLE_EXCEPTION_CATCHING -s MODULARIZE=1 -s ASSERTIONS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
+	# @cp -f nmiejs.js guiapp/src/
+	# @cp -f nmiejs.wasm guiapp/public/
+	
+# working with vite export	
+	# @rm nmiejs.wasm
+	emcc --bind -lm -Wall -pedantic -O2 -std=c++11 \
+		-s EXPORT_ES6=1 \
+		-s NO_DISABLE_EXCEPTION_CATCHING \
+		-s MODULARIZE=1 \
+		-s ASSERTIONS=1 \
+		-s WASM=1 \
+		-s ALLOW_MEMORY_GROWTH=1 \
+		-s EXPORT_NAME="createNmiejsModule" \
+		-s ENVIRONMENT="web" \
+		-o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
+	@cp -f nmiejs.js guiapp/src/
+	@cp -f nmiejs.wasm guiapp/public/
+	@cp -f nmiejs.wasm guiapp/src/
+
 #	emcc --bind -lm -Wall -pedantic -Oz -std=c++11 -s NO_DISABLE_EXCEPTION_CATCHING -s MODULARIZE=1 -s ASSERTIONS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 #	emcc --bind -lm -Wall -pedantic -Oz -std=c++11 -s NO_DISABLE_EXCEPTION_CATCHING -s MODULARIZE=1 -s EXPORT_ES6=1 -s ASSERTIONS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
 #	emcc --bind -lm -Wall -pedantic -O2 -std=c++11 -s NO_DISABLE_EXCEPTION_CATCHING -s MODULARIZE=1 -s EXPORT_ES6=1 -s ASSERTIONS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME="nmiejs" -s ENVIRONMENT="web" -o nmiejs.js $(SRCDIR)/nmie-js-wrapper.cc
@@ -85,10 +105,6 @@ wasm: $(SRCDIR)/nmie-js-wrapper.cc $(CXX_NMIE_HEADERS)
 #     -o lib/onigasm.js
 
 
-	@cp -f nmiejs.js vue-cli3-webapp/src/
-	@cp -f nmiejs.js guiapp/src/
-	@cp -f nmiejs.wasm vue-cli3-webapp/public/
-	@cp -f nmiejs.wasm guiapp/public/
 
 clean:
 	$(PYTHON) setup.py clean
