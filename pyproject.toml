@@ -1,3 +1,24 @@
 [build-system]
 requires = ["setuptools", "pybind11", "numpy"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "scattnlay"
+version = "2.4"
+requires-python = ">=3.8"
+authors = [
+    {name = "Ovidio Peña", email = "ovidio@bytesfall.com"},
+    {name = "Konstantin Ladutenko", email = "k.ladutenko@metalab.ifmo.ru"},
+]
+maintainers = [
+    {name = "Ovidio Peña", email = "ovidio@bytesfall.com"}
+]
+description = "Calculation of the scattering of EM radiation by a multilayered sphere"
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["Light scattering"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: C++",
+    "Programming Language :: Python"
+]
