@@ -94,7 +94,7 @@ sudo apt install python-scattnlay
 ```
 You can also install it from PyPi via
 ```bash
-sudo pip install python-scattnlay
+sudo pip install scattnlay
 ```
 
 You can also ```git clone``` and ```pip install -e .``` to develop python package.
