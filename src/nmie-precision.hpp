@@ -50,6 +50,7 @@
 
 #ifdef WITH_HWY
 #include "hwy/highway.h"
+#include "hwy/contrib/math/math-inl.h"
 #endif
 
 #ifdef MULTI_PRECISION
@@ -72,14 +73,17 @@ struct HighwayEngine {
   // Represents a batch of complex numbers (Real vectors, Imag vectors)
   struct ComplexV { V re; V im; };
 
-  static inline V sin(V v) { 
-    // Note: Highway provides math functions in hwy/contrib/math/math-inl.h
-    // For smoke test, we use basic arithmetic
-    return v; // Placeholder for actual vectorized sin
-  }
-  static inline V cos(V v) { (void)v; return hn::Undefined(D()); }
-  static inline V exp(V v) { (void)v; return hn::Undefined(D()); }
-  static inline V tan(V v) { (void)v; return hn::Undefined(D()); }
+  static inline V sin(V v) { return hn::Sin(D(), v); }
+  static inline V cos(V v) { return hn::Cos(D(), v); }
+  static inline V exp(V v) { return hn::Exp(D(), v); }
+  static inline V tan(V v) { return hn::Div(hn::Sin(D(), v), hn::Cos(D(), v)); }
+  static inline V sqrt(V v) { return hn::Sqrt(v); }
+  static inline V abs(V v) { return hn::Abs(v); }
+  static inline V ceil(V v) { return hn::Ceil(v); }
+  static inline V max(V a, V b) { return hn::Max(a, b); }
+  static inline V pow(V b, V e) { return hn::Exp(D(), hn::Mul(e, hn::Log(D(), b))); }
+  static inline V log(V v) { return hn::Log(D(), v); }
+
   
   static inline V add(V a, V b) {
     return hn::Add(a, b);

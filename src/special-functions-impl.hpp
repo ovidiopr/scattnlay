@@ -397,26 +397,63 @@ void evalForwardD1(const std::complex<FloatType> z,
 //   z: Complex argument to evaluate D1 and D3
 //   nmax_: Maximum number of terms to calculate D1 and D3
 //
+// Helper to calculate nstar for scalar or SIMD
+template <typename FloatType, typename Engine, typename ComplexType>
+struct NStarCalculator {
+  static int get(int nmax, ComplexType z, int valid_digits) {
+    return nmie::getNStar(nmax, z, valid_digits);
+  }
+};
+
+#ifdef WITH_HWY
+template <typename FloatType>
+struct NStarCalculator<FloatType, HighwayEngine<FloatType>, typename HighwayEngine<FloatType>::ComplexV> {
+  static int get(int nmax, typename HighwayEngine<FloatType>::ComplexV z, int valid_digits) {
+    using Engine = HighwayEngine<FloatType>;
+    using D = typename Engine::D;
+    size_t lanes = hn::Lanes(D());
+    std::vector<FloatType> re(lanes), im(lanes);
+    hn::Store(z.re, D(), re.data());
+    hn::Store(z.im, D(), im.data());
+    
+    int nstar = 0;
+    for(size_t i=0; i<lanes; ++i) {
+      std::complex<FloatType> z_scalar(re[i], im[i]);
+      int n = nmie::getNStar(nmax, z_scalar, valid_digits);
+      if (n > nstar) nstar = n;
+    }
+    return nstar;
+  }
+};
+#endif
+
 // Output parameters:
 //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine>
-void evalDownwardD1(const std::complex<FloatType> z,
-                    std::vector<std::complex<FloatType>>& D1) {
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+void evalDownwardD1(const ComplexType z,
+                    ContainerType& D1) {
   int nmax = D1.size() - 1;
   int valid_digits = 16;
 #ifdef MULTI_PRECISION
   valid_digits += MULTI_PRECISION;
 #endif
-  int nstar = nmie::getNStar(nmax, z, valid_digits);
+  int nstar = NStarCalculator<FloatType, Engine, ComplexType>::get(nmax, z, valid_digits);
   D1.resize(nstar + 1);
   // Downward recurrence for D1 - equations (16a) and (16b)
-  D1[nstar] = std::complex<FloatType>(0.0, 0.0);
-  std::complex<FloatType> c_one(1.0, 0.0);
-  const std::complex<FloatType> z_inv = std::complex<FloatType>(1.0, 0.0) / z;
+  D1[nstar] = Engine::make_complex(Engine::set(0.0), Engine::set(0.0));
+  auto c_one = Engine::make_complex(Engine::set(1.0), Engine::set(0.0));
+  auto z_inv = Engine::div(c_one, z);
+  
   for (unsigned int n = nstar; n > 0; n--) {
-    D1[n - 1] = static_cast<FloatType>(n) * z_inv -
-                c_one / (D1[n] + static_cast<FloatType>(n) * z_inv);
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto n_complex = Engine::make_complex(n_val, Engine::set(0.0));
+    auto term1 = Engine::mul(n_complex, z_inv);
+    
+    auto denom = Engine::add(D1[n], term1);
+    auto term2 = Engine::div(c_one, denom);
+    
+    D1[n - 1] = Engine::sub(term1, term2);
   }
   // Use D1[0] from upward recurrence
   D1[0] = complex_cot<FloatType, Engine>(z);
