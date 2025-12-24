@@ -53,3 +53,9 @@ if(GTest_FOUND)
             COMMAND "test_near_field_multi_precision")
     endif()
 endif()
+
+# Benchmark
+add_executable(bench_special_functions benchmarks/bench_special_functions.cc)
+if(WITH_HWY)
+    target_compile_definitions(bench_special_functions PRIVATE WITH_HWY)
+endif()

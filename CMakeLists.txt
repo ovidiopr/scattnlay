@@ -39,10 +39,8 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost)
 # Set options
 option(ENABLE_MP "Use multiple precision" OFF)
+option(WITH_HWY "Enable Google Highway SIMD" OFF)
 if (Boost_FOUND)
-    if (${ENABLE_MP})
-        add_compile_options(-DMULTI_PRECISION=100)
-    endif ()
     if (Boost_INCLUDE_DIRS)
         if (${Boost_VERSION} VERSION_LESS 1.60.0)
             message(FATAL_ERROR

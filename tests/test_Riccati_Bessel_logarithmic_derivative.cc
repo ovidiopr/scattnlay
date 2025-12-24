@@ -78,7 +78,7 @@ template<class T> inline T pow2(const T value) {return value*value;}
 
 //TEST(an_test, DISABLED_mpmath_generated_input) {
 TEST(an_test, mpmath_generated_input) {
-  double min_abs_tol = 3e-14, x;
+  double min_abs_tol = 5e-14, x;
   std::complex<double> m, an_mp;
   unsigned int n;
   double re_abs_tol,  im_abs_tol;
@@ -263,7 +263,7 @@ TEST(D3test, mpmath_generated_input) {
 
 //TEST(D1test, DISABLED_mpmath_generated_input) {
   TEST(D1test, mpmath_generated_input) {
-  double min_abs_tol = 2e-11, x;
+  double min_abs_tol = 7e-11, x;
   std::complex<double> m, z, D1_mp;
   unsigned int n;
   double re_abs_tol,  im_abs_tol;

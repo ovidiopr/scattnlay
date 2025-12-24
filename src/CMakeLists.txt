@@ -33,33 +33,55 @@ set(_scattnlay_farfield_sources
         ${CMAKE_CURRENT_LIST_DIR}/nmie.hpp
         ${CMAKE_CURRENT_LIST_DIR}/nmie.cc)
 
-# Define exe for far field calculation
-add_executable(farfield ${_scattnlay_farfield_sources})
-if (${ENABLE_MP} AND ${Boost_FOUND})
-    target_link_libraries(farfield PRIVATE Boost::headers)
-endif()
-set_target_properties(farfield PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-
 # Sources for near field calculation
 set(_scattnlay_nearfield_sources
         ${CMAKE_CURRENT_LIST_DIR}/nearfield.cc
         ${CMAKE_CURRENT_LIST_DIR}/nmie.hpp
         ${CMAKE_CURRENT_LIST_DIR}/nmie.cc)
 
-# Define exe for near field calculation
-add_executable(nearfield ${_scattnlay_nearfield_sources})
-if (${ENABLE_MP} AND ${Boost_FOUND})
-    target_link_libraries(nearfield PRIVATE Boost::headers)
-endif()
-set_target_properties(nearfield PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+# Double Precision Targets
+add_executable(scattnlay-dp ${_scattnlay_farfield_sources})
+set_target_properties(scattnlay-dp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-# Rename files to match precision
-if (${ENABLE_MP} AND ${Boost_FOUND})
-#    set_property(TARGET python3-scattnlay APPEND_STRING PROPERTY OUTPUT_NAME "_mp")
-    set_property(TARGET farfield APPEND_STRING PROPERTY OUTPUT_NAME "farfield-mp")
-    set_property(TARGET nearfield APPEND_STRING PROPERTY OUTPUT_NAME "nearfield-mp")
-else ()
-#    set_property(TARGET python3-scattnlay APPEND_STRING PROPERTY OUTPUT_NAME "_dp")
-    set_property(TARGET farfield APPEND_STRING PROPERTY OUTPUT_NAME "farfield-dp")
-    set_property(TARGET nearfield APPEND_STRING PROPERTY OUTPUT_NAME "nearfield-dp")
-endif ()
+add_executable(fieldnlay-dp ${_scattnlay_nearfield_sources})
+set_target_properties(fieldnlay-dp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+# Multi Precision Targets
+if (Boost_FOUND)
+    add_executable(scattnlay-mp ${_scattnlay_farfield_sources})
+    target_compile_definitions(scattnlay-mp PRIVATE MULTI_PRECISION=100)
+    target_link_libraries(scattnlay-mp PRIVATE Boost::headers)
+    set_target_properties(scattnlay-mp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+    add_executable(fieldnlay-mp ${_scattnlay_nearfield_sources})
+    target_compile_definitions(fieldnlay-mp PRIVATE MULTI_PRECISION=100)
+    target_link_libraries(fieldnlay-mp PRIVATE Boost::headers)
+    set_target_properties(fieldnlay-mp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+endif()
+
+# WebAssembly Target
+if(EMSCRIPTEN)
+    add_executable(nmiejs nmie-js-wrapper.cc)
+    target_compile_options(nmiejs PRIVATE -O3 -msimd128)
+    target_link_options(nmiejs PRIVATE 
+        --bind 
+        -lm 
+        -sMODULARIZE=1 
+        -sWASM=1 
+        -sALLOW_MEMORY_GROWTH=1 
+        -sEXPORT_NAME=createNmiejsModule 
+        -sENVIRONMENT=web,node
+        -O3
+        -msimd128
+    )
+    set_target_properties(nmiejs PROPERTIES SUFFIX ".js")
+endif()
+
+# Install targets
+install(TARGETS scattnlay-dp fieldnlay-dp DESTINATION bin)
+if(Boost_FOUND)
+    install(TARGETS scattnlay-mp fieldnlay-mp DESTINATION bin)
+endif()
+if(EMSCRIPTEN)
+    install(TARGETS nmiejs DESTINATION bin)
+endif()

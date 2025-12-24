@@ -115,14 +115,14 @@ int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
 // see Eqs. 10-12 of [1] for details.
 // [1]H. Du, Mie-Scattering Calculation, Appl. Opt. 43, 1951 (2004).
 //******************************************************************************
-template <typename FloatType>
+template <typename FloatType, typename Engine = ScalarEngine>
 std::complex<FloatType> complex_cot(const std::complex<FloatType> z) {
   auto Remx = z.real();
   auto Immx = z.imag();
   int sign =
       (Immx > 0) ? 1 : -1;  // use complex conj if needed for exp and return
-  auto exp = nmm::exp(-2 * sign * Immx);
-  auto tan = nmm::tan(Remx);
+  auto exp = Engine::exp(-2 * sign * Immx);
+  auto tan = Engine::tan(Remx);
   auto a = tan - exp * tan;
   auto b = 1 + exp;
   auto c = -1 + exp;
@@ -375,7 +375,7 @@ void evalForwardD1(const std::complex<FloatType> z,
 // Output parameters:
 //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions
 //******************************************************************************
-template <typename FloatType>
+template <typename FloatType, typename Engine = ScalarEngine>
 void evalDownwardD1(const std::complex<FloatType> z,
                     std::vector<std::complex<FloatType>>& D1) {
   int nmax = D1.size() - 1;
@@ -394,7 +394,7 @@ void evalDownwardD1(const std::complex<FloatType> z,
                 c_one / (D1[n] + static_cast<FloatType>(n) * z_inv);
   }
   // Use D1[0] from upward recurrence
-  D1[0] = complex_cot(z);
+  D1[0] = complex_cot<FloatType, Engine>(z);
   D1.resize(nmax + 1);
   //  printf("D1[0] = (%16.15g, %16.15g) z=(%16.15g,%16.15g)\n",
   //  D1[0].real(),D1[0].imag(),
@@ -402,7 +402,7 @@ void evalDownwardD1(const std::complex<FloatType> z,
 }
 
 //******************************************************************************
-template <typename FloatType>
+template <typename FloatType, typename Engine = ScalarEngine>
 void evalUpwardD3(const std::complex<FloatType> z,
                   const std::vector<std::complex<FloatType>>& D1,
                   std::vector<std::complex<FloatType>>& D3,
@@ -411,9 +411,9 @@ void evalUpwardD3(const std::complex<FloatType> z,
   // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
   PsiZeta[0] = static_cast<FloatType>(0.5) *
                (static_cast<FloatType>(1.0) -
-                std::complex<FloatType>(nmm::cos(2.0 * z.real()),
-                                        nmm::sin(2.0 * z.real())) *
-                    static_cast<FloatType>(nmm::exp(-2.0 * z.imag())));
+                std::complex<FloatType>(Engine::cos(2.0 * z.real()),
+                                        Engine::sin(2.0 * z.real())) *
+                    static_cast<FloatType>(Engine::exp(-2.0 * z.imag())));
   D3[0] = std::complex<FloatType>(0.0, 1.0);
   const std::complex<FloatType> z_inv = std::complex<FloatType>(1.0, 0.0) / z;
   for (int n = 1; n <= nmax; n++) {
@@ -425,27 +425,25 @@ void evalUpwardD3(const std::complex<FloatType> z,
 }
 
 //******************************************************************************
-template <typename FloatType>
+template <typename FloatType, typename Engine = ScalarEngine>
 std::complex<FloatType> complex_sin(const std::complex<FloatType> z) {
   auto a = z.real();
   auto b = z.imag();
   auto i = std::complex<FloatType>(0, 1);
-  using nmm::cos;
-  using nmm::exp;
-  using nmm::sin;
-  return ((cos(a) + i * sin(a)) * exp(-b) - (cos(-a) + i * sin(-a)) * exp(b)) /
+  return ((Engine::cos(a) + i * Engine::sin(a)) * Engine::exp(-b) -
+          (Engine::cos(-a) + i * Engine::sin(-a)) * Engine::exp(b)) /
          (static_cast<FloatType>(2) * i);
 }
 
 //******************************************************************************
-template <typename FloatType>
+template <typename FloatType, typename Engine = ScalarEngine>
 void evalUpwardPsi(const std::complex<FloatType> z,
                    const std::vector<std::complex<FloatType>> D1,
                    std::vector<std::complex<FloatType>>& Psi) {
   int nmax = Psi.size() - 1;
   // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a)
   // - (21b)
-  Psi[0] = complex_sin(z);
+  Psi[0] = complex_sin<FloatType, Engine>(z);
   for (int n = 1; n <= nmax; n++) {
     Psi[n] = Psi[n - 1] * (std::complex<FloatType>(n, 0.0) / z - D1[n - 1]);
   }
@@ -505,7 +503,7 @@ void evalUpwardZeta(const std::complex<FloatType> z,
 //   }
 // }
 //******************************************************************************
-template <typename FloatType>
+template <typename FloatType, typename Engine = ScalarEngine>
 void evalPsiZetaD1D3(const std::complex<FloatType> cxd,
                      std::vector<std::complex<FloatType>>& Psi,
                      std::vector<std::complex<FloatType>>& Zeta,
@@ -519,9 +517,9 @@ void evalPsiZetaD1D3(const std::complex<FloatType> cxd,
     D3[n] = std::complex<FloatType>(0.0, 1.0);
   }
 
-  evalDownwardD1(cxd, D1);
-  evalUpwardPsi(cxd, D1, Psi);
-  evalUpwardD3(cxd, D1, D3, PsiZeta);
+  evalDownwardD1<FloatType, Engine>(cxd, D1);
+  evalUpwardPsi<FloatType, Engine>(cxd, D1, Psi);
+  evalUpwardD3<FloatType, Engine>(cxd, D1, D3, PsiZeta);
   for (unsigned int i = 0; i < Zeta.size(); i++) {
     Zeta[i] = PsiZeta[i] / Psi[i];
   }

@@ -60,15 +60,19 @@ And to compile the Debian package you need some tools:
 
 Compilation options
 
- - **make source** - Create source package for Python extension
- - **make ext** - Create Python extension using C++ code
- - **make install** - Install Python extension on local system
- - **make rpm** - Generate a rpm package for Python extension
- - **make deb** - Generate a deb package for Python extension
- - **make standalone** - Create standalone programs (scattnlay and fieldnlay)
- - **make clean** - Delete temporal files
+```bash
+mkdir build && cd build
+cmake ..
+cmake --build .
+```
 
-There are also an experimental CMake project and it is possible to compile into JavaScript module (using Emscripten compiler).
+To build WebAssembly target (requires Emscripten):
+
+```bash
+mkdir build_wasm && cd build_wasm
+emcmake cmake ..
+cmake --build . --target nmiejs
+```
 
 Python module
 

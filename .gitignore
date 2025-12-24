@@ -42,6 +42,8 @@ scattnlay-mp
 # CLion files
 .idea
 cmake-build-*
+CMakeFiles
+CMakeCache.txt
 
 # Temp
 *~
@@ -53,6 +55,11 @@ cov-int*
 cov-int
 build*
 .ipynb_checkpoints
+Temporary
+tests/Makefile
+src/Makefile
+examples/Makefile
+*.cmake
 
 # Local results
 tests/python/field.txt

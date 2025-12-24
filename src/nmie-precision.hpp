@@ -62,6 +62,20 @@ typedef double FloatType;
 // typedef float FloatType;
 #endif  // MULTI_PRECISION
 
+struct ScalarEngine {
+  using T = FloatType;
+  static inline T sin(T v) { return nmm::sin(v); }
+  static inline T cos(T v) { return nmm::cos(v); }
+  static inline T exp(T v) { return nmm::exp(v); }
+  static inline T sqrt(T v) { return nmm::sqrt(v); }
+  static inline T abs(T v) { return nmm::abs(v); }
+  static inline T log(T v) { return nmm::log(v); }
+  static inline T tan(T v) { return nmm::tan(v); }
+  static inline T ceil(T v) { return nmm::ceil(v); }
+  static inline T max(T a, T b) { return std::max(a, b); }
+  static inline T pow(T b, T e) { return nmm::pow(b, e); }
+};
+
 template <class T>
 T sin_t(T v) {
   if (std::is_same<T, double>::value)
