@@ -47,12 +47,46 @@
 //**********************************************************************************//
 #include <complex>
 #include <vector>
+
+#ifdef WITH_HWY
+#include "hwy/highway.h"
+#endif
+
 #ifdef MULTI_PRECISION
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #include <boost/multiprecision/number.hpp>
 #endif  // MULTI_PRECISION
 
 namespace nmie {
+
+#ifdef WITH_HWY
+namespace hn = hwy::HWY_NAMESPACE;
+
+template <typename T_base>
+struct HighwayEngine {
+  // Highway handles vectors of T_base (double or float)
+  using T = T_base;
+  using D = hn::ScalableTag<T>;
+  using V = hn::Vec<D>;
+
+  static inline V sin(V v) { 
+    // Note: Highway provides math functions in hwy/contrib/math/math-inl.h
+    // For smoke test, we use basic arithmetic
+    return v; // Placeholder for actual vectorized sin
+  }
+  
+  static inline V add(V a, V b) {
+    D d;
+    return hn::Add(a, b);
+  }
+
+  static inline V mul(V a, V b) {
+    D d;
+    return hn::Mul(a, b);
+  }
+};
+#endif
+
 #ifdef MULTI_PRECISION
 namespace nmm = boost::multiprecision;
 typedef nmm::number<nmm::cpp_bin_float<MULTI_PRECISION> > FloatType;
