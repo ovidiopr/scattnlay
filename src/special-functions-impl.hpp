@@ -464,68 +464,182 @@ void evalDownwardD1(const ComplexType z,
 }
 
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine>
-void evalUpwardD3(const std::complex<FloatType> z,
-                  const std::vector<std::complex<FloatType>>& D1,
-                  std::vector<std::complex<FloatType>>& D3,
-                  std::vector<std::complex<FloatType>>& PsiZeta) {
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+void evalUpwardD3(const ComplexType z,
+                  const ContainerType& D1,
+                  ContainerType& D3,
+                  ContainerType& PsiZeta) {
   int nmax = D1.size() - 1;
   // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
-  PsiZeta[0] = static_cast<FloatType>(0.5) *
-               (static_cast<FloatType>(1.0) -
-                std::complex<FloatType>(Engine::cos(2.0 * z.real()),
-                                        Engine::sin(2.0 * z.real())) *
-                    static_cast<FloatType>(Engine::exp(-2.0 * z.imag())));
-  D3[0] = std::complex<FloatType>(0.0, 1.0);
-  const std::complex<FloatType> z_inv = std::complex<FloatType>(1.0, 0.0) / z;
+  
+  auto two = Engine::set(2.0);
+  auto half = Engine::set(0.5);
+  auto one = Engine::set(1.0);
+  auto zero = Engine::set(0.0);
+  
+  auto z_re = Engine::get_real(z);
+  auto z_im = Engine::get_imag(z);
+  
+  auto two_z_re = Engine::mul(two, z_re);
+  auto minus_two_z_im = Engine::mul(Engine::set(-2.0), z_im);
+  
+  auto cos_val = Engine::cos(two_z_re);
+  auto sin_val = Engine::sin(two_z_re);
+  auto exp_val = Engine::exp(minus_two_z_im);
+  
+  auto term_complex = Engine::make_complex(cos_val, sin_val);
+  auto exp_complex = Engine::make_complex(exp_val, zero);
+  
+  auto prod = Engine::mul(term_complex, exp_complex);
+  
+  auto one_complex = Engine::make_complex(one, zero);
+  auto diff = Engine::sub(one_complex, prod);
+  
+  auto half_complex = Engine::make_complex(half, zero);
+  PsiZeta[0] = Engine::mul(half_complex, diff);
+
+  D3[0] = Engine::make_complex(zero, one);
+  
+  auto z_inv = Engine::div(one_complex, z);
+  auto i_complex = Engine::make_complex(zero, one);
+
   for (int n = 1; n <= nmax; n++) {
-    PsiZeta[n] = PsiZeta[n - 1] *
-                 (static_cast<FloatType>(n) * z_inv - D1[n - 1]) *
-                 (static_cast<FloatType>(n) * z_inv - D3[n - 1]);
-    D3[n] = D1[n] + std::complex<FloatType>(0.0, 1.0) / PsiZeta[n];
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto n_complex = Engine::make_complex(n_val, zero);
+    
+    auto term = Engine::mul(n_complex, z_inv);
+    
+    auto factor1 = Engine::sub(term, D1[n - 1]);
+    auto factor2 = Engine::sub(term, D3[n - 1]);
+    
+    auto prod1 = Engine::mul(PsiZeta[n - 1], factor1);
+    PsiZeta[n] = Engine::mul(prod1, factor2);
+    
+    auto term_div = Engine::div(i_complex, PsiZeta[n]);
+    D3[n] = Engine::add(D1[n], term_div);
   }
 }
 
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine>
-std::complex<FloatType> complex_sin(const std::complex<FloatType> z) {
-  auto a = z.real();
-  auto b = z.imag();
-  auto i = std::complex<FloatType>(0, 1);
-  return ((Engine::cos(a) + i * Engine::sin(a)) * Engine::exp(-b) -
-          (Engine::cos(-a) + i * Engine::sin(-a)) * Engine::exp(b)) /
-         (static_cast<FloatType>(2) * i);
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType> >
+ComplexType complex_sin(const ComplexType z) {
+  auto a = Engine::get_real(z);
+  auto b = Engine::get_imag(z);
+  
+  auto zero = Engine::set(0.0);
+  auto two = Engine::set(2.0);
+  
+  // term1 = (cos(a) + i*sin(a)) * exp(-b)
+  auto cos_a = Engine::cos(a);
+  auto sin_a = Engine::sin(a);
+  auto exp_minus_b = Engine::exp(Engine::sub(zero, b));
+  
+  auto e_ia = Engine::make_complex(cos_a, sin_a);
+  auto term1 = Engine::mul(e_ia, Engine::make_complex(exp_minus_b, zero));
+  
+  // term2 = (cos(-a) + i*sin(-a)) * exp(b)
+  auto minus_a = Engine::sub(zero, a);
+  auto cos_minus_a = Engine::cos(minus_a);
+  auto sin_minus_a = Engine::sin(minus_a);
+  auto exp_b = Engine::exp(b);
+  
+  auto e_minus_ia = Engine::make_complex(cos_minus_a, sin_minus_a);
+  auto term2 = Engine::mul(e_minus_ia, Engine::make_complex(exp_b, zero));
+  
+  auto diff = Engine::sub(term1, term2);
+  auto two_i = Engine::make_complex(zero, two);
+  
+  return Engine::div(diff, two_i);
 }
 
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine>
-void evalUpwardPsi(const std::complex<FloatType> z,
-                   const std::vector<std::complex<FloatType>> D1,
-                   std::vector<std::complex<FloatType>>& Psi) {
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+void evalUpwardPsi(const ComplexType z,
+                   const ContainerType& D1,
+                   ContainerType& Psi) {
   int nmax = Psi.size() - 1;
   // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a)
   // - (21b)
-  Psi[0] = complex_sin<FloatType, Engine>(z);
+  Psi[0] = complex_sin<FloatType, Engine, ComplexType>(z);
+  
+  auto one = Engine::set(1.0);
+  auto zero = Engine::set(0.0);
+  auto one_complex = Engine::make_complex(one, zero);
+  auto z_inv = Engine::div(one_complex, z);
+  
   for (int n = 1; n <= nmax; n++) {
-    Psi[n] = Psi[n - 1] * (std::complex<FloatType>(n, 0.0) / z - D1[n - 1]);
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto n_complex = Engine::make_complex(n_val, zero);
+    
+    auto term = Engine::mul(n_complex, z_inv);
+    auto factor = Engine::sub(term, D1[n - 1]);
+    
+    Psi[n] = Engine::mul(Psi[n - 1], factor);
   }
+}
+
+//******************************************************************************
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType> >
+ComplexType complex_cos(const ComplexType z) {
+  auto a = Engine::get_real(z);
+  auto b = Engine::get_imag(z);
+  
+  auto zero = Engine::set(0.0);
+  auto two = Engine::set(2.0);
+  
+  auto cos_a = Engine::cos(a);
+  auto sin_a = Engine::sin(a);
+  auto exp_minus_b = Engine::exp(Engine::sub(zero, b));
+  
+  auto e_ia = Engine::make_complex(cos_a, sin_a);
+  auto term1 = Engine::mul(e_ia, Engine::make_complex(exp_minus_b, zero));
+  
+  auto minus_a = Engine::sub(zero, a);
+  auto cos_minus_a = Engine::cos(minus_a);
+  auto sin_minus_a = Engine::sin(minus_a);
+  auto exp_b = Engine::exp(b);
+  
+  auto e_minus_ia = Engine::make_complex(cos_minus_a, sin_minus_a);
+  auto term2 = Engine::mul(e_minus_ia, Engine::make_complex(exp_b, zero));
+  
+  auto sum = Engine::add(term1, term2);
+  auto two_complex = Engine::make_complex(two, zero);
+  
+  return Engine::div(sum, two_complex);
 }
 
 //******************************************************************************
 // Sometimes in literature Zeta is also denoted as Ksi, it is a Riccati-Bessel
 // function of third kind.
 //******************************************************************************
-template <typename FloatType>
-void evalUpwardZeta(const std::complex<FloatType> z,
-                    const std::vector<std::complex<FloatType>> D3,
-                    std::vector<std::complex<FloatType>>& Zeta) {
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+void evalUpwardZeta(const ComplexType z,
+                    const ContainerType& D3,
+                    ContainerType& Zeta) {
   int nmax = Zeta.size() - 1;
-  std::complex<FloatType> c_i(0.0, 1.0);
-  // Now, use the upward recurrence to calculate Zeta and Zeta - equations (20a)
-  // - (21b)
-  Zeta[0] = nmm::sin(z) - c_i * nmm::cos(z);
+  
+  auto zero = Engine::set(0.0);
+  auto one = Engine::set(1.0);
+  auto i_complex = Engine::make_complex(zero, one);
+  
+  // Zeta[0] = sin(z) - i * cos(z)
+  auto sin_z = complex_sin<FloatType, Engine, ComplexType>(z);
+  auto cos_z = complex_cos<FloatType, Engine, ComplexType>(z);
+  
+  auto term = Engine::mul(i_complex, cos_z);
+  Zeta[0] = Engine::sub(sin_z, term);
+  
+  auto one_complex = Engine::make_complex(one, zero);
+  auto z_inv = Engine::div(one_complex, z);
+
   for (int n = 1; n <= nmax; n++) {
-    Zeta[n] = Zeta[n - 1] * (std::complex<FloatType>(n, 0.0) / z - D3[n - 1]);
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto n_complex = Engine::make_complex(n_val, zero);
+    
+    auto term_n = Engine::mul(n_complex, z_inv);
+    auto factor = Engine::sub(term_n, D3[n - 1]);
+    
+    Zeta[n] = Engine::mul(Zeta[n - 1], factor);
   }
 }
 
