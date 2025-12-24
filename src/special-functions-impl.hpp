@@ -115,21 +115,46 @@ int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
 // see Eqs. 10-12 of [1] for details.
 // [1]H. Du, Mie-Scattering Calculation, Appl. Opt. 43, 1951 (2004).
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine>
-std::complex<FloatType> complex_cot(const std::complex<FloatType> z) {
-  auto Remx = z.real();
-  auto Immx = z.imag();
-  int sign =
-      (Immx > 0) ? 1 : -1;  // use complex conj if needed for exp and return
-  auto exp = Engine::exp(-2 * sign * Immx);
-  auto tan = Engine::tan(Remx);
-  auto a = tan - exp * tan;
-  auto b = 1 + exp;
-  auto c = -1 + exp;
-  auto d = tan + exp * tan;
-  auto c_one = std::complex<FloatType>(0, 1);
-  return (a * c + b * d) / (pow2(c) + pow2(d)) +
-         c_one * (sign * (b * c - a * d) / (pow2(c) + pow2(d)));
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType>
+ComplexType complex_cot(const ComplexType z) {
+  auto Remx = Engine::get_real(z);
+  auto Immx = Engine::get_imag(z);
+  
+  auto sgn = Engine::sign(Immx);
+  
+  auto minus_two = Engine::set(-2.0);
+  auto arg = Engine::mul(Engine::mul(minus_two, sgn), Immx);
+  auto exp_val = Engine::exp(arg);
+  
+  auto tan_val = Engine::tan(Remx);
+  
+  auto exp_tan = Engine::mul(exp_val, tan_val);
+  auto a = Engine::sub(tan_val, exp_tan);
+  
+  auto one = Engine::set(1.0);
+  auto b = Engine::add(one, exp_val);
+  
+  auto minus_one = Engine::set(-1.0);
+  auto c = Engine::add(minus_one, exp_val);
+  
+  auto d = Engine::add(tan_val, exp_tan);
+  
+  auto c2 = Engine::mul(c, c);
+  auto d2 = Engine::mul(d, d);
+  auto denom = Engine::add(c2, d2);
+  
+  auto ac = Engine::mul(a, c);
+  auto bd = Engine::mul(b, d);
+  auto num_re = Engine::add(ac, bd);
+  auto re = Engine::div(num_re, denom);
+  
+  auto bc = Engine::mul(b, c);
+  auto ad = Engine::mul(a, d);
+  auto diff = Engine::sub(bc, ad);
+  auto num_im = Engine::mul(sgn, diff);
+  auto im = Engine::div(num_im, denom);
+  
+  return Engine::make_complex(re, im);
 }
 
 //******************************************************************************
@@ -144,7 +169,7 @@ void evalForwardR(const std::complex<FloatType> z,
         "functions.\n");
   // r0 = cot(z)
   //  r[0] = nmm::cos(z)/nmm::sin(z);
-  r[0] = complex_cot(z);
+  r[0] = complex_cot<FloatType>(z);
   for (unsigned int n = 0; n < r.size() - 1; n++) {
     r[n + 1] = static_cast<FloatType>(1) /
                (                                          //
@@ -171,7 +196,7 @@ void evalBackwardR(const std::complex<FloatType> z,
     r[n] = -static_cast<FloatType>(1) / r[n + 1] +
            static_cast<FloatType>(2 * n + 1) / z;
   }
-  r[0] = complex_cot(z);
+  r[0] = complex_cot<FloatType>(z);
 }
 
 //******************************************************************************

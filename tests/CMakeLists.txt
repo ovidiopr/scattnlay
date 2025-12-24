@@ -29,6 +29,15 @@ if(GTest_FOUND)
     add_test(NAME "test_Riccati_Bessel_logarithmic_derivative"
         COMMAND "test_Riccati_Bessel_logarithmic_derivative")
 
+    if(WITH_HWY)
+        add_executable("test_SIMD_Riccati_Bessel"
+            test_SIMD_Riccati_Bessel.cc)
+        target_link_libraries("test_SIMD_Riccati_Bessel" ${LIBS} hwy::hwy)
+        target_compile_definitions("test_SIMD_Riccati_Bessel" PRIVATE WITH_HWY)
+        add_test(NAME "test_SIMD_Riccati_Bessel"
+            COMMAND "test_SIMD_Riccati_Bessel")
+    endif()
+
     # TODO remove -Wno
     set_source_files_properties(test_bulk_sphere.cc
         PROPERTIES COMPILE_FLAGS "-Wno-overflow -Wno-unused-parameter")
@@ -59,6 +68,7 @@ endif()
 add_executable(bench_special_functions benchmarks/bench_special_functions.cc)
 if(WITH_HWY)
     target_compile_definitions(bench_special_functions PRIVATE WITH_HWY)
+    target_link_libraries(bench_special_functions PRIVATE hwy::hwy)
 endif()
 
 if(WITH_HWY)

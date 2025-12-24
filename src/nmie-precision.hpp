@@ -69,21 +69,69 @@ struct HighwayEngine {
   using D = hn::ScalableTag<T>;
   using V = hn::Vec<D>;
 
+  // Represents a batch of complex numbers (Real vectors, Imag vectors)
+  struct ComplexV { V re; V im; };
+
   static inline V sin(V v) { 
     // Note: Highway provides math functions in hwy/contrib/math/math-inl.h
     // For smoke test, we use basic arithmetic
     return v; // Placeholder for actual vectorized sin
   }
+  static inline V cos(V v) { (void)v; return hn::Undefined(D()); }
+  static inline V exp(V v) { (void)v; return hn::Undefined(D()); }
+  static inline V tan(V v) { (void)v; return hn::Undefined(D()); }
   
   static inline V add(V a, V b) {
-    D d;
     return hn::Add(a, b);
   }
 
+  static inline V sub(V a, V b) {
+    return hn::Sub(a, b);
+  }
+
   static inline V mul(V a, V b) {
-    D d;
     return hn::Mul(a, b);
   }
+
+  static inline V div(V a, V b) {
+    return hn::Div(a, b);
+  }
+
+  static inline V set(T val) { return hn::Set(D(), val); }
+  
+  static inline V sign(V v) {
+    auto zero = hn::Zero(D());
+    auto one = hn::Set(D(), 1.0);
+    auto minus_one = hn::Set(D(), -1.0);
+    auto mask = hn::Gt(v, zero);
+    return hn::IfThenElse(mask, one, minus_one);
+  }
+
+  // Complex arithmetic
+  static inline ComplexV add(ComplexV a, ComplexV b) {
+    return {hn::Add(a.re, b.re), hn::Add(a.im, b.im)};
+  }
+
+  static inline ComplexV sub(ComplexV a, ComplexV b) {
+    return {hn::Sub(a.re, b.re), hn::Sub(a.im, b.im)};
+  }
+
+  static inline ComplexV mul(ComplexV a, ComplexV b) {
+    // (a.re*b.re - a.im*b.im) + i(a.re*b.im + a.im*b.re)
+    return {hn::Sub(hn::Mul(a.re, b.re), hn::Mul(a.im, b.im)),
+            hn::Add(hn::Mul(a.re, b.im), hn::Mul(a.im, b.re))};
+  }
+  
+  static inline ComplexV div(ComplexV a, ComplexV b) {
+    V mag_sq = hn::Add(hn::Mul(b.re, b.re), hn::Mul(b.im, b.im));
+    V re = hn::Div(hn::Add(hn::Mul(a.re, b.re), hn::Mul(a.im, b.im)), mag_sq);
+    V im = hn::Div(hn::Sub(hn::Mul(a.im, b.re), hn::Mul(a.re, b.im)), mag_sq);
+    return {re, im};
+  }
+
+  static inline V get_real(ComplexV z) { return z.re; }
+  static inline V get_imag(ComplexV z) { return z.im; }
+  static inline ComplexV make_complex(V re, V im) { return {re, im}; }
 };
 #endif
 
@@ -108,6 +156,23 @@ struct ScalarEngine {
   static inline T ceil(T v) { return nmm::ceil(v); }
   static inline T max(T a, T b) { return std::max(a, b); }
   static inline T pow(T b, T e) { return nmm::pow(b, e); }
+
+  static inline T add(T a, T b) { return a + b; }
+  static inline T sub(T a, T b) { return a - b; }
+  static inline T mul(T a, T b) { return a * b; }
+  static inline T div(T a, T b) { return a / b; }
+
+  static inline T set(T val) { return val; }
+  static inline T sign(T v) { return (v > 0) ? 1 : -1; }
+
+  static inline std::complex<T> add(std::complex<T> a, std::complex<T> b) { return a + b; }
+  static inline std::complex<T> sub(std::complex<T> a, std::complex<T> b) { return a - b; }
+  static inline std::complex<T> mul(std::complex<T> a, std::complex<T> b) { return a * b; }
+  static inline std::complex<T> div(std::complex<T> a, std::complex<T> b) { return a / b; }
+
+  static inline T get_real(std::complex<T> z) { return z.real(); }
+  static inline T get_imag(std::complex<T> z) { return z.imag(); }
+  static inline std::complex<T> make_complex(T re, T im) { return std::complex<T>(re, im); }
 };
 
 template <class T>
