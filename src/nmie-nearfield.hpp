@@ -567,9 +567,9 @@ void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const double fro
     std::complex<FloatType> ml;
     GetIndexAtRadius(Rho, ml);
     auto z = Rho*ml;
-    evalDownwardD1(z, D1n[j]);
-    evalUpwardPsi(z,  D1n[j], Psi[j]);
-    evalUpwardD3 (z, D1n[j], D3n[j], PsiZeta[j]);
+    evalDownwardD1<FloatType>(z, D1n[j]);
+    evalUpwardPsi<FloatType>(z,  D1n[j], Psi[j]);
+    evalUpwardD3<FloatType> (z, D1n[j], D3n[j], PsiZeta[j]);
     for (unsigned int k = 0; k < Zeta[j].size(); k++) {
       Zeta[j][k] = PsiZeta[j][k]/Psi[j][k];
     }

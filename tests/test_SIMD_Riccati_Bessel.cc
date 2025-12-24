@@ -2,6 +2,7 @@
 #include "hwy/highway.h"
 #include "../src/special-functions-impl.hpp"
 #include "../src/nmie-precision.hpp"
+#include "test_spec_functions_data.hpp"
 
 // #define HWY_TARGET_INCLUDE "tests/test_SIMD_Riccati_Bessel.cc"
 // #include "hwy/foreach_target.h"
@@ -199,6 +200,58 @@ TEST(SIMDRiccatiBessel, ZetaRecurrenceMatchScalar) {
       EXPECT_NEAR(out_re[i], Zeta_scalar[n].real(), 1e-13) << "Zeta Mismatch at n=" << n;
       EXPECT_NEAR(out_im[i], Zeta_scalar[n].imag(), 1e-13) << "Zeta Mismatch at n=" << n;
     }
+  }
+}
+
+TEST(SIMDRiccatiBessel, D1FullLanesMatchDataset) {
+  const hn::ScalableTag<double> d;
+  using Engine = HighwayEngine<double>;
+  const size_t lanes = hn::Lanes(d);
+  
+  // We need enough data to fill the lanes
+  // We'll take the first 'lanes' entries from an_test_30digits 
+  // (which contains x, m, n, result)
+  ASSERT_GE(an_test_30digits.size(), lanes);
+
+  std::vector<double> x_vals(lanes), mr_vals(lanes), mi_vals(lanes);
+  std::vector<int> n_vals(lanes);
+  std::vector<std::complex<double>> expected_scalar(lanes);
+
+  int target_n = 1; // Testing index n=1 for all lanes initially
+
+  for (size_t i = 0; i < lanes; ++i) {
+    // an_test_30digits schema: {x, {mr, mi}, n, {res_re, res_im}, err_re, err_im}
+    auto& entry = an_test_30digits[i]; 
+    x_vals[i] = std::get<0>(entry);
+    mr_vals[i] = std::get<1>(entry).real();
+    mi_vals[i] = std::get<1>(entry).imag();
+    // For D1, we calculate the whole vector up to some nmax
+  }
+
+  // Pack into SIMD
+  auto vx = hn::Load(d, x_vals.data());
+  auto vmr = hn::Load(d, mr_vals.data());
+  auto vmi = hn::Load(d, mi_vals.data());
+
+  typename Engine::ComplexV z_simd = { hn::Mul(vx, vmr), hn::Mul(vx, vmi) };
+
+  // Run vectorized D1
+  int nmax = 100; 
+  std::vector<typename Engine::ComplexV> D1_simd(nmax + 1);
+  evalDownwardD1<double, Engine>(z_simd, D1_simd);
+
+  // Verification: Run scalar for each lane and compare
+  for (size_t i = 0; i < lanes; ++i) {
+    std::complex<double> z_lane(x_vals[i] * mr_vals[i], x_vals[i] * mi_vals[i]);
+    std::vector<std::complex<double>> D1_ref(nmax + 1);
+    evalDownwardD1<double, ScalarEngine>(z_lane, D1_ref);
+
+    std::vector<double> res_re(lanes), res_im(lanes);
+    hn::Store(D1_simd[target_n].re, d, res_re.data());
+    hn::Store(D1_simd[target_n].im, d, res_im.data());
+
+    EXPECT_NEAR(res_re[i], D1_ref[target_n].real(), 1e-12) << "Lane " << i << " mismatch at D1[" << target_n << "]";
+    EXPECT_NEAR(res_im[i], D1_ref[target_n].imag(), 1e-12) << "Lane " << i << " mismatch at D1[" << target_n << "]";
   }
 }
 

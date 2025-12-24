@@ -58,6 +58,58 @@
 
 namespace nmie {
 
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType>
+ComplexType calc_an(int n,
+                      typename Engine::RealV XL, 
+                      ComplexType Ha,
+                      ComplexType mL,
+                      ComplexType PsiXL,
+                      ComplexType ZetaXL,
+                      ComplexType PsiXLM1,
+                      ComplexType ZetaXLM1) {
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto zero = Engine::set(0.0);
+    auto n_complex = Engine::make_complex(n_val, zero);
+    auto XL_complex = Engine::make_complex(XL, zero);
+    
+    // (Ha / mL + n / XL)
+    auto term1 = Engine::add(Engine::div(Ha, mL), Engine::div(n_complex, XL_complex));
+    
+    // Num = term1 * PsiXL - PsiXLM1
+    auto Num = Engine::sub(Engine::mul(term1, PsiXL), PsiXLM1);
+    
+    // Denom = term1 * ZetaXL - ZetaXLM1
+    auto Denom = Engine::sub(Engine::mul(term1, ZetaXL), ZetaXLM1);
+
+    return Engine::div(Num, Denom);
+}
+
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType>
+ComplexType calc_bn(int n,
+                      typename Engine::RealV XL, 
+                      ComplexType Hb,
+                      ComplexType mL,
+                      ComplexType PsiXL,
+                      ComplexType ZetaXL,
+                      ComplexType PsiXLM1,
+                      ComplexType ZetaXLM1) {
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto zero = Engine::set(0.0);
+    auto n_complex = Engine::make_complex(n_val, zero);
+    auto XL_complex = Engine::make_complex(XL, zero);
+    
+    // (mL * Hb + n / XL)
+    auto term1 = Engine::add(Engine::mul(mL, Hb), Engine::div(n_complex, XL_complex));
+    
+    // Num = term1 * PsiXL - PsiXLM1
+    auto Num = Engine::sub(Engine::mul(term1, PsiXL), PsiXLM1);
+    
+    // Denom = term1 * ZetaXL - ZetaXLM1
+    auto Denom = Engine::sub(Engine::mul(term1, ZetaXL), ZetaXLM1);
+
+    return Engine::div(Num, Denom);
+}
+
 // class implementation
 
 // ********************************************************************** //
@@ -360,13 +412,8 @@ std::complex<FloatType> MultiLayerMie<FloatType>::calc_an(
     std::complex<FloatType> ZetaXL,
     std::complex<FloatType> PsiXLM1,
     std::complex<FloatType> ZetaXLM1) {
-  std::complex<FloatType> Num = (Ha / mL + n / XL) * PsiXL - PsiXLM1;
-  std::complex<FloatType> Denom = (Ha / mL + n / XL) * ZetaXL - ZetaXLM1;
-  // std::cout<< std::setprecision(100)
-  //          << "Ql "        << PsiXL
-  //          << std::endl;
-
-  return Num / Denom;
+  return nmie::calc_an<FloatType, ScalarEngine, std::complex<FloatType>>(
+      n, XL, Ha, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
 }
 
 // ********************************************************************** //
@@ -382,10 +429,8 @@ std::complex<FloatType> MultiLayerMie<FloatType>::calc_bn(
     std::complex<FloatType> ZetaXL,
     std::complex<FloatType> PsiXLM1,
     std::complex<FloatType> ZetaXLM1) {
-  std::complex<FloatType> Num = (mL * Hb + n / XL) * PsiXL - PsiXLM1;
-  std::complex<FloatType> Denom = (mL * Hb + n / XL) * ZetaXL - ZetaXLM1;
-
-  return Num / Denom;
+  return nmie::calc_bn<FloatType, ScalarEngine, std::complex<FloatType>>(
+      n, XL, Hb, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
 }
 
 // ********************************************************************** //
@@ -433,8 +478,8 @@ void MultiLayerMie<FloatType>::calcD1D3(
     std::vector<std::complex<FloatType>>& D1,
     std::vector<std::complex<FloatType>>& D3) {
   std::vector<std::complex<FloatType>> PsiZeta(nmax_ + 1);
-  evalDownwardD1(z, D1);
-  evalUpwardD3(z, D1, D3, PsiZeta);
+  evalDownwardD1<FloatType>(z, D1);
+  evalUpwardD3<FloatType>(z, D1, D3, PsiZeta);
 }
 
 //*****************************************************************************
@@ -457,11 +502,11 @@ void MultiLayerMie<FloatType>::calcPsiZeta(
   std::vector<std::complex<FloatType>> D1(nmax_ + 1), D3(nmax_ + 1),
       PsiZeta(nmax_ + 1);
   // First, calculate the logarithmic derivatives
-  evalDownwardD1(z, D1);
+  evalDownwardD1<FloatType>(z, D1);
   // Now, use the upward recurrence to calculate Psi equations (20ab)
-  evalUpwardPsi(z, D1, Psi);
+  evalUpwardPsi<FloatType>(z, D1, Psi);
   // Now, use the upward recurrence to calculate Psi*Zeta equations (18ad)
-  evalUpwardD3(z, D1, D3, PsiZeta);
+  evalUpwardD3<FloatType>(z, D1, D3, PsiZeta);
   for (unsigned int i = 0; i < Zeta.size(); i++) {
     Zeta[i] = PsiZeta[i] / Psi[i];
   }

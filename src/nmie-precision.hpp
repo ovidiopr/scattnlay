@@ -69,6 +69,7 @@ struct HighwayEngine {
   using T = T_base;
   using D = hn::ScalableTag<T>;
   using V = hn::Vec<D>;
+  using RealV = V;
 
   // Represents a batch of complex numbers (Real vectors, Imag vectors)
   struct ComplexV { V re; V im; };
@@ -150,6 +151,7 @@ typedef double FloatType;
 
 struct ScalarEngine {
   using T = FloatType;
+  using RealV = T;
   static inline T sin(T v) { return nmm::sin(v); }
   static inline T cos(T v) { return nmm::cos(v); }
   static inline T exp(T v) { return nmm::exp(v); }

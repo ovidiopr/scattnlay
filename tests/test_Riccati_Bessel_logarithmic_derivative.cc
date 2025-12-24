@@ -142,9 +142,9 @@ TEST(zeta_psizeta_test, mpmath_generated_input) {
     if (n > Nstop) continue;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+135), D3(Nstop+135),
         PsiZeta(Nstop+135), Psi(Nstop);
-    nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
-    nmie::evalUpwardPsi(z, D1dr, Psi);
+    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
+    nmie::evalUpwardD3<nmie::FloatType>(z, D1dr, D3, PsiZeta);
+    nmie::evalUpwardPsi<nmie::FloatType>(z, D1dr, Psi);
     auto a = std::real(PsiZeta[n]);
     auto b = std::imag(PsiZeta[n]);
     auto c = std::real(Psi[n]);
@@ -155,7 +155,7 @@ TEST(zeta_psizeta_test, mpmath_generated_input) {
 //    zeta = PsiZeta[n]/Psi[n];
     if (std::isnan(std::real(zeta)) || std::isnan(std::imag(zeta))) continue;
 //    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+35), D3(Nstop+35), zeta(Nstop);
-//    nmie::evalDownwardD1(z, D1dr);
+//    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
 //    nmie::evalUpwardD3(z, D1dr, D3);
 //    nmie::evalUpwardZeta(z, D3, zeta);
 
@@ -179,8 +179,8 @@ TEST(zeta_psizeta_test, mpmath_generated_input) {
 //    if (n > Nstop) continue;
 //    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop),
 //        PsiZeta(Nstop), zeta(Nstop);
-//    nmie::evalDownwardD1(z, D1dr);
-//    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
+//    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
+//    nmie::evalUpwardD3<nmie::FloatType>(z, D1dr, D3, PsiZeta);
 //    nmie::evalUpwardZeta(z, D3, zeta);
 //    if (std::isnan(std::real(zeta[n])) || std::isnan(std::imag(zeta[n]))) continue;
 //
@@ -203,8 +203,8 @@ TEST(psizeta_test, mpmath_generated_input) {
     auto Nstop = nmie::LeRu_near_field_cutoff(z)+10000;
     if (n > Nstop) continue;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop), PsiZeta(Nstop);
-    nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
+    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
+    nmie::evalUpwardD3<nmie::FloatType>(z, D1dr, D3, PsiZeta);
 
     EXPECT_NEAR(std::real(PsiZeta[n]), std::real(PsiZeta_mp), re_abs_tol)
               << "PsiZeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
@@ -228,8 +228,8 @@ TEST(psi_test, mpmath_generated_input) {
     auto Nstop = nmie::LeRu_near_field_cutoff(z)+10000;
     if (n > Nstop) continue;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+35), Psi(Nstop);
-    nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardPsi(z, D1dr, Psi);
+    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
+    nmie::evalUpwardPsi<nmie::FloatType>(z, D1dr, Psi);
 
     EXPECT_NEAR(std::real(Psi[n]), std::real(Psi_mp), re_abs_tol)
               << "Psi at n=" << n << " Nstop="<< Nstop<<" z="<<z;
@@ -249,8 +249,8 @@ TEST(D3test, mpmath_generated_input) {
     parse_mpmath_data(min_abs_tol, data, z, n, D3_mp, re_abs_tol, im_abs_tol);
     auto Nstop = nmie::LeRu_near_field_cutoff(z)+35;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop), PsiZeta(Nstop);
-    nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
+    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
+    nmie::evalUpwardD3<nmie::FloatType>(z, D1dr, D3, PsiZeta);
 
     EXPECT_NEAR(std::real(D3[n]), std::real(D3_mp), re_abs_tol)
               << "D3 at n=" << n << " Nstop="<< Nstop<<" z="<<z;
@@ -285,7 +285,7 @@ TEST(D3test, mpmath_generated_input) {
               << "Db at n=" << n <<" nstar="<<nstar<< " z="<<z;
     EXPECT_NEAR(std::imag(Db[n]), std::imag(D1_mp), im_abs_tol)
               << "Db at n=" << n <<" nstar="<<nstar<< " z="<<z;
-    nmie::evalDownwardD1(z, Dold);
+    nmie::evalDownwardD1<nmie::FloatType>(z, Dold);
     if (n > Dold.size()) continue;
     EXPECT_NEAR(std::real(Dold[n]), std::real(D1_mp), re_abs_tol)
               << "Dold at n=" << n << " z="<<z;
@@ -305,7 +305,7 @@ TEST(D1test, WYang_data){
   std::complex<nmie::FloatType> z(1.05,1);
   z = z*80.0;
 // eval D1 directly from backward recurrence
-  nmie::evalDownwardD1(z, Dold);
+  nmie::evalDownwardD1<nmie::FloatType>(z, Dold);
 
 //  eval forward recurrence
   r.resize(Nstop+1);

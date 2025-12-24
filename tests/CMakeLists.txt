@@ -30,6 +30,8 @@ if(GTest_FOUND)
         COMMAND "test_Riccati_Bessel_logarithmic_derivative")
 
     if(WITH_HWY)
+        set_source_files_properties(test_SIMD_Riccati_Bessel.cc
+            PROPERTIES COMPILE_FLAGS "-Wno-overflow -Wno-literal-range")
         add_executable("test_SIMD_Riccati_Bessel"
             test_SIMD_Riccati_Bessel.cc)
         target_link_libraries("test_SIMD_Riccati_Bessel" ${LIBS} hwy::hwy)
