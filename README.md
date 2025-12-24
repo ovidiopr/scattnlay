@@ -50,7 +50,6 @@ To compile the Python extension you need [NumPy](http://www.numpy.org/):
  - **python-numpy (>= 1.0)**
  - **python-all-dev (any version)**
  - **python-numpy-dev (any version)**
- - **pybind11 (any version)**
 
 And to compile the Debian package you need some tools:
 
@@ -62,17 +61,15 @@ Compilation options
 
 ```bash
 mkdir build && cd build
-cmake ..
-cmake --build .
+cmake -B build -S .
+cmake --build build
 ```
 
 To build WebAssembly target (requires Emscripten):
 
 ```bash
-mkdir build_wasm && cd build_wasm
-emcmake cmake ..
-cmake --build . --target nmiejs
-```
+emcmake cmake -B build_wasm -S .
+cmake --build build_wasm
 
 Python module
 

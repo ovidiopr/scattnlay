@@ -43,6 +43,11 @@ set(_scattnlay_nearfield_sources
 add_executable(scattnlay-dp ${_scattnlay_farfield_sources})
 set_target_properties(scattnlay-dp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+if(WITH_HWY)
+    target_link_libraries(scattnlay-dp PRIVATE hwy::hwy)
+    target_compile_definitions(scattnlay-dp PRIVATE WITH_HWY)
+endif()
+
 add_executable(fieldnlay-dp ${_scattnlay_nearfield_sources})
 set_target_properties(fieldnlay-dp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
