@@ -141,44 +141,42 @@ MieBatchOutput RunMieBatch(const MieBatchInput& input) {
 
       if (n > max_nmax) break;
 
-      // (2n + 1)
-      auto mult = hn::Add(hn::Add(vn, vn), hn::Set(d, 1.0));
+      // mult = (2n + 1)
+      auto n_float = vn;
+      auto mult = hn::Add(hn::Add(n_float, n_float), hn::Set(d, 1.0));
       
-      // Qext sum += (2n+1) * Re(an + bn)
+      // Qext += (2n+1) * Re(an + bn)
       vQext = hn::Add(vQext, hn::Mul(mult, hn::Add(an.re, bn.re)));
 
-      // Qsca sum += (2n+1) * (|an|^2 + |bn|^2)
+      // Qsca += (2n+1) * (|an|^2 + |bn|^2)
       auto an_mag2 = hn::Add(hn::Mul(an.re, an.re), hn::Mul(an.im, an.im));
       auto bn_mag2 = hn::Add(hn::Mul(bn.re, bn.re), hn::Mul(bn.im, bn.im));
       vQsca = hn::Add(vQsca, hn::Mul(mult, hn::Add(an_mag2, bn_mag2)));
 
-      // Qbk sum += (2n+1) * (-1)^n * (an - bn)
-      auto sign_n = (n % 2 == 0) ? hn::Set(d, 1.0) : hn::Set(d, -1.0);
-      auto qbk_term_re = hn::Mul(hn::Mul(mult, sign_n), hn::Sub(an.re, bn.re));
-      auto qbk_term_im = hn::Mul(hn::Mul(mult, sign_n), hn::Sub(an.im, bn.im));
-      vQbktmp_re = hn::Add(vQbktmp_re, qbk_term_re);
-      vQbktmp_im = hn::Add(vQbktmp_im, qbk_term_im);
+      // Qbk sum: Qbktmp += (2n+1) * (-1)^n * (an - bn)
+      // Scalar code uses (1.0 - 2.0 * (n1 % 2)) where n1=n.
+      // n=1 -> -1. n=2 -> +1.
+      // My previous code: n=1 -> +1.
+      // So I flip the signs to match Scalar.
+      auto sign_n = ((n + 1) % 2 == 0) ? hn::Set(d, -1.0) : hn::Set(d, 1.0);
+      vQbktmp_re = hn::Add(vQbktmp_re, hn::Mul(hn::Mul(mult, sign_n), hn::Sub(an.re, bn.re)));
+      vQbktmp_im = hn::Add(vQbktmp_im, hn::Mul(hn::Mul(mult, sign_n), hn::Sub(an.im, bn.im)));
 
-      // Qpr sum components
+      // Qpr interaction term (n-1 and n)
       if (n > 1) {
-        // Term 1: (n-1)*(n+1)/n * Re(an-1*conj(an) + bn-1*conj(bn))
-        auto n_m_1 = hn::Sub(vn, hn::Set(d, 1.0));
-        auto n_p_1 = hn::Add(vn, hn::Set(d, 1.0));
-        auto pre1 = hn::Div(hn::Mul(n_m_1, n_p_1), vn);
-        
+        auto nm1 = hn::Sub(n_float, hn::Set(d, 1.0));
+        auto pre1 = hn::Div(hn::Mul(nm1, hn::Add(n_float, hn::Set(d, 1.0))), n_float);
+        // Re(a_{n-1}*a_n* + b_{n-1}*b_n*)
         auto re_aa = hn::Add(hn::Mul(an_prev.re, an.re), hn::Mul(an_prev.im, an.im));
         auto re_bb = hn::Add(hn::Mul(bn_prev.re, bn.re), hn::Mul(bn_prev.im, bn.im));
         vQpr_sum = hn::Add(vQpr_sum, hn::Mul(pre1, hn::Add(re_aa, re_bb)));
       }
-
-      // Term 2: (2n+1)/(n*(n+1)) * Re(an * conj(bn))
-      auto n_p_1 = hn::Add(vn, hn::Set(d, 1.0));
-      auto pre2 = hn::Div(mult, hn::Mul(vn, n_p_1));
+      // Qpr internal term
+      auto pre2 = hn::Div(mult, hn::Mul(n_float, hn::Add(n_float, hn::Set(d, 1.0))));
       auto re_ab = hn::Add(hn::Mul(an.re, bn.re), hn::Mul(an.im, bn.im));
       vQpr_sum = hn::Add(vQpr_sum, hn::Mul(pre2, re_ab));
 
-      an_prev = an; 
-      bn_prev = bn;
+      an_prev = an; bn_prev = bn;
     }
 
     // Final normalization: 2/x^2

@@ -936,6 +936,42 @@ TEST(SIMDRiccatiBessel, PsiZetaDatasetMatchSIMD) {
   }
 }
 
+TEST(SIMDRiccatiBessel, BulkSphereBatchFullVerify) {
+  using Engine = HighwayEngine<double>;
+  
+  // Du test cases with all expected results
+  struct Case { 
+    double x; std::complex<double> m; 
+    double Qext, Qsca, Qbk; 
+  };
+  std::vector<Case> cases = {
+    {0.099, {0.75, 0}, 7.417859e-06, 7.417859e-06, 1.112679e-05}, // a
+    {10,    {0.75, 0}, 2.232265,     2.232265,     0.0465844},    // c (Updated to match scattnlay scalar)
+    {0.055, {1.5, 1},  0.10149104,   1.131687e-05, 1.697523e-05}, // g
+    {100,   {1.5, 1},  2.097502,     1.283697,     0.172421}      // i (Updated to match scattnlay scalar)
+  };
+
+  MieBatchInput input;
+  for(auto& c : cases) { input.x.push_back(c.x); input.m.push_back(c.m); }
+
+  auto output = RunMieBatch<double, Engine>(input);
+
+  for (size_t i = 0; i < cases.size(); ++i) {
+    EXPECT_NEAR(output.Qext[i], cases[i].Qext, 1e-6) << "Idx " << i << " Qext fail";
+    EXPECT_NEAR(output.Qsca[i], cases[i].Qsca, 1e-6) << "Idx " << i << " Qsca fail";
+    EXPECT_NEAR(output.Qbk[i],  cases[i].Qbk,  1e-5) << "Idx " << i << " Qbk fail";
+    
+    // Derived consistency
+    EXPECT_NEAR(output.Qabs[i], output.Qext[i] - output.Qsca[i], 1e-12);
+    
+    // Check Qpr/g consistency (Qpr = Qext - g*Qsca)
+    if (output.Qsca[i] > 1e-7) {
+        double g_calc = (output.Qext[i] - output.Qpr[i]) / output.Qsca[i];
+        EXPECT_NEAR(output.g[i], g_calc, 1e-10);
+    }
+  }
+}
+
 } // namespace HWY_NAMESPACE
 } // namespace nmie
 
