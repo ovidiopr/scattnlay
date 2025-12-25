@@ -81,9 +81,11 @@ struct HighwayEngine {
   static inline V sqrt(V v) { return hn::Sqrt(v); }
   static inline V abs(V v) { return hn::Abs(v); }
   static inline V ceil(V v) { return hn::Ceil(v); }
+  static inline V floor(V v) { return hn::Floor(v); }
   static inline V max(V a, V b) { return hn::Max(a, b); }
   static inline V pow(V b, V e) { return hn::Exp(D(), hn::Mul(e, hn::Log(D(), b))); }
   static inline V log(V v) { return hn::Log(D(), v); }
+  static inline V atan2(V y, V x) { return hn::Atan2(D(), y, x); }
 
   
   static inline V add(V a, V b) {
@@ -137,6 +139,33 @@ struct HighwayEngine {
   static inline V get_real(ComplexV z) { return z.re; }
   static inline V get_imag(ComplexV z) { return z.im; }
   static inline ComplexV make_complex(V re, V im) { return {re, im}; }
+
+  static inline T reduce_max(V v) {
+    size_t lanes = hn::Lanes(D());
+    std::vector<T> buf(lanes);
+    hn::Store(v, D(), buf.data());
+    T max_val = buf[0];
+    for(size_t i=1; i<lanes; ++i) {
+      if(buf[i] > max_val) max_val = buf[i];
+    }
+    return max_val;
+  }
+
+  static inline ComplexV log(ComplexV z) {
+    V r = hn::Sqrt(hn::Add(hn::Mul(z.re, z.re), hn::Mul(z.im, z.im)));
+    V phi = hn::Atan2(D(), z.im, z.re);
+    return {hn::Log(D(), r), phi};
+  }
+
+  static inline ComplexV sqrt(ComplexV z) {
+    V r = hn::Sqrt(hn::Add(hn::Mul(z.re, z.re), hn::Mul(z.im, z.im)));
+    V u = hn::Sqrt(hn::Mul(hn::Add(r, z.re), hn::Set(D(), 0.5)));
+    V v_abs = hn::Sqrt(hn::Mul(hn::Sub(r, z.re), hn::Set(D(), 0.5)));
+    V zero = hn::Zero(D());
+    auto mask = hn::Ge(z.im, zero);
+    V v = hn::IfThenElse(mask, v_abs, hn::Neg(v_abs));
+    return {u, v};
+  }
 };
 #endif
 
@@ -160,6 +189,7 @@ struct ScalarEngine {
   static inline T log(T v) { return nmm::log(v); }
   static inline T tan(T v) { return nmm::tan(v); }
   static inline T ceil(T v) { return nmm::ceil(v); }
+  static inline T floor(T v) { return nmm::floor(v); }
   static inline T max(T a, T b) { return std::max(a, b); }
   static inline T pow(T b, T e) { return nmm::pow(b, e); }
 
@@ -179,6 +209,26 @@ struct ScalarEngine {
   static inline T get_real(std::complex<T> z) { return z.real(); }
   static inline T get_imag(std::complex<T> z) { return z.imag(); }
   static inline std::complex<T> make_complex(T re, T im) { return std::complex<T>(re, im); }
+
+  static inline std::complex<T> log(std::complex<T> z) {
+    T re = z.real();
+    T im = z.imag();
+    T r = nmm::sqrt(re * re + im * im);
+    T phi = nmm::atan2(im, re);
+    return std::complex<T>(nmm::log(r), phi);
+  }
+
+  static inline std::complex<T> sqrt(std::complex<T> z) {
+    T re = z.real();
+    T im = z.imag();
+    T r = nmm::sqrt(re * re + im * im);
+    T u = nmm::sqrt((r + re) * T(0.5));
+    T v = nmm::sqrt((r - re) * T(0.5));
+    if (im < 0) v = -v;
+    return std::complex<T>(u, v);
+  }
+
+  static inline T reduce_max(T v) { return v; }
 };
 
 template <class T>

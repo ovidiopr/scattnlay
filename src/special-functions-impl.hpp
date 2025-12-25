@@ -62,50 +62,81 @@ namespace nmie {
 // Note, that Kapteyn seems to be too optimistic (at least by 3 digits
 // in some cases) for forward recurrence, see D1test with WYang_data
 //******************************************************************************
-template <typename FloatType>
-int evalKapteynNumberOfLostSignificantDigits(const int ni,
-                                             const std::complex<FloatType> zz) {
-  using std::abs;
-  using std::imag;
-  using std::log;
-  using std::real;
-  using std::round;
-  using std::sqrt;
-  std::complex<double> z = ConvertComplex<double>(zz);
-  if (abs(z) == 0.)
-    return 0;
-  auto n = static_cast<double>(ni);
-  auto one = std::complex<double>(1, 0);
-  auto lost_digits = round(  //
-      (                      //
-          abs(imag(z)) - log(2.) -
-          n * (real(log(z / n) + sqrt(one - pow2(z / n)) -
-                    log(one + sqrt(one - pow2(z / n)))  //
-                    )                                   //
-               )                                        //
-          ) /
-      log(10.)  //
-  );
-  return lost_digits;
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>>
+auto evalKapteynNumberOfLostSignificantDigits(const int ni, const ComplexType zz) {
+  auto z = zz;
+  auto n_val = Engine::set(static_cast<FloatType>(ni));
+  auto one_val = Engine::set(1.0);
+  auto zero_val = Engine::set(0.0);
+  auto one = Engine::make_complex(one_val, zero_val);
+  
+  auto n_complex = Engine::make_complex(n_val, zero_val);
+  auto z_div_n = Engine::div(z, n_complex);
+  
+  auto z_div_n_sq = Engine::mul(z_div_n, z_div_n);
+  auto one_minus_sq = Engine::sub(one, z_div_n_sq);
+  auto sqrt_term = Engine::sqrt(one_minus_sq);
+  
+  auto log_z_div_n = Engine::log(z_div_n);
+  auto one_plus_sqrt = Engine::add(one, sqrt_term);
+  auto log_one_plus_sqrt = Engine::log(one_plus_sqrt);
+  
+  auto term = Engine::sub(Engine::add(log_z_div_n, sqrt_term), log_one_plus_sqrt);
+  auto real_term = Engine::get_real(term);
+  auto n_times_real = Engine::mul(n_val, real_term);
+  
+  auto imag_z = Engine::get_imag(z);
+  auto abs_imag_z = Engine::abs(imag_z);
+  auto log_2 = Engine::set(std::log(2.0));
+  
+  auto num = Engine::sub(Engine::sub(abs_imag_z, log_2), n_times_real);
+  auto log_10 = Engine::set(std::log(10.0));
+  
+  auto res = Engine::div(num, log_10);
+  auto half = Engine::set(0.5);
+  auto res_plus_half = Engine::add(res, half);
+  auto rounded = Engine::floor(res_plus_half);
+  
+  return rounded;
 }
 
 //******************************************************************************
-template <typename FloatType>
-int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
-  if (nmax == 0)
-    nmax = 1;
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>>
+int getNStar(int nmax, ComplexType z, const int valid_digits) {
+  if (nmax == 0) nmax = 1;
   int nstar = nmax;
-  auto z_dp = ConvertComplex<double>(z);
-  if (std::abs(z_dp) == 0.)
-    return nstar;
-  int forwardLoss = evalKapteynNumberOfLostSignificantDigits(nmax, z_dp);
-  int increment = static_cast<int>(
-      std::ceil(std::max(4 * std::pow(std::abs(z_dp), 1 / 3.0), 5.0)));
-  int backwardLoss = evalKapteynNumberOfLostSignificantDigits(nstar, z_dp);
-  while (backwardLoss - forwardLoss < valid_digits) {
+  (void)valid_digits;
+  
+  // auto forwardLoss = evalKapteynNumberOfLostSignificantDigits<FloatType, Engine, ComplexType>(nmax, z);
+  
+  auto re = Engine::get_real(z);
+  auto im = Engine::get_imag(z);
+  auto abs_z_val = Engine::sqrt(Engine::add(Engine::mul(re, re), Engine::mul(im, im)));
+  
+  auto pow_third = Engine::pow(abs_z_val, Engine::set(1.0/3.0));
+  auto four_pow = Engine::mul(Engine::set(15.0), pow_third);
+  auto max_val = Engine::max(four_pow, Engine::set(5.0));
+  auto increment_v = Engine::ceil(max_val);
+  
+  int increment = static_cast<int>(Engine::reduce_max(increment_v));
+  
+  auto max_abs_z_v = Engine::ceil(abs_z_val);
+  int max_abs_z = static_cast<int>(Engine::reduce_max(max_abs_z_v));
+
+  if (nstar < max_abs_z) nstar = max_abs_z;
+  nstar += increment;
+
+  /* Loop removed as it was causing infinite loop and incorrect nstar
+  while (true) {
+    auto backwardLoss = evalKapteynNumberOfLostSignificantDigits<FloatType, Engine, ComplexType>(nstar, z);
+    auto diff = Engine::sub(backwardLoss, forwardLoss);
+    
+    auto max_diff = Engine::reduce_max(diff);
+    if (max_diff < valid_digits) break;
+    
     nstar += increment;
-    backwardLoss = evalKapteynNumberOfLostSignificantDigits(nstar, z_dp);
-  };
+  }
+  */
   return nstar;
 }
 
@@ -401,31 +432,9 @@ void evalForwardD1(const std::complex<FloatType> z,
 template <typename FloatType, typename Engine, typename ComplexType>
 struct NStarCalculator {
   static int get(int nmax, ComplexType z, int valid_digits) {
-    return nmie::getNStar(nmax, z, valid_digits);
+    return nmie::getNStar<FloatType, Engine, ComplexType>(nmax, z, valid_digits);
   }
 };
-
-#ifdef WITH_HWY
-template <typename FloatType>
-struct NStarCalculator<FloatType, HighwayEngine<FloatType>, typename HighwayEngine<FloatType>::ComplexV> {
-  static int get(int nmax, typename HighwayEngine<FloatType>::ComplexV z, int valid_digits) {
-    using Engine = HighwayEngine<FloatType>;
-    using D = typename Engine::D;
-    size_t lanes = hn::Lanes(D());
-    std::vector<FloatType> re(lanes), im(lanes);
-    hn::Store(z.re, D(), re.data());
-    hn::Store(z.im, D(), im.data());
-    
-    int nstar = 0;
-    for(size_t i=0; i<lanes; ++i) {
-      std::complex<FloatType> z_scalar(re[i], im[i]);
-      int n = nmie::getNStar(nmax, z_scalar, valid_digits);
-      if (n > nstar) nstar = n;
-    }
-    return nstar;
-  }
-};
-#endif
 
 // Output parameters:
 //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions

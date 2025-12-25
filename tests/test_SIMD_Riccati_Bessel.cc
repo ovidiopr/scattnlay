@@ -154,8 +154,19 @@ TEST(SIMDRiccatiBessel, PsiRecurrenceMatchScalar) {
     hn::Store(Psi_simd[n].re, d, out_re.data());
     hn::Store(Psi_simd[n].im, d, out_im.data());
     for (size_t i = 0; i < hn::Lanes(d); ++i) {
-      EXPECT_NEAR(out_re[i], Psi_scalar[n].real(), 1e-13) << "Psi Mismatch at n=" << n;
-      EXPECT_NEAR(out_im[i], Psi_scalar[n].imag(), 1e-13) << "Psi Mismatch at n=" << n;
+      // Use relative error for large values
+      double rel_err_re = std::abs((out_re[i] - Psi_scalar[n].real()) / Psi_scalar[n].real());
+      double rel_err_im = std::abs((out_im[i] - Psi_scalar[n].imag()) / Psi_scalar[n].imag());
+      
+      if (std::abs(Psi_scalar[n].real()) > 1e-13)
+        EXPECT_LT(rel_err_re, 2e-14) << "Psi Mismatch at n=" << n;
+      else
+        EXPECT_NEAR(out_re[i], Psi_scalar[n].real(), 1e-13) << "Psi Mismatch at n=" << n;
+
+      if (std::abs(Psi_scalar[n].imag()) > 1e-13)
+        EXPECT_LT(rel_err_im, 2e-14) << "Psi Mismatch at n=" << n;
+      else
+        EXPECT_NEAR(out_im[i], Psi_scalar[n].imag(), 1e-13) << "Psi Mismatch at n=" << n;
     }
   }
 }
@@ -466,6 +477,338 @@ TEST(SIMDRiccatiBessel, BnFullLanesMatchDataset) {
 
     EXPECT_NEAR(res_re[i], bn_ref.real(), 1e-12) << "Lane " << i << " mismatch at bn[" << target_n << "]";
     EXPECT_NEAR(res_im[i], bn_ref.imag(), 1e-12) << "Lane " << i << " mismatch at bn[" << target_n << "]";
+  }
+}
+
+TEST(SIMDRiccatiBessel, WYangDataMatchSIMD) {
+  const hn::ScalableTag<double> d;
+  using Engine = HighwayEngine<double>;
+  
+  // W. Yang test case: m={1.05, 1}, x=80
+  double x = 80.0;
+  double mr = 1.05, mi = 1.0;
+  
+  typename Engine::ComplexV z_simd{hn::Set(d, x * mr), hn::Set(d, x * mi)};
+  
+  // High order nmax to match WYang_data
+  int nmax = 150;
+  std::vector<typename Engine::ComplexV> D1_simd(nmax + 1);
+  evalDownwardD1<double, Engine>(z_simd, D1_simd);
+
+  std::vector<int> Dtest_n({0,1,30,50,60,70,75,80,85,90,99,116,130});
+  std::vector< std::complex<double>> Dtest_D1({
+                 {0.0,-1.0}, {7.464603828e-5,-0.9999958865},
+                 {0.03476380918,-0.9986960672},{0.09529213152,-0.999347654},
+                 {0.1364513887,-1.001895883},{0.184388335,-1.006979164},
+                 {0.2107044267,-1.01072099},{0.2384524295,-1.015382914},
+                 {0.2675164524,-1.021040337},{0.2977711192,-1.027753418},
+                 {0.3548096904,-1.042622957},{0.4692294405,-1.080629479},
+                 {0.5673827836,-1.121108944},
+             });
+
+  // Cross-reference specific orders from the original Dtest_n dataset
+  // Dtest_n = {0, 1, 30, 50, 60, 70, 75, 80, 85, 90, 99, 116, 130}
+  for (size_t i = 0; i < Dtest_n.size(); ++i) {
+    int n = Dtest_n[i];
+    std::vector<double> res_re(hn::Lanes(d)), res_im(hn::Lanes(d));
+    hn::Store(D1_simd[n].re, d, res_re.data());
+    hn::Store(D1_simd[n].im, d, res_im.data());
+    
+    for (size_t lane = 0; lane < hn::Lanes(d); ++lane) {
+      EXPECT_NEAR(res_re[lane], Dtest_D1[i].real(), 1e-9);
+      EXPECT_NEAR(res_im[lane], Dtest_D1[i].imag(), 1e-9);
+    }
+  }
+}
+
+// Helper function for parsing mpmath data
+void parse2_mpmath_data(const nmie::FloatType min_abs_tol,
+                        const std::tuple< nmie::FloatType, std::complex<nmie::FloatType>, int, std::complex<nmie::FloatType>, nmie::FloatType, nmie::FloatType > data,
+                        nmie::FloatType &x, std::complex<nmie::FloatType> &m, unsigned int &n, std::complex<nmie::FloatType> &func_mp,
+                        nmie::FloatType &re_abs_tol, nmie::FloatType &im_abs_tol){
+  x = std::get<0>(data);
+  m = std::get<1>(data);
+  n = std::get<2>(data);
+  func_mp = std::get<3>(data);
+  re_abs_tol = ( std::get<4>(data) > min_abs_tol && std::real(func_mp) < min_abs_tol)
+               ? std::get<4>(data) : min_abs_tol;
+  im_abs_tol = ( std::get<5>(data) > min_abs_tol && std::imag(func_mp) < min_abs_tol)
+               ? std::get<5>(data) : min_abs_tol;
+  // if re(func_mp) < 0.5 then round will give 0. To avoid zero tolerance add one.
+  re_abs_tol *= std::abs(std::round(std::real(func_mp))) + 1;
+  im_abs_tol *= std::abs(std::round(std::imag(func_mp))) + 1;
+}
+
+TEST(SIMDRiccatiBessel, AnDatasetMatchSIMD) {
+  const hn::ScalableTag<double> d;
+  using Engine = HighwayEngine<double>;
+  const size_t lanes = hn::Lanes(d);
+  double min_abs_tol = 1e-11;
+
+  // Process the an_test_30digits dataset in chunks of 'lanes'
+  for (size_t i = 0; i + lanes <= an_test_30digits.size(); i += lanes) {
+    std::vector<double> x_batch(lanes), mr_batch(lanes), mi_batch(lanes);
+    std::vector<int> n_batch(lanes);
+    std::vector<std::complex<double>> ref_batch(lanes);
+    std::vector<double> re_tol(lanes), im_tol(lanes);
+
+    for (size_t lane = 0; lane < lanes; ++lane) {
+      double x_val, re_t, im_t;
+      std::complex<double> m_val, an_mp;
+      unsigned int n_val;
+      
+      parse2_mpmath_data(min_abs_tol, an_test_30digits[i + lane], 
+                         x_val, m_val, n_val, an_mp, re_t, im_t);
+      
+      x_batch[lane] = x_val;
+      mr_batch[lane] = m_val.real();
+      mi_batch[lane] = m_val.imag();
+      n_batch[lane] = static_cast<int>(n_val);
+      ref_batch[lane] = an_mp;
+      re_tol[lane] = re_t;
+      im_tol[lane] = im_t;
+    }
+
+    // All tests in a batch must have the same 'n' for efficient horizontal SIMD
+    // If n differs, we'll use the maximum n in the batch and only check valid ones.
+    int max_n = 0;
+    for(auto n : n_batch) if(n > max_n) max_n = n;
+
+    // Load data into SIMD registers
+    auto vx = hn::Load(d, x_batch.data());
+    auto vmr = hn::Load(d, mr_batch.data());
+    auto vmi = hn::Load(d, mi_batch.data());
+
+    typename Engine::ComplexV mL_simd = { vmr, vmi };
+    typename Engine::RealV XL_simd = vx;
+    typename Engine::ComplexV z_simd = { hn::Mul(vx, vmr), hn::Mul(vx, vmi) };
+    typename Engine::ComplexV z_real_simd = { vx, hn::Zero(d) };
+
+    // 1. Calculate Psi/Zeta for XL (real) and Ha for z (complex)
+    int nmax = max_n + 1;
+    std::vector<typename Engine::ComplexV> D1_real(nmax + 1), Psi_real(nmax + 1), PsiZeta_real(nmax + 1), D3_real(nmax + 1);
+    std::vector<typename Engine::ComplexV> D1_complex(nmax + 1);
+
+    evalDownwardD1<double, Engine>(z_real_simd, D1_real);
+    evalUpwardPsi<double, Engine>(z_real_simd, D1_real, Psi_real);
+    evalUpwardD3<double, Engine>(z_real_simd, D1_real, D3_real, PsiZeta_real);
+    
+    evalDownwardD1<double, Engine>(z_simd, D1_complex);
+
+    // 2. Compute an for each lane
+    for (size_t lane_idx = 0; lane_idx < lanes; ++lane_idx) {
+        int n = n_batch[lane_idx];
+        if (n == 0) continue;
+        if (!std::isfinite(ref_batch[lane_idx].real()) || !std::isfinite(ref_batch[lane_idx].imag())) continue;
+        if (std::abs(x_batch[lane_idx] * mi_batch[lane_idx]) > 700.0) continue;
+
+        // Extract components at order n for the specific lane
+        // Note: For horizontal SIMD we are calculating an[n] for multiple z.
+        auto an_v = calc_an<double, Engine>(n, XL_simd, D1_complex[n], mL_simd, 
+                                            Psi_real[n], Engine::div(PsiZeta_real[n], Psi_real[n]), 
+                                            Psi_real[n-1], Engine::div(PsiZeta_real[n-1], Psi_real[n-1]));
+
+        std::vector<double> res_re(lanes), res_im(lanes);
+        hn::Store(an_v.re, d, res_re.data());
+        hn::Store(an_v.im, d, res_im.data());
+
+        EXPECT_NEAR(res_re[lane_idx], ref_batch[lane_idx].real(), re_tol[lane_idx]) 
+            << "an_test batch " << i << " lane " << lane_idx << " n=" << n;
+        EXPECT_NEAR(res_im[lane_idx], ref_batch[lane_idx].imag(), im_tol[lane_idx]) 
+            << "an_test batch " << i << " lane " << lane_idx << " n=" << n;
+    }
+  }
+}
+
+TEST(SIMDRiccatiBessel, BnDatasetMatchSIMD) {
+  const hn::ScalableTag<double> d;
+  using Engine = HighwayEngine<double>;
+  const size_t lanes = hn::Lanes(d);
+  double min_abs_tol = 1e-11;
+
+  for (size_t i = 0; i + lanes <= bn_test_30digits.size(); i += lanes) {
+    std::vector<double> x_batch(lanes), mr_batch(lanes), mi_batch(lanes);
+    std::vector<int> n_batch(lanes);
+    std::vector<std::complex<double>> ref_batch(lanes);
+    std::vector<double> re_tol(lanes), im_tol(lanes);
+
+    for (size_t lane = 0; lane < lanes; ++lane) {
+      double x_val, re_t, im_t;
+      std::complex<double> m_val, bn_mp;
+      unsigned int n_val;
+      
+      parse2_mpmath_data(min_abs_tol, bn_test_30digits[i + lane], 
+                         x_val, m_val, n_val, bn_mp, re_t, im_t);
+      
+      x_batch[lane] = x_val;
+      mr_batch[lane] = m_val.real();
+      mi_batch[lane] = m_val.imag();
+      n_batch[lane] = static_cast<int>(n_val);
+      ref_batch[lane] = bn_mp;
+      re_tol[lane] = re_t;
+      im_tol[lane] = im_t;
+    }
+
+    int max_n = 0;
+    for(auto n : n_batch) if(n > max_n) max_n = n;
+
+    auto vx = hn::Load(d, x_batch.data());
+    auto vmr = hn::Load(d, mr_batch.data());
+    auto vmi = hn::Load(d, mi_batch.data());
+
+    typename Engine::ComplexV mL_simd = { vmr, vmi };
+    typename Engine::RealV XL_simd = vx;
+    typename Engine::ComplexV z_simd = { hn::Mul(vx, vmr), hn::Mul(vx, vmi) };
+    typename Engine::ComplexV z_real_simd = { vx, hn::Zero(d) };
+
+    int nmax = max_n + 1;
+    std::vector<typename Engine::ComplexV> D1_real(nmax + 1), Psi_real(nmax + 1), PsiZeta_real(nmax + 1), D3_real(nmax + 1);
+    std::vector<typename Engine::ComplexV> D1_complex(nmax + 1);
+
+    evalDownwardD1<double, Engine>(z_real_simd, D1_real);
+    evalUpwardPsi<double, Engine>(z_real_simd, D1_real, Psi_real);
+    evalUpwardD3<double, Engine>(z_real_simd, D1_real, D3_real, PsiZeta_real);
+    
+    evalDownwardD1<double, Engine>(z_simd, D1_complex);
+
+    for (size_t lane_idx = 0; lane_idx < lanes; ++lane_idx) {
+        int n = n_batch[lane_idx];
+        if (n == 0) continue;
+        if (!std::isfinite(ref_batch[lane_idx].real()) || !std::isfinite(ref_batch[lane_idx].imag())) continue;
+        if (std::abs(x_batch[lane_idx] * mi_batch[lane_idx]) > 700.0) continue;
+
+        auto bn_v = calc_bn<double, Engine>(n, XL_simd, D1_complex[n], mL_simd, 
+                                            Psi_real[n], Engine::div(PsiZeta_real[n], Psi_real[n]), 
+                                            Psi_real[n-1], Engine::div(PsiZeta_real[n-1], Psi_real[n-1]));
+
+        std::vector<double> res_re(lanes), res_im(lanes);
+        hn::Store(bn_v.re, d, res_re.data());
+        hn::Store(bn_v.im, d, res_im.data());
+
+        EXPECT_NEAR(res_re[lane_idx], ref_batch[lane_idx].real(), re_tol[lane_idx]) 
+            << "bn_test batch " << i << " lane " << lane_idx << " n=" << n;
+        EXPECT_NEAR(res_im[lane_idx], ref_batch[lane_idx].imag(), im_tol[lane_idx]) 
+            << "bn_test batch " << i << " lane " << lane_idx << " n=" << n;
+    }
+  }
+}
+
+TEST(SIMDRiccatiBessel, PsiDatasetMatchSIMD) {
+  const hn::ScalableTag<double> d;
+  using Engine = HighwayEngine<double>;
+  const size_t lanes = hn::Lanes(d);
+  double min_abs_tol = 1e-11;
+
+  for (size_t i = 0; i + lanes <= psi_test_30digits.size(); i += lanes) {
+    std::vector<double> x_batch(lanes), mr_batch(lanes), mi_batch(lanes);
+    std::vector<int> n_batch(lanes);
+    std::vector<std::complex<double>> ref_batch(lanes);
+    std::vector<double> re_tol(lanes), im_tol(lanes);
+
+    for (size_t lane = 0; lane < lanes; ++lane) {
+      double x_val, re_t, im_t;
+      std::complex<double> m_val, psi_mp;
+      unsigned int n_val;
+      
+      parse2_mpmath_data(min_abs_tol, psi_test_30digits[i + lane], 
+                         x_val, m_val, n_val, psi_mp, re_t, im_t);
+      
+      x_batch[lane] = x_val;
+      mr_batch[lane] = m_val.real();
+      mi_batch[lane] = m_val.imag();
+      n_batch[lane] = static_cast<int>(n_val);
+      ref_batch[lane] = psi_mp;
+      re_tol[lane] = re_t;
+      im_tol[lane] = im_t;
+    }
+
+    int max_n = 0;
+    for(auto n : n_batch) if(n > max_n) max_n = n;
+
+    auto vx = hn::Load(d, x_batch.data());
+    auto vmr = hn::Load(d, mr_batch.data());
+    auto vmi = hn::Load(d, mi_batch.data());
+
+    typename Engine::ComplexV z_simd = { hn::Mul(vx, vmr), hn::Mul(vx, vmi) };
+
+    int nmax = max_n + 1;
+    std::vector<typename Engine::ComplexV> D1_simd(nmax + 1), Psi_simd(nmax + 1);
+
+    evalDownwardD1<double, Engine>(z_simd, D1_simd);
+    evalUpwardPsi<double, Engine>(z_simd, D1_simd, Psi_simd);
+    
+    for (size_t lane_idx = 0; lane_idx < lanes; ++lane_idx) {
+        int n = n_batch[lane_idx];
+        if (!std::isfinite(ref_batch[lane_idx].real()) || !std::isfinite(ref_batch[lane_idx].imag())) continue;
+        if (std::abs(x_batch[lane_idx] * mi_batch[lane_idx]) > 700.0) continue;
+        
+        std::vector<double> res_re(lanes), res_im(lanes);
+        hn::Store(Psi_simd[n].re, d, res_re.data());
+        hn::Store(Psi_simd[n].im, d, res_im.data());
+
+        EXPECT_NEAR(res_re[lane_idx], ref_batch[lane_idx].real(), re_tol[lane_idx]) 
+            << "psi_test batch " << i << " lane " << lane_idx << " n=" << n;
+        EXPECT_NEAR(res_im[lane_idx], ref_batch[lane_idx].imag(), im_tol[lane_idx]) 
+            << "psi_test batch " << i << " lane " << lane_idx << " n=" << n;
+    }
+  }
+}
+
+TEST(SIMDRiccatiBessel, D1DatasetMatchSIMD) {
+  const hn::ScalableTag<double> d;
+  using Engine = HighwayEngine<double>;
+  const size_t lanes = hn::Lanes(d);
+  double min_abs_tol = 1e-11;
+
+  for (size_t i = 0; i + lanes <= D1_test_30digits.size(); i += lanes) {
+    std::vector<double> x_batch(lanes), mr_batch(lanes), mi_batch(lanes);
+    std::vector<int> n_batch(lanes);
+    std::vector<std::complex<double>> ref_batch(lanes);
+    std::vector<double> re_tol(lanes), im_tol(lanes);
+
+    for (size_t lane = 0; lane < lanes; ++lane) {
+      double x_val, re_t, im_t;
+      std::complex<double> m_val, d1_mp;
+      unsigned int n_val;
+      
+      parse2_mpmath_data(min_abs_tol, D1_test_30digits[i + lane], 
+                         x_val, m_val, n_val, d1_mp, re_t, im_t);
+      
+      x_batch[lane] = x_val;
+      mr_batch[lane] = m_val.real();
+      mi_batch[lane] = m_val.imag();
+      n_batch[lane] = static_cast<int>(n_val);
+      ref_batch[lane] = d1_mp;
+      re_tol[lane] = re_t;
+      im_tol[lane] = im_t;
+    }
+
+    int max_n = 0;
+    for(auto n : n_batch) if(n > max_n) max_n = n;
+
+    auto vx = hn::Load(d, x_batch.data());
+    auto vmr = hn::Load(d, mr_batch.data());
+    auto vmi = hn::Load(d, mi_batch.data());
+
+    typename Engine::ComplexV z_simd = { hn::Mul(vx, vmr), hn::Mul(vx, vmi) };
+
+    int nmax = max_n + 1;
+    std::vector<typename Engine::ComplexV> D1_simd(nmax + 1);
+
+    evalDownwardD1<double, Engine>(z_simd, D1_simd);
+    
+    for (size_t lane_idx = 0; lane_idx < lanes; ++lane_idx) {
+        int n = n_batch[lane_idx];
+        
+        std::vector<double> res_re(lanes), res_im(lanes);
+        hn::Store(D1_simd[n].re, d, res_re.data());
+        hn::Store(D1_simd[n].im, d, res_im.data());
+
+        EXPECT_NEAR(res_re[lane_idx], ref_batch[lane_idx].real(), re_tol[lane_idx]) 
+            << "D1_test batch " << i << " lane " << lane_idx << " n=" << n;
+        EXPECT_NEAR(res_im[lane_idx], ref_batch[lane_idx].imag(), im_tol[lane_idx]) 
+            << "D1_test batch " << i << " lane " << lane_idx << " n=" << n;
+    }
   }
 }
 
