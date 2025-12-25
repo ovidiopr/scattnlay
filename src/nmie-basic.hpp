@@ -59,6 +59,31 @@
 namespace nmie {
 
 template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType>
+ComplexType calc_an(typename Engine::RealV n_real,
+                      typename Engine::RealV XL, 
+                      ComplexType Ha,
+                      ComplexType mL,
+                      ComplexType PsiXL,
+                      ComplexType ZetaXL,
+                      ComplexType PsiXLM1,
+                      ComplexType ZetaXLM1) {
+    auto zero = Engine::set(0.0);
+    auto n_complex = Engine::make_complex(n_real, zero);
+    auto XL_complex = Engine::make_complex(XL, zero);
+    
+    // (Ha / mL + n / XL)
+    auto term1 = Engine::add(Engine::div(Ha, mL), Engine::div(n_complex, XL_complex));
+    
+    // Num = term1 * PsiXL - PsiXLM1
+    auto Num = Engine::sub(Engine::mul(term1, PsiXL), PsiXLM1);
+    
+    // Denom = term1 * ZetaXL - ZetaXLM1
+    auto Denom = Engine::sub(Engine::mul(term1, ZetaXL), ZetaXLM1);
+
+    return Engine::div(Num, Denom);
+}
+
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType>
 ComplexType calc_an(int n,
                       typename Engine::RealV XL, 
                       ComplexType Ha,
@@ -68,12 +93,24 @@ ComplexType calc_an(int n,
                       ComplexType PsiXLM1,
                       ComplexType ZetaXLM1) {
     auto n_val = Engine::set(static_cast<FloatType>(n));
+    return calc_an<FloatType, Engine, ComplexType>(n_val, XL, Ha, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
+}
+
+template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType>
+ComplexType calc_bn(typename Engine::RealV n_real,
+                      typename Engine::RealV XL, 
+                      ComplexType Hb,
+                      ComplexType mL,
+                      ComplexType PsiXL,
+                      ComplexType ZetaXL,
+                      ComplexType PsiXLM1,
+                      ComplexType ZetaXLM1) {
     auto zero = Engine::set(0.0);
-    auto n_complex = Engine::make_complex(n_val, zero);
+    auto n_complex = Engine::make_complex(n_real, zero);
     auto XL_complex = Engine::make_complex(XL, zero);
     
-    // (Ha / mL + n / XL)
-    auto term1 = Engine::add(Engine::div(Ha, mL), Engine::div(n_complex, XL_complex));
+    // (mL * Hb + n / XL)
+    auto term1 = Engine::add(Engine::mul(mL, Hb), Engine::div(n_complex, XL_complex));
     
     // Num = term1 * PsiXL - PsiXLM1
     auto Num = Engine::sub(Engine::mul(term1, PsiXL), PsiXLM1);
@@ -94,20 +131,7 @@ ComplexType calc_bn(int n,
                       ComplexType PsiXLM1,
                       ComplexType ZetaXLM1) {
     auto n_val = Engine::set(static_cast<FloatType>(n));
-    auto zero = Engine::set(0.0);
-    auto n_complex = Engine::make_complex(n_val, zero);
-    auto XL_complex = Engine::make_complex(XL, zero);
-    
-    // (mL * Hb + n / XL)
-    auto term1 = Engine::add(Engine::mul(mL, Hb), Engine::div(n_complex, XL_complex));
-    
-    // Num = term1 * PsiXL - PsiXLM1
-    auto Num = Engine::sub(Engine::mul(term1, PsiXL), PsiXLM1);
-    
-    // Denom = term1 * ZetaXL - ZetaXLM1
-    auto Denom = Engine::sub(Engine::mul(term1, ZetaXL), ZetaXLM1);
-
-    return Engine::div(Num, Denom);
+    return calc_bn<FloatType, Engine, ComplexType>(n_val, XL, Hb, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
 }
 
 // class implementation
@@ -796,7 +820,59 @@ void MultiLayerMie<FloatType>::calcScattCoeffs() {
   // this convention to save memory. (13 Nov, 2014)                      //
   //*********************************************************************//
   FloatType a0 = 0, b0 = 0;
-  for (int n = 0; n < nmax_; n++) {
+  int n_simd = 0;
+
+#ifdef WITH_HWY
+  if constexpr (std::is_same<FloatType, double>::value || std::is_same<FloatType, float>::value) {
+    using Engine = HighwayEngine<FloatType>;
+    const size_t lanes = hn::Lanes(hn::ScalableTag<FloatType>());
+    
+    // Pre-load constants
+    auto XL_val = x[L - 1];
+    auto XL_vec = hn::Set(hn::ScalableTag<FloatType>(), XL_val);
+    auto mL_val = m[L - 1];
+    auto mL_vec = Engine::make_complex(hn::Set(hn::ScalableTag<FloatType>(), mL_val.real()),
+                                       hn::Set(hn::ScalableTag<FloatType>(), mL_val.imag()));
+    
+    // Only vectorize if not PEC layer
+    if (pl < (L - 1)) {
+      for (; n_simd <= nmax_ - static_cast<int>(lanes); n_simd += lanes) {
+        // Load n vector: [n_simd + 1, n_simd + 2, ...]
+        std::array<FloatType, 64> n_arr; 
+        for(size_t i=0; i<lanes; ++i) n_arr[i] = static_cast<FloatType>(n_simd + i + 1);
+        auto n_vec = hn::Load(hn::ScalableTag<FloatType>(), n_arr.data());
+        
+        // Helper to load complex vector from std::vector<complex>
+        auto load_complex = [&](const std::vector<std::complex<FloatType>>& v, int offset) {
+            const FloatType* ptr = reinterpret_cast<const FloatType*>(&v[offset]);
+            typename Engine::V re, im;
+            hn::LoadInterleaved2(hn::ScalableTag<FloatType>(), ptr, re, im);
+            return typename Engine::ComplexV{re, im};
+        };
+
+        auto PsiXL_np1 = load_complex(PsiXL, n_simd + 1);
+        auto ZetaXL_np1 = load_complex(ZetaXL, n_simd + 1);
+        auto PsiXL_n = load_complex(PsiXL, n_simd);
+        auto ZetaXL_n = load_complex(ZetaXL, n_simd);
+        
+        auto Ha_vec = load_complex(Ha[L - 1], n_simd);
+        auto Hb_vec = load_complex(Hb[L - 1], n_simd);
+        
+        auto an_vec = nmie::calc_an<FloatType, Engine>(n_vec, XL_vec, Ha_vec, mL_vec, PsiXL_np1, ZetaXL_np1, PsiXL_n, ZetaXL_n);
+        auto bn_vec = nmie::calc_bn<FloatType, Engine>(n_vec, XL_vec, Hb_vec, mL_vec, PsiXL_np1, ZetaXL_np1, PsiXL_n, ZetaXL_n);
+
+        // Store results
+        FloatType* an_ptr = reinterpret_cast<FloatType*>(&an_[n_simd]);
+        hn::StoreInterleaved2(an_vec.re, an_vec.im, hn::ScalableTag<FloatType>(), an_ptr);
+        
+        FloatType* bn_ptr = reinterpret_cast<FloatType*>(&bn_[n_simd]);
+        hn::StoreInterleaved2(bn_vec.re, bn_vec.im, hn::ScalableTag<FloatType>(), bn_ptr);
+      }
+    }
+  }
+#endif
+
+  for (int n = n_simd; n < nmax_; n++) {
     //********************************************************************//
     // Expressions for calculating an and bn coefficients are not valid if //
     // there is only one PEC layer (ie, for a simple PEC sphere).          //
