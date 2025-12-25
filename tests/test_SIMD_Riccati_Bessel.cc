@@ -3,6 +3,7 @@
 #include "../src/special-functions-impl.hpp"
 #include "../src/nmie-basic.hpp"
 #include "../src/nmie-precision.hpp"
+#include "../src/nmie-batch.hpp"
 #include "test_spec_functions_data.hpp"
 
 // #define HWY_TARGET_INCLUDE "tests/test_SIMD_Riccati_Bessel.cc"
@@ -813,9 +814,9 @@ TEST(SIMDRiccatiBessel, D1DatasetMatchSIMD) {
 }
 
 TEST(SIMDRiccatiBessel, BulkSphereBatchMatchDu) {
-  const hn::ScalableTag<double> d;
+  // const hn::ScalableTag<double> d;
   using Engine = HighwayEngine<double>;
-  const size_t lanes = hn::Lanes(d);
+  // const size_t lanes = hn::Lanes(d);
 
   // Data from test_bulk_sphere.cc
   struct TestCase { double x; std::complex<double> m; double Qext; double Qsca; };
@@ -835,91 +836,102 @@ TEST(SIMDRiccatiBessel, BulkSphereBatchMatchDu) {
       {10000, {10, 10}, 2.005914, 1.795393},
   };
 
-  for (size_t i = 0; i + lanes <= cases.size(); i += lanes) {
-    std::vector<double> x_vals(lanes), mr_vals(lanes), mi_vals(lanes);
-    std::vector<double> nmax_vals(lanes);
-    int max_nmax = 0;
+  MieBatchInput input;
+  for(const auto& c : cases) {
+    input.x.push_back(c.x);
+    input.m.push_back(c.m);
+  }
+
+  auto output = RunMieBatch<double, Engine>(input);
+
+  for (size_t i = 0; i < cases.size(); ++i) {
+    EXPECT_NEAR(output.Qext[i], cases[i].Qext, 1e-6) << "Batch idx " << i << " Qext mismatch";
+    EXPECT_NEAR(output.Qsca[i], cases[i].Qsca, 1e-6) << "Batch idx " << i << " Qsca mismatch";
+    
+    // Consistency checks
+    EXPECT_NEAR(output.Qabs[i], output.Qext[i] - output.Qsca[i], 1e-12);
+    if (output.Qext[i] > 1e-12)
+        EXPECT_NEAR(output.Albedo[i], output.Qsca[i] / output.Qext[i], 1e-12);
+    if (output.Qsca[i] > 1e-12)
+        EXPECT_NEAR(output.g[i], (output.Qext[i] - output.Qpr[i]) / output.Qsca[i], 1e-12);
+        
+    // Rayleigh check for first case (x=0.099)
+    if (i == 0) {
+        // Qbk approx 1.5 * Qsca for Rayleigh
+        EXPECT_NEAR(output.Qbk[i], 1.5 * output.Qsca[i], 1e-7);
+    }
+  }
+}
+
+// Helper for parsing mpmath data
+void parse_mpmath_data(const double min_abs_tol, const std::tuple< std::complex<double>, int, std::complex<double>, double, double > data,
+                       std::complex<double> &z, unsigned int &n, std::complex<double> &func_mp,
+                       double &re_abs_tol, double &im_abs_tol){
+  z = std::get<0>(data);
+  n = std::get<1>(data);
+  func_mp = std::get<2>(data);
+  re_abs_tol = ( std::get<3>(data) > min_abs_tol && std::real(func_mp) < min_abs_tol)
+                    ? std::get<3>(data) : min_abs_tol;
+  im_abs_tol = ( std::get<4>(data) > min_abs_tol && std::imag(func_mp) < min_abs_tol)
+                    ? std::get<4>(data) : min_abs_tol;
+  // if re(func_mp) < 0.5 then round will give 0. To avoid zero tolerance add one.
+  re_abs_tol *= std::abs(std::round(std::real(func_mp))) + 1;
+  im_abs_tol *= std::abs(std::round(std::imag(func_mp))) + 1;
+}
+
+TEST(SIMDRiccatiBessel, KapteynMatchScalar) {
+  const hn::ScalableTag<double> d;
+  using Engine = HighwayEngine<double>;
+  
+  // Case 1: H.Du example (80, 100+100i)
+  typename Engine::ComplexV z_v{hn::Set(d, 100.0), hn::Set(d, 100.0)};
+  
+  auto res_v = evalKapteynNumberOfLostSignificantDigits<double, Engine>(80, z_v);
+  
+  std::vector<double> out(hn::Lanes(d));
+  hn::Store(res_v, d, out.data());
+  for (size_t i = 0; i < hn::Lanes(d); ++i) {
+    EXPECT_EQ(out[i], 7.0); 
+  }
+}
+
+TEST(SIMDRiccatiBessel, PsiZetaDatasetMatchSIMD) {
+  const hn::ScalableTag<double> d;
+  using Engine = HighwayEngine<double>;
+  const size_t lanes = hn::Lanes(d);
+  double min_abs_tol = 9e-11;
+
+  for (size_t i = 0; i + lanes <= psi_mul_zeta_test_16digits.size(); i += lanes) {
+    std::vector<double> re_batch(lanes), im_batch(lanes), ref_re(lanes), ref_im(lanes);
+    std::vector<int> n_batch(lanes);
 
     for (size_t lane = 0; lane < lanes; ++lane) {
-      x_vals[lane] = cases[i + lane].x;
-      mr_vals[lane] = cases[i + lane].m.real();
-      mi_vals[lane] = cases[i + lane].m.imag();
-      
-      // Calculate nmax for this lane to find batch max
-      double x = x_vals[lane];
-      int nmax = std::round(x + 11 * std::pow(x, (1.0 / 3.0)) + 1);
-      nmax_vals[lane] = static_cast<double>(nmax);
-      if (nmax > max_nmax) max_nmax = nmax;
+      std::complex<double> z, func_mp;
+      unsigned int n;
+      double re_t, im_t;
+      parse_mpmath_data(min_abs_tol, psi_mul_zeta_test_16digits[i+lane], z, n, func_mp, re_t, im_t);
+      re_batch[lane] = z.real();
+      im_batch[lane] = z.imag();
+      n_batch[lane] = n;
+      ref_re[lane] = func_mp.real();
+      ref_im[lane] = func_mp.imag();
     }
 
-    auto vnmax = hn::Load(d, nmax_vals.data());
-    auto vx = hn::Load(d, x_vals.data());
-    auto vmr = hn::Load(d, mr_vals.data());
-    auto vmi = hn::Load(d, mi_vals.data());
+    typename Engine::ComplexV z_v{hn::Load(d, re_batch.data()), hn::Load(d, im_batch.data())};
+    int max_n = 0;
+    for(int n : n_batch) if(n > max_n) max_n = n;
 
-    typename Engine::ComplexV mL_v = { vmr, vmi };
-    typename Engine::ComplexV z_v = { hn::Mul(vx, vmr), hn::Mul(vx, vmi) };
-    typename Engine::ComplexV x_real_v = { vx, hn::Zero(d) };
-
-    // 1. Calculate Special Functions for the whole batch
-    int nmax = max_nmax + 15; // Buffer for stability
-    std::vector<typename Engine::ComplexV> D1_z(nmax + 1), D1_x(nmax + 1), 
-                                           Psi_x(nmax + 1), Zeta_x(nmax + 1), D3_x(nmax + 1);
-    std::vector<typename Engine::ComplexV> PsiZeta_x(nmax + 1);
-
-    evalDownwardD1<double, Engine>(z_v, D1_z);
-    evalDownwardD1<double, Engine>(x_real_v, D1_x);
-    evalUpwardPsi<double, Engine>(x_real_v, D1_x, Psi_x);
-    evalUpwardD3<double, Engine>(x_real_v, D1_x, D3_x, PsiZeta_x);
-
-    // Efficiency factors accumulation registers
-    auto vQext = hn::Zero(d);
-    auto vQsca = hn::Zero(d);
-
-    // 2. Sum loop (Horizontal SIMD: across particles)
-    for (int n = 1; n < nmax; ++n) {
-      auto vn = hn::Set(d, static_cast<double>(n));
-      auto mask = hn::Le(vn, vnmax);
-
-      auto Zeta_n = Engine::div(PsiZeta_x[n], Psi_x[n]);
-      auto Zeta_nm1 = Engine::div(PsiZeta_x[n-1], Psi_x[n-1]);
-
-      auto an = calc_an<double, Engine>(n, vx, D1_z[n], mL_v, 
-                                        Psi_x[n], Zeta_n, Psi_x[n-1], Zeta_nm1);
-      auto bn = calc_bn<double, Engine>(n, vx, D1_z[n], mL_v, // In bulk sphere Hb = Ha = D1_z
-                                        Psi_x[n], Zeta_n, Psi_x[n-1], Zeta_nm1);
-
-      // Mask out contributions beyond nmax for each lane
-      an.re = hn::IfThenElse(mask, an.re, hn::Zero(d));
-      an.im = hn::IfThenElse(mask, an.im, hn::Zero(d));
-      bn.re = hn::IfThenElse(mask, bn.re, hn::Zero(d));
-      bn.im = hn::IfThenElse(mask, bn.im, hn::Zero(d));
-
-      // (2n + 1)
-      auto mult = hn::Add(hn::Add(vn, vn), hn::Set(d, 1.0));
-      
-      // Qext sum += (2n+1) * Re(an + bn)
-      vQext = hn::Add(vQext, hn::Mul(mult, hn::Add(an.re, bn.re)));
-
-      // Qsca sum += (2n+1) * (|an|^2 + |bn|^2)
-      auto an_mag2 = hn::Add(hn::Mul(an.re, an.re), hn::Mul(an.im, an.im));
-      auto bn_mag2 = hn::Add(hn::Mul(bn.re, bn.re), hn::Mul(bn.im, bn.im));
-      vQsca = hn::Add(vQsca, hn::Mul(mult, hn::Add(an_mag2, bn_mag2)));
-    }
-
-    // Final normalization: 2/x^2
-    auto norm = hn::Div(hn::Set(d, 2.0), hn::Mul(vx, vx));
-    vQext = hn::Mul(vQext, norm);
-    vQsca = hn::Mul(vQsca, norm);
-
-    // 3. Verify against reference
-    std::vector<double> res_ext(lanes), res_sca(lanes);
-    hn::Store(vQext, d, res_ext.data());
-    hn::Store(vQsca, d, res_sca.data());
+    std::vector<typename Engine::ComplexV> D1(max_n + 1), D3(max_n + 1), PsiZeta(max_n + 1);
+    evalDownwardD1<double, Engine>(z_v, D1);
+    evalUpwardD3<double, Engine>(z_v, D1, D3, PsiZeta);
 
     for (size_t lane = 0; lane < lanes; ++lane) {
-      EXPECT_NEAR(res_ext[lane], cases[i + lane].Qext, 1e-6) << "Batch idx " << i + lane << " Qext mismatch";
-      EXPECT_NEAR(res_sca[lane], cases[i + lane].Qsca, 1e-6) << "Batch idx " << i + lane << " Qsca mismatch";
+      int n = n_batch[lane];
+      std::vector<double> res_re(lanes), res_im(lanes);
+      hn::Store(PsiZeta[n].re, d, res_re.data());
+      hn::Store(PsiZeta[n].im, d, res_im.data());
+      EXPECT_NEAR(res_re[lane], ref_re[lane], 1e-10);
+      EXPECT_NEAR(res_im[lane], ref_im[lane], 1e-10);
     }
   }
 }
