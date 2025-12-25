@@ -274,7 +274,7 @@ TEST(D3test, mpmath_generated_input) {
 //    auto Nstop = nmie::LeRu_near_field_cutoff(z)+1;
 //    auto Nstop = n;
     int valid_digits = 16;
-    int nstar = nmie::getNStar(n, z, valid_digits);
+    int nstar = nmie::getNStar<nmie::FloatType>(n, z, valid_digits);
     std::vector<std::complex<nmie::FloatType>> Db(nstar),Dold(nstar), r;
     r.resize(nstar);
     Db.resize(nstar);
@@ -314,7 +314,7 @@ TEST(D1test, WYang_data){
 
 for (unsigned int i = 0; i < Dtest_n.size(); i++) {
   unsigned int n = Dtest_n[i];
-  int forward_loss_digits = nmie::evalKapteynNumberOfLostSignificantDigits(n, z);
+  int forward_loss_digits = nmie::evalKapteynNumberOfLostSignificantDigits<nmie::FloatType>(n, z);
   forward_loss_digits += 3; // Kapteyn is too optimistic
   if (test_loss_digits > forward_loss_digits ) {
     EXPECT_NEAR(std::real(Df[n]), std::real(Dtest_D1[i]),
@@ -324,7 +324,7 @@ for (unsigned int i = 0; i < Dtest_n.size(); i++) {
   }
 // eval backward recurrence
   int valid_digits = 6;
-  int nstar = nmie::getNStar(n, z, valid_digits);
+  int nstar = nmie::getNStar<nmie::FloatType>(n, z, valid_digits);
   r.resize(nstar);
   Db.resize(nstar);
   nmie::evalBackwardR(z,r);
@@ -348,13 +348,13 @@ for (unsigned int i = 0; i < Dtest_n.size(); i++) {
 
 TEST(KaptyenTest, HandlesInput) {
   // H.Du APPLIED OPTICS, Vol. 43, No. 9, 20 March 2004
-  double l = nmie::evalKapteynNumberOfLostSignificantDigits(80, std::complex<double>(100,100));
+  double l = nmie::evalKapteynNumberOfLostSignificantDigits<double>(80, std::complex<double>(100,100));
   EXPECT_EQ(l, 7)<<"Should be equal";
   std::complex<double> z(10000,0);
-  l = nmie::evalKapteynNumberOfLostSignificantDigits(5070, z);
+  l = nmie::evalKapteynNumberOfLostSignificantDigits<double>(5070, z);
   EXPECT_EQ(l, 0)<<"Should be equal";
   // find NStar such that l_nstar(z) - l_nmax(z) >= valid_digits
-  int NStar = nmie::getNStar(5070, z,6);
+  int NStar = nmie::getNStar<double>(5070, z,6);
   EXPECT_GE(NStar, 10130);
 //  const double pi=3.14159265358979323846;
 //  z = std::complex<double>(100,100);

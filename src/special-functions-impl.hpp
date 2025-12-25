@@ -63,7 +63,7 @@ namespace nmie {
 // in some cases) for forward recurrence, see D1test with WYang_data
 //******************************************************************************
 template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>>
-auto evalKapteynNumberOfLostSignificantDigits(const int ni, const ComplexType zz) {
+typename Engine::RealV evalKapteynNumberOfLostSignificantDigits(const int ni, const ComplexType zz) {
   auto z = zz;
   auto n_val = Engine::set(static_cast<FloatType>(ni));
   auto one_val = Engine::set(1.0);
