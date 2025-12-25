@@ -15,10 +15,11 @@ maintainers = [
 ]
 description = "Calculation of the scattering of EM radiation by a multilayered sphere"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {text = "GPL-3.0-only"}
 keywords = ["Light scattering"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: C++",
     "Programming Language :: Python"
 ]
+dynamic = ["dependencies"]

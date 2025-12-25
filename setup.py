@@ -40,80 +40,140 @@ __download_url__ = (
     "https://github.com/ovidiopr/scattnlay/archive/v" + __version__ + ".0.tar.gz"
 )
 
-from setuptools import setup
-from setuptools.extension import Extension
+import os
+import sys
+import tempfile
+from setuptools import setup, Extension
 import numpy as np
 import pybind11 as pb
 
+# Add brew paths
+extra_include_dirs = []
+extra_library_dirs = []
+if sys.platform == 'darwin':
+    # Check for homebrew
+    for prefix in ['/opt/homebrew', '/usr/local']:
+        if os.path.isdir(prefix):
+            inc = os.path.join(prefix, 'include')
+            lib = os.path.join(prefix, 'lib')
+            if os.path.isdir(inc): extra_include_dirs.append(inc)
+            if os.path.isdir(lib): extra_library_dirs.append(lib)
+            
+            # Specific highway path if needed
+            hwy_prefix = os.path.join(prefix, 'opt', 'highway')
+            if os.path.isdir(hwy_prefix):
+                extra_include_dirs.append(os.path.join(hwy_prefix, 'include'))
+                extra_library_dirs.append(os.path.join(hwy_prefix, 'lib'))
 
+# Helper to check for headers/libraries
+def check_compilation(code, extra_args=None, libraries=None):
+    try:
+        import distutils.ccompiler
+        import distutils.sysconfig
+        from distutils.errors import CompileError, LinkError
+    except ImportError:
+        try:
+            from setuptools._distutils import ccompiler, sysconfig
+            from setuptools._distutils.errors import CompileError, LinkError
+            distutils = type('distutils', (), {})
+            distutils.ccompiler = ccompiler
+            distutils.sysconfig = sysconfig
+        except ImportError:
+            print("Warning: Could not import distutils to check dependencies. Assuming missing.")
+            return False
+
+    compiler = distutils.ccompiler.new_compiler()
+    distutils.sysconfig.customize_compiler(compiler)
+    
+    # Add include dirs (including current directory for relative includes)
+    include_dirs = [np.get_include(), pb.get_include(), '.'] + extra_include_dirs
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fname = os.path.join(tmpdir, 'test.cpp')
+        with open(fname, 'w') as f:
+            f.write(code)
+        
+        try:
+            # Compile
+            # Suppress output
+            obj_files = compiler.compile([fname], output_dir=tmpdir, include_dirs=include_dirs, extra_postargs=extra_args)
+            # Link (if libraries are needed)
+            if libraries:
+                compiler.link_executable(obj_files, os.path.join(tmpdir, 'test'), libraries=libraries, library_dirs=extra_library_dirs)
+            return True
+        except (CompileError, LinkError, Exception):
+            return False
+
+# Define extensions
 ext_dp = Extension(
     "scattnlay_dp",
     ["src/pb11-wrapper.cc"],
     language="c++",
-    include_dirs=[np.get_include(), pb.get_include()],
+    include_dirs=[np.get_include(), pb.get_include(), '.'] + extra_include_dirs,
+    library_dirs=extra_library_dirs,
     extra_compile_args=["-std=c++11"],
 )
-# extra_compile_args=['-std=c++11', '-O3',
-#                     '-mavx2', '-mfma',
-#                     '-finline-limit=1000000', '-ffp-contract=fast']),
+
 ext_mp = Extension(
     "scattnlay_mp",
     ["src/pb11-wrapper.cc"],
     language="c++",
-    include_dirs=[np.get_include(), pb.get_include()],
-    extra_compile_args=["-std=c++11", "-DMULTI_PRECISION=100"],
+    include_dirs=[np.get_include(), pb.get_include(), '.'] + extra_include_dirs,
+    library_dirs=extra_library_dirs,
+    extra_compile_args=["-std=c++14", "-DMULTI_PRECISION=100"],
 )
-# extra_compile_args=['-std=c++11', '-O3',
-#                     '-mavx2', '-mfma',
-#                     '-finline-limit=1000000', '-ffp-contract=fast',
-#                     '-DMULTI_PRECISION=100']),
 
 ext_simd = Extension(
     "scattnlay_simd",
     ["src/pb11-wrapper.cc"],
     language="c++",
-    include_dirs=[np.get_include(), pb.get_include()],
-    extra_compile_args=["-std=c++17", "-DWITH_HWY"],
-    libraries=["hwy"], # Ensure libhwy is in path
+    include_dirs=[np.get_include(), pb.get_include(), '.'] + extra_include_dirs,
+    library_dirs=extra_library_dirs,
+    extra_compile_args=["-std=c++17", "-DWITH_HWY", "-DHWY_DISABLED_TARGETS=0x4000000"],
+    libraries=["hwy"],
 )
 
-def run_setup(extensions):
-    setup(
-        name=__mod__,
-        version=__version__,
-        description=__title__,
-        long_description="""The Python version of scattnlay, a computer implementation of the algorithm for the \
-    calculation of electromagnetic radiation scattering by a multilayered sphere developed by Yang. It has been \
-    shown that the program is effective, resulting in very accurate values of scattering efficiencies for a wide \
-    range of size parameters, which is a considerable improvement over previous implementations of similar algorithms. \
-    For details see: O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
-        author=__author__,
-        author_email=__email__,
-        maintainer=__author__,
-        maintainer_email=__email__,
-        keywords=[
-            "Mie scattering",
-            "Multilayered sphere",
-            "Efficiency factors",
-            "Cross-sections",
-        ],
-        url=__url__,
-        download_url=__download_url__,
-        license="GPL",
-        platforms="any",
-        packages=["scattnlay"],  # , 'scattnlay_dp', 'scattnlay_mp'],
-        test_suite="tests",
-        ext_modules=extensions,
-        install_requires=["numpy"],
-    )
+# Determine which extensions to build
+extensions = [ext_dp]
 
+# Check for Boost (MP)
+print("Checking for Boost Multiprecision...")
+boost_code = "#include <boost/multiprecision/cpp_bin_float.hpp>\nint main() { return 0; }"
+if check_compilation(boost_code, extra_args=["-std=c++14"]):
+    print("Boost found. Enabling scattnlay_mp.")
+    extensions.append(ext_mp)
+else:
+    print("Boost not found. Skipping scattnlay_mp.")
 
-try:
-    run_setup([ext_dp, ext_mp, ext_simd])
-except:
-    print("Failed to build all extensions... Trying without MP...")
-    try:
-        run_setup([ext_dp, ext_simd])
-    except:
-        print("Failed to build SIMD extension... Building only in double precision...")
-        run_setup([ext_dp])
+# Check for Highway (SIMD)
+print("Checking for Google Highway...")
+hwy_code = "#include <hwy/highway.h>\nint main() { return 0; }"
+if check_compilation(hwy_code, extra_args=["-std=c++17"], libraries=["hwy"]):
+    print("Highway found. Enabling scattnlay_simd.")
+    extensions.append(ext_simd)
+else:
+    print("Highway not found. Skipping scattnlay_simd.")
+
+setup(
+    name=__mod__,
+    version=__version__,
+    description=__title__,
+    long_description="""The Python version of scattnlay, a computer implementation of the algorithm for the     calculation of electromagnetic radiation scattering by a multilayered sphere developed by Yang. It has been     shown that the program is effective, resulting in very accurate values of scattering efficiencies for a wide     range of size parameters, which is a considerable improvement over previous implementations of similar algorithms.     For details see: O. Pena, U. Pal, Comput. Phys. Commun. 180 (2009) 2348-2354.""",
+    author=__author__,
+    author_email=__email__,
+    maintainer=__author__,
+    maintainer_email=__email__,
+    keywords=[
+        "Mie scattering",
+        "Multilayered sphere",
+        "Efficiency factors",
+        "Cross-sections",
+    ],
+    url=__url__,
+    download_url=__download_url__,
+    license="GPL",
+    platforms="any",
+    packages=["scattnlay"],
+    ext_modules=extensions,
+    install_requires=["numpy"],
+)

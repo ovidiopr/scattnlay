@@ -38,12 +38,17 @@ Limited web version is available at https://physics.ifmo.ru/mie/
 
 Compile Code
 -------------
-To compile the source you will need a C++11 capable compiler. To use
-optional MultiPrecision feature you need to install
-Boost.Multiprecision library (package names are given in Ubuntu\Debian
-notation):
+To compile the source you will need a C++11 capable compiler.
 
- - **libboost-all-dev (>= 1.58.0)**
+### Dependencies
+
+**MultiPrecision (Optional):**
+ - Ubuntu/Debian: `sudo apt install libboost-all-dev`
+ - macOS: `brew install boost`
+
+**SIMD Acceleration (Optional, Recommended):**
+ - Ubuntu/Debian: `sudo apt install libhwy-dev`
+ - macOS: `brew install highway`
 
 To compile the Python extension you need [NumPy](http://www.numpy.org/):
 
@@ -73,10 +78,18 @@ cmake --build build_wasm
 
 Python module
 
-To build and install Python module run from the source code directory:
+To build and install Python module run from the source code directory (SIMD support is enabled automatically if Highway is found):
 
 ```bash
-pip install . --user
+pip install .
+```
+
+### SIMD Benchmark
+
+To verify performance gains:
+
+```bash
+python examples/calc-simd-benchmark.py
 ```
 
 Binary install
