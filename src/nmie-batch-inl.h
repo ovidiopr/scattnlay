@@ -50,13 +50,13 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
 
         int calc_nmax = static_cast<int>(std::round(max_x + 11 * std::pow(max_x, 1.0/3.0) + 16));
         
-        std::vector<typename Engine::ComplexV> D1_z(calc_nmax + 1), D1_x(calc_nmax + 1), 
+        std::vector<typename Engine::ComplexV> D1_z(calc_nmax + 1), D1_x(calc_nmax + 1), D3_x(calc_nmax + 1),
                                                 Psi_x(calc_nmax + 1), PsiZeta_x(calc_nmax + 1);
 
         evalDownwardD1<FloatType, Engine>(z_v, D1_z);
         evalDownwardD1<FloatType, Engine>(x_real_v, D1_x);
         evalUpwardPsi<FloatType, Engine>(x_real_v, D1_x, Psi_x);
-        evalUpwardD3<FloatType, Engine>(x_real_v, D1_x, D1_x /*unused*/, PsiZeta_x);
+        evalUpwardD3<FloatType, Engine>(x_real_v, D1_x, D3_x, PsiZeta_x);
 
         auto vQext = hn::Zero(d), vQsca = hn::Zero(d), vQbktmp_re = hn::Zero(d), vQbktmp_im = hn::Zero(d), vQpr_sum = hn::Zero(d);
         typename Engine::ComplexV an_prev = { hn::Zero(d), hn::Zero(d) }, bn_prev = { hn::Zero(d), hn::Zero(d) };
