@@ -11,9 +11,16 @@ Try to join our Gitter chat: [![Join the chat at https://gitter.im/scattnlay/Lob
  
 Fill the issue here: [Issues](https://github.com/ovidiopr/scattnlay/issues).
 
+AI era
+======
+
+- Version 2.5 (Dec 2025) Completed migration to CMake, added SIMD
+  acceleration using Google Highway.
+
+
 Stable releases
 ===============
-
+- Version 2.4 (Apr 10, 2024) The last hand-made release.
 - Version 2.0.1 (Jan 17, 2017). [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.248729.svg)](https://doi.org/10.5281/zenodo.248729)
 - Version 2.0.0 (Apr 1, 2016).
 - Version 1.0.0 (Nov 22, 2014).

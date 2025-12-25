@@ -13,7 +13,12 @@
 
                 <br><br> Report bugs, issues, and feature requests at project's
                 <a href="https://github.com/ovidiopr/scattnlay">GitHub</a>
-                (preferred) or mail to <a href="mailto:k.ladutenko@metalab.ifmo.ru?subject=Mie calculator webapp (Scattnlay)">k.ladutenko@metalab.ifmo.ru</a>.
+                (preferred) or mail to <a
+                    href="mailto:kostyfisik@gmail.com?subject=Mie calculator webapp (Scattnlay)">kostyfisik@gmail.com</a>.
+
+
+
+
 
               <br><br>
                 If it was useful for your project, please, cite in your related paper the following reference:

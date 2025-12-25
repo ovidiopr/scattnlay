@@ -8,7 +8,7 @@ version = "2.4"
 requires-python = ">=3.8"
 authors = [
     {name = "Ovidio Peña", email = "ovidio@bytesfall.com"},
-    {name = "Konstantin Ladutenko", email = "k.ladutenko@metalab.ifmo.ru"},
+    {name = "Konstantin Ladutenko", email = "kostyfisik@gmail.com"},
 ]
 maintainers = [
     {name = "Ovidio Peña", email = "ovidio@bytesfall.com"}
