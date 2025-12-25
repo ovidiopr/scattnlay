@@ -54,6 +54,7 @@ out.dot
 cov-int*
 cov-int
 build*
+_deps 
 .ipynb_checkpoints
 Temporary
 tests/Makefile

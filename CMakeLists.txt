@@ -1,7 +1,11 @@
-cmake_minimum_required(VERSION 3.18) # 3.18+ recommended for FetchContent features
-project(scattnlay VERSION 2.4)
+cmake_minimum_required(VERSION 3.20) # 3.18+ recommended for FetchContent features
+project(scattnlay VERSION 2.5)
 
 cmake_host_system_information(RESULT HOSTNAME QUERY HOSTNAME)
+
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 OLD)
+endif()
 
 message("Build type is: ${CMAKE_BUILD_TYPE}")
 message("Host OS System: ${CMAKE_HOST_SYSTEM}")
@@ -39,6 +43,10 @@ list(APPEND CMAKE_PREFIX_PATH "${LOCAL_DEPS_DIR}")
 
 include(FetchContent)
 
+if(POLICY CMP0169)
+  cmake_policy(SET CMP0169 OLD)
+endif()
+
 # --- 2. THE BOOTSTRAP MACRO ---
 macro(smart_import name repo tag)
     # Check if exists in system or build_deps
@@ -65,6 +73,7 @@ macro(smart_import name repo tag)
                 set(BUILD_TYPE_PROP ${CMAKE_BUILD_TYPE})
             endif()
 
+            message(STATUS "Configuring ${name}...")
             execute_process(
                 COMMAND ${CMAKE_COMMAND} -S "${${name}_fetch_SOURCE_DIR}" -B "${${name}_fetch_BINARY_DIR}"
                         -DCMAKE_INSTALL_PREFIX=${LOCAL_DEPS_DIR}
@@ -72,9 +81,21 @@ macro(smart_import name repo tag)
                         -DBUILD_SHARED_LIBS=OFF
                         -DINSTALL_GTEST=ON
                         -DPYBIND11_FINDPACKAGE=ON
-                COMMAND ${CMAKE_COMMAND} --build "${${name}_fetch_BINARY_DIR}" --target install -j 8
-                COMMAND_ERROR_IS_FATAL ANY
+                        -DPYBIND11_TEST=OFF
+                RESULT_VARIABLE config_result
             )
+            if(NOT config_result EQUAL 0)
+                message(FATAL_ERROR "Failed to configure ${name}")
+            endif()
+
+            message(STATUS "Building and Installing ${name}...")
+            execute_process(
+                COMMAND ${CMAKE_COMMAND} --build "${${name}_fetch_BINARY_DIR}" --target install -j 8
+                RESULT_VARIABLE build_result
+            )
+            if(NOT build_result EQUAL 0)
+                message(FATAL_ERROR "Failed to build ${name}")
+            endif()
         endif()
         find_package(${name} REQUIRED)
     endif()
@@ -85,19 +106,19 @@ endmacro()
 
 # Google Test (for C++ tests)
 if(NOT EMSCRIPTEN)
-    smart_import(GTest https://github.com/google/googletest.git v1.14.0)
+    smart_import(GTest https://github.com/google/googletest.git v1.15.2)
 endif()
 
 # Pybind11 (for Python bindings)
 # Note: We still need the Python interpreter to find NumPy headers
 if(NOT EMSCRIPTEN)
     find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-    smart_import(pybind11 https://github.com/pybind/pybind11.git v2.11.1)
+    smart_import(pybind11 https://github.com/pybind/pybind11.git v2.13.6)
 endif()
 
 # Google Highway (Planned SIMD)
 if(WITH_HWY)
-    smart_import(hwy https://github.com/google/highway.git 1.0.7)
+    smart_import(hwy https://github.com/google/highway.git 1.2.0)
 endif()
 
 # Boost (Multiprecision)

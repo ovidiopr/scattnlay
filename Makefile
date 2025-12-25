@@ -237,19 +237,6 @@ test_Riccati_Bessel_logarithmic_derivative/fast:
 .PHONY : test_Riccati_Bessel_logarithmic_derivative/fast
 
 #=============================================================================
-# Target rules for targets named test_SIMD_Riccati_Bessel
-
-# Build rule for target.
-test_SIMD_Riccati_Bessel: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_SIMD_Riccati_Bessel
-.PHONY : test_SIMD_Riccati_Bessel
-
-# fast build rule for target.
-test_SIMD_Riccati_Bessel/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_SIMD_Riccati_Bessel.dir/build.make tests/CMakeFiles/test_SIMD_Riccati_Bessel.dir/build
-.PHONY : test_SIMD_Riccati_Bessel/fast
-
-#=============================================================================
 # Target rules for targets named test_bulk_sphere
 
 # Build rule for target.
@@ -275,19 +262,6 @@ bench_special_functions/fast:
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/bench_special_functions.dir/build.make tests/CMakeFiles/bench_special_functions.dir/build
 .PHONY : bench_special_functions/fast
 
-#=============================================================================
-# Target rules for targets named smoke_simd
-
-# Build rule for target.
-smoke_simd: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 smoke_simd
-.PHONY : smoke_simd
-
-# fast build rule for target.
-smoke_simd/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/smoke_simd.dir/build.make tests/CMakeFiles/smoke_simd.dir/build
-.PHONY : smoke_simd/fast
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -305,9 +279,7 @@ help:
 	@echo "... bench_special_functions"
 	@echo "... fieldnlay-dp"
 	@echo "... scattnlay-dp"
-	@echo "... smoke_simd"
 	@echo "... test_Riccati_Bessel_logarithmic_derivative"
-	@echo "... test_SIMD_Riccati_Bessel"
 	@echo "... test_bulk_sphere"
 	@echo "... test_near_field"
 .PHONY : help

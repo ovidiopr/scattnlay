@@ -84,6 +84,16 @@ if(EMSCRIPTEN)
         -msimd128
     )
     set_target_properties(nmiejs PROPERTIES SUFFIX ".js")
+
+    add_custom_command(TARGET nmiejs POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:nmiejs>
+            ${CMAKE_SOURCE_DIR}/guiapp/src/nmiejs.js
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE_DIR:nmiejs>/nmiejs.wasm
+            ${CMAKE_SOURCE_DIR}/guiapp/src/nmiejs.wasm
+        COMMENT "Copying nmiejs artifacts to guiapp/src"
+    )
 endif()
 
 # Install targets
