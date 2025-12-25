@@ -45,7 +45,11 @@ set_target_properties(scattnlay-dp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_B
 
 if(WITH_HWY)
     target_link_libraries(scattnlay-dp PRIVATE hwy::hwy)
-    target_compile_definitions(scattnlay-dp PRIVATE WITH_HWY)
+    # 0x4000000 disables HWY_NEON_BF16 (bit 26) which causes namespace errors on Clang/macOS
+    target_compile_definitions(scattnlay-dp PRIVATE 
+        WITH_HWY 
+        "HWY_DISABLED_TARGETS=0x4000000"
+    )
 endif()
 
 add_executable(fieldnlay-dp ${_scattnlay_nearfield_sources})

@@ -95,6 +95,51 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
 
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+.PHONY : list_install_components/fast
+
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/opt/local/bin/cmake -P cmake_install.cmake
+.PHONY : install
+
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/opt/local/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/opt/local/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/opt/local/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/opt/local/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/opt/local/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip/fast
+
 # The main all target
 all: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/tig/coding/scattnlay/CMakeFiles /Users/tig/coding/scattnlay//CMakeFiles/progress.marks
@@ -127,6 +172,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named clean-deps
+
+# Build rule for target.
+clean-deps: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clean-deps
+.PHONY : clean-deps
+
+# fast build rule for target.
+clean-deps/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clean-deps.dir/build.make CMakeFiles/clean-deps.dir/build
+.PHONY : clean-deps/fast
+
+#=============================================================================
 # Target rules for targets named scattnlay-dp
 
 # Build rule for target.
@@ -151,32 +209,6 @@ fieldnlay-dp: cmake_check_build_system
 fieldnlay-dp/fast:
 	$(MAKE) $(MAKESILENT) -f src/CMakeFiles/fieldnlay-dp.dir/build.make src/CMakeFiles/fieldnlay-dp.dir/build
 .PHONY : fieldnlay-dp/fast
-
-#=============================================================================
-# Target rules for targets named scattnlay-mp
-
-# Build rule for target.
-scattnlay-mp: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 scattnlay-mp
-.PHONY : scattnlay-mp
-
-# fast build rule for target.
-scattnlay-mp/fast:
-	$(MAKE) $(MAKESILENT) -f src/CMakeFiles/scattnlay-mp.dir/build.make src/CMakeFiles/scattnlay-mp.dir/build
-.PHONY : scattnlay-mp/fast
-
-#=============================================================================
-# Target rules for targets named fieldnlay-mp
-
-# Build rule for target.
-fieldnlay-mp: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 fieldnlay-mp
-.PHONY : fieldnlay-mp
-
-# fast build rule for target.
-fieldnlay-mp/fast:
-	$(MAKE) $(MAKESILENT) -f src/CMakeFiles/fieldnlay-mp.dir/build.make src/CMakeFiles/fieldnlay-mp.dir/build
-.PHONY : fieldnlay-mp/fast
 
 #=============================================================================
 # Target rules for targets named test_near_field
@@ -205,6 +237,19 @@ test_Riccati_Bessel_logarithmic_derivative/fast:
 .PHONY : test_Riccati_Bessel_logarithmic_derivative/fast
 
 #=============================================================================
+# Target rules for targets named test_SIMD_Riccati_Bessel
+
+# Build rule for target.
+test_SIMD_Riccati_Bessel: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_SIMD_Riccati_Bessel
+.PHONY : test_SIMD_Riccati_Bessel
+
+# fast build rule for target.
+test_SIMD_Riccati_Bessel/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_SIMD_Riccati_Bessel.dir/build.make tests/CMakeFiles/test_SIMD_Riccati_Bessel.dir/build
+.PHONY : test_SIMD_Riccati_Bessel/fast
+
+#=============================================================================
 # Target rules for targets named test_bulk_sphere
 
 # Build rule for target.
@@ -216,32 +261,6 @@ test_bulk_sphere: cmake_check_build_system
 test_bulk_sphere/fast:
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_bulk_sphere.dir/build.make tests/CMakeFiles/test_bulk_sphere.dir/build
 .PHONY : test_bulk_sphere/fast
-
-#=============================================================================
-# Target rules for targets named test_bulk_sphere_multi_precision
-
-# Build rule for target.
-test_bulk_sphere_multi_precision: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_bulk_sphere_multi_precision
-.PHONY : test_bulk_sphere_multi_precision
-
-# fast build rule for target.
-test_bulk_sphere_multi_precision/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_bulk_sphere_multi_precision.dir/build.make tests/CMakeFiles/test_bulk_sphere_multi_precision.dir/build
-.PHONY : test_bulk_sphere_multi_precision/fast
-
-#=============================================================================
-# Target rules for targets named test_near_field_multi_precision
-
-# Build rule for target.
-test_near_field_multi_precision: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_near_field_multi_precision
-.PHONY : test_near_field_multi_precision
-
-# fast build rule for target.
-test_near_field_multi_precision/fast:
-	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_near_field_multi_precision.dir/build.make tests/CMakeFiles/test_near_field_multi_precision.dir/build
-.PHONY : test_near_field_multi_precision/fast
 
 #=============================================================================
 # Target rules for targets named bench_special_functions
@@ -256,6 +275,19 @@ bench_special_functions/fast:
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/bench_special_functions.dir/build.make tests/CMakeFiles/bench_special_functions.dir/build
 .PHONY : bench_special_functions/fast
 
+#=============================================================================
+# Target rules for targets named smoke_simd
+
+# Build rule for target.
+smoke_simd: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 smoke_simd
+.PHONY : smoke_simd
+
+# fast build rule for target.
+smoke_simd/fast:
+	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/smoke_simd.dir/build.make tests/CMakeFiles/smoke_simd.dir/build
+.PHONY : smoke_simd/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -263,18 +295,21 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... install"
+	@echo "... install/local"
+	@echo "... install/strip"
+	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... clean-deps"
 	@echo "... bench_special_functions"
 	@echo "... fieldnlay-dp"
-	@echo "... fieldnlay-mp"
 	@echo "... scattnlay-dp"
-	@echo "... scattnlay-mp"
+	@echo "... smoke_simd"
 	@echo "... test_Riccati_Bessel_logarithmic_derivative"
+	@echo "... test_SIMD_Riccati_Bessel"
 	@echo "... test_bulk_sphere"
-	@echo "... test_bulk_sphere_multi_precision"
 	@echo "... test_near_field"
-	@echo "... test_near_field_multi_precision"
 .PHONY : help
 
 

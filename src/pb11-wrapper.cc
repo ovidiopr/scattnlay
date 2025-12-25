@@ -42,6 +42,39 @@
 
 namespace py = pybind11;
 
+#ifdef WITH_HWY
+#include "nmie-batch.hpp"
+
+// Define a helper for Python batch calls
+py::dict RunMieBatchPy(py::array_t<double, py::array::c_style | py::array::forcecast> x, py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> m) {
+    auto r_x = x.unchecked<1>();
+    auto r_m = m.unchecked<1>();
+    
+    nmie::MieBatchInput input;
+    for (ssize_t i = 0; i < r_x.shape(0); ++i) {
+        input.x.push_back(r_x(i));
+        input.m.push_back(r_m(i));
+    }
+
+    auto output = nmie::RunMieBatch<double>(input);
+
+    py::dict res;
+    res["Qext"] = py::cast(output.Qext);
+    res["Qsca"] = py::cast(output.Qsca);
+    res["Qabs"] = py::cast(output.Qabs);
+    res["Qbk"] = py::cast(output.Qbk);
+    res["Qpr"] = py::cast(output.Qpr);
+    res["g"] = py::cast(output.g);
+    res["Albedo"] = py::cast(output.Albedo);
+    return res;
+}
+
+PYBIND11_MODULE(scattnlay_simd, m) {
+    m.doc() = "Google Highway SIMD accelerated Mie solver";
+    m.def("RunMieBatch", &RunMieBatchPy, "Run Mie calculation for a batch of particles using SIMD");
+}
+#else // WITH_HWY
+
 //******************************************************************************
 template <typename T>
 void declare_nmie(py::module& m, const std::string& typestr) {
@@ -140,3 +173,4 @@ PYBIND11_MODULE(scattnlay_dp, m)
   m.doc() = "The Python version of scattnlay";
   declare_nmie<nmie::FloatType>(m, precision_name);
 }
+#endif // WITH_HWY

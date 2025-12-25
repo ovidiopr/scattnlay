@@ -35,7 +35,10 @@ if(GTest_FOUND)
         add_executable("test_SIMD_Riccati_Bessel"
             test_SIMD_Riccati_Bessel.cc)
         target_link_libraries("test_SIMD_Riccati_Bessel" ${LIBS} hwy::hwy)
-        target_compile_definitions("test_SIMD_Riccati_Bessel" PRIVATE WITH_HWY)
+        target_compile_definitions("test_SIMD_Riccati_Bessel" PRIVATE 
+            WITH_HWY
+            "HWY_DISABLED_TARGETS=0x4000000"
+        )
         add_test(NAME "test_SIMD_Riccati_Bessel"
             COMMAND "test_SIMD_Riccati_Bessel")
     endif()

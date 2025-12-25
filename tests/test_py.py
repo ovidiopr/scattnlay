@@ -1,5 +1,5 @@
 import unittest
-from scattnlay import mie, mie_mp
+from scattnlay import mie, mie_mp, mie_simd
 from scattnlay import mesomie
 
 # A list of tests for a bulk sphere from
@@ -53,7 +53,7 @@ class TestStringMethods(unittest.TestCase):
 
     def test_bulk_multilayer(self):
         tol = 3e-7
-        for solver in [mie, mie_mp]:
+        for solver in [mie, mie_mp, mie_simd]:
             if solver is None:
                 continue
             print("Using solver: ", solver)

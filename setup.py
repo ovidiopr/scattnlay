@@ -58,7 +58,7 @@ ext_dp = Extension(
 #                     '-finline-limit=1000000', '-ffp-contract=fast']),
 ext_mp = Extension(
     "scattnlay_mp",
-    ["  src/pb11-wrapper.cc"],
+    ["src/pb11-wrapper.cc"],
     language="c++",
     include_dirs=[np.get_include(), pb.get_include()],
     extra_compile_args=["-std=c++11", "-DMULTI_PRECISION=100"],
@@ -68,6 +68,14 @@ ext_mp = Extension(
 #                     '-finline-limit=1000000', '-ffp-contract=fast',
 #                     '-DMULTI_PRECISION=100']),
 
+ext_simd = Extension(
+    "scattnlay_simd",
+    ["src/pb11-wrapper.cc"],
+    language="c++",
+    include_dirs=[np.get_include(), pb.get_include()],
+    extra_compile_args=["-std=c++17", "-DWITH_HWY"],
+    libraries=["hwy"], # Ensure libhwy is in path
+)
 
 def run_setup(extensions):
     setup(
@@ -101,7 +109,11 @@ def run_setup(extensions):
 
 
 try:
-    run_setup([ext_dp, ext_mp])
+    run_setup([ext_dp, ext_mp, ext_simd])
 except:
-    print("Failed to build all extensions... Building only in double precision...")
-    run_setup([ext_dp])
+    print("Failed to build all extensions... Trying without MP...")
+    try:
+        run_setup([ext_dp, ext_simd])
+    except:
+        print("Failed to build SIMD extension... Building only in double precision...")
+        run_setup([ext_dp])

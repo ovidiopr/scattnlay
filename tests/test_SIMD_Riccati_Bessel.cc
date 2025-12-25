@@ -815,7 +815,7 @@ TEST(SIMDRiccatiBessel, D1DatasetMatchSIMD) {
 
 TEST(SIMDRiccatiBessel, BulkSphereBatchMatchDu) {
   // const hn::ScalableTag<double> d;
-  using Engine = HighwayEngine<double>;
+  // using Engine = HighwayEngine<double>;
   // const size_t lanes = hn::Lanes(d);
 
   // Data from test_bulk_sphere.cc
@@ -842,7 +842,7 @@ TEST(SIMDRiccatiBessel, BulkSphereBatchMatchDu) {
     input.m.push_back(c.m);
   }
 
-  auto output = RunMieBatch<double, Engine>(input);
+  auto output = RunMieBatch<double>(input);
 
   for (size_t i = 0; i < cases.size(); ++i) {
     EXPECT_NEAR(output.Qext[i], cases[i].Qext, 1e-6) << "Batch idx " << i << " Qext mismatch";
@@ -937,7 +937,7 @@ TEST(SIMDRiccatiBessel, PsiZetaDatasetMatchSIMD) {
 }
 
 TEST(SIMDRiccatiBessel, BulkSphereBatchFullVerify) {
-  using Engine = HighwayEngine<double>;
+  // using Engine = HighwayEngine<double>;
   
   // Du test cases with all expected results
   struct Case { 
@@ -954,7 +954,7 @@ TEST(SIMDRiccatiBessel, BulkSphereBatchFullVerify) {
   MieBatchInput input;
   for(auto& c : cases) { input.x.push_back(c.x); input.m.push_back(c.m); }
 
-  auto output = RunMieBatch<double, Engine>(input);
+  auto output = RunMieBatch<double>(input);
 
   for (size_t i = 0; i < cases.size(); ++i) {
     EXPECT_NEAR(output.Qext[i], cases[i].Qext, 1e-6) << "Idx " << i << " Qext fail";
