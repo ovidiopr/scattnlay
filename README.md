@@ -63,6 +63,8 @@ To compile the Python extension you need [NumPy](http://www.numpy.org/):
  - **python-all-dev (any version)**
  - **python-numpy-dev (any version)**
 
+and **pybind11** (should be installed automatically via pyproject.toml)
+ 
 And to compile the Debian package you need some tools:
 
  - **debhelper (>=7.0.0)**
@@ -118,7 +120,7 @@ You can also install it from PyPi via
 sudo pip install scattnlay
 ```
 
-You can also ```git clone``` and ```pip install -e .``` to develop python package.
+You can also ```git clone``` and ```python3 -m pip install -e .``` to develop python package.
 
 Use
 ----
