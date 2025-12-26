@@ -1,14 +1,9 @@
 #!/bin/bash
 set -e
 
-
-echo "Building Multi-Precision..."
-cmake -S . -B build_mp -DENABLE_MP=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build build_mp -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
-
-echo "Building SIMD (Google Highway)..."
-cmake -S . -B build_simd -DWITH_HWY=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build build_simd -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+echo "Building SIMD (Google Highway) and Multi-Precision..."
+cmake -S . -B build -DWITH_HWY=ON -DENABLE_MP=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 
 if command -v emcmake >/dev/null 2>&1; then
     echo "Building WebAssembly..."

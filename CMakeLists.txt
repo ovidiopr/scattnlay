@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20) # 3.18+ recommended for FetchContent features
+cmake_minimum_required(VERSION 3.24) # Required for FetchContent FIND_PACKAGE_ARGS
 project(scattnlay VERSION 2.5)
 
 cmake_host_system_information(RESULT HOSTNAME QUERY HOSTNAME)
@@ -21,9 +21,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_compile_options(-W -Wall -pedantic -Werror)
-add_compile_options(-funroll-loops -fstrict-aliasing)
-
 
 # compiler details
 message("  C++ Compiler: ${CMAKE_CXX_COMPILER_ID} "
@@ -37,104 +34,78 @@ message("  Installation prefix: ${CMAKE_INSTALL_PREFIX}")
 option(ENABLE_MP "Use multiple precision" OFF)
 option(WITH_HWY "Enable Google Highway SIMD" OFF)
 
-# --- 1. SETUP PERSISTENT PATHS ---
-set(LOCAL_DEPS_DIR "${CMAKE_SOURCE_DIR}/build_deps" CACHE PATH "Persistent dependencies")
-list(APPEND CMAKE_PREFIX_PATH "${LOCAL_DEPS_DIR}")
-
 include(FetchContent)
+
+# Enable modern find-or-fetch behavior
+set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE ALWAYS CACHE STRING "Try find_package before fetching")
 
 if(POLICY CMP0169)
   cmake_policy(SET CMP0169 OLD)
 endif()
 
-# --- 2. THE BOOTSTRAP MACRO ---
-macro(smart_import name repo tag)
-    # Check if exists in system or build_deps
-    find_package(${name} QUIET)
-
-    if(NOT ${name}_FOUND)
-        message(STATUS "📦 ${name} not found. Bootstrapping to ${LOCAL_DEPS_DIR}...")
-
-        FetchContent_Declare(
-            ${name}_fetch
-            GIT_REPOSITORY ${repo}
-            GIT_TAG        ${tag}
-            SOURCE_DIR     "${LOCAL_DEPS_DIR}/sources/${name}"
-        )
-
-        FetchContent_GetProperties(${name}_fetch)
-        if(NOT ${name}_fetch_POPULATED)
-            FetchContent_Populate(${name}_fetch)
-            
-            # Identify the build type to match main project
-            if(NOT CMAKE_BUILD_TYPE)
-                set(BUILD_TYPE_PROP "Release")
-            else()
-                set(BUILD_TYPE_PROP ${CMAKE_BUILD_TYPE})
-            endif()
-
-            message(STATUS "Configuring ${name}...")
-            execute_process(
-                COMMAND ${CMAKE_COMMAND} -S "${${name}_fetch_SOURCE_DIR}" -B "${${name}_fetch_BINARY_DIR}"
-                        -DCMAKE_INSTALL_PREFIX=${LOCAL_DEPS_DIR}
-                        -DCMAKE_BUILD_TYPE=${BUILD_TYPE_PROP}
-                        -DBUILD_SHARED_LIBS=OFF
-                        -DINSTALL_GTEST=ON
-                        -DPYBIND11_FINDPACKAGE=ON
-                        -DPYBIND11_TEST=OFF
-                RESULT_VARIABLE config_result
-            )
-            if(NOT config_result EQUAL 0)
-                message(FATAL_ERROR "Failed to configure ${name}")
-            endif()
-
-            message(STATUS "Building and Installing ${name}...")
-            execute_process(
-                COMMAND ${CMAKE_COMMAND} --build "${${name}_fetch_BINARY_DIR}" --target install -j 8
-                RESULT_VARIABLE build_result
-            )
-            if(NOT build_result EQUAL 0)
-                message(FATAL_ERROR "Failed to build ${name}")
-            endif()
-        endif()
-        find_package(${name} REQUIRED)
-    endif()
-    message(STATUS "✅ Found ${name}: ${${name}_DIR}")
-endmacro()
-
-# --- 3. MANAGE DEPENDENCIES ---
+# --- DEPENDENCY MANAGEMENT (Modern FetchContent with FIND_PACKAGE_ARGS) ---
 
 # Google Test (for C++ tests)
 if(NOT EMSCRIPTEN)
-    smart_import(GTest https://github.com/google/googletest.git v1.15.2)
+    FetchContent_Declare(
+        GTest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        v1.15.2
+        FIND_PACKAGE_ARGS NAMES GTest
+    )
+    FetchContent_MakeAvailable(GTest)
 endif()
 
 # Pybind11 (for Python bindings)
-# Note: We still need the Python interpreter to find NumPy headers
 if(NOT EMSCRIPTEN)
     find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-    smart_import(pybind11 https://github.com/pybind/pybind11.git v2.13.6)
+    FetchContent_Declare(
+        pybind11
+        GIT_REPOSITORY https://github.com/pybind/pybind11.git
+        GIT_TAG        v3.0.1
+        FIND_PACKAGE_ARGS NAMES pybind11
+    )
+    FetchContent_MakeAvailable(pybind11)
 endif()
 
-# Google Highway (Planned SIMD)
+# Google Highway (SIMD)
 if(WITH_HWY)
-    smart_import(hwy https://github.com/google/highway.git 1.2.0)
+    FetchContent_Declare(
+        hwy
+        GIT_REPOSITORY https://github.com/google/highway.git
+        GIT_TAG        1.2.0
+        FIND_PACKAGE_ARGS NAMES hwy
+    )
+    FetchContent_MakeAvailable(hwy)
 endif()
 
-# Boost (Multiprecision)
-# Boost is heavy to FetchContent; we prioritize system Boost
+# Boost (Multiprecision - header-only)
 if(ENABLE_MP)
     find_package(Boost 1.60.0 REQUIRED)
-    if(Boost_FOUND)
-        include_directories(${Boost_INCLUDE_DIRS})
-    endif()
 endif()
 
-# --- 4. TARGET CONFIGURATION ---
+# --- INTERFACE LIBRARIES FOR COMPILER FLAGS (Phase 3) ---
+# Create interface libraries to avoid global pollution
+
+# Warning flags
+add_library(project_warnings INTERFACE)
+target_compile_options(project_warnings INTERFACE
+    -W -Wall -pedantic -Werror
+)
+
+# Optimization flags
+add_library(project_optimization INTERFACE)
+target_compile_options(project_optimization INTERFACE
+    -funroll-loops -fstrict-aliasing
+)
+
+# --- TARGET CONFIGURATION ---
 add_subdirectory(src)
 add_subdirectory(examples)
+
 #
 # Copy all python scripts to the build directory.
+# TODO: Move this to scattnlay subdirectory for better organization (Phase 4)
 #
 set(Python_SCRIPTS scattnlay/__init__.py scattnlay/main.py)
 
@@ -155,9 +126,36 @@ if(NOT EMSCRIPTEN)
     endif()
 endif()
 
-# Helper target to clear deps using git clean logic
-add_custom_target(clean-deps
-    COMMAND git clean -fdX "${LOCAL_DEPS_DIR}"
-    COMMENT "Wiping persistent dependencies using git clean"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+# --- PHASE 5: PROFESSIONAL DISTRIBUTION ---
+# Export targets for other CMake projects to use scattnlay
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+# Install export set
+install(EXPORT scattnlayTargets
+    FILE scattnlayTargets.cmake
+    NAMESPACE scattnlay::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/scattnlay
+)
+
+# Create version file
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/scattnlayConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+# Create config file
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/scattnlayConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/scattnlayConfig.cmake"
+    @ONLY
+)
+
+# Install config and version files
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/scattnlayConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/scattnlayConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/scattnlay
 )

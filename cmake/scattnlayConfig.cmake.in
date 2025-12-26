@@ -1,0 +1,17 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# Find dependencies that scattnlay requires
+if(@WITH_HWY@)
+    find_dependency(hwy)
+endif()
+
+if(@ENABLE_MP@)
+    find_dependency(Boost 1.60.0)
+endif()
+
+# Include the targets file
+include("${CMAKE_CURRENT_LIST_DIR}/scattnlayTargets.cmake")
+
+check_required_components(scattnlay)
