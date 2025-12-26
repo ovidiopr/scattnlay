@@ -8,7 +8,8 @@
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
-    "test": "echo \"No test specified\" && exit 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "dev": "quasar dev",
     "build": "quasar build"
   },
@@ -29,6 +30,8 @@
     "vuex": "^4.0.1"
   },
   "devDependencies": {
+    "vitest": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
     "eslint": "^8.11.0",

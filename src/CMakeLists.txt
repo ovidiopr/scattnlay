@@ -91,12 +91,12 @@ if(EMSCRIPTEN)
     target_compile_options(wasm_options INTERFACE -O3 -msimd128)
     target_link_options(wasm_options INTERFACE 
         --bind 
-        -lm 
         -sMODULARIZE=1 
+        -sEXPORT_ES6=1                # Added: Ensure standard ES import
         -sWASM=1 
         -sALLOW_MEMORY_GROWTH=1 
         -sEXPORT_NAME=createNmiejsModule 
-        -sENVIRONMENT=web,node
+        -sENVIRONMENT=web,node        # Added: node support for Vitest
         -O3
         -msimd128
     )
@@ -105,14 +105,11 @@ if(EMSCRIPTEN)
     target_link_libraries(nmiejs PRIVATE wasm_options)
     set_target_properties(nmiejs PROPERTIES SUFFIX ".js")
 
+    # Update copy command to put files in public/wasm for reliable asset fetching
     add_custom_command(TARGET nmiejs POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:nmiejs>
-            ${CMAKE_SOURCE_DIR}/guiapp/src/nmiejs.js
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE_DIR:nmiejs>/nmiejs.wasm
-            ${CMAKE_SOURCE_DIR}/guiapp/src/nmiejs.wasm
-        COMMENT "Copying nmiejs artifacts to guiapp/src"
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/guiapp/public/wasm
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:nmiejs> ${CMAKE_SOURCE_DIR}/guiapp/public/wasm/nmiejs.js
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE_DIR:nmiejs>/nmiejs.wasm ${CMAKE_SOURCE_DIR}/guiapp/public/wasm/nmiejs.wasm
     )
 endif()
 

@@ -1,7 +1,7 @@
 import { ActionTree } from 'vuex';
 import { StateInterface } from '../index';
 import { simulationSetupStateInterface } from './state';
-import nmiejs from 'src/nmiejs.js';
+import { getWasmModule } from 'src/utils/wasm-loader';
 import { useQuasar } from 'quasar';
 
 const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
@@ -12,7 +12,7 @@ const actions: ActionTree<simulationSetupStateInterface, StateInterface> = {
       boxClass: 'bg-grey-2 text-grey-9',
       spinnerColor: 'primary',
     });
-    const module = await nmiejs();
+    const module = await getWasmModule();
     const nmies = {
       spectrum: new module.nmie(),
       nearField: new module.nmie(),

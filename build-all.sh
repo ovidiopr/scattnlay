@@ -13,4 +13,8 @@ else
     echo "emcmake not found, skipping WebAssembly build."
 fi
 
+cd guiapp
+quasar build
+cd ..
+
 echo "All builds completed successfully."
