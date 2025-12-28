@@ -7,7 +7,7 @@
 <script>
 import ReactiveChart from 'components/ReactiveChart.vue';
 import { useStore } from 'src/store';
-import { defineComponent, computed, watch } from 'vue';
+import { defineComponent, computed, watch, onActivated } from 'vue';
 
 export default defineComponent({
   name: 'PlotSpectra',
@@ -16,6 +16,11 @@ export default defineComponent({
   },
   setup() {
     const $store = useStore();
+
+    onActivated(() => {
+      $store.commit('plotRuntime/updateSpectrumPlots');
+    });
+
     const isPlotQsca = computed(() => $store.state.plotRuntime.isPlotQsca);
     watch(isPlotQsca, () => $store.commit('plotRuntime/updateSpectrumPlots'));
     const isPlotQabs = computed(() => $store.state.plotRuntime.isPlotQabs);

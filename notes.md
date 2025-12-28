@@ -1,3 +1,30 @@
+# Overall prirorities
+
+# Algorithms?
+
+- [ ] Du algorithm for large complex refractive indices?
+    - woks with all examples from Du paper
+
+
+
+# Core
+
+- [ ] complete SIMD operations for nearfield calculations and far-field
+  calculations
+- [ ] implemnt multicore processing for spectra\nearfield\far-field
+  calculations
+  - No need to paralleize sing mie calculation over several hosts, so
+    multicore should be sufficient -> OpenMP?
+
+
+# Testing
+
+- [ ] use all examples from original Ovidio paper
+- [ ] add adapter for miepython API, reuse miepython  [test suite](https://github.com/scottprahl/miepython/tree/main/tests)
+- [ ] compare performance with miepython
+
+
+
 # Ideas for Improvements
 
 ## Performance Improvements

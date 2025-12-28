@@ -87,6 +87,10 @@ export default defineComponent({
       if (fromWL < safeFromWL) fromWL = safeFromWL;
       if (toWL > safeToWL) toWL = safeToWL;
       const pointsWL = $store.state.simulationSetup.current.pointsWL;
+
+      if (pointsWL <= 0) return [];
+      if (pointsWL === 1) return [fromWL];
+
       if (
         sourceUnits.value.endsWith('Hz') ||
         sourceUnits.value.endsWith('eV')
