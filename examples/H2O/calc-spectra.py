@@ -39,13 +39,13 @@ from optical_constants import read_refractive_index_from_yaml as get_index
 
 from_rWL = 0.01
 to_rWL = 5  # limit from H2O-Hale.yml data
-step_rWL = 0.01
+step_rWL = 0.002
 rWLs = np.arange(from_rWL, to_rWL+step_rWL/2., step_rWL);
 WLs = 1/rWLs #mkm
 
 index_H2O = get_index('H2O-Hale.yml', WLs, "mkm")
 
-print(index_H2O)
+# print(index_H2O)
 
 x = np.ones((1), dtype = np.float64)
 m = np.ones((1), dtype = np.complex128)
@@ -54,28 +54,43 @@ m = np.ones((1), dtype = np.complex128)
 core_r = 1 #mkm
 
 
-Qext_vec = []
 
-for i in range(len(WLs)):
-    WL = WLs[i]
-    x[0] = 2.0*np.pi*core_r/WL#/4.0*3.0
-    m[0] = index_H2O[:,1][i]
-    
-    terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
-        np.array(x), np.array(m),
-        mp=True
-        # mp=False
-    )
-    print(np.array([Qext]))
-    Qext_vec.append(Qext)
+isMP = False
+isMP = True
+def run_spectra(isMP):
+    Qext_vec = []
+    for i in range(len(WLs)):
+        WL = WLs[i]
+        x[0] = 2.0*np.pi*core_r/WL#/4.0*3.0
+        m[0] = index_H2O[:,1][i]
+        
+        terms, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2 = scattnlay(
+            np.array(x), np.array(m),
+            # mp=True
+            mp=isMP
+        )
+        # print(np.array([Qext]), end=' ')
+        Qext_vec.append(Qext)
+    return np.array(Qext_vec)
+
+print("Running spectra calculations...")
+Qext_vec = run_spectra(isMP=False)
+print('===')
+print("Running spectra calculations with mp...")
+Qext_vec_mp = run_spectra(isMP=True)
+print(f'fromWL={min(WLs)} toWL={max(WLs)} step={step_rWL}'  )
 
 fig, axs = plt.subplots(1,1)#, sharey=True, sharex=True)
-axs.plot(rWLs, Qext_vec, color="black")
+axs.plot(rWLs, Qext_vec, color="red", lw=2, label="dp")
+axs.plot(rWLs, Qext_vec_mp, color="black", lw=1, label="mp")
 plt.ylim(0, 4.3) 
-axs.set_xlabel("$1/\lambda, \mu m^{-1}$")
-axs.set_ylabel("$Q_{ext}$")
+axs.set_xlabel(r"$1/\lambda, \mu m^{-1}$")
+axs.set_ylabel(r"$Q_{ext}$")
+plt.legend()
 plt.title("Scattnlay")
-plt.savefig("spectra.pdf",pad_inches=0.02, bbox_inches='tight')
-plt.show()
-plt.clf()
+plt.savefig(f"spectra.pdf",pad_inches=0.02, bbox_inches='tight')
 plt.close()
+diff_rel_avg = np.mean(np.abs(Qext_vec - Qext_vec_mp)/Qext_vec_mp)
+diff_rel_max = np.max(np.abs(Qext_vec - Qext_vec_mp)/Qext_vec_mp)
+print(f"Relative max difference dp vs mp: {diff_rel_max}")
+print(f"Relative average difference dp vs mp: {diff_rel_avg}")
