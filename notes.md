@@ -8,15 +8,14 @@
 
 
 # Core
-
-- [ ] complete SIMD operations for nearfield calculations and far-field
-  calculations
+- [X] complete SIMD operations for far-field calculations
+- [ ] complete SIMD operations for nearfield calculations 
 - [ ] implemnt multicore processing for spectra\nearfield\far-field
   calculations
   - No need to paralleize sing mie calculation over several hosts, so
     multicore should be sufficient -> OpenMP?
   - OpenMP seems to be supported by WASM\Emscripten?
-  
+
 
 
 # Testing

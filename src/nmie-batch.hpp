@@ -12,10 +12,12 @@ namespace nmie {
 struct MieBatchInput {
   std::vector<double> x;
   std::vector<std::complex<double>> m;
+  std::vector<double> theta;
 };
 
 struct MieBatchOutput {
   std::vector<double> Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo;
+  std::vector<std::vector<std::complex<double>>> S1, S2;
 };
 
 // Dispatcher function template

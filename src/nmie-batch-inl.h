@@ -22,6 +22,16 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
     output.Qbk.resize(N); output.Qpr.resize(N); output.g.resize(N);
     output.Albedo.resize(N);
 
+    size_t num_angles = input.theta.size();
+    if (num_angles > 0) {
+      output.S1.resize(N);
+      output.S2.resize(N);
+      for (size_t i = 0; i < N; ++i) {
+        output.S1[i].resize(num_angles);
+        output.S2[i].resize(num_angles);
+      }
+    }
+
     const hn::ScalableTag<FloatType> d;
     const size_t lanes = hn::Lanes(d);
 
@@ -61,6 +71,20 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
         auto vQext = hn::Zero(d), vQsca = hn::Zero(d), vQbktmp_re = hn::Zero(d), vQbktmp_im = hn::Zero(d), vQpr_sum = hn::Zero(d);
         typename Engine::ComplexV an_prev = { hn::Zero(d), hn::Zero(d) }, bn_prev = { hn::Zero(d), hn::Zero(d) };
 
+        // Angular scattering variables
+        std::vector<typename Engine::ComplexV> vS1(num_angles,
+                                                   {hn::Zero(d), hn::Zero(d)});
+        std::vector<typename Engine::ComplexV> vS2(num_angles,
+                                                   {hn::Zero(d), hn::Zero(d)});
+        std::vector<typename Engine::ComplexV> pi_prev(
+            num_angles, {hn::Zero(d), hn::Zero(d)});  // pi_0 = 0
+        std::vector<typename Engine::ComplexV> pi_curr(
+            num_angles, {hn::Set(d, 1.0), hn::Zero(d)});  // pi_1 = 1
+
+        std::vector<FloatType> mu(num_angles);
+        for (size_t k = 0; k < num_angles; ++k)
+          mu[k] = std::cos(input.theta[k]);
+
         for (int n = 1; n < calc_nmax; ++n) {
             auto vn = hn::Set(d, static_cast<FloatType>(n));
             auto mask = hn::Le(vn, vnmax);
@@ -87,6 +111,83 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
             }
             vQpr_sum = hn::Add(vQpr_sum, hn::IfThenElse(mask, hn::Mul(hn::Div(mult, hn::Mul(vn, hn::Add(vn, hn::Set(d, 1.0)))), hn::Add(hn::Mul(an.re, bn.re), hn::Mul(an.im, bn.im))), hn::Zero(d)));
 
+            // Angular scattering calculation
+            if (num_angles > 0) {
+              auto factor =
+                  hn::Div(mult, hn::Mul(vn, hn::Add(vn, hn::Set(d, 1.0))));
+              for (size_t k = 0; k < num_angles; ++k) {
+                auto vmu = hn::Set(d, mu[k]);
+                // Calculate pi_n and tau_n
+                // pi_n = ((2n-1)/(n-1)) * mu * pi_{n-1} - (n/(n-1)) * pi_{n-2}
+                // tau_n = n * mu * pi_n - (n+1) * pi_{n-1}
+
+                typename Engine::ComplexV pi_next = {hn::Zero(d), hn::Zero(d)};
+                typename Engine::ComplexV tau_n = {hn::Zero(d), hn::Zero(d)};
+
+                if (n == 1) {
+                  pi_next = {hn::Set(d, 1.0), hn::Zero(d)};  // pi_1 = 1
+                  tau_n = {vmu, hn::Zero(d)};                // tau_1 = mu
+                  // For n=1, pi_prev is 0, pi_curr is 1.
+                  // We need to update pi_prev/pi_curr for next iteration.
+                  // But wait, the loop starts at n=1.
+                  // pi_prev (n=0) = 0
+                  // pi_curr (n=1) = 1
+                  // tau_1 = 1 * mu * 1 - 2 * 0 = mu. Correct.
+                } else {
+                  // Recurrence for pi_n
+                  // pi_n = ((2n-1) * mu * pi_{n-1} - n * pi_{n-2}) / (n-1)
+                  auto n_val = static_cast<FloatType>(n);
+                  auto v_2nm1 = hn::Set(d, 2 * n_val - 1);
+                  auto v_n = hn::Set(d, n_val);
+                  auto v_nm1 = hn::Set(d, n_val - 1);
+
+                  auto term1 = hn::Mul(v_2nm1, hn::Mul(vmu, pi_curr[k].re));
+                  auto term2 = hn::Mul(v_n, pi_prev[k].re);
+                  pi_next.re = hn::Div(hn::Sub(term1, term2), v_nm1);
+
+                  // tau_n = n * mu * pi_n - (n+1) * pi_{n-1}
+                  auto v_np1 = hn::Set(d, n_val + 1);
+                  auto t1 = hn::Mul(v_n, hn::Mul(vmu, pi_next.re));
+                  auto t2 = hn::Mul(v_np1, pi_curr[k].re);
+                  tau_n.re = hn::Sub(t1, t2);
+
+                  // Update pi_prev and pi_curr for next iteration
+                  pi_prev[k] = pi_curr[k];
+                  pi_curr[k] = pi_next;
+                }
+
+                // Update S1 and S2
+                // S1 += factor * (an * pi_n + bn * tau_n)
+                // Note: pi_curr[k] now holds pi_n (calculated as pi_next above)
+                // BUT for n=1, pi_curr[k] is already pi_1 (1.0) and we didn't
+                // update it. For n>1, we just updated pi_curr[k] to pi_next
+                // (pi_n). So in both cases, pi_curr[k] holds pi_n.
+
+                auto term_an_pi = Engine::mul(an, pi_curr[k]);
+                auto term_bn_tau = Engine::mul(bn, tau_n);
+                auto term_S1 = Engine::add(term_an_pi, term_bn_tau);
+
+                vS1[k].re = hn::Add(
+                    vS1[k].re, hn::IfThenElse(mask, hn::Mul(factor, term_S1.re),
+                                              hn::Zero(d)));
+                vS1[k].im = hn::Add(
+                    vS1[k].im, hn::IfThenElse(mask, hn::Mul(factor, term_S1.im),
+                                              hn::Zero(d)));
+
+                // S2 += factor * (an * tau_n + bn * pi_n)
+                auto term_an_tau = Engine::mul(an, tau_n);
+                auto term_bn_pi = Engine::mul(bn, pi_curr[k]);
+                auto term_S2 = Engine::add(term_an_tau, term_bn_pi);
+
+                vS2[k].re = hn::Add(
+                    vS2[k].re, hn::IfThenElse(mask, hn::Mul(factor, term_S2.re),
+                                              hn::Zero(d)));
+                vS2[k].im = hn::Add(
+                    vS2[k].im, hn::IfThenElse(mask, hn::Mul(factor, term_S2.im),
+                                              hn::Zero(d)));
+              }
+            }
+
             an_prev = an; bn_prev = bn;
         }
 
@@ -107,6 +208,22 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
             output.Qpr[i + j] = r_pr[j];
             output.g[i + j] = (r_sca[j] > 1e-12) ? (r_ext[j] - r_pr[j]) / r_sca[j] : 0.0;
             output.Albedo[i + j] = (r_ext[j] > 1e-12) ? r_sca[j] / r_ext[j] : 0.0;
+
+            if (num_angles > 0) {
+              for (size_t k = 0; k < num_angles; ++k) {
+                alignas(64) FloatType r_S1_re[64], r_S1_im[64], r_S2_re[64],
+                    r_S2_im[64];
+                hn::Store(vS1[k].re, d, r_S1_re);
+                hn::Store(vS1[k].im, d, r_S1_im);
+                hn::Store(vS2[k].re, d, r_S2_re);
+                hn::Store(vS2[k].im, d, r_S2_im);
+
+                output.S1[i + j][k] =
+                    std::complex<double>(r_S1_re[j], r_S1_im[j]);
+                output.S2[i + j][k] =
+                    std::complex<double>(r_S2_re[j], r_S2_im[j]);
+              }
+            }
         }
     }
     return output;

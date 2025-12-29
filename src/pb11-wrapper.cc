@@ -47,7 +47,9 @@ namespace py = pybind11;
 #include "nmie-batch.hpp"
 
 // Define a helper for Python batch calls
-py::dict RunMieBatchPy(py::array_t<double, py::array::c_style | py::array::forcecast> x, py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> m) {
+py::dict RunMieBatchPy(py::array_t<double, py::array::c_style | py::array::forcecast> x, 
+                       py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast> m,
+                       py::array_t<double, py::array::c_style | py::array::forcecast> theta = py::array_t<double>()) {
     auto r_x = x.unchecked<1>();
     auto r_m = m.unchecked<1>();
     
@@ -55,6 +57,13 @@ py::dict RunMieBatchPy(py::array_t<double, py::array::c_style | py::array::force
     for (ssize_t i = 0; i < r_x.shape(0); ++i) {
         input.x.push_back(r_x(i));
         input.m.push_back(r_m(i));
+    }
+
+    if (theta.size() > 0) {
+        auto r_theta = theta.unchecked<1>();
+        for (ssize_t i = 0; i < r_theta.shape(0); ++i) {
+            input.theta.push_back(r_theta(i));
+        }
     }
 
     auto output = nmie::RunMieBatch<double>(input);
@@ -67,12 +76,19 @@ py::dict RunMieBatchPy(py::array_t<double, py::array::c_style | py::array::force
     res["Qpr"] = py::cast(output.Qpr);
     res["g"] = py::cast(output.g);
     res["Albedo"] = py::cast(output.Albedo);
+    
+    if (!output.S1.empty()) {
+        res["S1"] = py::cast(output.S1);
+        res["S2"] = py::cast(output.S2);
+    }
+
     return res;
 }
 
 PYBIND11_MODULE(scattnlay_simd, m) {
     m.doc() = "Google Highway SIMD accelerated Mie solver";
-    m.def("RunMieBatch", &RunMieBatchPy, "Run Mie calculation for a batch of particles using SIMD");
+    m.def("RunMieBatch", &RunMieBatchPy, "Run Mie calculation for a batch of particles using SIMD",
+          py::arg("x"), py::arg("m"), py::arg("theta") = py::array_t<double>());
 }
 #else // WITH_HWY
 

@@ -48,17 +48,26 @@ try:
     import scattnlay_simd
     # Create a compatibility wrapper so it behaves like mie_dp/mie_mp classes
     class MieSIMDWrapper:
-        def RunMieBatch(self, x, m):
-            return scattnlay_simd.RunMieBatch(np.atleast_1d(x), np.atleast_1d(m))
+        def RunMieBatch(self, x, m, theta=None):
+            if theta is None:
+                return scattnlay_simd.RunMieBatch(np.atleast_1d(x), np.atleast_1d(m))
+            else:
+                return scattnlay_simd.RunMieBatch(np.atleast_1d(x), np.atleast_1d(m), np.atleast_1d(theta))
         
         # Add basic methods for test parity
         def SetLayersSize(self, x): self._x = x
         def SetLayersIndex(self, m): self._m = m
+        def SetAngles(self, theta): self._theta = theta
         def RunMieCalculation(self):
             # For bulk test parity, simulate class behavior
-            self._res = scattnlay_simd.RunMieBatch(np.atleast_1d(self._x), np.atleast_1d(self._m))
+            if hasattr(self, '_theta'):
+                self._res = scattnlay_simd.RunMieBatch(np.atleast_1d(self._x), np.atleast_1d(self._m), np.atleast_1d(self._theta))
+            else:
+                self._res = scattnlay_simd.RunMieBatch(np.atleast_1d(self._x), np.atleast_1d(self._m))
         def GetQext(self): return self._res['Qext'][0]
         def GetQsca(self): return self._res['Qsca'][0]
+        def GetS1(self): return self._res['S1'][0]
+        def GetS2(self): return self._res['S2'][0]
 
     mie_simd = MieSIMDWrapper()
 except ImportError:
