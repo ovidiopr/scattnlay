@@ -76,57 +76,72 @@ typedef double FloatType;
 // typedef float FloatType;
 #endif  // MULTI_PRECISION
 
+template <typename T>
 struct ScalarEngine {
-  using T = FloatType;
   using RealV = T;
-  static inline T sin(T v) { return nmm::sin(v); }
-  static inline T cos(T v) { return nmm::cos(v); }
-  static inline T exp(T v) { return nmm::exp(v); }
-  static inline T sqrt(T v) { return nmm::sqrt(v); }
-  static inline T abs(T v) { return nmm::abs(v); }
-  static inline T log(T v) { return nmm::log(v); }
-  static inline T tan(T v) { return nmm::tan(v); }
-  static inline T ceil(T v) { return nmm::ceil(v); }
-  static inline T floor(T v) { return nmm::floor(v); }
-  static inline T max(T a, T b) { return std::max(a, b); }
-  static inline T pow(T b, T e) { return nmm::pow(b, e); }
+  using ComplexV = std::complex<T>;
+  using MaskV = bool; // For scalar, masks are just booleans
 
-  static inline T add(T a, T b) { return a + b; }
-  static inline T sub(T a, T b) { return a - b; }
-  static inline T mul(T a, T b) { return a * b; }
-  static inline T div(T a, T b) { return a / b; }
+  // Traits
+  static constexpr size_t Lanes() { return 1; }
 
-  static inline T set(T val) { return val; }
-  static inline T sign(T v) { return (v > 0) ? 1 : -1; }
+  // Memory Operations
+  static inline RealV set(T val) { return val; }
+  static inline void store_interleaved(ComplexV z, std::complex<T>* ptr) { *ptr = z; }
+  static inline ComplexV load_interleaved(const std::complex<T>* ptr) { return *ptr; }
 
-  static inline std::complex<T> add(std::complex<T> a, std::complex<T> b) { return a + b; }
-  static inline std::complex<T> sub(std::complex<T> a, std::complex<T> b) { return a - b; }
-  static inline std::complex<T> mul(std::complex<T> a, std::complex<T> b) { return a * b; }
-  static inline std::complex<T> div(std::complex<T> a, std::complex<T> b) { return a / b; }
+  // Math Primitives (Using ADL to handle std:: vs nmm::)
+  static inline RealV abs(RealV v) { using std::abs; using nmm::abs; return abs(v); }
+  static inline RealV sin(RealV v) { using std::sin; using nmm::sin; return sin(v); }
+  static inline RealV cos(RealV v) { using std::cos; using nmm::cos; return cos(v); }
+  static inline RealV exp(RealV v) { using std::exp; using nmm::exp; return exp(v); }
+  static inline RealV sqrt(RealV v) { using std::sqrt; using nmm::sqrt; return sqrt(v); }
+  static inline RealV log(RealV v) { using std::log; using nmm::log; return log(v); }
+  static inline RealV tan(RealV v) { using std::tan; using nmm::tan; return tan(v); }
+  static inline RealV ceil(RealV v) { using std::ceil; using nmm::ceil; return ceil(v); }
+  static inline RealV floor(RealV v) { using std::floor; using nmm::floor; return floor(v); }
+  static inline RealV max(RealV a, RealV b) { using std::max; return max(a, b); }
+  static inline RealV pow(RealV b, RealV e) { using std::pow; using nmm::pow; return pow(b, e); }
 
-  static inline T get_real(std::complex<T> z) { return z.real(); }
-  static inline T get_imag(std::complex<T> z) { return z.imag(); }
-  static inline std::complex<T> make_complex(T re, T im) { return std::complex<T>(re, im); }
+  static inline RealV add(RealV a, RealV b) { return a + b; }
+  static inline RealV sub(RealV a, RealV b) { return a - b; }
+  static inline RealV mul(RealV a, RealV b) { return a * b; }
+  static inline RealV div(RealV a, RealV b) { return a / b; }
 
-  static inline std::complex<T> log(std::complex<T> z) {
-    T re = z.real();
-    T im = z.imag();
-    T r = nmm::sqrt(re * re + im * im);
-    T phi = nmm::atan2(im, re);
-    return std::complex<T>(nmm::log(r), phi);
+  static inline RealV sign(RealV v) { return (v > 0) ? 1 : -1; }
+
+  static inline ComplexV add(ComplexV a, ComplexV b) { return a + b; }
+  static inline ComplexV sub(ComplexV a, ComplexV b) { return a - b; }
+  static inline ComplexV mul(ComplexV a, ComplexV b) { return a * b; }
+  static inline ComplexV div(ComplexV a, ComplexV b) { return a / b; }
+
+  static inline RealV get_real(ComplexV z) { return z.real(); }
+  static inline RealV get_imag(ComplexV z) { return z.imag(); }
+  static inline ComplexV make_complex(RealV re, RealV im) { return ComplexV(re, im); }
+
+  static inline ComplexV log(ComplexV z) {
+    RealV re = z.real();
+    RealV im = z.imag();
+    using std::sqrt; using nmm::sqrt;
+    using std::atan2; using nmm::atan2;
+    using std::log; using nmm::log;
+    RealV r = sqrt(re * re + im * im);
+    RealV phi = atan2(im, re);
+    return ComplexV(log(r), phi);
   }
 
-  static inline std::complex<T> sqrt(std::complex<T> z) {
-    T re = z.real();
-    T im = z.imag();
-    T r = nmm::sqrt(re * re + im * im);
-    T u = nmm::sqrt((r + re) * T(0.5));
-    T v = nmm::sqrt((r - re) * T(0.5));
+  static inline ComplexV sqrt(ComplexV z) {
+    RealV re = z.real();
+    RealV im = z.imag();
+    using std::sqrt; using nmm::sqrt;
+    RealV r = sqrt(re * re + im * im);
+    RealV u = sqrt((r + re) * T(0.5));
+    RealV v = sqrt((r - re) * T(0.5));
     if (im < 0) v = -v;
-    return std::complex<T>(u, v);
+    return ComplexV(u, v);
   }
 
-  static inline T reduce_max(T v) { return v; }
+  static inline RealV reduce_max(RealV v) { return v; }
 };
 
 template <class T>

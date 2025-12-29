@@ -455,17 +455,7 @@ class MultiLayerMie {
                                   std::complex<FloatType> PsiXLM1,
                                   std::complex<FloatType> ZetaXLM1);
 
-  std::complex<FloatType> calc_S1(int n,
-                                  std::complex<FloatType> an,
-                                  std::complex<FloatType> bn,
-                                  FloatType Pi,
-                                  FloatType Tau);
 
-  std::complex<FloatType> calc_S2(int n,
-                                  std::complex<FloatType> an,
-                                  std::complex<FloatType> bn,
-                                  FloatType Pi,
-                                  FloatType Tau);
 
   void calcD1D3(std::complex<FloatType> z,
                 std::vector<std::complex<FloatType>>& D1,

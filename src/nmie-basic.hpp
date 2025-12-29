@@ -58,7 +58,7 @@
 
 namespace nmie {
 
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType>
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
 ComplexType calc_an(typename Engine::RealV n_real,
                       typename Engine::RealV XL, 
                       ComplexType Ha,
@@ -83,7 +83,7 @@ ComplexType calc_an(typename Engine::RealV n_real,
     return Engine::div(Num, Denom);
 }
 
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType>
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
 ComplexType calc_an(int n,
                       typename Engine::RealV XL, 
                       ComplexType Ha,
@@ -96,7 +96,7 @@ ComplexType calc_an(int n,
     return calc_an<FloatType, Engine, ComplexType>(n_val, XL, Ha, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
 }
 
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType>
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
 ComplexType calc_bn(typename Engine::RealV n_real,
                       typename Engine::RealV XL, 
                       ComplexType Hb,
@@ -121,7 +121,7 @@ ComplexType calc_bn(typename Engine::RealV n_real,
     return Engine::div(Num, Denom);
 }
 
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType>
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
 ComplexType calc_bn(int n,
                       typename Engine::RealV XL, 
                       ComplexType Hb,
@@ -132,6 +132,112 @@ ComplexType calc_bn(int n,
                       ComplexType ZetaXLM1) {
     auto n_val = Engine::set(static_cast<FloatType>(n));
     return calc_bn<FloatType, Engine, ComplexType>(n_val, XL, Hb, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
+}
+
+// ********************************************************************** //
+// Calculates S1 - equation (25a)                                         //
+// ********************************************************************** //
+template <typename FloatType>
+std::complex<FloatType> calc_S1(
+    int n,
+    std::complex<FloatType> an,
+    std::complex<FloatType> bn,
+    FloatType Pi,
+    FloatType Tau) {
+  return FloatType(n + n + 1) * (Pi * an + Tau * bn) / FloatType(n * n + n);
+}
+
+// ********************************************************************** //
+// Calculates S2 - equation (25b) (it's the same as (25a), just switches  //
+// Pi and Tau)                                                            //
+// ********************************************************************** //
+template <typename FloatType>
+std::complex<FloatType> calc_S2(
+    int n,
+    std::complex<FloatType> an,
+    std::complex<FloatType> bn,
+    FloatType Pi,
+    FloatType Tau) {
+  return calc_S1(n, an, bn, Tau, Pi);
+}
+
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>>
+void calcQParams(
+    int n,
+    const std::complex<FloatType>& an,
+    const std::complex<FloatType>& bn,
+    const std::complex<FloatType>& an_next,
+    const std::complex<FloatType>& bn_next,
+    FloatType& Qext,
+    FloatType& Qsca,
+    FloatType& Qpr,
+    std::complex<FloatType>& Qbktmp,
+    int mode_n,
+    int mode_type
+) {
+    const int n1 = n + 1;
+    if (mode_n == Modes::kAll) {
+      // Equation (27)
+      Qext += (n1 + n1 + 1.0) * (an.real() + bn.real());
+      // Equation (28)
+      Qsca += (n1 + n1 + 1.0) *
+               (an.real() * an.real() + an.imag() * an.imag() +
+                bn.real() * bn.real() + bn.imag() * bn.imag());
+      // Equation (29)
+      Qpr += ((n1 * (n1 + 2.0) / (n1 + 1.0)) *
+                   ((an * std::conj(an_next) + bn * std::conj(bn_next))
+                        .real()) +
+               ((n1 + n1 + 1.0) / (n1 * (n1 + 1.0))) *
+                   (an * std::conj(bn)).real());
+      // Equation (33)
+      Qbktmp += (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) *
+                (an - bn);
+    } else if (n1 == mode_n) {
+      if (mode_type == Modes::kElectric || mode_type == Modes::kAll) {
+        Qext += (n1 + n1 + 1.0) * (an.real());
+        Qsca += (n1 + n1 + 1.0) * (an.real() * an.real() +
+                                    an.imag() * an.imag());
+        Qpr += std::nan("");
+        Qbktmp +=
+            (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (an);
+      }
+      if (mode_type == Modes::kMagnetic || mode_type == Modes::kAll) {
+        Qext += (n1 + n1 + 1.0) * (bn.real());
+        Qsca += (n1 + n1 + 1.0) * (bn.real() * bn.real() +
+                                    bn.imag() * bn.imag());
+        Qpr += std::nan("");
+        Qbktmp +=
+            (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (bn);
+      }
+    }
+}
+
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>>
+void calcSParams(
+    int n,
+    const std::complex<FloatType>& an,
+    const std::complex<FloatType>& bn,
+    const FloatType& Pi,
+    const FloatType& Tau,
+    std::complex<FloatType>& S1,
+    std::complex<FloatType>& S2,
+    int mode_n,
+    int mode_type
+) {
+    const int n1 = n + 1;
+    if (mode_n == Modes::kAll) {
+        S1 += calc_S1<FloatType>(n1, an, bn, Pi, Tau);
+        S2 += calc_S2<FloatType>(n1, an, bn, Pi, Tau);
+    } else if (n1 == mode_n) {
+      if (mode_type == Modes::kElectric || mode_type == Modes::kAll) {
+          S1 += calc_S1<FloatType>(n1, an, std::complex<FloatType>(0), Pi, Tau);
+          S2 += calc_S2<FloatType>(n1, an, std::complex<FloatType>(0), Pi, Tau);
+      }
+      if (mode_type == Modes::kMagnetic || mode_type == Modes::kAll) {
+          S1 += calc_S1<FloatType>(n1, std::complex<FloatType>(0), bn, Pi, Tau);
+          S2 += calc_S2<FloatType>(n1, std::complex<FloatType>(0), bn, Pi, Tau);
+      }
+    }
 }
 
 // class implementation
@@ -436,7 +542,7 @@ std::complex<FloatType> MultiLayerMie<FloatType>::calc_an(
     std::complex<FloatType> ZetaXL,
     std::complex<FloatType> PsiXLM1,
     std::complex<FloatType> ZetaXLM1) {
-  return nmie::calc_an<FloatType, ScalarEngine, std::complex<FloatType>>(
+  return nmie::calc_an<FloatType, ScalarEngine<FloatType>, std::complex<FloatType>>(
       n, XL, Ha, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
 }
 
@@ -453,36 +559,11 @@ std::complex<FloatType> MultiLayerMie<FloatType>::calc_bn(
     std::complex<FloatType> ZetaXL,
     std::complex<FloatType> PsiXLM1,
     std::complex<FloatType> ZetaXLM1) {
-  return nmie::calc_bn<FloatType, ScalarEngine, std::complex<FloatType>>(
+  return nmie::calc_bn<FloatType, ScalarEngine<FloatType>, std::complex<FloatType>>(
       n, XL, Hb, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
 }
 
-// ********************************************************************** //
-// Calculates S1 - equation (25a)                                         //
-// ********************************************************************** //
-template <typename FloatType>
-std::complex<FloatType> MultiLayerMie<FloatType>::calc_S1(
-    int n,
-    std::complex<FloatType> an,
-    std::complex<FloatType> bn,
-    FloatType Pi,
-    FloatType Tau) {
-  return FloatType(n + n + 1) * (Pi * an + Tau * bn) / FloatType(n * n + n);
-}
 
-// ********************************************************************** //
-// Calculates S2 - equation (25b) (it's the same as (25a), just switches  //
-// Pi and Tau)                                                            //
-// ********************************************************************** //
-template <typename FloatType>
-std::complex<FloatType> MultiLayerMie<FloatType>::calc_S2(
-    int n,
-    std::complex<FloatType> an,
-    std::complex<FloatType> bn,
-    FloatType Pi,
-    FloatType Tau) {
-  return calc_S1(n, an, bn, Tau, Pi);
-}
 
 //****************************************************************************
 // This function calculates the logarithmic derivatives of the Riccati-Bessel
@@ -996,66 +1077,17 @@ void MultiLayerMie<FloatType>::RunMieCalculation() {
   // rounding errors See:
   // https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
   //      http://en.wikipedia.org/wiki/Loss_of_significance
+  // Loop 1: Q parameters
   for (int n = nmax_ - 2; n >= 0; n--) {
-    //      for (int n = 0; n < nmax_; n++) {
     const int n1 = n + 1;
-    if (mode_n_ == Modes::kAll) {
-      // Equation (27)
-      Qext_ += (n1 + n1 + 1.0) * (an_[n].real() + bn_[n].real());
-      // Equation (28)
-      Qsca_ += (n1 + n1 + 1.0) *
-               (an_[n].real() * an_[n].real() + an_[n].imag() * an_[n].imag() +
-                bn_[n].real() * bn_[n].real() + bn_[n].imag() * bn_[n].imag());
-      //        std::cout<<"n ="<< n1 << " ext:"<<Qext_ <<"
-      //        sca:"<<Qsca_<<std::endl;
-      // Equation (29)
-      Qpr_ += ((n1 * (n1 + 2.0) / (n1 + 1.0)) *
-                   ((an_[n] * std::conj(an_[n1]) + bn_[n] * std::conj(bn_[n1]))
-                        .real()) +
-               ((n1 + n1 + 1.0) / (n1 * (n1 + 1.0))) *
-                   (an_[n] * std::conj(bn_[n])).real());
-      // Equation (33)
-      Qbktmp += (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) *
-                (an_[n] - bn_[n]);
-      // Calculate the scattering amplitudes (S1 and S2) Equations (25a) - (25b)
-      for (unsigned int t = 0; t < theta_.size(); t++) {
-        calcPiTau(costheta[t], Pi, Tau);
-        S1_[t] += calc_S1(n1, an_[n], bn_[n], Pi[n], Tau[n]);
-        S2_[t] += calc_S2(n1, an_[n], bn_[n], Pi[n], Tau[n]);
-      }
-      continue;
-    }
-    if (n1 == mode_n_) {
-      if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
-        Qext_ += (n1 + n1 + 1.0) * (an_[n].real());
-        Qsca_ += (n1 + n1 + 1.0) * (an_[n].real() * an_[n].real() +
-                                    an_[n].imag() * an_[n].imag());
-        Qpr_ += std::nan("");
-        Qbktmp +=
-            (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (an_[n]);
-        for (unsigned int t = 0; t < theta_.size(); t++) {
-          calcPiTau(costheta[t], Pi, Tau);
-          S1_[t] += calc_S1(n1, an_[n], static_cast<std::complex<FloatType>>(0),
-                            Pi[n], Tau[n]);
-          S2_[t] += calc_S2(n1, an_[n], static_cast<std::complex<FloatType>>(0),
-                            Pi[n], Tau[n]);
-        }
-      }
-      if (mode_type_ == Modes::kMagnetic || mode_type_ == Modes::kAll) {
-        Qext_ += (n1 + n1 + 1.0) * (bn_[n].real());
-        Qsca_ += (n1 + n1 + 1.0) * (bn_[n].real() * bn_[n].real() +
-                                    bn_[n].imag() * bn_[n].imag());
-        Qpr_ += std::nan("");
-        Qbktmp +=
-            (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (bn_[n]);
-        for (unsigned int t = 0; t < theta_.size(); t++) {
-          calcPiTau(costheta[t], Pi, Tau);
-          S1_[t] += calc_S1(n1, static_cast<std::complex<FloatType>>(0), bn_[n],
-                            Pi[n], Tau[n]);
-          S2_[t] += calc_S2(n1, static_cast<std::complex<FloatType>>(0), bn_[n],
-                            Pi[n], Tau[n]);
-        }
-      }
+    calcQParams<FloatType>(n, an_[n], bn_[n], an_[n1], bn_[n1], Qext_, Qsca_, Qpr_, Qbktmp, mode_n_, mode_type_);
+  }
+
+  // Loop 2: S parameters
+  for (unsigned int t = 0; t < theta_.size(); t++) {
+    calcPiTau(costheta[t], Pi, Tau);
+    for (int n = nmax_ - 2; n >= 0; n--) {
+      calcSParams<FloatType>(n, an_[n], bn_[n], Pi[n], Tau[n], S1_[t], S2_[t], mode_n_, mode_type_);
     }
   }
   FloatType x2 = pow2(x.back());

@@ -24,7 +24,7 @@ TEST(SIMDRiccatiBessel, ComplexCotMatchScalar) {
   
   // 1. Scalar Reference
   std::complex<double> z_scalar(test_re, test_im);
-  auto ref_scalar = complex_cot<double, ScalarEngine>(z_scalar);
+  auto ref_scalar = complex_cot<double, ScalarEngine<double>>(z_scalar);
 
   // 2. SIMD Execution
   typename Engine::ComplexV z_simd{hn::Set(d, test_re), hn::Set(d, test_im)};
@@ -53,7 +53,7 @@ TEST(SIMDRiccatiBessel, D1RecurrenceMatchScalar) {
   // 1. Scalar Reference
   std::complex<double> z_scalar(test_re, test_im);
   std::vector<std::complex<double>> D1_scalar(nmax + 1);
-  evalDownwardD1<double, ScalarEngine>(z_scalar, D1_scalar);
+  evalDownwardD1<double, ScalarEngine<double>>(z_scalar, D1_scalar);
 
   // 2. SIMD Execution
   typename Engine::ComplexV z_simd{hn::Set(d, test_re), hn::Set(d, test_im)};
@@ -89,8 +89,8 @@ TEST(SIMDRiccatiBessel, D3RecurrenceMatchScalar) {
   std::vector<std::complex<double>> D3_scalar(nmax + 1);
   std::vector<std::complex<double>> PsiZeta_scalar(nmax + 1);
   
-  evalDownwardD1<double, ScalarEngine>(z_scalar, D1_scalar);
-  evalUpwardD3<double, ScalarEngine>(z_scalar, D1_scalar, D3_scalar, PsiZeta_scalar);
+  evalDownwardD1<double, ScalarEngine<double>>(z_scalar, D1_scalar);
+  evalUpwardD3<double, ScalarEngine<double>>(z_scalar, D1_scalar, D3_scalar, PsiZeta_scalar);
 
   // 2. SIMD Execution
   typename Engine::ComplexV z_simd{hn::Set(d, test_re), hn::Set(d, test_im)};
@@ -137,8 +137,8 @@ TEST(SIMDRiccatiBessel, PsiRecurrenceMatchScalar) {
   std::vector<std::complex<double>> D1_scalar(nmax + 1);
   std::vector<std::complex<double>> Psi_scalar(nmax + 1);
   
-  evalDownwardD1<double, ScalarEngine>(z_scalar, D1_scalar);
-  evalUpwardPsi<double, ScalarEngine>(z_scalar, D1_scalar, Psi_scalar);
+  evalDownwardD1<double, ScalarEngine<double>>(z_scalar, D1_scalar);
+  evalUpwardPsi<double, ScalarEngine<double>>(z_scalar, D1_scalar, Psi_scalar);
 
   // 2. SIMD Execution
   typename Engine::ComplexV z_simd{hn::Set(d, test_re), hn::Set(d, test_im)};
@@ -188,9 +188,9 @@ TEST(SIMDRiccatiBessel, ZetaRecurrenceMatchScalar) {
   std::vector<std::complex<double>> PsiZeta_scalar(nmax + 1); // Used for D3 calc
   std::vector<std::complex<double>> Zeta_scalar(nmax + 1);
   
-  evalDownwardD1<double, ScalarEngine>(z_scalar, D1_scalar);
-  evalUpwardD3<double, ScalarEngine>(z_scalar, D1_scalar, D3_scalar, PsiZeta_scalar);
-  evalUpwardZeta<double, ScalarEngine>(z_scalar, D3_scalar, Zeta_scalar);
+  evalDownwardD1<double, ScalarEngine<double>>(z_scalar, D1_scalar);
+  evalUpwardD3<double, ScalarEngine<double>>(z_scalar, D1_scalar, D3_scalar, PsiZeta_scalar);
+  evalUpwardZeta<double, ScalarEngine<double>>(z_scalar, D3_scalar, Zeta_scalar);
 
   // 2. SIMD Execution
   typename Engine::ComplexV z_simd{hn::Set(d, test_re), hn::Set(d, test_im)};
@@ -258,7 +258,7 @@ TEST(SIMDRiccatiBessel, D1FullLanesMatchDataset) {
   for (size_t i = 0; i < lanes; ++i) {
     std::complex<double> z_lane(x_vals[i] * mr_vals[i], x_vals[i] * mi_vals[i]);
     std::vector<std::complex<double>> D1_ref(nmax + 1);
-    evalDownwardD1<double, ScalarEngine>(z_lane, D1_ref);
+    evalDownwardD1<double, ScalarEngine<double>>(z_lane, D1_ref);
 
     std::vector<double> res_re(lanes), res_im(lanes);
     hn::Store(D1_simd[target_n].re, d, res_re.data());
@@ -376,16 +376,16 @@ TEST(SIMDRiccatiBessel, AnFullLanesMatchDataset) {
     std::vector<std::complex<double>> Psi_real_ref(nmax + 1);
     std::vector<std::complex<double>> Zeta_real_ref(nmax + 1);
 
-    evalDownwardD1<double, ScalarEngine>(z_real_lane, D1_real_ref);
-    evalUpwardPsi<double, ScalarEngine>(z_real_lane, D1_real_ref, Psi_real_ref);
-    evalUpwardD3<double, ScalarEngine>(z_real_lane, D1_real_ref, D3_real_ref, PsiZeta_real_ref);
+    evalDownwardD1<double, ScalarEngine<double>>(z_real_lane, D1_real_ref);
+    evalUpwardPsi<double, ScalarEngine<double>>(z_real_lane, D1_real_ref, Psi_real_ref);
+    evalUpwardD3<double, ScalarEngine<double>>(z_real_lane, D1_real_ref, D3_real_ref, PsiZeta_real_ref);
     for(int k=0; k<=nmax; ++k) Zeta_real_ref[k] = PsiZeta_real_ref[k] / Psi_real_ref[k];
 
     std::vector<std::complex<double>> D1_complex_ref(nmax + 1);
-    evalDownwardD1<double, ScalarEngine>(z_lane, D1_complex_ref);
+    evalDownwardD1<double, ScalarEngine<double>>(z_lane, D1_complex_ref);
     std::complex<double> Ha_lane = D1_complex_ref[target_n];
 
-    auto an_ref = calc_an<double, ScalarEngine>(target_n, XL_lane, Ha_lane, m_lane,
+    auto an_ref = calc_an<double, ScalarEngine<double>>(target_n, XL_lane, Ha_lane, m_lane,
                                                 Psi_real_ref[target_n], Zeta_real_ref[target_n],
                                                 Psi_real_ref[target_n-1], Zeta_real_ref[target_n-1]);
 
@@ -464,16 +464,16 @@ TEST(SIMDRiccatiBessel, BnFullLanesMatchDataset) {
     std::vector<std::complex<double>> Psi_real_ref(nmax + 1);
     std::vector<std::complex<double>> Zeta_real_ref(nmax + 1);
 
-    evalDownwardD1<double, ScalarEngine>(z_real_lane, D1_real_ref);
-    evalUpwardPsi<double, ScalarEngine>(z_real_lane, D1_real_ref, Psi_real_ref);
-    evalUpwardD3<double, ScalarEngine>(z_real_lane, D1_real_ref, D3_real_ref, PsiZeta_real_ref);
+    evalDownwardD1<double, ScalarEngine<double>>(z_real_lane, D1_real_ref);
+    evalUpwardPsi<double, ScalarEngine<double>>(z_real_lane, D1_real_ref, Psi_real_ref);
+    evalUpwardD3<double, ScalarEngine<double>>(z_real_lane, D1_real_ref, D3_real_ref, PsiZeta_real_ref);
     for(int k=0; k<=nmax; ++k) Zeta_real_ref[k] = PsiZeta_real_ref[k] / Psi_real_ref[k];
 
     std::vector<std::complex<double>> D1_complex_ref(nmax + 1);
-    evalDownwardD1<double, ScalarEngine>(z_lane, D1_complex_ref);
+    evalDownwardD1<double, ScalarEngine<double>>(z_lane, D1_complex_ref);
     std::complex<double> Hb_lane = D1_complex_ref[target_n];
 
-    auto bn_ref = calc_bn<double, ScalarEngine>(target_n, XL_lane, Hb_lane, m_lane,
+    auto bn_ref = calc_bn<double, ScalarEngine<double>>(target_n, XL_lane, Hb_lane, m_lane,
                                                 Psi_real_ref[target_n], Zeta_real_ref[target_n],
                                                 Psi_real_ref[target_n-1], Zeta_real_ref[target_n-1]);
 

@@ -62,7 +62,7 @@ namespace nmie {
 // Note, that Kapteyn seems to be too optimistic (at least by 3 digits
 // in some cases) for forward recurrence, see D1test with WYang_data
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>>
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>>
 typename Engine::RealV evalKapteynNumberOfLostSignificantDigits(const int ni, const ComplexType zz) {
   auto z = zz;
   auto n_val = Engine::set(static_cast<FloatType>(ni));
@@ -101,7 +101,7 @@ typename Engine::RealV evalKapteynNumberOfLostSignificantDigits(const int ni, co
 }
 
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>>
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>>
 int getNStar(int nmax, ComplexType z, const int valid_digits) {
   if (nmax == 0) nmax = 1;
   int nstar = nmax;
@@ -146,7 +146,7 @@ int getNStar(int nmax, ComplexType z, const int valid_digits) {
 // see Eqs. 10-12 of [1] for details.
 // [1]H. Du, Mie-Scattering Calculation, Appl. Opt. 43, 1951 (2004).
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType>
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
 ComplexType complex_cot(const ComplexType z) {
   auto Remx = Engine::get_real(z);
   auto Immx = Engine::get_imag(z);
@@ -439,7 +439,7 @@ struct NStarCalculator {
 // Output parameters:
 //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
 void evalDownwardD1(const ComplexType z,
                     ContainerType& D1) {
   int nmax = D1.size() - 1;
@@ -473,7 +473,7 @@ void evalDownwardD1(const ComplexType z,
 }
 
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
 void evalUpwardD3(const ComplexType z,
                   const ContainerType& D1,
                   ContainerType& D3,
@@ -530,7 +530,7 @@ void evalUpwardD3(const ComplexType z,
 }
 
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType> >
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType> >
 ComplexType complex_sin(const ComplexType z) {
   auto a = Engine::get_real(z);
   auto b = Engine::get_imag(z);
@@ -562,7 +562,7 @@ ComplexType complex_sin(const ComplexType z) {
 }
 
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
 void evalUpwardPsi(const ComplexType z,
                    const ContainerType& D1,
                    ContainerType& Psi) {
@@ -588,7 +588,7 @@ void evalUpwardPsi(const ComplexType z,
 }
 
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType> >
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType> >
 ComplexType complex_cos(const ComplexType z) {
   auto a = Engine::get_real(z);
   auto b = Engine::get_imag(z);
@@ -621,7 +621,7 @@ ComplexType complex_cos(const ComplexType z) {
 // Sometimes in literature Zeta is also denoted as Ksi, it is a Riccati-Bessel
 // function of third kind.
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
 void evalUpwardZeta(const ComplexType z,
                     const ContainerType& D3,
                     ContainerType& Zeta) {
@@ -688,7 +688,7 @@ void evalUpwardZeta(const ComplexType z,
 //   }
 // }
 //******************************************************************************
-template <typename FloatType, typename Engine = ScalarEngine>
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>>
 void evalPsiZetaD1D3(const std::complex<FloatType> cxd,
                      std::vector<std::complex<FloatType>>& Psi,
                      std::vector<std::complex<FloatType>>& Zeta,
