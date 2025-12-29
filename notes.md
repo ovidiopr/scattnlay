@@ -2,8 +2,8 @@
 
 # Algorithms?
 
-- [ ] Du algorithm for large complex refractive indices?
-    - woks with all examples from Du paper
+- [X] Du algorithm for large complex refractive indices?
+    - works with all examples from Du paper
 
 
 
@@ -15,11 +15,14 @@
   calculations
   - No need to paralleize sing mie calculation over several hosts, so
     multicore should be sufficient -> OpenMP?
+  - OpenMP seems to be supported by WASM\Emscripten?
+  
 
 
 # Testing
 
 - [ ] use all examples from original Ovidio paper
+- [ ] use table 2 from Du paper (S1/S2)
 - [ ] add adapter for miepython API, reuse miepython  [test suite](https://github.com/scottprahl/miepython/tree/main/tests)
 - [ ] compare performance with miepython
 
