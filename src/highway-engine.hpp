@@ -65,6 +65,18 @@ struct HighwayEngine {
   static inline V get_imag(ComplexV z) { return z.im; }
   static inline ComplexV make_complex(V re, V im) { return {re, im}; }
 
+  static inline ComplexV load_interleaved(const T* data) {
+    D d;
+    V re, im;
+    hn::LoadInterleaved2(d, data, re, im);
+    return {re, im};
+  }
+
+  static inline void store_interleaved(ComplexV z, T* data) {
+    D d;
+    hn::StoreInterleaved2(z.re, z.im, d, data);
+  }
+
   static inline T reduce_max(V v) {
     size_t lanes = hn::Lanes(D());
     std::vector<T> buf(lanes);

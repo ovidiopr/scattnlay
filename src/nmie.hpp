@@ -267,6 +267,16 @@ class MultiLayerMie {
                                     const bool isMarkUnconverged = true,
                                     const int nmax_in = -1);
 
+  void RunFieldCalculationSIMD(const int first_side_points = 2,
+                               const int second_side_points = 2,
+                               const double relative_side_length = 2,
+                               const int plane_selected = Planes::kEk,
+                               const double at_x = 0,
+                               const double at_y = 0,
+                               const double at_z = 0,
+                               const bool isMarkUnconverged = true,
+                               const int nmax_in = -1);
+
   void calcScattCoeffs();
   void calcExpanCoeffs();
   //****************************************************************************
