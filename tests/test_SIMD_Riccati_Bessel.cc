@@ -1,10 +1,10 @@
-#include "gtest/gtest.h"
-#include "hwy/highway.h"
-#include "../src/special-functions-impl.hpp"
 #include "../src/nmie-basic.hpp"
+#include "../src/nmie-batch.hpp"
 #include "../src/nmie-nearfield.hpp"
 #include "../src/nmie-precision.hpp"
-#include "../src/nmie-batch.hpp"
+#include "../src/special-functions-impl.hpp"
+#include "gtest/gtest.h"
+// #include "hwy/highway.h"
 #include "test_spec_functions_data.hpp"
 
 // #define HWY_TARGET_INCLUDE "tests/test_SIMD_Riccati_Bessel.cc"
@@ -976,37 +976,39 @@ TEST(SIMDRiccatiBessel, BulkSphereBatchFullVerify) {
 TEST(SIMDNearField, FieldComponentMatchScalar) {
   // const hn::ScalableTag<double> d;
   // using Engine = HighwayEngine<double>;
-  
+
   // Setup a small problem
   // int L = 2;
   std::vector<double> x = {1.0, 2.0};
   std::vector<std::complex<double>> m = {{1.33, 0.0}, {1.5, 0.1}};
   int nmax = 20;
-  
+
   MultiLayerMie<double> mie;
   mie.SetLayersSize(x);
   mie.SetLayersIndex(m);
   mie.SetMaxTerms(nmax);
   mie.calcScattCoeffs();
   mie.calcExpanCoeffs();
-  
+
   int side_points = 4;
   double relative_side = 1.1;
-  
+
   // Run Scalar
-  mie.RunFieldCalculationCartesian(side_points, side_points, relative_side, Planes::kEk, 0, 0, 0, true, nmax);
+  mie.RunFieldCalculationCartesian(side_points, side_points, relative_side,
+                                   Planes::kEk, 0, 0, 0, true, nmax);
   auto E_scalar = mie.GetFieldE();
   auto H_scalar = mie.GetFieldH();
-  
+
   // Run SIMD
-  mie.RunFieldCalculationSIMD(side_points, side_points, relative_side, Planes::kEk, 0, 0, 0, true, nmax);
+  mie.RunFieldCalculationSIMD(side_points, side_points, relative_side,
+                              Planes::kEk, 0, 0, 0, true, nmax);
   auto E_simd = mie.GetFieldE();
   auto H_simd = mie.GetFieldH();
-  
+
   // Compare
   ASSERT_EQ(E_scalar.size(), E_simd.size());
-  for(size_t i=0; i<E_scalar.size(); ++i) {
-    for(int k=0; k<3; ++k) {
+  for (size_t i = 0; i < E_scalar.size(); ++i) {
+    for (int k = 0; k < 3; ++k) {
       EXPECT_NEAR(E_scalar[i][k].real(), E_simd[i][k].real(), 1e-13);
       EXPECT_NEAR(E_scalar[i][k].imag(), E_simd[i][k].imag(), 1e-13);
       EXPECT_NEAR(H_scalar[i][k].real(), H_simd[i][k].real(), 1e-13);
