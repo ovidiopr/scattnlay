@@ -182,6 +182,132 @@ std::complex<FloatType> calc_S2(
 }
 
 template <typename FloatType, typename Engine = ScalarEngine<FloatType>>
+void computeLayerCoeffsHelper(
+    int nmax,
+    int l,
+    int pl,
+    typename Engine::RealV x_l,
+    typename Engine::RealV x_lm1,
+    typename Engine::ComplexV m_l,
+    typename Engine::ComplexV m_lm1,
+    typename Engine::ComplexV z1,
+    typename Engine::ComplexV z2,
+    const std::vector<std::complex<FloatType>>& D1_mlxl,
+    const std::vector<std::complex<FloatType>>& D3_mlxl,
+    const std::vector<std::complex<FloatType>>& D1_mlxlM1,
+    const std::vector<std::complex<FloatType>>& D3_mlxlM1,
+    std::vector<std::complex<FloatType>>& Q_l,
+    std::vector<std::complex<FloatType>>& Ha_l,
+    std::vector<std::complex<FloatType>>& Hb_l,
+    const std::vector<std::complex<FloatType>>& Ha_lm1,
+    const std::vector<std::complex<FloatType>>& Hb_lm1
+) {
+    // Q[l][0] calculation
+    auto z1_re = Engine::get_real(z1);
+    auto z1_im = Engine::get_imag(z1);
+    auto z2_re = Engine::get_real(z2);
+    auto z2_im = Engine::get_imag(z2);
+    
+    auto minus_two = Engine::set(-2.0);
+    auto exp_term_num = Engine::exp(Engine::mul(minus_two, Engine::sub(z1_im, z2_im)));
+    
+    auto arg_z2 = Engine::mul(minus_two, z2_re);
+    auto exp_z2 = Engine::exp(Engine::mul(minus_two, z2_im));
+    auto cos_z2 = Engine::cos(arg_z2);
+    auto sin_z2 = Engine::sin(arg_z2);
+    
+    auto num_re = Engine::mul(exp_term_num, Engine::sub(cos_z2, exp_z2));
+    auto num_im = Engine::mul(exp_term_num, sin_z2);
+    auto Num = Engine::make_complex(num_re, num_im);
+    
+    auto arg_z1 = Engine::mul(minus_two, z1_re);
+    auto exp_z1 = Engine::exp(Engine::mul(minus_two, z1_im));
+    auto cos_z1 = Engine::cos(arg_z1);
+    auto sin_z1 = Engine::sin(arg_z1);
+    
+    auto denom_re = Engine::sub(cos_z1, exp_z1);
+    auto denom_im = sin_z1;
+    auto Denom = Engine::make_complex(denom_re, denom_im);
+    
+    auto Q_curr = Engine::div(Num, Denom); 
+    Engine::store(Q_curr, &Q_l[0]);
+
+    auto ratio = Engine::div(x_lm1, x_l);
+    auto ratio_sq = Engine::mul(ratio, ratio);
+    auto ratio_sq_c = Engine::make_complex(ratio_sq, Engine::set(0.0));
+
+    const size_t lanes = Engine::Lanes();
+
+    for (int n = 1; n <= nmax; ++n) {
+        auto n_val = Engine::set(static_cast<FloatType>(n));
+        auto n_c = Engine::make_complex(n_val, Engine::set(0.0));
+        
+        auto d1_n = Engine::load(&D1_mlxl[n*lanes]);
+        auto d3_nm1 = Engine::load(&D3_mlxl[(n-1)*lanes]);
+        
+        auto term1 = Engine::add(Engine::mul(z1, d1_n), n_c);
+        auto term2 = Engine::sub(n_c, Engine::mul(z1, d3_nm1));
+        auto Num_n = Engine::mul(term1, term2);
+        
+        auto d1_m1_n = Engine::load(&D1_mlxlM1[n*lanes]);
+        auto d3_m1_nm1 = Engine::load(&D3_mlxlM1[(n-1)*lanes]);
+        
+        auto term3 = Engine::add(Engine::mul(z2, d1_m1_n), n_c);
+        auto term4 = Engine::sub(n_c, Engine::mul(z2, d3_m1_nm1));
+        auto Denom_n = Engine::mul(term3, term4);
+        
+        auto factor = Engine::mul(ratio_sq_c, Q_curr);
+        Q_curr = Engine::div(Engine::mul(factor, Num_n), Denom_n);
+        Engine::store(Q_curr, &Q_l[n*lanes]);
+        
+        // Ha
+        typename Engine::ComplexV G1_ha, G2_ha;
+        auto ha_prev = Engine::load(&Ha_lm1[(n-1)*lanes]);
+        
+        if ((l - 1) == pl) {
+             auto neg_one = Engine::set(-1.0);
+             auto neg_one_c = Engine::make_complex(neg_one, Engine::set(0.0));
+             G1_ha = Engine::mul(d1_m1_n, neg_one_c);
+             auto d3_m1_n = Engine::load(&D3_mlxlM1[n*lanes]);
+             G2_ha = Engine::mul(d3_m1_n, neg_one_c);
+        } else {
+             auto term_ha = Engine::mul(m_l, ha_prev);
+             G1_ha = Engine::sub(term_ha, Engine::mul(m_lm1, d1_m1_n));
+             auto d3_m1_n = Engine::load(&D3_mlxlM1[n*lanes]);
+             G2_ha = Engine::sub(term_ha, Engine::mul(m_lm1, d3_m1_n));
+        }
+
+        auto Temp_ha = Engine::mul(Q_curr, G1_ha);
+        auto d1_n_curr = Engine::load(&D1_mlxl[n*lanes]);
+        auto d3_n = Engine::load(&D3_mlxl[n*lanes]);
+        auto Num_ha = Engine::sub(Engine::mul(G2_ha, d1_n_curr), Engine::mul(Temp_ha, d3_n));
+        auto Denom_ha = Engine::sub(G2_ha, Temp_ha);
+        auto Ha_curr = Engine::div(Num_ha, Denom_ha);
+        Engine::store(Ha_curr, &Ha_l[(n-1)*lanes]);
+
+        // Hb
+        typename Engine::ComplexV G1_hb, G2_hb;
+        auto hb_prev = Engine::load(&Hb_lm1[(n-1)*lanes]);
+
+        if ((l - 1) == pl) {
+             G1_hb = hb_prev;
+             G2_hb = hb_prev;
+        } else {
+             auto term_hb = Engine::mul(m_lm1, hb_prev);
+             G1_hb = Engine::sub(term_hb, Engine::mul(m_l, d1_m1_n));
+             auto d3_m1_n = Engine::load(&D3_mlxlM1[n*lanes]);
+             G2_hb = Engine::sub(term_hb, Engine::mul(m_l, d3_m1_n));
+        }
+
+        auto Temp_hb = Engine::mul(Q_curr, G1_hb);
+        auto Num_hb = Engine::sub(Engine::mul(G2_hb, d1_n_curr), Engine::mul(Temp_hb, d3_n));
+        auto Denom_hb = Engine::sub(G2_hb, Temp_hb);
+        auto Hb_curr = Engine::div(Num_hb, Denom_hb);
+        Engine::store(Hb_curr, &Hb_l[(n-1)*lanes]);
+    }
+}
+
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>>
 void calcQParams(
     int n,
     const std::complex<FloatType>& an,
@@ -844,8 +970,6 @@ void MultiLayerMie<FloatType>::calcScattCoeffs() {
   //*****************************************************//
   // Iteration from the second layer to the last one (L) //
   //*****************************************************//
-  std::complex<FloatType> Temp, Num, Denom;
-  std::complex<FloatType> G1, G2;
   for (int l = fl + 1; l < L; l++) {
     //************************************************************//
     // Calculate D1 and D3 for z1 and z2 in the layers fl + 1..L   //
@@ -860,52 +984,11 @@ void MultiLayerMie<FloatType>::calcScattCoeffs() {
     //*************************************************//
     // Calculate Q, Ha and Hb in the layers fl + 1..L   //
     //*************************************************//
-    // Upward recurrence for Q - equations (19a) and (19b)
-    Num =
-        std::complex<FloatType>(nmm::exp(-2.0 * (z1.imag() - z2.imag())), 0.0) *
-        std::complex<FloatType>(
-            nmm::cos(-2.0 * z2.real()) - nmm::exp(-2.0 * z2.imag()),
-            nmm::sin(-2.0 * z2.real()));
-    Denom = std::complex<FloatType>(
-        nmm::cos(-2.0 * z1.real()) - nmm::exp(-2.0 * z1.imag()),
-        nmm::sin(-2.0 * z1.real()));
-    Q[l][0] = Num / Denom;
+    computeLayerCoeffsHelper<FloatType, ScalarEngine<FloatType>>(
+        nmax_, l, pl, x[l], x[l - 1], m[l], m[l - 1], z1, z2,
+        D1_mlxl, D3_mlxl, D1_mlxlM1, D3_mlxlM1,
+        Q[l], Ha[l], Hb[l], Ha[l - 1], Hb[l - 1]);
 
-    for (int n = 1; n <= nmax_; n++) {
-      Num = (z1 * D1_mlxl[n] + FloatType(n)) *
-            (FloatType(n) - z1 * D3_mlxl[n - 1]);
-      Denom = (z2 * D1_mlxlM1[n] + FloatType(n)) *
-              (FloatType(n) - z2 * D3_mlxlM1[n - 1]);
-      Q[l][n] = ((pow2(x[l - 1] / x[l]) * Q[l][n - 1]) * Num) / Denom;
-    }
-    // Upward recurrence for Ha and Hb - equations (7b), (8b) and (12) - (15)
-    for (int n = 1; n <= nmax_; n++) {
-      // Ha
-      if ((l - 1) == pl) {  // The layer below the current one is a PEC layer
-        G1 = -D1_mlxlM1[n];
-        G2 = -D3_mlxlM1[n];
-      } else {
-        G1 = (m[l] * Ha[l - 1][n - 1]) - (m[l - 1] * D1_mlxlM1[n]);
-        G2 = (m[l] * Ha[l - 1][n - 1]) - (m[l - 1] * D3_mlxlM1[n]);
-      }  // end of if PEC
-      Temp = Q[l][n] * G1;
-      Num = (G2 * D1_mlxl[n]) - (Temp * D3_mlxl[n]);
-      Denom = G2 - Temp;
-      Ha[l][n - 1] = Num / Denom;
-      // Hb
-      if ((l - 1) == pl) {  // The layer below the current one is a PEC layer
-        G1 = Hb[l - 1][n - 1];
-        G2 = Hb[l - 1][n - 1];
-      } else {
-        G1 = (m[l - 1] * Hb[l - 1][n - 1]) - (m[l] * D1_mlxlM1[n]);
-        G2 = (m[l - 1] * Hb[l - 1][n - 1]) - (m[l] * D3_mlxlM1[n]);
-      }  // end of if PEC
-
-      Temp = Q[l][n] * G1;
-      Num = (G2 * D1_mlxl[n]) - (Temp * D3_mlxl[n]);
-      Denom = (G2 - Temp);
-      Hb[l][n - 1] = (Num / Denom);
-    }  // end of for Ha and Hb terms
   }    // end of for layers iteration
 
   //**************************************//

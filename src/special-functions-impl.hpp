@@ -107,7 +107,7 @@ int getNStar(int nmax, ComplexType z, const int valid_digits) {
   int nstar = nmax;
   (void)valid_digits;
   
-  // auto forwardLoss = evalKapteynNumberOfLostSignificantDigits<FloatType, Engine, ComplexType>(nmax, z);
+  auto forwardLoss = evalKapteynNumberOfLostSignificantDigits<FloatType, Engine, ComplexType>(nmax, z);
   
   auto re = Engine::get_real(z);
   auto im = Engine::get_imag(z);
@@ -126,17 +126,17 @@ int getNStar(int nmax, ComplexType z, const int valid_digits) {
   if (nstar < max_abs_z) nstar = max_abs_z;
   nstar += increment;
 
-  /* Loop removed as it was causing infinite loop and incorrect nstar
-  while (true) {
+  int iter = 0;
+  while (iter++ < 100) {
     auto backwardLoss = evalKapteynNumberOfLostSignificantDigits<FloatType, Engine, ComplexType>(nstar, z);
     auto diff = Engine::sub(backwardLoss, forwardLoss);
     
     auto max_diff = Engine::reduce_max(diff);
-    if (max_diff < valid_digits) break;
+    if (max_diff > valid_digits) break;
     
     nstar += increment;
   }
-  */
+
   return nstar;
 }
 

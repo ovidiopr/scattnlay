@@ -93,6 +93,9 @@ struct ScalarEngine {
   static inline void store(ComplexV z, std::complex<T>* ptr) { *ptr = z; }
   static inline ComplexV load(const std::complex<T>* ptr) { return *ptr; }
 
+  static inline void store(RealV v, T* ptr) { *ptr = v; }
+  static inline RealV load(const T* ptr) { return *ptr; }
+
   // Math Primitives (Using ADL to handle std:: vs nmm::)
   static inline RealV abs(RealV v) { using std::abs; using nmm::abs; return abs(v); }
   static inline RealV sin(RealV v) { using std::sin; using nmm::sin; return sin(v); }
