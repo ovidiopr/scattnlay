@@ -18,7 +18,9 @@ struct HighwayEngine {
   static inline V sin(V v) { return hn::Sin(D(), v); }
   static inline V cos(V v) { return hn::Cos(D(), v); }
   static inline V exp(V v) { return hn::Exp(D(), v); }
-  static inline V tan(V v) { return hn::Div(hn::Sin(D(), v), hn::Cos(D(), v)); }
+  static inline V tan(V v) { 
+      return hn::Div(hn::Sin(D(), v), hn::Cos(D(), v));
+  }
   static inline V sqrt(V v) { return hn::Sqrt(v); }
   static inline V abs(V v) { return hn::Abs(v); }
   static inline V abs(ComplexV z) {
@@ -27,7 +29,9 @@ struct HighwayEngine {
   static inline V ceil(V v) { return hn::Ceil(v); }
   static inline V floor(V v) { return hn::Floor(v); }
   static inline V max(V a, V b) { return hn::Max(a, b); }
-  static inline V pow(V b, V e) { return hn::Exp(D(), hn::Mul(e, hn::Log(D(), b))); }
+  static inline V pow(V b, V e) { 
+      return hn::Exp(D(), hn::Mul(e, hn::Log(D(), b)));
+  }
   static inline V log(V v) { return hn::Log(D(), v); }
   static inline ComplexV select(M mask, ComplexV a, ComplexV b) {
     return {hn::IfThenElse(mask, a.re, b.re), hn::IfThenElse(mask, a.im, b.im)};
@@ -41,6 +45,9 @@ struct HighwayEngine {
   static inline M lt(V a, V b) { return hn::Lt(a, b); }
   static inline M ge(V a, V b) { return hn::Ge(a, b); }
   static inline M le(V a, V b) { return hn::Le(a, b); }
+  static inline M neq(V a, V b) { return hn::Ne(a, b); }
+  static inline M lor(M a, M b) { return hn::Or(a, b); }
+  static inline M land(M a, M b) { return hn::And(a, b); }
   static inline V add(V a, V b) { return hn::Add(a, b); }
   static inline V sub(V a, V b) { return hn::Sub(a, b); }
   static inline V mul(V a, V b) { return hn::Mul(a, b); }
@@ -102,17 +109,17 @@ struct HighwayEngine {
   }
 
   static inline V load(const T* ptr) {
-    return hn::Load(D(), ptr);
+    return hn::LoadU(D(), ptr);
   }
 
   static inline void store(V v, T* ptr) {
-    hn::Store(v, D(), ptr);
+    hn::StoreU(v, D(), ptr);
   }
 
   static inline T reduce_max(V v) {
     size_t lanes = hn::Lanes(D());
     std::vector<T> buf(lanes);
-    hn::Store(v, D(), buf.data());
+    hn::StoreU(v, D(), buf.data());
     T max_val = buf[0];
     for(size_t i=1; i<lanes; ++i) {
       if(buf[i] > max_val) max_val = buf[i];

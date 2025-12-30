@@ -37,7 +37,7 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
 
     for (size_t i = 0; i < N; i += lanes) {
         size_t current_batch_size = std::min(lanes, N - i);
-        alignas(64) FloatType xb[64], mrb[64], mib[64], nb[64];
+        alignas(64) FloatType xb[64] = {0}, mrb[64] = {0}, mib[64] = {0}, nb[64] = {0};
         
         FloatType max_x = 0;
         for (size_t j = 0; j < current_batch_size; ++j) {
