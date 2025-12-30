@@ -35,6 +35,20 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
     const hn::ScalableTag<FloatType> d;
     const size_t lanes = hn::Lanes(d);
 
+    // Calculate global max nmax
+    FloatType global_max_x = 0;
+    for (auto val : input.x) {
+        if (val > global_max_x) global_max_x = val;
+    }
+    int global_nmax = static_cast<int>(std::round(global_max_x + 11 * std::pow(global_max_x, 1.0/3.0) + 16));
+
+    nmie::MieBuffers<FloatType, Engine> buffers;
+    buffers.resize(global_nmax, 1);
+    
+    std::vector<std::complex<FloatType>> an_vec, bn_vec;
+    an_vec.reserve((global_nmax + 1) * lanes);
+    bn_vec.reserve((global_nmax + 1) * lanes);
+
     for (size_t i = 0; i < N; i += lanes) {
         size_t current_batch_size = std::min(lanes, N - i);
         alignas(64) FloatType xb[64] = {0}, mrb[64] = {0}, mib[64] = {0}, nb[64] = {0};
@@ -55,147 +69,43 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
         auto vnmax = hn::LoadU(d, nb);
 
         typename Engine::ComplexV mL_v = { vmr, vmi };
-        typename Engine::ComplexV z_v = { hn::Mul(vx, vmr), hn::Mul(vx, vmi) };
-        typename Engine::ComplexV x_real_v = { vx, hn::Zero(d) };
 
         int calc_nmax = static_cast<int>(std::round(max_x + 11 * std::pow(max_x, 1.0/3.0) + 16));
         
-        std::vector<std::complex<FloatType>> D1_z((calc_nmax + 1) * lanes), D1_x((calc_nmax + 1) * lanes), D3_x((calc_nmax + 1) * lanes),
-                                                Psi_x((calc_nmax + 1) * lanes), PsiZeta_x((calc_nmax + 1) * lanes);
+        an_vec.resize((calc_nmax + 1) * lanes);
+        bn_vec.resize((calc_nmax + 1) * lanes);
 
-        evalDownwardD1<FloatType, Engine>(z_v, D1_z);
-        evalDownwardD1<FloatType, Engine>(x_real_v, D1_x);
-        evalUpwardPsi<FloatType, Engine>(x_real_v, D1_x, Psi_x);
-        evalUpwardD3<FloatType, Engine>(x_real_v, D1_x, D3_x, PsiZeta_x);
+        // Getters for the kernel
+        // For batch processing of single spheres, we treat it as L=1.
+        // get_x(0) returns the x vector for the batch.
+        // get_m(0) returns the m vector for the batch.
+        auto get_x = [&](int /*l*/) { return vx; };
+        auto get_m = [&](int /*l*/) { return mL_v; };
 
-        auto vQext = hn::Zero(d), vQsca = hn::Zero(d), vQbktmp_re = hn::Zero(d), vQbktmp_im = hn::Zero(d), vQpr_sum = hn::Zero(d);
-        typename Engine::ComplexV an_prev = { hn::Zero(d), hn::Zero(d) }, bn_prev = { hn::Zero(d), hn::Zero(d) };
+        nmie::calcScattCoeffsKernel<FloatType, Engine>(
+            calc_nmax, 1, -1, get_x, get_m,
+            buffers, an_vec, bn_vec
+        );
 
-        // Angular scattering variables
-        std::vector<typename Engine::ComplexV> vS1(num_angles,
-                                                   {hn::Zero(d), hn::Zero(d)});
-        std::vector<typename Engine::ComplexV> vS2(num_angles,
-                                                   {hn::Zero(d), hn::Zero(d)});
-        std::vector<typename Engine::ComplexV> pi_prev(
-            num_angles, {hn::Zero(d), hn::Zero(d)});  // pi_0 = 0
-        std::vector<typename Engine::ComplexV> pi_curr(
-            num_angles, {hn::Set(d, 1.0), hn::Zero(d)});  // pi_1 = 1
-
-        std::vector<FloatType> mu(num_angles);
-        for (size_t k = 0; k < num_angles; ++k)
-          mu[k] = std::cos(input.theta[k]);
-
-        for (int n = 1; n < calc_nmax; ++n) {
-            auto vn = hn::Set(d, static_cast<FloatType>(n));
-            auto mask = hn::Le(vn, vnmax);
-            if (hn::AllTrue(d, hn::Not(mask))) break;
-
-            auto psi_zeta_n = Engine::load(&PsiZeta_x[n * lanes]);
-            auto psi_n = Engine::load(&Psi_x[n * lanes]);
-            auto Zeta_n = Engine::div(psi_zeta_n, psi_n);
-            
-            auto psi_zeta_nm1 = Engine::load(&PsiZeta_x[(n-1) * lanes]);
-            auto psi_nm1 = Engine::load(&Psi_x[(n-1) * lanes]);
-            auto Zeta_nm1 = Engine::div(psi_zeta_nm1, psi_nm1);
-
-            auto d1_z_n = Engine::load(&D1_z[n * lanes]);
-            auto an = calc_an<FloatType, Engine>(n, vx, d1_z_n, mL_v, psi_n, Zeta_n, psi_nm1, Zeta_nm1);
-            auto bn = calc_bn<FloatType, Engine>(n, vx, d1_z_n, mL_v, psi_n, Zeta_n, psi_nm1, Zeta_nm1);
-
-            auto mult = hn::Add(hn::Add(vn, vn), hn::Set(d, 1.0));
-            vQext = hn::Add(vQext, hn::IfThenElse(mask, hn::Mul(mult, hn::Add(an.re, bn.re)), hn::Zero(d)));
-            vQsca = hn::Add(vQsca, hn::IfThenElse(mask, hn::Mul(mult, hn::Add(hn::Mul(an.re, an.re), hn::Add(hn::Mul(an.im, an.im), hn::Add(hn::Mul(bn.re, bn.re), hn::Mul(bn.im, bn.im))))), hn::Zero(d)));
-            
-            auto sign_n = ((n + 1) % 2 == 0) ? hn::Set(d, -1.0) : hn::Set(d, 1.0);
-            vQbktmp_re = hn::Add(vQbktmp_re, hn::IfThenElse(mask, hn::Mul(hn::Mul(mult, sign_n), hn::Sub(an.re, bn.re)), hn::Zero(d)));
-            vQbktmp_im = hn::Add(vQbktmp_im, hn::IfThenElse(mask, hn::Mul(hn::Mul(mult, sign_n), hn::Sub(an.im, bn.im)), hn::Zero(d)));
-
-            if (n > 1) {
-                auto re_aa = hn::Add(hn::Mul(an_prev.re, an.re), hn::Mul(an_prev.im, an.im));
-                auto re_bb = hn::Add(hn::Mul(bn_prev.re, bn.re), hn::Mul(bn_prev.im, bn.im));
-                vQpr_sum = hn::Add(vQpr_sum, hn::IfThenElse(mask, hn::Mul(hn::Div(hn::Mul(hn::Sub(vn, hn::Set(d, 1.0)), hn::Add(vn, hn::Set(d, 1.0))), vn), hn::Add(re_aa, re_bb)), hn::Zero(d)));
-            }
-            vQpr_sum = hn::Add(vQpr_sum, hn::IfThenElse(mask, hn::Mul(hn::Div(mult, hn::Mul(vn, hn::Add(vn, hn::Set(d, 1.0)))), hn::Add(hn::Mul(an.re, bn.re), hn::Mul(an.im, bn.im))), hn::Zero(d)));
-
-            // Angular scattering calculation
-            if (num_angles > 0) {
-              auto factor =
-                  hn::Div(mult, hn::Mul(vn, hn::Add(vn, hn::Set(d, 1.0))));
-              for (size_t k = 0; k < num_angles; ++k) {
-                auto vmu = hn::Set(d, mu[k]);
-                // Calculate pi_n and tau_n
-                // pi_n = ((2n-1)/(n-1)) * mu * pi_{n-1} - (n/(n-1)) * pi_{n-2}
-                // tau_n = n * mu * pi_n - (n+1) * pi_{n-1}
-
-                typename Engine::ComplexV pi_next = {hn::Zero(d), hn::Zero(d)};
-                typename Engine::ComplexV tau_n = {hn::Zero(d), hn::Zero(d)};
-
-                if (n == 1) {
-                  pi_next = {hn::Set(d, 1.0), hn::Zero(d)};  // pi_1 = 1
-                  tau_n = {vmu, hn::Zero(d)};                // tau_1 = mu
-                  // For n=1, pi_prev is 0, pi_curr is 1.
-                  // We need to update pi_prev/pi_curr for next iteration.
-                  // But wait, the loop starts at n=1.
-                  // pi_prev (n=0) = 0
-                  // pi_curr (n=1) = 1
-                  // tau_1 = 1 * mu * 1 - 2 * 0 = mu. Correct.
-                } else {
-                  // Recurrence for pi_n
-                  // pi_n = ((2n-1) * mu * pi_{n-1} - n * pi_{n-2}) / (n-1)
-                  auto n_val = static_cast<FloatType>(n);
-                  auto v_2nm1 = hn::Set(d, 2 * n_val - 1);
-                  auto v_n = hn::Set(d, n_val);
-                  auto v_nm1 = hn::Set(d, n_val - 1);
-
-                  auto term1 = hn::Mul(v_2nm1, hn::Mul(vmu, pi_curr[k].re));
-                  auto term2 = hn::Mul(v_n, pi_prev[k].re);
-                  pi_next.re = hn::Div(hn::Sub(term1, term2), v_nm1);
-
-                  // tau_n = n * mu * pi_n - (n+1) * pi_{n-1}
-                  auto v_np1 = hn::Set(d, n_val + 1);
-                  auto t1 = hn::Mul(v_n, hn::Mul(vmu, pi_next.re));
-                  auto t2 = hn::Mul(v_np1, pi_curr[k].re);
-                  tau_n.re = hn::Sub(t1, t2);
-
-                  // Update pi_prev and pi_curr for next iteration
-                  pi_prev[k] = pi_curr[k];
-                  pi_curr[k] = pi_next;
-                }
-
-                // Update S1 and S2
-                // S1 += factor * (an * pi_n + bn * tau_n)
-                // Note: pi_curr[k] now holds pi_n (calculated as pi_next above)
-                // BUT for n=1, pi_curr[k] is already pi_1 (1.0) and we didn't
-                // update it. For n>1, we just updated pi_curr[k] to pi_next
-                // (pi_n). So in both cases, pi_curr[k] holds pi_n.
-
-                auto term_an_pi = Engine::mul(an, pi_curr[k]);
-                auto term_bn_tau = Engine::mul(bn, tau_n);
-                auto term_S1 = Engine::add(term_an_pi, term_bn_tau);
-
-                vS1[k].re = hn::Add(
-                    vS1[k].re, hn::IfThenElse(mask, hn::Mul(factor, term_S1.re),
-                                              hn::Zero(d)));
-                vS1[k].im = hn::Add(
-                    vS1[k].im, hn::IfThenElse(mask, hn::Mul(factor, term_S1.im),
-                                              hn::Zero(d)));
-
-                // S2 += factor * (an * tau_n + bn * pi_n)
-                auto term_an_tau = Engine::mul(an, tau_n);
-                auto term_bn_pi = Engine::mul(bn, pi_curr[k]);
-                auto term_S2 = Engine::add(term_an_tau, term_bn_pi);
-
-                vS2[k].re = hn::Add(
-                    vS2[k].re, hn::IfThenElse(mask, hn::Mul(factor, term_S2.re),
-                                              hn::Zero(d)));
-                vS2[k].im = hn::Add(
-                    vS2[k].im, hn::IfThenElse(mask, hn::Mul(factor, term_S2.im),
-                                              hn::Zero(d)));
-              }
-            }
-
-            an_prev = an; bn_prev = bn;
-        }
+        auto vQext = hn::Zero(d), vQsca = hn::Zero(d), vQpr_sum = hn::Zero(d);
+        typename Engine::ComplexV vQbk = {hn::Zero(d), hn::Zero(d)};
+        
+        std::vector<typename Engine::ComplexV> vS1(num_angles, {hn::Zero(d), hn::Zero(d)});
+        std::vector<typename Engine::ComplexV> vS2(num_angles, {hn::Zero(d), hn::Zero(d)});
+        
+        nmie::sumMieSeriesKernel<FloatType, Engine>(
+            calc_nmax,
+            vnmax,
+            an_vec.data(),
+            bn_vec.data(),
+            input.theta,
+            vQext,
+            vQsca,
+            vQpr_sum,
+            vQbk,
+            vS1,
+            vS2
+        );
 
         auto x2 = hn::Mul(vx, vx);
         auto norm = hn::Div(hn::Set(d, 2.0), x2);
@@ -203,7 +113,10 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
         alignas(64) FloatType r_ext[64], r_sca[64], r_bk[64], r_pr[64];
         hn::Store(hn::Mul(vQext, norm), d, r_ext);
         hn::Store(hn::Mul(vQsca, norm), d, r_sca);
-        hn::Store(hn::Div(hn::Add(hn::Mul(vQbktmp_re, vQbktmp_re), hn::Mul(vQbktmp_im, vQbktmp_im)), x2), d, r_bk);
+        
+        auto vQbk_mag_sq = hn::Add(hn::Mul(vQbk.re, vQbk.re), hn::Mul(vQbk.im, vQbk.im));
+        hn::Store(hn::Div(vQbk_mag_sq, x2), d, r_bk);
+        
         hn::Store(hn::Sub(hn::Mul(vQext, norm), hn::Mul(hn::Div(hn::Set(d, 4.0), x2), vQpr_sum)), d, r_pr);
 
         for (size_t j = 0; j < current_batch_size; ++j) {

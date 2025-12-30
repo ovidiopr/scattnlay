@@ -10,6 +10,8 @@ struct HighwayEngine {
   using M = hn::Mask<D>;
   using RealV = V;
 
+  template <typename U> using Vector = std::vector<U>;
+
   static size_t Lanes() { return hn::Lanes(D()); }
 
   // Represents a batch of complex numbers (Real vectors, Imag vectors)
@@ -45,6 +47,7 @@ struct HighwayEngine {
   static inline M lt(V a, V b) { return hn::Lt(a, b); }
   static inline M ge(V a, V b) { return hn::Ge(a, b); }
   static inline M le(V a, V b) { return hn::Le(a, b); }
+  static inline M eq(V a, V b) { return hn::Eq(a, b); }
   static inline M neq(V a, V b) { return hn::Ne(a, b); }
   static inline M lor(M a, M b) { return hn::Or(a, b); }
   static inline M land(M a, M b) { return hn::And(a, b); }
@@ -76,12 +79,24 @@ struct HighwayEngine {
     return {hn::Sub(hn::Mul(a.re, b.re), hn::Mul(a.im, b.im)),
             hn::Add(hn::Mul(a.re, b.im), hn::Mul(a.im, b.re))};
   }
+
+  static inline ComplexV mul(ComplexV a, V b) {
+    return {hn::Mul(a.re, b), hn::Mul(a.im, b)};
+  }
+
+  static inline ComplexV mul(V a, ComplexV b) {
+    return {hn::Mul(a, b.re), hn::Mul(a, b.im)};
+  }
   
   static inline ComplexV div(ComplexV a, ComplexV b) {
     V mag_sq = hn::Add(hn::Mul(b.re, b.re), hn::Mul(b.im, b.im));
     V re = hn::Div(hn::Add(hn::Mul(a.re, b.re), hn::Mul(a.im, b.im)), mag_sq);
     V im = hn::Div(hn::Sub(hn::Mul(a.im, b.re), hn::Mul(a.re, b.im)), mag_sq);
     return {re, im};
+  }
+
+  static inline ComplexV div(ComplexV a, V b) {
+    return {hn::Div(a.re, b), hn::Div(a.im, b)};
   }
 
   static inline V get_real(ComplexV z) { return z.re; }

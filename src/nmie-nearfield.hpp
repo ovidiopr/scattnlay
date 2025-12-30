@@ -169,6 +169,7 @@ void RunFieldKernel(
     const std::vector<std::vector<std::complex<FloatType>>>& bln,
     const std::vector<std::vector<std::complex<FloatType>>>& cln,
     const std::vector<std::vector<std::complex<FloatType>>>& dln,
+    MieBuffers<FloatType, Engine>& buffers,
     std::vector<std::vector<std::complex<FloatType>>>& Es,
     std::vector<std::vector<std::complex<FloatType>>>& Hs,
     std::vector<std::vector<FloatType>>& coords_polar
@@ -244,8 +245,11 @@ void RunFieldKernel(
         ComplexV rho_c = Engine::make_complex(rho_v, Engine::set(0.0));
         ComplexV z = Engine::mul(rho_c, ml_v);
         
-        std::vector<std::complex<FloatType>> D1((nmax + 1) * lanes), D3((nmax + 1) * lanes), Psi((nmax + 1) * lanes), Zeta((nmax + 1) * lanes);
-        std::vector<std::complex<FloatType>> PsiZeta((nmax + 1) * lanes);
+        auto& D1 = buffers.D1;
+        auto& D3 = buffers.D3;
+        auto& Psi = buffers.Psi;
+        auto& Zeta = buffers.Zeta;
+        auto& PsiZeta = buffers.PsiZeta;
         
         evalDownwardD1<FloatType, Engine>(z, D1);
         evalUpwardPsi<FloatType, Engine>(z, D1, Psi);
@@ -272,35 +276,71 @@ void RunFieldKernel(
         // ipow
         ComplexV ipow[4] = {c_one, c_i, Engine::make_complex(Engine::set(-1.0), zero), Engine::make_complex(zero, Engine::set(-1.0))};
 
-        for(int n=0; n<nmax; ++n) {
+        // Pre-gather coefficients to improve cache locality
+        // We transpose from [layer][n] to [n][lane]
+        std::vector<FloatType> aln_re_all(nmax * lanes),
+            aln_im_all(nmax * lanes);
+        std::vector<FloatType> bln_re_all(nmax * lanes),
+            bln_im_all(nmax * lanes);
+        std::vector<FloatType> cln_re_all(nmax * lanes),
+            cln_im_all(nmax * lanes);
+        std::vector<FloatType> dln_re_all(nmax * lanes),
+            dln_im_all(nmax * lanes);
+
+        for (size_t j = 0; j < lanes; ++j) {
+          int l = layer_buf[j];
+          // Optimization: if multiple lanes have same layer, we could copy?
+          // But simple loop is fine for now.
+          for (int n = 0; n < nmax; ++n) {
+            size_t idx = n * lanes + j;
+            aln_re_all[idx] = aln[l][n].real();
+            aln_im_all[idx] = aln[l][n].imag();
+            bln_re_all[idx] = bln[l][n].real();
+            bln_im_all[idx] = bln[l][n].imag();
+            cln_re_all[idx] = cln[l][n].real();
+            cln_im_all[idx] = cln[l][n].imag();
+            dln_re_all[idx] = dln[l][n].real();
+            dln_im_all[idx] = dln[l][n].imag();
+          }
+        }
+
+        for (int n = 0; n < nmax; ++n) {
           int n1 = n + 1;
           auto rn = Engine::make_complex(Engine::set((FloatType)n1), zero);
-          
+
           ComplexV M1o1n[3], M1e1n[3], N1o1n[3], N1e1n[3];
           ComplexV M3o1n[3], M3e1n[3], N3o1n[3], N3e1n[3];
-          
-          NearFieldKernelHelper<FloatType, Engine>::calcSpherHarm(z, theta_v, phi_v, Engine::load(&Psi[n1 * lanes]), Engine::load(&D1[n1 * lanes]), Pi[n], Tau[n], Engine::get_real(rn), M1o1n, M1e1n, N1o1n, N1e1n);
-          NearFieldKernelHelper<FloatType, Engine>::calcSpherHarm(z, theta_v, phi_v, Engine::load(&Zeta[n1 * lanes]), Engine::load(&D3[n1 * lanes]), Pi[n], Tau[n], Engine::get_real(rn), M3o1n, M3e1n, N3o1n, N3e1n);
-          
-          auto En = Engine::mul(ipow[n1 % 4], Engine::make_complex(Engine::div(Engine::set((FloatType)(2*n1+1)), Engine::set((FloatType)(n1*n1+n1))), zero));
-          
-          // Gather coefficients
-          std::vector<FloatType> aln_re(lanes), aln_im(lanes);
-          std::vector<FloatType> bln_re(lanes), bln_im(lanes);
-          std::vector<FloatType> cln_re(lanes), cln_im(lanes);
-          std::vector<FloatType> dln_re(lanes), dln_im(lanes);
-          
-          for(size_t j=0; j<lanes; ++j) {
-             aln_re[j] = aln[layer_buf[j]][n].real(); aln_im[j] = aln[layer_buf[j]][n].imag();
-             bln_re[j] = bln[layer_buf[j]][n].real(); bln_im[j] = bln[layer_buf[j]][n].imag();
-             cln_re[j] = cln[layer_buf[j]][n].real(); cln_im[j] = cln[layer_buf[j]][n].imag();
-             dln_re[j] = dln[layer_buf[j]][n].real(); dln_im[j] = dln[layer_buf[j]][n].imag();
-          }
-          ComplexV aln_v = Engine::make_complex(Engine::load(aln_re.data()), Engine::load(aln_im.data()));
-          ComplexV bln_v = Engine::make_complex(Engine::load(bln_re.data()), Engine::load(bln_im.data()));
-          ComplexV cln_v = Engine::make_complex(Engine::load(cln_re.data()), Engine::load(cln_im.data()));
-          ComplexV dln_v = Engine::make_complex(Engine::load(dln_re.data()), Engine::load(dln_im.data()));
-          
+
+          NearFieldKernelHelper<FloatType, Engine>::calcSpherHarm(
+              z, theta_v, phi_v, Engine::load(&Psi[n1 * lanes]),
+              Engine::load(&D1[n1 * lanes]), Pi[n], Tau[n],
+              Engine::get_real(rn), M1o1n, M1e1n, N1o1n, N1e1n);
+          NearFieldKernelHelper<FloatType, Engine>::calcSpherHarm(
+              z, theta_v, phi_v, Engine::load(&Zeta[n1 * lanes]),
+              Engine::load(&D3[n1 * lanes]), Pi[n], Tau[n],
+              Engine::get_real(rn), M3o1n, M3e1n, N3o1n, N3e1n);
+
+          auto En = Engine::mul(
+              ipow[n1 % 4],
+              Engine::make_complex(
+                  Engine::div(Engine::set((FloatType)(2 * n1 + 1)),
+                              Engine::set((FloatType)(n1 * n1 + n1))),
+                  zero));
+
+          // Load pre-gathered coefficients
+          ComplexV aln_v =
+              Engine::make_complex(Engine::load(&aln_re_all[n * lanes]),
+                                   Engine::load(&aln_im_all[n * lanes]));
+          ComplexV bln_v =
+              Engine::make_complex(Engine::load(&bln_re_all[n * lanes]),
+                                   Engine::load(&bln_im_all[n * lanes]));
+          ComplexV cln_v =
+              Engine::make_complex(Engine::load(&cln_re_all[n * lanes]),
+                                   Engine::load(&cln_im_all[n * lanes]));
+          ComplexV dln_v =
+              Engine::make_complex(Engine::load(&dln_re_all[n * lanes]),
+                                   Engine::load(&dln_im_all[n * lanes]));
+
           for(int k=0; k<3; ++k) {
             // Ediff = En*(cln*M1o1n[i] - c_i*dln*N1e1n[i] + c_i*aln*N3e1n[i] - bln*M3o1n[i]);
             auto term1 = Engine::mul(cln_v, M1o1n[k]);
@@ -319,7 +359,45 @@ void RunFieldKernel(
             H_v[k] = Engine::add(H_v[k], Hdiff);
           }
         }
+
+        // Add incident field (Vectorized)
+        std::vector<FloatType> layer_f(lanes);
+        for(size_t j=0; j<lanes; ++j) layer_f[j] = static_cast<FloatType>(layer_buf[j]);
+        auto layer_v = Engine::load(layer_f.data());
+        auto outer_layer_val = Engine::set(static_cast<FloatType>(refractive_index.size()));
+        auto mask_incident = Engine::eq(layer_v, outer_layer_val);
         
+        auto z_val = Engine::mul(rho_v, Engine::cos(theta_v));
+        auto Ex = Engine::make_complex(Engine::cos(z_val), Engine::sin(z_val));
+        
+        auto sin_theta = Engine::sin(theta_v);
+        auto cos_theta = Engine::cos(theta_v);
+        auto sin_phi = Engine::sin(phi_v);
+        auto cos_phi = Engine::cos(phi_v);
+        
+        auto E_inc_rho = Engine::mul(Ex, Engine::mul(cos_phi, sin_theta));
+        auto E_inc_theta = Engine::mul(Ex, Engine::mul(cos_phi, cos_theta));
+        auto E_inc_phi = Engine::mul(Ex, Engine::sub(zero, sin_phi));
+        
+        E_v[0] = Engine::add(E_v[0], Engine::select(mask_incident, E_inc_rho, c_zero));
+        E_v[1] = Engine::add(E_v[1], Engine::select(mask_incident, E_inc_theta, c_zero));
+        E_v[2] = Engine::add(E_v[2], Engine::select(mask_incident, E_inc_phi, c_zero));
+        
+        auto Hy = Ex;
+        auto H_inc_rho = Engine::mul(Hy, Engine::mul(sin_theta, sin_phi));
+        auto H_inc_theta = Engine::mul(Hy, Engine::mul(cos_theta, sin_phi));
+        auto H_inc_phi = Engine::mul(Hy, cos_phi);
+        
+        H_v[0] = Engine::add(H_v[0], Engine::select(mask_incident, H_inc_rho, c_zero));
+        H_v[1] = Engine::add(H_v[1], Engine::select(mask_incident, H_inc_theta, c_zero));
+        H_v[2] = Engine::add(H_v[2], Engine::select(mask_incident, H_inc_phi, c_zero));
+
+        // Apply magnetic field factor
+        auto hffact_v = Engine::div(ml_v, Engine::set(static_cast<FloatType>(nmie::cc_ * nmie::mu_)));
+        for(int k=0; k<3; ++k) {
+            H_v[k] = Engine::mul(H_v[k], hffact_v);
+        }
+
         // Store results
         std::vector<FloatType> E_re(lanes), E_im(lanes);
         std::vector<FloatType> H_re(lanes), H_im(lanes);
@@ -333,34 +411,6 @@ void RunFieldKernel(
           for(size_t j=0; j<n_process; ++j) {
             Es[original_indices[j]][k] = std::complex<FloatType>(E_re[j], E_im[j]);
             Hs[original_indices[j]][k] = std::complex<FloatType>(H_re[j], H_im[j]);
-          }
-        }
-
-        // Add incident field
-        for(size_t j=0; j<n_process; ++j) {
-          if (layer_buf[j] == static_cast<int>(refractive_index.size())) {
-              auto Rho = rho_buf[j];
-              auto Theta = theta_buf[j];
-              auto Phi = phi_buf[j];
-              using nmm::cos; using nmm::sin;
-              auto z_val = Rho * cos(Theta);
-              std::complex<FloatType> Ex(cos(z_val), sin(z_val));
-              
-              Es[original_indices[j]][0] += Ex * cos(Phi) * sin(Theta);
-              Es[original_indices[j]][1] += Ex * cos(Phi) * cos(Theta);
-              Es[original_indices[j]][2] += -Ex * sin(Phi);
-              
-              auto Hy = Ex;
-              Hs[original_indices[j]][0] += Hy * sin(Theta) * sin(Phi);
-              Hs[original_indices[j]][1] += Hy * cos(Theta) * sin(Phi);
-              Hs[original_indices[j]][2] += Hy * cos(Phi);
-          }
-          
-          // magnetic field factor
-          std::complex<FloatType> ml(ml_re_buf[j], ml_im_buf[j]);
-          std::complex<FloatType> hffact = ml / static_cast<FloatType>(nmie::cc_ * nmie::mu_);
-          for (int k = 0; k < 3; k++) {
-            Hs[original_indices[j]][k] *= hffact;
           }
         }
     }
@@ -781,6 +831,9 @@ namespace nmie {
     using Engine = ScalarEngine<FloatType>;
 #endif
 
+    MieBuffers<FloatType, Engine> buffers;
+    buffers.resize(nmax_, 1);
+
     RunFieldKernel<FloatType, Engine>(
         coords_[0], coords_[1], coords_[2],
         0, total_points,
@@ -788,6 +841,7 @@ namespace nmie {
         size_param_,
         refractive_index_,
         aln_, bln_, cln_, dln_,
+        buffers,
         Es_, Hs_,
         coords_polar_
     );

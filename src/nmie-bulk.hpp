@@ -37,6 +37,9 @@ public:
     void RunMieCalculation() {
         using Engine = HighwayEngine<FloatType>;
         const size_t lanes = Engine::Lanes();
+        
+        MieBuffers<FloatType, Engine> buffers;
+        std::vector<std::complex<FloatType>> an_vec, bn_vec;
 
         for (size_t i = 0; i < num_spheres_; i += lanes) {
             size_t current_batch_size = std::min(lanes, num_spheres_ - i);
@@ -51,25 +54,9 @@ public:
                 batch_nmax = static_cast<int>(std::round(max_x + 11 * std::pow(max_x, 1.0/3.0) + 16));
             }
 
-            // Buffers
-            std::vector<std::complex<FloatType>> D1_mlxl((batch_nmax + 1) * lanes);
-            std::vector<std::complex<FloatType>> D3_mlxl((batch_nmax + 1) * lanes);
-            std::vector<std::complex<FloatType>> D1_mlxlM1((batch_nmax + 1) * lanes);
-            std::vector<std::complex<FloatType>> D3_mlxlM1((batch_nmax + 1) * lanes);
-            std::vector<std::complex<FloatType>> PsiXL((batch_nmax + 1) * lanes);
-            std::vector<std::complex<FloatType>> ZetaXL((batch_nmax + 1) * lanes);
-
-            std::vector<std::vector<std::complex<FloatType>>> Q(L_);
-            std::vector<std::vector<std::complex<FloatType>>> Ha(L_);
-            std::vector<std::vector<std::complex<FloatType>>> Hb(L_);
-            for(size_t l=0; l<L_; ++l) {
-                Q[l].resize((batch_nmax + 1) * lanes);
-                Ha[l].resize((batch_nmax + 1) * lanes);
-                Hb[l].resize((batch_nmax + 1) * lanes);
-            }
-            
-            std::vector<std::complex<FloatType>> an((batch_nmax + 1) * lanes);
-            std::vector<std::complex<FloatType>> bn((batch_nmax + 1) * lanes);
+            buffers.resize(batch_nmax, L_);
+            an_vec.resize((batch_nmax + 1) * lanes);
+            bn_vec.resize((batch_nmax + 1) * lanes);
             
             auto load_val = [&](const std::vector<FloatType>& v, size_t offset) {
                 alignas(64) FloatType tmp[64] = {0};
@@ -98,9 +85,7 @@ public:
 
             calcScattCoeffsKernel<FloatType, Engine>(
                 batch_nmax, L_, -1, get_x, get_m,
-                D1_mlxl, D3_mlxl, D1_mlxlM1, D3_mlxlM1,
-                PsiXL, ZetaXL,
-                Q, Ha, Hb, an, bn
+                buffers, an_vec, bn_vec
             );
             
             // Calculate vnmax
@@ -123,8 +108,8 @@ public:
                 auto n_val = Engine::set(static_cast<FloatType>(n+1));
                 auto active_mask = Engine::le(n_val, vnmax);
                 
-                auto an_val = Engine::load(&an[n*lanes]);
-                auto bn_val = Engine::load(&bn[n*lanes]);
+                auto an_val = Engine::load(&an_vec[n*lanes]);
+                auto bn_val = Engine::load(&bn_vec[n*lanes]);
                 
                 // Sanitize NaNs
                 auto an_re_raw = Engine::get_real(an_val);
@@ -140,8 +125,8 @@ public:
                 bn_val = Engine::select(nan_mask_bn, zero_c, bn_val);
                 
                 // Store back sanitized values
-                Engine::store(an_val, &an[n*lanes]);
-                Engine::store(bn_val, &bn[n*lanes]);
+                Engine::store(an_val, &an_vec[n*lanes]);
+                Engine::store(bn_val, &bn_vec[n*lanes]);
                 
                 an_val = Engine::select(active_mask, an_val, zero_c);
                 bn_val = Engine::select(active_mask, bn_val, zero_c);

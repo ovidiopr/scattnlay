@@ -82,6 +82,9 @@ struct ScalarEngine {
   using ComplexV = std::complex<T>;
   using MaskV = bool; // For scalar, masks are just booleans
 
+  template <typename U>
+  using Vector = std::vector<U>;
+
   // Traits
   static constexpr size_t Lanes() { return 1; }
 
@@ -109,6 +112,22 @@ struct ScalarEngine {
   static inline RealV max(RealV a, RealV b) { using std::max; return max(a, b); }
   static inline RealV pow(RealV b, RealV e) { using std::pow; using nmm::pow; return pow(b, e); }
 
+  static inline MaskV gt(RealV a, RealV b) { return a > b; }
+  static inline MaskV lt(RealV a, RealV b) { return a < b; }
+  static inline MaskV ge(RealV a, RealV b) { return a >= b; }
+  static inline MaskV le(RealV a, RealV b) { return a <= b; }
+  static inline MaskV eq(RealV a, RealV b) { return a == b; }
+  static inline MaskV neq(RealV a, RealV b) { return a != b; }
+  static inline MaskV lor(MaskV a, MaskV b) { return a || b; }
+  static inline MaskV land(MaskV a, MaskV b) { return a && b; }
+
+  static inline RealV select(MaskV mask, RealV a, RealV b) {
+    return mask ? a : b;
+  }
+  static inline ComplexV select(MaskV mask, ComplexV a, ComplexV b) {
+    return mask ? a : b;
+  }
+
   static inline RealV add(RealV a, RealV b) { return a + b; }
   static inline RealV sub(RealV a, RealV b) { return a - b; }
   static inline RealV mul(RealV a, RealV b) { return a * b; }
@@ -119,7 +138,10 @@ struct ScalarEngine {
   static inline ComplexV add(ComplexV a, ComplexV b) { return a + b; }
   static inline ComplexV sub(ComplexV a, ComplexV b) { return a - b; }
   static inline ComplexV mul(ComplexV a, ComplexV b) { return a * b; }
+  static inline ComplexV mul(ComplexV a, RealV b) { return a * b; }
+  static inline ComplexV mul(RealV a, ComplexV b) { return a * b; }
   static inline ComplexV div(ComplexV a, ComplexV b) { return a / b; }
+  static inline ComplexV div(ComplexV a, RealV b) { return a / b; }
 
   static inline RealV get_real(ComplexV z) { return z.real(); }
   static inline RealV get_imag(ComplexV z) { return z.imag(); }
@@ -177,6 +199,49 @@ std::vector<ToFloatType> ConvertVector(const std::vector<FromFloatType> x) {
   }
   return new_x;
 }
+
+template <typename FloatType, typename Engine>
+struct MieBuffers {
+  using ComplexV = typename Engine::ComplexV;
+  using VectorC = typename Engine::template Vector<std::complex<FloatType>>;
+
+  // Persistent buffers
+  VectorC D1, D3, D1_prev, D3_prev, Psi, Zeta, PsiZeta;
+  std::vector<VectorC> Q, Ha, Hb;
+
+  void resize(int nmax, int L) {
+    size_t lanes = Engine::Lanes();
+    size_t size = (nmax + 1) * lanes;
+
+    if (D1.size() < size)
+      D1.resize(size);
+    if (D3.size() < size)
+      D3.resize(size);
+    if (D1_prev.size() < size)
+      D1_prev.resize(size);
+    if (D3_prev.size() < size)
+      D3_prev.resize(size);
+    if (Psi.size() < size)
+      Psi.resize(size);
+    if (Zeta.size() < size)
+      Zeta.resize(size);
+    if (PsiZeta.size() < size)
+      PsiZeta.resize(size);
+
+    if (Q.size() < static_cast<size_t>(L)) {
+      Q.resize(L);
+      Ha.resize(L);
+      Hb.resize(L);
+    }
+    for (int l = 0; l < L; ++l) {
+      if (Q[l].size() < size) {
+        Q[l].resize(size);
+        Ha[l].resize(size);
+        Hb[l].resize(size);
+      }
+    }
+  }
+};
 
 template <typename ToFloatType, typename FromFloatType>
 std::complex<ToFloatType> ConvertComplex(std::complex<FromFloatType> z) {

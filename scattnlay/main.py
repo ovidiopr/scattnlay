@@ -141,20 +141,21 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
     else:
         nstore = nmax
 
-    terms = np.zeros((x.shape[0]), dtype=int)
-    an = np.zeros((0, nstore), dtype=complex)
-    bn = np.zeros((0, nstore), dtype=complex)
+    num_points = x.shape[0]
+    terms = np.zeros(num_points, dtype=int)
+    an = np.zeros((num_points, nstore), dtype=complex)
+    bn = np.zeros((num_points, nstore), dtype=complex)
 
     for i, xi in enumerate(x):
         terms[i], a, b = scattcoeffs_(xi, m[i], nmax=nmax, pl=pl, mp=mp)
 
         if terms[i] > nstore:
             nstore = terms[i]
-            an.resize((an.shape[0], nstore))
-            bn.resize((bn.shape[0], nstore))
+            an.resize((num_points, nstore), refcheck=False)
+            bn.resize((num_points, nstore), refcheck=False)
 
-        an = np.vstack((an, a))
-        bn = np.vstack((bn, b))
+        an[i, :terms[i]] = a
+        bn[i, :terms[i]] = b
 
     return terms, an, bn
 
@@ -226,26 +227,28 @@ def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
     else:
         nstore = nmax
 
-    terms = np.zeros((x.shape[0]), dtype=int)
-    an = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
-    bn = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
-    cn = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
-    dn = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
+    num_points = x.shape[0]
+    num_layers = x.shape[1]
+    terms = np.zeros(num_points, dtype=int)
+    an = np.zeros((num_points, num_layers + 1, nstore), dtype=complex)
+    bn = np.zeros((num_points, num_layers + 1, nstore), dtype=complex)
+    cn = np.zeros((num_points, num_layers + 1, nstore), dtype=complex)
+    dn = np.zeros((num_points, num_layers + 1, nstore), dtype=complex)
 
     for i, xi in enumerate(x):
         terms[i], a, b, c, d = expancoeffs_(xi, m[i], nmax=nmax, pl=pl, mp=mp)
 
         if terms[i] > nstore:
             nstore = terms[i]
-            an.resize((an.shape[0], an.shape[1], nstore))
-            bn.resize((bn.shape[0], bn.shape[1], nstore))
-            cn.resize((cn.shape[0], cn.shape[1], nstore))
-            dn.resize((dn.shape[0], dn.shape[1], nstore))
+            an.resize((num_points, num_layers + 1, nstore), refcheck=False)
+            bn.resize((num_points, num_layers + 1, nstore), refcheck=False)
+            cn.resize((num_points, num_layers + 1, nstore), refcheck=False)
+            dn.resize((num_points, num_layers + 1, nstore), refcheck=False)
 
-        an = np.vstack((an, [a]))
-        bn = np.vstack((bn, [b]))
-        cn = np.vstack((cn, [c]))
-        dn = np.vstack((dn, [d]))
+        an[i, :, :terms[i]] = a
+        bn[i, :, :terms[i]] = b
+        cn[i, :, :terms[i]] = c
+        dn[i, :, :terms[i]] = d
 
     return terms, an, bn, cn, dn
 

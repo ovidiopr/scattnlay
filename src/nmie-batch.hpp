@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "nmie-precision.hpp"
 #include "special-functions-impl.hpp"
+#include "nmie-basic.hpp"
 
 namespace nmie {
 
