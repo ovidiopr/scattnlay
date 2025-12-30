@@ -9,6 +9,8 @@ struct HighwayEngine {
   using V = hn::Vec<D>;
   using RealV = V;
 
+  static size_t Lanes() { return hn::Lanes(D()); }
+
   // Represents a batch of complex numbers (Real vectors, Imag vectors)
   struct ComplexV { V re; V im; };
 
@@ -75,6 +77,14 @@ struct HighwayEngine {
   static inline void store_interleaved(ComplexV z, T* data) {
     D d;
     hn::StoreInterleaved2(z.re, z.im, d, data);
+  }
+
+  static inline void store(ComplexV z, std::complex<T>* ptr) {
+    store_interleaved(z, reinterpret_cast<T*>(ptr));
+  }
+
+  static inline ComplexV load(const std::complex<T>* ptr) {
+    return load_interleaved(reinterpret_cast<const T*>(ptr));
   }
 
   static inline T reduce_max(V v) {

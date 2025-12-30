@@ -945,15 +945,18 @@ void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int first_side
       ComplexV rho_c = Engine::make_complex(rho_v, Engine::set(0.0));
       ComplexV z = Engine::mul(rho_c, ml_v);
       
-      std::vector<ComplexV> D1(nmax_ + 1), D3(nmax_ + 1), Psi(nmax_ + 1), Zeta(nmax_ + 1);
-      std::vector<ComplexV> PsiZeta(nmax_ + 1);
+      std::vector<std::complex<FloatType>> D1((nmax_ + 1) * lanes), D3((nmax_ + 1) * lanes), Psi((nmax_ + 1) * lanes), Zeta((nmax_ + 1) * lanes);
+      std::vector<std::complex<FloatType>> PsiZeta((nmax_ + 1) * lanes);
       
       evalDownwardD1<FloatType, Engine>(z, D1);
       evalUpwardPsi<FloatType, Engine>(z, D1, Psi);
       evalUpwardD3<FloatType, Engine>(z, D1, D3, PsiZeta);
       
       for(int k=0; k<=nmax_; ++k) {
-         Zeta[k] = Engine::div(PsiZeta[k], Psi[k]);
+         auto psi_zeta_k = Engine::load(&PsiZeta[k * lanes]);
+         auto psi_k = Engine::load(&Psi[k * lanes]);
+         auto zeta_k = Engine::div(psi_zeta_k, psi_k);
+         Engine::store(zeta_k, &Zeta[k * lanes]);
       }
       
       std::vector<V> Pi(nmax_), Tau(nmax_);
@@ -977,8 +980,8 @@ void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int first_side
         ComplexV M1o1n[3], M1e1n[3], N1o1n[3], N1e1n[3];
         ComplexV M3o1n[3], M3e1n[3], N3o1n[3], N3e1n[3];
         
-        NearFieldSIMD<FloatType>::calcSpherHarm(z, theta_v, phi_v, Psi[n1], D1[n1], Pi[n], Tau[n], Engine::get_real(rn), M1o1n, M1e1n, N1o1n, N1e1n);
-        NearFieldSIMD<FloatType>::calcSpherHarm(z, theta_v, phi_v, Zeta[n1], D3[n1], Pi[n], Tau[n], Engine::get_real(rn), M3o1n, M3e1n, N3o1n, N3e1n);
+        NearFieldSIMD<FloatType>::calcSpherHarm(z, theta_v, phi_v, Engine::load(&Psi[n1 * lanes]), Engine::load(&D1[n1 * lanes]), Pi[n], Tau[n], Engine::get_real(rn), M1o1n, M1e1n, N1o1n, N1e1n);
+        NearFieldSIMD<FloatType>::calcSpherHarm(z, theta_v, phi_v, Engine::load(&Zeta[n1 * lanes]), Engine::load(&D3[n1 * lanes]), Pi[n], Tau[n], Engine::get_real(rn), M3o1n, M3e1n, N3o1n, N3e1n);
         
         auto En = Engine::mul(ipow[n1 % 4], Engine::make_complex(Engine::div(Engine::set((FloatType)(2*n1+1)), Engine::set((FloatType)(n1*n1+n1))), zero));
         

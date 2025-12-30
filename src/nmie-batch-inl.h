@@ -60,8 +60,8 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
 
         int calc_nmax = static_cast<int>(std::round(max_x + 11 * std::pow(max_x, 1.0/3.0) + 16));
         
-        std::vector<typename Engine::ComplexV> D1_z(calc_nmax + 1), D1_x(calc_nmax + 1), D3_x(calc_nmax + 1),
-                                                Psi_x(calc_nmax + 1), PsiZeta_x(calc_nmax + 1);
+        std::vector<std::complex<FloatType>> D1_z((calc_nmax + 1) * lanes), D1_x((calc_nmax + 1) * lanes), D3_x((calc_nmax + 1) * lanes),
+                                                Psi_x((calc_nmax + 1) * lanes), PsiZeta_x((calc_nmax + 1) * lanes);
 
         evalDownwardD1<FloatType, Engine>(z_v, D1_z);
         evalDownwardD1<FloatType, Engine>(x_real_v, D1_x);
@@ -90,11 +90,17 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
             auto mask = hn::Le(vn, vnmax);
             if (hn::AllTrue(d, hn::Not(mask))) break;
 
-            auto Zeta_n = Engine::div(PsiZeta_x[n], Psi_x[n]);
-            auto Zeta_nm1 = Engine::div(PsiZeta_x[n-1], Psi_x[n-1]);
+            auto psi_zeta_n = Engine::load(&PsiZeta_x[n * lanes]);
+            auto psi_n = Engine::load(&Psi_x[n * lanes]);
+            auto Zeta_n = Engine::div(psi_zeta_n, psi_n);
+            
+            auto psi_zeta_nm1 = Engine::load(&PsiZeta_x[(n-1) * lanes]);
+            auto psi_nm1 = Engine::load(&Psi_x[(n-1) * lanes]);
+            auto Zeta_nm1 = Engine::div(psi_zeta_nm1, psi_nm1);
 
-            auto an = calc_an<FloatType, Engine>(n, vx, D1_z[n], mL_v, Psi_x[n], Zeta_n, Psi_x[n-1], Zeta_nm1);
-            auto bn = calc_bn<FloatType, Engine>(n, vx, D1_z[n], mL_v, Psi_x[n], Zeta_n, Psi_x[n-1], Zeta_nm1);
+            auto d1_z_n = Engine::load(&D1_z[n * lanes]);
+            auto an = calc_an<FloatType, Engine>(n, vx, d1_z_n, mL_v, psi_n, Zeta_n, psi_nm1, Zeta_nm1);
+            auto bn = calc_bn<FloatType, Engine>(n, vx, d1_z_n, mL_v, psi_n, Zeta_n, psi_nm1, Zeta_nm1);
 
             auto mult = hn::Add(hn::Add(vn, vn), hn::Set(d, 1.0));
             vQext = hn::Add(vQext, hn::IfThenElse(mask, hn::Mul(mult, hn::Add(an.re, bn.re)), hn::Zero(d)));

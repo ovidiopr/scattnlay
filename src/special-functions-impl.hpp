@@ -442,15 +442,18 @@ struct NStarCalculator {
 template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
 void evalDownwardD1(const ComplexType z,
                     ContainerType& D1) {
-  int nmax = D1.size() - 1;
+  int lanes = Engine::Lanes();
+  int nmax = (D1.size() / lanes) - 1;
   int valid_digits = 16;
 #ifdef MULTI_PRECISION
   valid_digits += MULTI_PRECISION;
 #endif
   int nstar = NStarCalculator<FloatType, Engine, ComplexType>::get(nmax, z, valid_digits);
-  D1.resize(nstar + 1);
+  D1.resize((nstar + 1) * lanes);
   // Downward recurrence for D1 - equations (16a) and (16b)
-  D1[nstar] = Engine::make_complex(Engine::set(0.0), Engine::set(0.0));
+  auto zero = Engine::make_complex(Engine::set(0.0), Engine::set(0.0));
+  Engine::store(zero, &D1[nstar * lanes]);
+
   auto c_one = Engine::make_complex(Engine::set(1.0), Engine::set(0.0));
   auto z_inv = Engine::div(c_one, z);
   
@@ -459,14 +462,17 @@ void evalDownwardD1(const ComplexType z,
     auto n_complex = Engine::make_complex(n_val, Engine::set(0.0));
     auto term1 = Engine::mul(n_complex, z_inv);
     
-    auto denom = Engine::add(D1[n], term1);
+    auto d1_n = Engine::load(&D1[n * lanes]);
+    auto denom = Engine::add(d1_n, term1);
     auto term2 = Engine::div(c_one, denom);
     
-    D1[n - 1] = Engine::sub(term1, term2);
+    auto res = Engine::sub(term1, term2);
+    Engine::store(res, &D1[(n - 1) * lanes]);
   }
   // Use D1[0] from upward recurrence
-  D1[0] = complex_cot<FloatType, Engine>(z);
-  D1.resize(nmax + 1);
+  auto cot_z = complex_cot<FloatType, Engine>(z);
+  Engine::store(cot_z, &D1[0]);
+  D1.resize((nmax + 1) * lanes);
   //  printf("D1[0] = (%16.15g, %16.15g) z=(%16.15g,%16.15g)\n",
   //  D1[0].real(),D1[0].imag(),
   //         z.real(),z.imag());
@@ -478,7 +484,11 @@ void evalUpwardD3(const ComplexType z,
                   const ContainerType& D1,
                   ContainerType& D3,
                   ContainerType& PsiZeta) {
-  int nmax = D1.size() - 1;
+  int lanes = Engine::Lanes();
+  int nmax = (D1.size() / lanes) - 1;
+  D3.resize((nmax + 1) * lanes);
+  PsiZeta.resize((nmax + 1) * lanes);
+
   // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
   
   auto two = Engine::set(2.0);
@@ -505,31 +515,39 @@ void evalUpwardD3(const ComplexType z,
   auto diff = Engine::sub(one_complex, prod);
   
   auto half_complex = Engine::make_complex(half, zero);
-  PsiZeta[0] = Engine::mul(half_complex, diff);
+  auto psi_zeta_0 = Engine::mul(half_complex, diff);
+  Engine::store(psi_zeta_0, &PsiZeta[0]);
 
-  D3[0] = Engine::make_complex(zero, one);
+  auto d3_0 = Engine::make_complex(zero, one);
+  Engine::store(d3_0, &D3[0]);
   
   auto z_inv = Engine::div(one_complex, z);
   auto i_complex = Engine::make_complex(zero, one);
-
+  
   for (int n = 1; n <= nmax; n++) {
     auto n_val = Engine::set(static_cast<FloatType>(n));
     auto n_complex = Engine::make_complex(n_val, zero);
     
     auto term = Engine::mul(n_complex, z_inv);
     
-    auto factor1 = Engine::sub(term, D1[n - 1]);
-    auto factor2 = Engine::sub(term, D3[n - 1]);
+    auto d1_nm1 = Engine::load(&D1[(n - 1) * lanes]);
+    auto d3_nm1 = Engine::load(&D3[(n - 1) * lanes]);
+
+    auto factor1 = Engine::sub(term, d1_nm1);
+    auto factor2 = Engine::sub(term, d3_nm1);
     
-    auto prod1 = Engine::mul(PsiZeta[n - 1], factor1);
-    PsiZeta[n] = Engine::mul(prod1, factor2);
+    auto psi_zeta_nm1 = Engine::load(&PsiZeta[(n - 1) * lanes]);
+    auto prod1 = Engine::mul(psi_zeta_nm1, factor1);
+    auto psi_zeta_n = Engine::mul(prod1, factor2);
+    Engine::store(psi_zeta_n, &PsiZeta[n * lanes]);
     
-    auto term_div = Engine::div(i_complex, PsiZeta[n]);
-    D3[n] = Engine::add(D1[n], term_div);
+    auto term_div = Engine::div(i_complex, psi_zeta_n);
+    auto d1_n = Engine::load(&D1[n * lanes]);
+    auto d3_n = Engine::add(d1_n, term_div);
+    Engine::store(d3_n, &D3[n * lanes]);
   }
 }
 
-//******************************************************************************
 template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType> >
 ComplexType complex_sin(const ComplexType z) {
   auto a = Engine::get_real(z);
@@ -566,10 +584,14 @@ template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typenam
 void evalUpwardPsi(const ComplexType z,
                    const ContainerType& D1,
                    ContainerType& Psi) {
-  int nmax = Psi.size() - 1;
+  int lanes = Engine::Lanes();
+  int nmax = (D1.size() / lanes) - 1;
+  Psi.resize((nmax + 1) * lanes);
+
   // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a)
   // - (21b)
-  Psi[0] = complex_sin<FloatType, Engine, ComplexType>(z);
+  auto psi_0 = complex_sin<FloatType, Engine, ComplexType>(z);
+  Engine::store(psi_0, &Psi[0]);
   
   auto one = Engine::set(1.0);
   auto zero = Engine::set(0.0);
@@ -581,9 +603,12 @@ void evalUpwardPsi(const ComplexType z,
     auto n_complex = Engine::make_complex(n_val, zero);
     
     auto term = Engine::mul(n_complex, z_inv);
-    auto factor = Engine::sub(term, D1[n - 1]);
+    auto d1_nm1 = Engine::load(&D1[(n - 1) * lanes]);
+    auto factor = Engine::sub(term, d1_nm1);
     
-    Psi[n] = Engine::mul(Psi[n - 1], factor);
+    auto psi_nm1 = Engine::load(&Psi[(n - 1) * lanes]);
+    auto psi_n = Engine::mul(psi_nm1, factor);
+    Engine::store(psi_n, &Psi[n * lanes]);
   }
 }
 
