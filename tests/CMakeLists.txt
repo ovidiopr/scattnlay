@@ -47,6 +47,20 @@ if(GTest_FOUND)
         )
         add_test(NAME "test_SIMD_Riccati_Bessel"
             COMMAND "test_SIMD_Riccati_Bessel")
+
+        add_executable("test_bulk_sphere_simd"
+            test_bulk_sphere_simd.cc)
+        target_link_libraries("test_bulk_sphere_simd" PRIVATE 
+            GTest::gtest GTest::gtest_main
+            hwy::hwy
+            nmie_obj_dp
+            project_optimization
+        )
+        target_compile_definitions("test_bulk_sphere_simd" PRIVATE 
+            WITH_HWY
+        )
+        add_test(NAME "test_bulk_sphere_simd"
+            COMMAND "test_bulk_sphere_simd")
     endif()
 
     add_executable("test_bulk_sphere" test_bulk_sphere.cc)

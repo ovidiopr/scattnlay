@@ -134,6 +134,26 @@ ComplexType calc_bn(int n,
     return calc_bn<FloatType, Engine, ComplexType>(n_val, XL, Hb, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
 }
 
+template <typename FloatType,
+          typename Engine = ScalarEngine<FloatType>,
+          typename ComplexType>
+void computeAnBnBatch(typename Engine::RealV n_real,
+                      typename Engine::RealV XL,
+                      ComplexType Ha,
+                      ComplexType Hb,
+                      ComplexType mL,
+                      ComplexType PsiXL,
+                      ComplexType ZetaXL,
+                      ComplexType PsiXLM1,
+                      ComplexType ZetaXLM1,
+                      ComplexType& an,
+                      ComplexType& bn) {
+  an = calc_an<FloatType, Engine, ComplexType>(n_real, XL, Ha, mL, PsiXL,
+                                               ZetaXL, PsiXLM1, ZetaXLM1);
+  bn = calc_bn<FloatType, Engine, ComplexType>(n_real, XL, Hb, mL, PsiXL,
+                                               ZetaXL, PsiXLM1, ZetaXLM1);
+}
+
 // ********************************************************************** //
 // Calculates S1 - equation (25a)                                         //
 // ********************************************************************** //
@@ -901,68 +921,17 @@ void MultiLayerMie<FloatType>::calcScattCoeffs() {
   // this convention to save memory. (13 Nov, 2014)                      //
   //*********************************************************************//
   FloatType a0 = 0, b0 = 0;
-  int n_simd = 0;
 
-#ifdef WITH_HWY
-  if constexpr (std::is_same<FloatType, double>::value || std::is_same<FloatType, float>::value) {
-    using Engine = HighwayEngine<FloatType>;
-    const size_t lanes = hn::Lanes(hn::ScalableTag<FloatType>());
-    
-    // Pre-load constants
-    auto XL_val = x[L - 1];
-    auto XL_vec = hn::Set(hn::ScalableTag<FloatType>(), XL_val);
-    auto mL_val = m[L - 1];
-    auto mL_vec = Engine::make_complex(hn::Set(hn::ScalableTag<FloatType>(), mL_val.real()),
-                                       hn::Set(hn::ScalableTag<FloatType>(), mL_val.imag()));
-    
-    // Only vectorize if not PEC layer
-    if (pl < (L - 1)) {
-      for (; n_simd <= nmax_ - static_cast<int>(lanes); n_simd += lanes) {
-        // Load n vector: [n_simd + 1, n_simd + 2, ...]
-        std::array<FloatType, 64> n_arr; 
-        for(size_t i=0; i<lanes; ++i) n_arr[i] = static_cast<FloatType>(n_simd + i + 1);
-        auto n_vec = hn::Load(hn::ScalableTag<FloatType>(), n_arr.data());
-        
-        // Helper to load complex vector from std::vector<complex>
-        auto load_complex = [&](const std::vector<std::complex<FloatType>>& v, int offset) {
-            const FloatType* ptr = reinterpret_cast<const FloatType*>(&v[offset]);
-            typename Engine::V re, im;
-            hn::LoadInterleaved2(hn::ScalableTag<FloatType>(), ptr, re, im);
-            return typename Engine::ComplexV{re, im};
-        };
-
-        auto PsiXL_np1 = load_complex(PsiXL, n_simd + 1);
-        auto ZetaXL_np1 = load_complex(ZetaXL, n_simd + 1);
-        auto PsiXL_n = load_complex(PsiXL, n_simd);
-        auto ZetaXL_n = load_complex(ZetaXL, n_simd);
-        
-        auto Ha_vec = load_complex(Ha[L - 1], n_simd);
-        auto Hb_vec = load_complex(Hb[L - 1], n_simd);
-        
-        auto an_vec = nmie::calc_an<FloatType, Engine>(n_vec, XL_vec, Ha_vec, mL_vec, PsiXL_np1, ZetaXL_np1, PsiXL_n, ZetaXL_n);
-        auto bn_vec = nmie::calc_bn<FloatType, Engine>(n_vec, XL_vec, Hb_vec, mL_vec, PsiXL_np1, ZetaXL_np1, PsiXL_n, ZetaXL_n);
-
-        // Store results
-        FloatType* an_ptr = reinterpret_cast<FloatType*>(&an_[n_simd]);
-        hn::StoreInterleaved2(an_vec.re, an_vec.im, hn::ScalableTag<FloatType>(), an_ptr);
-        
-        FloatType* bn_ptr = reinterpret_cast<FloatType*>(&bn_[n_simd]);
-        hn::StoreInterleaved2(bn_vec.re, bn_vec.im, hn::ScalableTag<FloatType>(), bn_ptr);
-      }
-    }
-  }
-#endif
-
-  for (int n = n_simd; n < nmax_; n++) {
+  for (int n = 0; n < nmax_; n++) {
     //********************************************************************//
     // Expressions for calculating an and bn coefficients are not valid if //
     // there is only one PEC layer (ie, for a simple PEC sphere).          //
     //********************************************************************//
     if (pl < (L - 1)) {
-      an_[n] = calc_an(n + 1, x[L - 1], Ha[L - 1][n], m[L - 1], PsiXL[n + 1],
-                       ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
-      bn_[n] = calc_bn(n + 1, x[L - 1], Hb[L - 1][n], m[L - 1], PsiXL[n + 1],
-                       ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
+      computeAnBnBatch<FloatType, ScalarEngine<FloatType>>(
+          static_cast<FloatType>(n + 1), x[L - 1], Ha[L - 1][n], Hb[L - 1][n],
+          m[L - 1], PsiXL[n + 1], ZetaXL[n + 1], PsiXL[n], ZetaXL[n], an_[n],
+          bn_[n]);
     } else {
       an_[n] = calc_an(n + 1, x[L - 1], std::complex<FloatType>(0.0, 0.0),
                        std::complex<FloatType>(1.0, 0.0), PsiXL[n + 1],

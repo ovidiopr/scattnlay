@@ -7,6 +7,7 @@ struct HighwayEngine {
   using T = T_base;
   using D = hn::ScalableTag<T>;
   using V = hn::Vec<D>;
+  using M = hn::Mask<D>;
   using RealV = V;
 
   static size_t Lanes() { return hn::Lanes(D()); }
@@ -20,13 +21,26 @@ struct HighwayEngine {
   static inline V tan(V v) { return hn::Div(hn::Sin(D(), v), hn::Cos(D(), v)); }
   static inline V sqrt(V v) { return hn::Sqrt(v); }
   static inline V abs(V v) { return hn::Abs(v); }
+  static inline V abs(ComplexV z) {
+    return hn::Sqrt(hn::Add(hn::Mul(z.re, z.re), hn::Mul(z.im, z.im)));
+  }
   static inline V ceil(V v) { return hn::Ceil(v); }
   static inline V floor(V v) { return hn::Floor(v); }
   static inline V max(V a, V b) { return hn::Max(a, b); }
   static inline V pow(V b, V e) { return hn::Exp(D(), hn::Mul(e, hn::Log(D(), b))); }
   static inline V log(V v) { return hn::Log(D(), v); }
-  static inline V atan2(V y, V x) { return hn::Atan2(D(), y, x); }
+  static inline ComplexV select(M mask, ComplexV a, ComplexV b) {
+    return {hn::IfThenElse(mask, a.re, b.re), hn::IfThenElse(mask, a.im, b.im)};
+  }
 
+  static inline V select(M mask, V a, V b) {
+    return hn::IfThenElse(mask, a, b);
+  }
+
+  static inline M gt(V a, V b) { return hn::Gt(a, b); }
+  static inline M lt(V a, V b) { return hn::Lt(a, b); }
+  static inline M ge(V a, V b) { return hn::Ge(a, b); }
+  static inline M le(V a, V b) { return hn::Le(a, b); }
   static inline V add(V a, V b) { return hn::Add(a, b); }
   static inline V sub(V a, V b) { return hn::Sub(a, b); }
   static inline V mul(V a, V b) { return hn::Mul(a, b); }
@@ -85,6 +99,14 @@ struct HighwayEngine {
 
   static inline ComplexV load(const std::complex<T>* ptr) {
     return load_interleaved(reinterpret_cast<const T*>(ptr));
+  }
+
+  static inline V load(const T* ptr) {
+    return hn::Load(D(), ptr);
+  }
+
+  static inline void store(V v, T* ptr) {
+    hn::Store(v, D(), ptr);
   }
 
   static inline T reduce_max(V v) {
