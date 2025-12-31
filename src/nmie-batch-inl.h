@@ -107,26 +107,30 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
             vS2
         );
 
-        auto x2 = hn::Mul(vx, vx);
-        auto norm = hn::Div(hn::Set(d, 2.0), x2);
+        typename Engine::RealV vQext_final, vQsca_final, vQabs_final, vQbk_final, vQpr_final, vG_final, vAlbedo_final;
         
-        alignas(64) FloatType r_ext[64], r_sca[64], r_bk[64], r_pr[64];
-        hn::Store(hn::Mul(vQext.v, norm), d, r_ext);
-        hn::Store(hn::Mul(vQsca.v, norm), d, r_sca);
+        nmie::finalizeMieResults<FloatType, Engine>(
+            vx, vQext, vQsca, vQpr_sum, vQbk,
+            vQext_final, vQsca_final, vQabs_final, vQbk_final, vQpr_final, vG_final, vAlbedo_final
+        );
         
-        auto vQbk_mag_sq = hn::Add(hn::Mul(vQbk.re.v, vQbk.re.v), hn::Mul(vQbk.im.v, vQbk.im.v));
-        hn::Store(hn::Div(vQbk_mag_sq, x2), d, r_bk);
-        
-        hn::Store(hn::Sub(hn::Mul(vQext.v, norm), hn::Mul(hn::Div(hn::Set(d, 4.0), x2), vQpr_sum.v)), d, r_pr);
+        alignas(64) FloatType r_ext[64], r_sca[64], r_abs[64], r_bk[64], r_pr[64], r_g[64], r_albedo[64];
+        hn::Store(vQext_final.v, d, r_ext);
+        hn::Store(vQsca_final.v, d, r_sca);
+        hn::Store(vQabs_final.v, d, r_abs);
+        hn::Store(vQbk_final.v, d, r_bk);
+        hn::Store(vQpr_final.v, d, r_pr);
+        hn::Store(vG_final.v, d, r_g);
+        hn::Store(vAlbedo_final.v, d, r_albedo);
 
         for (size_t j = 0; j < current_batch_size; ++j) {
             output.Qext[i + j] = r_ext[j];
             output.Qsca[i + j] = r_sca[j];
-            output.Qabs[i + j] = r_ext[j] - r_sca[j];
+            output.Qabs[i + j] = r_abs[j];
             output.Qbk[i + j] = r_bk[j];
             output.Qpr[i + j] = r_pr[j];
-            output.g[i + j] = (r_sca[j] > 1e-12) ? (r_ext[j] - r_pr[j]) / r_sca[j] : 0.0;
-            output.Albedo[i + j] = (r_ext[j] > 1e-12) ? r_sca[j] / r_ext[j] : 0.0;
+            output.g[i + j] = r_g[j];
+            output.Albedo[i + j] = r_albedo[j];
 
             if (num_angles > 0) {
               for (size_t k = 0; k < num_angles; ++k) {

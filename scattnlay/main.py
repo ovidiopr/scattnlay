@@ -137,7 +137,11 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
         m = np.repeat(m[np.newaxis, :], x.shape[0], axis=0)
 
     if nmax == -1:
-        nstore = 0
+        if x.size > 0:
+            max_x = np.max(x)
+            nstore = int(max_x + 4.0 * max_x**(1.0/3.0) + 2.0) + 10
+        else:
+            nstore = 0
     else:
         nstore = nmax
 
@@ -223,7 +227,11 @@ def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
         m = np.repeat(m[np.newaxis, :], x.shape[0], axis=0)
 
     if nmax == -1:
-        nstore = 0
+        if x.size > 0:
+            max_x = np.max(x)
+            nstore = int(max_x + 4.0 * max_x**(1.0/3.0) + 2.0) + 10
+        else:
+            nstore = 0
     else:
         nstore = nmax
 

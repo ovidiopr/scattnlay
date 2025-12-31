@@ -195,6 +195,39 @@ void RunFieldKernel(
   std::vector<int> layer_buf(lanes);
   std::vector<size_t> original_indices(lanes);
 
+  // Flatten coefficients for SIMD access
+  const size_t layers = aln.size();
+  const size_t flat_size = layers * nmax * lanes;
+  std::vector<FloatType> aln_re_flat(flat_size), aln_im_flat(flat_size);
+  std::vector<FloatType> bln_re_flat(flat_size), bln_im_flat(flat_size);
+  std::vector<FloatType> cln_re_flat(flat_size), cln_im_flat(flat_size);
+  std::vector<FloatType> dln_re_flat(flat_size), dln_im_flat(flat_size);
+
+  for (size_t l = 0; l < layers; ++l) {
+    for (int n = 0; n < nmax; ++n) {
+      FloatType are = aln[l][n].real();
+      FloatType aim = aln[l][n].imag();
+      FloatType bre = bln[l][n].real();
+      FloatType bim = bln[l][n].imag();
+      FloatType cre = cln[l][n].real();
+      FloatType cim = cln[l][n].imag();
+      FloatType dre = dln[l][n].real();
+      FloatType dim = dln[l][n].imag();
+
+      size_t base_idx = l * nmax * lanes + n * lanes;
+      for (size_t j = 0; j < lanes; ++j) {
+        aln_re_flat[base_idx + j] = are;
+        aln_im_flat[base_idx + j] = aim;
+        bln_re_flat[base_idx + j] = bre;
+        bln_im_flat[base_idx + j] = bim;
+        cln_re_flat[base_idx + j] = cre;
+        cln_im_flat[base_idx + j] = cim;
+        dln_re_flat[base_idx + j] = dre;
+        dln_im_flat[base_idx + j] = dim;
+      }
+    }
+  }
+
   // Loop over batches
   for (size_t i = 0; i < count; i += lanes) {
     size_t n_process = std::min(lanes, count - i);
@@ -306,18 +339,18 @@ void RunFieldKernel(
 
     for (size_t j = 0; j < lanes; ++j) {
       int l = layer_buf[j];
-      // Optimization: if multiple lanes have same layer, we could copy?
-      // But simple loop is fine for now.
+      size_t layer_offset = l * nmax * lanes;
       for (int n = 0; n < nmax; ++n) {
         size_t idx = n * lanes + j;
-        aln_re_all[idx] = aln[l][n].real();
-        aln_im_all[idx] = aln[l][n].imag();
-        bln_re_all[idx] = bln[l][n].real();
-        bln_im_all[idx] = bln[l][n].imag();
-        cln_re_all[idx] = cln[l][n].real();
-        cln_im_all[idx] = cln[l][n].imag();
-        dln_re_all[idx] = dln[l][n].real();
-        dln_im_all[idx] = dln[l][n].imag();
+        size_t src_idx = layer_offset + idx;
+        aln_re_all[idx] = aln_re_flat[src_idx];
+        aln_im_all[idx] = aln_im_flat[src_idx];
+        bln_re_all[idx] = bln_re_flat[src_idx];
+        bln_im_all[idx] = bln_im_flat[src_idx];
+        cln_re_all[idx] = cln_re_flat[src_idx];
+        cln_im_all[idx] = cln_im_flat[src_idx];
+        dln_re_all[idx] = dln_re_flat[src_idx];
+        dln_im_all[idx] = dln_im_flat[src_idx];
       }
     }
 
@@ -705,13 +738,16 @@ namespace nmie {
           break;
         }
         if (n>0) {
+          auto threshold_sq = nearfield_convergence_threshold_ * nearfield_convergence_threshold_;
+          auto E_norm = std::norm(E[i]);
+          auto H_norm = std::norm(H[i]);
           if (
-              (cabs(Ediff_prev[i]) <= cabs(E[i]) * nearfield_convergence_threshold_)
-                  &&  (cabs(Ediff) <= cabs(E[i]) * nearfield_convergence_threshold_)
+              (std::norm(Ediff_prev[i]) <= E_norm * threshold_sq)
+                  &&  (std::norm(Ediff) <= E_norm * threshold_sq)
               ) isConvergedE[i] = true;
           if (
-              (cabs(Hdiff_prev[i]) <= cabs(H[i]) * nearfield_convergence_threshold_)
-                  &&  (cabs(Hdiff) <= cabs(H[i]) * nearfield_convergence_threshold_)
+              (std::norm(Hdiff_prev[i]) <= H_norm * threshold_sq)
+                  &&  (std::norm(Hdiff) <= H_norm * threshold_sq)
               ) isConvergedH[i] = true;
         }
         Ediff_prev[i] = Ediff;

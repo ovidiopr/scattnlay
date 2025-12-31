@@ -135,129 +135,127 @@ void computeAnBnBatch(typename Engine::RealV n_real,
 }
 
 template <typename FloatType, typename Engine = ScalarEngine<FloatType>>
-void computeLayerCoeffsHelper(
-    int nmax,
-    int l,
-    int pl,
-    typename Engine::RealV x_l,
-    typename Engine::RealV x_lm1,
-    typename Engine::ComplexV m_l,
-    typename Engine::ComplexV m_lm1,
-    typename Engine::ComplexV z1,
-    typename Engine::ComplexV z2,
-    const std::vector<std::complex<FloatType>>& D1_mlxl,
-    const std::vector<std::complex<FloatType>>& D3_mlxl,
-    const std::vector<std::complex<FloatType>>& D1_mlxlM1,
-    const std::vector<std::complex<FloatType>>& D3_mlxlM1,
-    std::vector<std::complex<FloatType>>& Q_l,
-    std::vector<std::complex<FloatType>>& Ha_l,
-    std::vector<std::complex<FloatType>>& Hb_l,
-    const std::vector<std::complex<FloatType>>& Ha_lm1,
-    const std::vector<std::complex<FloatType>>& Hb_lm1
-) {
-    // Q[l][0] calculation
-    auto z1_re = Engine::get_real(z1);
-    auto z1_im = Engine::get_imag(z1);
-    auto z2_re = Engine::get_real(z2);
-    auto z2_im = Engine::get_imag(z2);
-    
-    auto minus_two = Engine::set(-2.0);
-    auto exp_term_num = Engine::exp(minus_two * (z1_im - z2_im));
+void computeLayerCoeffsHelper(int nmax,
+                              int l,
+                              int pl,
+                              typename Engine::RealV x_l,
+                              typename Engine::RealV x_lm1,
+                              typename Engine::ComplexV m_l,
+                              typename Engine::ComplexV m_lm1,
+                              typename Engine::ComplexV z1,
+                              typename Engine::ComplexV z2,
+                              const std::complex<FloatType>* D1_mlxl,
+                              const std::complex<FloatType>* D3_mlxl,
+                              const std::complex<FloatType>* D1_mlxlM1,
+                              const std::complex<FloatType>* D3_mlxlM1,
+                              std::complex<FloatType>* Q_l,
+                              std::complex<FloatType>* Ha_l,
+                              std::complex<FloatType>* Hb_l,
+                              const std::complex<FloatType>* Ha_lm1,
+                              const std::complex<FloatType>* Hb_lm1) {
+  // Q[l][0] calculation
+  auto z1_re = Engine::get_real(z1);
+  auto z1_im = Engine::get_imag(z1);
+  auto z2_re = Engine::get_real(z2);
+  auto z2_im = Engine::get_imag(z2);
 
-    auto arg_z2 = minus_two * z2_re;
-    auto exp_z2 = Engine::exp(minus_two * z2_im);
-    auto cos_z2 = Engine::cos(arg_z2);
-    auto sin_z2 = Engine::sin(arg_z2);
+  auto minus_two = Engine::set(-2.0);
+  auto exp_term_num = Engine::exp(minus_two * (z1_im - z2_im));
 
-    auto num_re = exp_term_num * (cos_z2 - exp_z2);
-    auto num_im = exp_term_num * sin_z2;
-    auto Num = Engine::make_complex(num_re, num_im);
+  auto arg_z2 = minus_two * z2_re;
+  auto exp_z2 = Engine::exp(minus_two * z2_im);
+  auto cos_z2 = Engine::cos(arg_z2);
+  auto sin_z2 = Engine::sin(arg_z2);
 
-    auto arg_z1 = minus_two * z1_re;
-    auto exp_z1 = Engine::exp(minus_two * z1_im);
-    auto cos_z1 = Engine::cos(arg_z1);
-    auto sin_z1 = Engine::sin(arg_z1);
+  auto num_re = exp_term_num * (cos_z2 - exp_z2);
+  auto num_im = exp_term_num * sin_z2;
+  auto Num = Engine::make_complex(num_re, num_im);
 
-    auto denom_re = cos_z1 - exp_z1;
-    auto denom_im = sin_z1;
-    auto Denom = Engine::make_complex(denom_re, denom_im);
+  auto arg_z1 = minus_two * z1_re;
+  auto exp_z1 = Engine::exp(minus_two * z1_im);
+  auto cos_z1 = Engine::cos(arg_z1);
+  auto sin_z1 = Engine::sin(arg_z1);
 
-    auto Q_curr = Num / Denom;
-    Engine::store(Q_curr, &Q_l[0]);
+  auto denom_re = cos_z1 - exp_z1;
+  auto denom_im = sin_z1;
+  auto Denom = Engine::make_complex(denom_re, denom_im);
 
-    auto ratio = x_lm1 / x_l;
-    auto ratio_sq = ratio * ratio;
-    auto ratio_sq_c = Engine::make_complex(ratio_sq, Engine::set(0.0));
+  auto Q_curr = Num / Denom;
+  Engine::store(Q_curr, &Q_l[0]);
 
-    const size_t lanes = Engine::Lanes();
+  auto ratio = x_lm1 / x_l;
+  auto ratio_sq = ratio * ratio;
+  auto ratio_sq_c = Engine::make_complex(ratio_sq, Engine::set(0.0));
 
-    for (int n = 1; n <= nmax; ++n) {
-        auto n_val = Engine::set(static_cast<FloatType>(n));
-        auto n_c = Engine::make_complex(n_val, Engine::set(0.0));
-        
-        auto d1_n = Engine::load(&D1_mlxl[n*lanes]);
-        auto d3_nm1 = Engine::load(&D3_mlxl[(n-1)*lanes]);
+  const size_t lanes = Engine::Lanes();
 
-        auto term1 = (z1 * d1_n) + n_c;
-        auto term2 = n_c - (z1 * d3_nm1);
-        auto Num_n = term1 * term2;
+  for (int n = 1; n <= nmax; ++n) {
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto n_c = Engine::make_complex(n_val, Engine::set(0.0));
 
-        auto d1_m1_n = Engine::load(&D1_mlxlM1[n*lanes]);
-        auto d3_m1_nm1 = Engine::load(&D3_mlxlM1[(n-1)*lanes]);
+    auto d1_n = Engine::load(&D1_mlxl[n * lanes]);
+    auto d3_nm1 = Engine::load(&D3_mlxl[(n - 1) * lanes]);
 
-        auto term3 = (z2 * d1_m1_n) + n_c;
-        auto term4 = n_c - (z2 * d3_m1_nm1);
-        auto Denom_n = term3 * term4;
+    auto term1 = (z1 * d1_n) + n_c;
+    auto term2 = n_c - (z1 * d3_nm1);
+    auto Num_n = term1 * term2;
 
-        auto factor = ratio_sq_c * Q_curr;
-        Q_curr = (factor * Num_n) / Denom_n;
-        Engine::store(Q_curr, &Q_l[n*lanes]);
-        
-        // Ha
-        typename Engine::ComplexV G1_ha, G2_ha;
-        auto ha_prev = Engine::load(&Ha_lm1[(n-1)*lanes]);
-        
-        if ((l - 1) == pl) {
-             auto neg_one = Engine::set(-1.0);
-             auto neg_one_c = Engine::make_complex(neg_one, Engine::set(0.0));
-             G1_ha = d1_m1_n * neg_one_c;
-             auto d3_m1_n = Engine::load(&D3_mlxlM1[n*lanes]);
-             G2_ha = d3_m1_n * neg_one_c;
-        } else {
-          auto term_ha = m_l * ha_prev;
-          G1_ha = term_ha - (m_lm1 * d1_m1_n);
-          auto d3_m1_n = Engine::load(&D3_mlxlM1[n * lanes]);
-          G2_ha = term_ha - (m_lm1 * d3_m1_n);
-        }
+    auto d1_m1_n = Engine::load(&D1_mlxlM1[n * lanes]);
+    auto d3_m1_nm1 = Engine::load(&D3_mlxlM1[(n - 1) * lanes]);
 
-        auto Temp_ha = Q_curr * G1_ha;
-        auto d1_n_curr = Engine::load(&D1_mlxl[n*lanes]);
-        auto d3_n = Engine::load(&D3_mlxl[n*lanes]);
-        auto Num_ha = (G2_ha * d1_n_curr) - (Temp_ha * d3_n);
-        auto Denom_ha = G2_ha - Temp_ha;
-        auto Ha_curr = Num_ha / Denom_ha;
-        Engine::store(Ha_curr, &Ha_l[(n-1)*lanes]);
+    auto term3 = (z2 * d1_m1_n) + n_c;
+    auto term4 = n_c - (z2 * d3_m1_nm1);
+    auto Denom_n = term3 * term4;
 
-        // Hb
-        typename Engine::ComplexV G1_hb, G2_hb;
-        auto hb_prev = Engine::load(&Hb_lm1[(n-1)*lanes]);
+    auto factor = ratio_sq_c * Q_curr;
+    Q_curr = (factor * Num_n) / Denom_n;
+    Engine::store(Q_curr, &Q_l[n * lanes]);
 
-        if ((l - 1) == pl) {
-             G1_hb = hb_prev;
-             G2_hb = hb_prev;
-        } else {
-          auto term_hb = m_lm1 * hb_prev;
-          G1_hb = term_hb - (m_l * d1_m1_n);
-          auto d3_m1_n = Engine::load(&D3_mlxlM1[n * lanes]);
-          G2_hb = term_hb - (m_l * d3_m1_n);
-        }
+    // Ha
+    typename Engine::ComplexV G1_ha, G2_ha;
+    auto ha_prev = Engine::load(&Ha_lm1[(n - 1) * lanes]);
 
-        auto Temp_hb = Q_curr * G1_hb;
-        auto Num_hb = (G2_hb * d1_n_curr) - (Temp_hb * d3_n);
-        auto Denom_hb = G2_hb - Temp_hb;
-        auto Hb_curr = Num_hb / Denom_hb;
-        Engine::store(Hb_curr, &Hb_l[(n-1)*lanes]);
+    if ((l - 1) == pl) {
+      auto neg_one = Engine::set(-1.0);
+      auto neg_one_c = Engine::make_complex(neg_one, Engine::set(0.0));
+      G1_ha = d1_m1_n * neg_one_c;
+      auto d3_m1_n = Engine::load(&D3_mlxlM1[n * lanes]);
+      G2_ha = d3_m1_n * neg_one_c;
+    } else {
+      auto term_ha = m_l * ha_prev;
+      G1_ha = term_ha - (m_lm1 * d1_m1_n);
+      auto d3_m1_n = Engine::load(&D3_mlxlM1[n * lanes]);
+      G2_ha = term_ha - (m_lm1 * d3_m1_n);
     }
+
+    auto Temp_ha = Q_curr * G1_ha;
+    auto d1_n_curr = Engine::load(&D1_mlxl[n * lanes]);
+    auto d3_n = Engine::load(&D3_mlxl[n * lanes]);
+    auto Num_ha = (G2_ha * d1_n_curr) - (Temp_ha * d3_n);
+    auto Denom_ha = G2_ha - Temp_ha;
+    auto Ha_curr = Num_ha / Denom_ha;
+    Engine::store(Ha_curr, &Ha_l[(n - 1) * lanes]);
+
+    // Hb
+    typename Engine::ComplexV G1_hb, G2_hb;
+    auto hb_prev = Engine::load(&Hb_lm1[(n - 1) * lanes]);
+
+    if ((l - 1) == pl) {
+      G1_hb = hb_prev;
+      G2_hb = hb_prev;
+    } else {
+      auto term_hb = m_lm1 * hb_prev;
+      G1_hb = term_hb - (m_l * d1_m1_n);
+      auto d3_m1_n = Engine::load(&D3_mlxlM1[n * lanes]);
+      G2_hb = term_hb - (m_l * d3_m1_n);
+    }
+
+    auto Temp_hb = Q_curr * G1_hb;
+    auto Num_hb = (G2_hb * d1_n_curr) - (Temp_hb * d3_n);
+    auto Denom_hb = G2_hb - Temp_hb;
+    auto Hb_curr = Num_hb / Denom_hb;
+    Engine::store(Hb_curr, &Hb_l[(n - 1) * lanes]);
+  }
 }
 
 template <typename FloatType, typename Engine, typename XGetter, typename MGetter>
@@ -273,7 +271,8 @@ void calcScattCoeffsKernel(
 ) {
     int fl = (pl > 0) ? pl : 0;
     int lanes = Engine::Lanes();
-    
+    size_t stride = (nmax + 1) * lanes;
+
     // Aliases for buffers
     auto& D1_mlxl = buffers.D1;
     auto& D3_mlxl = buffers.D3;
@@ -311,8 +310,8 @@ void calcScattCoeffsKernel(
     // Ha, Hb for first layer
     for (int n = 0; n < nmax; ++n) {
         auto d1_np1 = Engine::load(&D1_mlxl[(n+1)*lanes]);
-        Engine::store(d1_np1, &Ha[fl][n*lanes]);
-        Engine::store(d1_np1, &Hb[fl][n*lanes]);
+        Engine::store(d1_np1, &Ha[fl * stride + n * lanes]);
+        Engine::store(d1_np1, &Hb[fl * stride + n * lanes]);
     }
     
     // Loop layers
@@ -331,12 +330,12 @@ void calcScattCoeffsKernel(
         
         evalDownwardD1<FloatType, Engine>(z2, D1_mlxlM1);
         evalUpwardD3<FloatType, Engine>(z2, D1_mlxlM1, D3_mlxlM1, PsiXL); // PsiXL temp
-        
+
         computeLayerCoeffsHelper<FloatType, Engine>(
-            nmax, l, pl, x_l, x_lm1, m_l, m_lm1, z1, z2,
-            D1_mlxl, D3_mlxl, D1_mlxlM1, D3_mlxlM1,
-            Q[l], Ha[l], Hb[l], Ha[l-1], Hb[l-1]
-        );
+            nmax, l, pl, x_l, x_lm1, m_l, m_lm1, z1, z2, D1_mlxl.data(),
+            D3_mlxl.data(), D1_mlxlM1.data(), D3_mlxlM1.data(), &Q[l * stride],
+            &Ha[l * stride], &Hb[l * stride], &Ha[(l - 1) * stride],
+            &Hb[(l - 1) * stride]);
     }
     
     // PsiXL, ZetaXL for outer layer
@@ -364,9 +363,9 @@ void calcScattCoeffsKernel(
     for (int n = 0; n < nmax; ++n) {
         typename Engine::ComplexV an_val, bn_val;
         auto n_val = Engine::set(static_cast<FloatType>(n + 1));
-        
-        auto ha = Engine::load(&Ha[L-1][n*lanes]);
-        auto hb = Engine::load(&Hb[L-1][n*lanes]);
+
+        auto ha = Engine::load(&Ha[(L - 1) * stride + n * lanes]);
+        auto hb = Engine::load(&Hb[(L - 1) * stride + n * lanes]);
         auto psi_np1 = Engine::load(&PsiXL[(n+1)*lanes]);
         auto zeta_np1 = Engine::load(&ZetaXL[(n+1)*lanes]);
         auto psi_n = Engine::load(&PsiXL[n*lanes]);
@@ -1279,6 +1278,43 @@ void sumMieSeriesKernel(
     }
 }
 
+template <typename FloatType, typename Engine>
+void finalizeMieResults(const typename Engine::RealV x,
+                        const typename Engine::RealV Qext_sum,
+                        const typename Engine::RealV Qsca_sum,
+                        const typename Engine::RealV Qpr_sum,
+                        const typename Engine::ComplexV Qbk_sum,
+                        typename Engine::RealV& Qext,
+                        typename Engine::RealV& Qsca,
+                        typename Engine::RealV& Qabs,
+                        typename Engine::RealV& Qbk,
+                        typename Engine::RealV& Qpr,
+                        typename Engine::RealV& g,
+                        typename Engine::RealV& Albedo) {
+  auto two = Engine::set(2.0);
+  auto four = Engine::set(4.0);
+  auto x2 = x * x;
+  auto norm = two / x2;
+
+  Qext = Qext_sum * norm;
+  Qsca = Qsca_sum * norm;
+  Qpr = Qext - (four * Qpr_sum / x2);
+  Qabs = Qext - Qsca;
+
+  auto qbk_mag_sq = (Engine::get_real(Qbk_sum) * Engine::get_real(Qbk_sum)) +
+                    (Engine::get_imag(Qbk_sum) * Engine::get_imag(Qbk_sum));
+  Qbk = qbk_mag_sq / x2;
+
+  auto zero = Engine::set(0.0);
+  auto threshold = Engine::set(1e-12);
+
+  auto mask_sca = Engine::gt(Qsca, threshold);
+  auto mask_ext = Engine::gt(Qext, threshold);
+
+  g = Engine::select(mask_sca, (Qext - Qpr) / Qsca, zero);
+  Albedo = Engine::select(mask_ext, Qsca / Qext, zero);
+}
+
 //*******************************************************************************
 // This function calculates the actual scattering parameters and amplitudes
 //
@@ -1353,15 +1389,9 @@ void MultiLayerMie<FloatType>::RunMieCalculation() {
       S2_
   );
 
-  FloatType x2 = pow2(x.back());
-  Qext_ = 2.0 * (Qext_) / x2;                  // Equation (27)
-  Qsca_ = 2.0 * (Qsca_) / x2;                  // Equation (28)
-  Qpr_ = Qext_ - 4.0 * (Qpr_) / x2;            // Equation (29)
-  Qabs_ = Qext_ - Qsca_;                       // Equation (30)
-  albedo_ = Qsca_ / Qext_;                     // Equation (31)
-  asymmetry_factor_ = (Qext_ - Qpr_) / Qsca_;  // Equation (32)
-  Qbk_ = (Qbktmp.real() * Qbktmp.real() + Qbktmp.imag() * Qbktmp.imag()) /
-         x2;  // Equation (33)
+  finalizeMieResults<FloatType, ScalarEngine<FloatType>>(
+      x.back(), Qext_, Qsca_, Qpr_, Qbktmp, Qext_, Qsca_, Qabs_, Qbk_, Qpr_,
+      asymmetry_factor_, albedo_);
 
   isMieCalculated_ = true;
 }

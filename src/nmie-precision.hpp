@@ -207,11 +207,12 @@ struct MieBuffers {
 
   // Persistent buffers
   VectorC D1, D3, D1_prev, D3_prev, Psi, Zeta, PsiZeta;
-  std::vector<VectorC> Q, Ha, Hb;
+  VectorC Q, Ha, Hb;
 
   void resize(int nmax, int L) {
     size_t lanes = Engine::Lanes();
     size_t size = (nmax + 1) * lanes;
+    size_t total_size = size * L;
 
     if (D1.size() < size)
       D1.resize(size);
@@ -228,17 +229,10 @@ struct MieBuffers {
     if (PsiZeta.size() < size)
       PsiZeta.resize(size);
 
-    if (Q.size() < static_cast<size_t>(L)) {
-      Q.resize(L);
-      Ha.resize(L);
-      Hb.resize(L);
-    }
-    for (int l = 0; l < L; ++l) {
-      if (Q[l].size() < size) {
-        Q[l].resize(size);
-        Ha[l].resize(size);
-        Hb[l].resize(size);
-      }
+    if (Q.size() < total_size) {
+      Q.resize(total_size);
+      Ha.resize(total_size);
+      Hb.resize(total_size);
     }
   }
 };
