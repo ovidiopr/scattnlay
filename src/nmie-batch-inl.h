@@ -87,7 +87,7 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
             buffers, an_vec, bn_vec
         );
 
-        auto vQext = hn::Zero(d), vQsca = hn::Zero(d), vQpr_sum = hn::Zero(d);
+        typename Engine::RealV vQext = hn::Zero(d), vQsca = hn::Zero(d), vQpr_sum = hn::Zero(d);
         typename Engine::ComplexV vQbk = {hn::Zero(d), hn::Zero(d)};
         
         std::vector<typename Engine::ComplexV> vS1(num_angles, {hn::Zero(d), hn::Zero(d)});
@@ -111,13 +111,13 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
         auto norm = hn::Div(hn::Set(d, 2.0), x2);
         
         alignas(64) FloatType r_ext[64], r_sca[64], r_bk[64], r_pr[64];
-        hn::Store(hn::Mul(vQext, norm), d, r_ext);
-        hn::Store(hn::Mul(vQsca, norm), d, r_sca);
+        hn::Store(hn::Mul(vQext.v, norm), d, r_ext);
+        hn::Store(hn::Mul(vQsca.v, norm), d, r_sca);
         
-        auto vQbk_mag_sq = hn::Add(hn::Mul(vQbk.re, vQbk.re), hn::Mul(vQbk.im, vQbk.im));
+        auto vQbk_mag_sq = hn::Add(hn::Mul(vQbk.re.v, vQbk.re.v), hn::Mul(vQbk.im.v, vQbk.im.v));
         hn::Store(hn::Div(vQbk_mag_sq, x2), d, r_bk);
         
-        hn::Store(hn::Sub(hn::Mul(vQext, norm), hn::Mul(hn::Div(hn::Set(d, 4.0), x2), vQpr_sum)), d, r_pr);
+        hn::Store(hn::Sub(hn::Mul(vQext.v, norm), hn::Mul(hn::Div(hn::Set(d, 4.0), x2), vQpr_sum.v)), d, r_pr);
 
         for (size_t j = 0; j < current_batch_size; ++j) {
             output.Qext[i + j] = r_ext[j];

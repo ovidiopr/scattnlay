@@ -139,34 +139,36 @@ public:
                 auto bn_im = Engine::get_imag(bn_val);
                 
                 // Qext += (2n+1) * Re(an + bn)
-                sum_qext = Engine::add(sum_qext, Engine::mul(two_n_plus_1, Engine::add(an_re, bn_re)));
+                auto sum_ab = an_val + bn_val;
+                sum_qext = sum_qext + two_n_plus_1 * Engine::get_real(sum_ab);
                 
                 // Qsca += (2n+1) * (|an|^2 + |bn|^2)
-                auto an_sq = Engine::add(Engine::mul(an_re, an_re), Engine::mul(an_im, an_im));
-                auto bn_sq = Engine::add(Engine::mul(bn_re, bn_re), Engine::mul(bn_im, bn_im));
-                sum_qsca = Engine::add(sum_qsca, Engine::mul(two_n_plus_1, Engine::add(an_sq, bn_sq)));
+                auto an_sq = an_re * an_re + an_im * an_im;
+                auto bn_sq = bn_re * bn_re + bn_im * bn_im;
+                sum_qsca = sum_qsca + two_n_plus_1 * (an_sq + bn_sq);
                 
                 // Qbk += (2n+1) * (-1)^n * (an - bn)
                 FloatType sign_val = ((n+1) % 2 == 1) ? -1.0 : 1.0;
                 auto sign = Engine::set(sign_val);
                 
-                auto diff_re = Engine::sub(an_re, bn_re);
-                auto diff_im = Engine::sub(an_im, bn_im);
+                auto diff = an_val - bn_val;
+                auto diff_re = Engine::get_real(diff);
+                auto diff_im = Engine::get_imag(diff);
                 
-                sum_qbk_re = Engine::add(sum_qbk_re, Engine::mul(sign, Engine::mul(two_n_plus_1, diff_re)));
-                sum_qbk_im = Engine::add(sum_qbk_im, Engine::mul(sign, Engine::mul(two_n_plus_1, diff_im)));
+                sum_qbk_re = sum_qbk_re + sign * two_n_plus_1 * diff_re;
+                sum_qbk_im = sum_qbk_im + sign * two_n_plus_1 * diff_im;
             }
             
             auto xL = load_val(x_[L_-1], i);
-            auto xL_sq = Engine::mul(xL, xL);
-            auto factor = Engine::div(Engine::set(2.0), xL_sq);
+            auto xL_sq = xL * xL;
+            auto factor = Engine::set(2.0) / xL_sq;
             
-            auto qext = Engine::mul(factor, sum_qext);
-            auto qsca = Engine::mul(factor, sum_qsca);
-            auto qabs = Engine::sub(qext, qsca);
+            auto qext = factor * sum_qext;
+            auto qsca = factor * sum_qsca;
+            auto qabs = qext - qsca;
             
-            auto qbk_sq = Engine::add(Engine::mul(sum_qbk_re, sum_qbk_re), Engine::mul(sum_qbk_im, sum_qbk_im));
-            auto qbk = Engine::mul(Engine::div(factor, Engine::set(2.0)), qbk_sq);
+            auto qbk_sq = sum_qbk_re * sum_qbk_re + sum_qbk_im * sum_qbk_im;
+            auto qbk = (factor / Engine::set(2.0)) * qbk_sq;
             
             // Store results
             alignas(64) FloatType qext_arr[64];

@@ -71,30 +71,30 @@ typename Engine::RealV evalKapteynNumberOfLostSignificantDigits(const int ni, co
   auto one = Engine::make_complex(one_val, zero_val);
   
   auto n_complex = Engine::make_complex(n_val, zero_val);
-  auto z_div_n = Engine::div(z, n_complex);
+  auto z_div_n = z / n_complex;
   
-  auto z_div_n_sq = Engine::mul(z_div_n, z_div_n);
-  auto one_minus_sq = Engine::sub(one, z_div_n_sq);
+  auto z_div_n_sq = z_div_n * z_div_n;
+  auto one_minus_sq = one - z_div_n_sq;
   auto sqrt_term = Engine::sqrt(one_minus_sq);
   
   auto log_z_div_n = Engine::log(z_div_n);
-  auto one_plus_sqrt = Engine::add(one, sqrt_term);
+  auto one_plus_sqrt = one + sqrt_term;
   auto log_one_plus_sqrt = Engine::log(one_plus_sqrt);
   
-  auto term = Engine::sub(Engine::add(log_z_div_n, sqrt_term), log_one_plus_sqrt);
+  auto term = (log_z_div_n + sqrt_term) - log_one_plus_sqrt;
   auto real_term = Engine::get_real(term);
-  auto n_times_real = Engine::mul(n_val, real_term);
+  auto n_times_real = n_val * real_term;
   
   auto imag_z = Engine::get_imag(z);
   auto abs_imag_z = Engine::abs(imag_z);
   auto log_2 = Engine::set(std::log(2.0));
   
-  auto num = Engine::sub(Engine::sub(abs_imag_z, log_2), n_times_real);
+  auto num = (abs_imag_z - log_2) - n_times_real;
   auto log_10 = Engine::set(std::log(10.0));
   
-  auto res = Engine::div(num, log_10);
+  auto res = num / log_10;
   auto half = Engine::set(0.5);
-  auto res_plus_half = Engine::add(res, half);
+  auto res_plus_half = res + half;
   auto rounded = Engine::floor(res_plus_half);
   
   return rounded;
@@ -111,10 +111,10 @@ int getNStar(int nmax, ComplexType z, const int valid_digits) {
   
   auto re = Engine::get_real(z);
   auto im = Engine::get_imag(z);
-  auto abs_z_val = Engine::sqrt(Engine::add(Engine::mul(re, re), Engine::mul(im, im)));
+  auto abs_z_val = Engine::sqrt((re * re) + (im * im));
   
   auto pow_third = Engine::pow(abs_z_val, Engine::set(1.0/3.0));
-  auto four_pow = Engine::mul(Engine::set(15.0), pow_third);
+  auto four_pow = Engine::set(15.0) * pow_third;
   auto max_val = Engine::max(four_pow, Engine::set(5.0));
   auto increment_v = Engine::ceil(max_val);
   
@@ -129,7 +129,7 @@ int getNStar(int nmax, ComplexType z, const int valid_digits) {
   int iter = 0;
   while (iter++ < 100) {
     auto backwardLoss = evalKapteynNumberOfLostSignificantDigits<FloatType, Engine, ComplexType>(nstar, z);
-    auto diff = Engine::sub(backwardLoss, forwardLoss);
+    auto diff = backwardLoss - forwardLoss;
     
     auto max_diff = Engine::reduce_max(diff);
     if (max_diff > valid_digits) break;
@@ -154,36 +154,36 @@ ComplexType complex_cot(const ComplexType z) {
   auto sgn = Engine::sign(Immx);
   
   auto minus_two = Engine::set(-2.0);
-  auto arg = Engine::mul(Engine::mul(minus_two, sgn), Immx);
+  auto arg = minus_two * sgn * Immx;
   auto exp_val = Engine::exp(arg);
   
   auto tan_val = Engine::tan(Remx);
   
-  auto exp_tan = Engine::mul(exp_val, tan_val);
-  auto a = Engine::sub(tan_val, exp_tan);
+  auto exp_tan = exp_val * tan_val;
+  auto a = tan_val - exp_tan;
   
   auto one = Engine::set(1.0);
-  auto b = Engine::add(one, exp_val);
+  auto b = one + exp_val;
   
   auto minus_one = Engine::set(-1.0);
-  auto c = Engine::add(minus_one, exp_val);
+  auto c = minus_one + exp_val;
   
-  auto d = Engine::add(tan_val, exp_tan);
+  auto d = tan_val + exp_tan;
   
-  auto c2 = Engine::mul(c, c);
-  auto d2 = Engine::mul(d, d);
-  auto denom = Engine::add(c2, d2);
+  auto c2 = c * c;
+  auto d2 = d * d;
+  auto denom = c2 + d2;
   
-  auto ac = Engine::mul(a, c);
-  auto bd = Engine::mul(b, d);
-  auto num_re = Engine::add(ac, bd);
-  auto re = Engine::div(num_re, denom);
+  auto ac = a * c;
+  auto bd = b * d;
+  auto num_re = ac + bd;
+  auto re = num_re / denom;
   
-  auto bc = Engine::mul(b, c);
-  auto ad = Engine::mul(a, d);
-  auto diff = Engine::sub(bc, ad);
-  auto num_im = Engine::mul(sgn, diff);
-  auto im = Engine::div(num_im, denom);
+  auto bc = b * c;
+  auto ad = a * d;
+  auto diff = bc - ad;
+  auto num_im = sgn * diff;
+  auto im = num_im / denom;
   
   return Engine::make_complex(re, im);
 }
@@ -455,18 +455,18 @@ void evalDownwardD1(const ComplexType z,
   Engine::store(zero, &D1[nstar * lanes]);
 
   auto c_one = Engine::make_complex(Engine::set(1.0), Engine::set(0.0));
-  auto z_inv = Engine::div(c_one, z);
+  auto z_inv = c_one / z;
   
   for (unsigned int n = nstar; n > 0; n--) {
     auto n_val = Engine::set(static_cast<FloatType>(n));
     auto n_complex = Engine::make_complex(n_val, Engine::set(0.0));
-    auto term1 = Engine::mul(n_complex, z_inv);
+    auto term1 = n_complex * z_inv;
     
     auto d1_n = Engine::load(&D1[n * lanes]);
-    auto denom = Engine::add(d1_n, term1);
-    auto term2 = Engine::div(c_one, denom);
+    auto denom = d1_n + term1;
+    auto term2 = c_one / denom;
     
-    auto res = Engine::sub(term1, term2);
+    auto res = term1 - term2;
     Engine::store(res, &D1[(n - 1) * lanes]);
   }
   // Use D1[0] from upward recurrence
@@ -499,8 +499,8 @@ void evalUpwardD3(const ComplexType z,
   auto z_re = Engine::get_real(z);
   auto z_im = Engine::get_imag(z);
   
-  auto two_z_re = Engine::mul(two, z_re);
-  auto minus_two_z_im = Engine::mul(Engine::set(-2.0), z_im);
+  auto two_z_re = two * z_re;
+  auto minus_two_z_im = Engine::set(-2.0) * z_im;
   
   auto cos_val = Engine::cos(two_z_re);
   auto sin_val = Engine::sin(two_z_re);
@@ -509,41 +509,41 @@ void evalUpwardD3(const ComplexType z,
   auto term_complex = Engine::make_complex(cos_val, sin_val);
   auto exp_complex = Engine::make_complex(exp_val, zero);
   
-  auto prod = Engine::mul(term_complex, exp_complex);
+  auto prod = term_complex * exp_complex;
   
   auto one_complex = Engine::make_complex(one, zero);
-  auto diff = Engine::sub(one_complex, prod);
+  auto diff = one_complex - prod;
   
   auto half_complex = Engine::make_complex(half, zero);
-  auto psi_zeta_0 = Engine::mul(half_complex, diff);
+  auto psi_zeta_0 = half_complex * diff;
   Engine::store(psi_zeta_0, &PsiZeta[0]);
 
   auto d3_0 = Engine::make_complex(zero, one);
   Engine::store(d3_0, &D3[0]);
   
-  auto z_inv = Engine::div(one_complex, z);
+  auto z_inv = one_complex / z;
   auto i_complex = Engine::make_complex(zero, one);
   
   for (int n = 1; n <= nmax; n++) {
     auto n_val = Engine::set(static_cast<FloatType>(n));
     auto n_complex = Engine::make_complex(n_val, zero);
     
-    auto term = Engine::mul(n_complex, z_inv);
+    auto term = n_complex * z_inv;
     
     auto d1_nm1 = Engine::load(&D1[(n - 1) * lanes]);
     auto d3_nm1 = Engine::load(&D3[(n - 1) * lanes]);
 
-    auto factor1 = Engine::sub(term, d1_nm1);
-    auto factor2 = Engine::sub(term, d3_nm1);
+    auto factor1 = term - d1_nm1;
+    auto factor2 = term - d3_nm1;
     
     auto psi_zeta_nm1 = Engine::load(&PsiZeta[(n - 1) * lanes]);
-    auto prod1 = Engine::mul(psi_zeta_nm1, factor1);
-    auto psi_zeta_n = Engine::mul(prod1, factor2);
+    auto prod1 = psi_zeta_nm1 * factor1;
+    auto psi_zeta_n = prod1 * factor2;
     Engine::store(psi_zeta_n, &PsiZeta[n * lanes]);
     
-    auto term_div = Engine::div(i_complex, psi_zeta_n);
+    auto term_div = i_complex / psi_zeta_n;
     auto d1_n = Engine::load(&D1[n * lanes]);
-    auto d3_n = Engine::add(d1_n, term_div);
+    auto d3_n = d1_n + term_div;
     Engine::store(d3_n, &D3[n * lanes]);
   }
 }
@@ -559,24 +559,24 @@ ComplexType complex_sin(const ComplexType z) {
   // term1 = (cos(a) + i*sin(a)) * exp(-b)
   auto cos_a = Engine::cos(a);
   auto sin_a = Engine::sin(a);
-  auto exp_minus_b = Engine::exp(Engine::sub(zero, b));
+  auto exp_minus_b = Engine::exp(zero - b);
   
   auto e_ia = Engine::make_complex(cos_a, sin_a);
-  auto term1 = Engine::mul(e_ia, Engine::make_complex(exp_minus_b, zero));
+  auto term1 = e_ia * Engine::make_complex(exp_minus_b, zero);
   
   // term2 = (cos(-a) + i*sin(-a)) * exp(b)
-  auto minus_a = Engine::sub(zero, a);
+  auto minus_a = zero - a;
   auto cos_minus_a = Engine::cos(minus_a);
   auto sin_minus_a = Engine::sin(minus_a);
   auto exp_b = Engine::exp(b);
   
   auto e_minus_ia = Engine::make_complex(cos_minus_a, sin_minus_a);
-  auto term2 = Engine::mul(e_minus_ia, Engine::make_complex(exp_b, zero));
+  auto term2 = e_minus_ia * Engine::make_complex(exp_b, zero);
   
-  auto diff = Engine::sub(term1, term2);
+  auto diff = term1 - term2;
   auto two_i = Engine::make_complex(zero, two);
   
-  return Engine::div(diff, two_i);
+  return diff / two_i;
 }
 
 //******************************************************************************
@@ -596,18 +596,18 @@ void evalUpwardPsi(const ComplexType z,
   auto one = Engine::set(1.0);
   auto zero = Engine::set(0.0);
   auto one_complex = Engine::make_complex(one, zero);
-  auto z_inv = Engine::div(one_complex, z);
+  auto z_inv = one_complex / z;
   
   for (int n = 1; n <= nmax; n++) {
     auto n_val = Engine::set(static_cast<FloatType>(n));
     auto n_complex = Engine::make_complex(n_val, zero);
     
-    auto term = Engine::mul(n_complex, z_inv);
+    auto term = n_complex * z_inv;
     auto d1_nm1 = Engine::load(&D1[(n - 1) * lanes]);
-    auto factor = Engine::sub(term, d1_nm1);
+    auto factor = term - d1_nm1;
     
     auto psi_nm1 = Engine::load(&Psi[(n - 1) * lanes]);
-    auto psi_n = Engine::mul(psi_nm1, factor);
+    auto psi_n = psi_nm1 * factor;
     Engine::store(psi_n, &Psi[n * lanes]);
   }
 }
@@ -623,23 +623,23 @@ ComplexType complex_cos(const ComplexType z) {
   
   auto cos_a = Engine::cos(a);
   auto sin_a = Engine::sin(a);
-  auto exp_minus_b = Engine::exp(Engine::sub(zero, b));
+  auto exp_minus_b = Engine::exp(zero - b);
   
   auto e_ia = Engine::make_complex(cos_a, sin_a);
-  auto term1 = Engine::mul(e_ia, Engine::make_complex(exp_minus_b, zero));
+  auto term1 = e_ia * Engine::make_complex(exp_minus_b, zero);
   
-  auto minus_a = Engine::sub(zero, a);
+  auto minus_a = zero - a;
   auto cos_minus_a = Engine::cos(minus_a);
   auto sin_minus_a = Engine::sin(minus_a);
   auto exp_b = Engine::exp(b);
   
   auto e_minus_ia = Engine::make_complex(cos_minus_a, sin_minus_a);
-  auto term2 = Engine::mul(e_minus_ia, Engine::make_complex(exp_b, zero));
+  auto term2 = e_minus_ia * Engine::make_complex(exp_b, zero);
   
-  auto sum = Engine::add(term1, term2);
+  auto sum = term1 + term2;
   auto two_complex = Engine::make_complex(two, zero);
   
-  return Engine::div(sum, two_complex);
+  return sum / two_complex;
 }
 
 //******************************************************************************
@@ -660,20 +660,18 @@ void evalUpwardZeta(const ComplexType z,
   auto sin_z = complex_sin<FloatType, Engine, ComplexType>(z);
   auto cos_z = complex_cos<FloatType, Engine, ComplexType>(z);
   
-  auto term = Engine::mul(i_complex, cos_z);
-  Zeta[0] = Engine::sub(sin_z, term);
+  Zeta[0] = sin_z - i_complex * cos_z;
   
   auto one_complex = Engine::make_complex(one, zero);
-  auto z_inv = Engine::div(one_complex, z);
+  auto z_inv = one_complex / z;
 
   for (int n = 1; n <= nmax; n++) {
     auto n_val = Engine::set(static_cast<FloatType>(n));
     auto n_complex = Engine::make_complex(n_val, zero);
     
-    auto term_n = Engine::mul(n_complex, z_inv);
-    auto factor = Engine::sub(term_n, D3[n - 1]);
+    auto factor = n_complex * z_inv - D3[n - 1];
     
-    Zeta[n] = Engine::mul(Zeta[n - 1], factor);
+    Zeta[n] = Zeta[n - 1] * factor;
   }
 }
 

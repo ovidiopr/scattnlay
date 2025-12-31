@@ -67,20 +67,10 @@ ComplexType calc_an(typename Engine::RealV n_real,
                       ComplexType ZetaXL,
                       ComplexType PsiXLM1,
                       ComplexType ZetaXLM1) {
-    auto zero = Engine::set(0.0);
-    auto n_complex = Engine::make_complex(n_real, zero);
-    auto XL_complex = Engine::make_complex(XL, zero);
-    
-    // (Ha / mL + n / XL)
-    auto term1 = Engine::add(Engine::div(Ha, mL), Engine::div(n_complex, XL_complex));
-    
-    // Num = term1 * PsiXL - PsiXLM1
-    auto Num = Engine::sub(Engine::mul(term1, PsiXL), PsiXLM1);
-    
-    // Denom = term1 * ZetaXL - ZetaXLM1
-    auto Denom = Engine::sub(Engine::mul(term1, ZetaXL), ZetaXLM1);
-
-    return Engine::div(Num, Denom);
+  auto term1 = (Ha / mL) + (n_real / XL);
+  auto Num = term1 * PsiXL - PsiXLM1;
+  auto Denom = term1 * ZetaXL - ZetaXLM1;
+  return Num / Denom;
 }
 
 template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
@@ -105,20 +95,10 @@ ComplexType calc_bn(typename Engine::RealV n_real,
                       ComplexType ZetaXL,
                       ComplexType PsiXLM1,
                       ComplexType ZetaXLM1) {
-    auto zero = Engine::set(0.0);
-    auto n_complex = Engine::make_complex(n_real, zero);
-    auto XL_complex = Engine::make_complex(XL, zero);
-    
-    // (mL * Hb + n / XL)
-    auto term1 = Engine::add(Engine::mul(mL, Hb), Engine::div(n_complex, XL_complex));
-    
-    // Num = term1 * PsiXL - PsiXLM1
-    auto Num = Engine::sub(Engine::mul(term1, PsiXL), PsiXLM1);
-    
-    // Denom = term1 * ZetaXL - ZetaXLM1
-    auto Denom = Engine::sub(Engine::mul(term1, ZetaXL), ZetaXLM1);
-
-    return Engine::div(Num, Denom);
+  auto term1 = (mL * Hb) + (n_real / XL);
+  auto Num = term1 * PsiXL - PsiXLM1;
+  auto Denom = term1 * ZetaXL - ZetaXLM1;
+  return Num / Denom;
 }
 
 template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
@@ -182,31 +162,31 @@ void computeLayerCoeffsHelper(
     auto z2_im = Engine::get_imag(z2);
     
     auto minus_two = Engine::set(-2.0);
-    auto exp_term_num = Engine::exp(Engine::mul(minus_two, Engine::sub(z1_im, z2_im)));
-    
-    auto arg_z2 = Engine::mul(minus_two, z2_re);
-    auto exp_z2 = Engine::exp(Engine::mul(minus_two, z2_im));
+    auto exp_term_num = Engine::exp(minus_two * (z1_im - z2_im));
+
+    auto arg_z2 = minus_two * z2_re;
+    auto exp_z2 = Engine::exp(minus_two * z2_im);
     auto cos_z2 = Engine::cos(arg_z2);
     auto sin_z2 = Engine::sin(arg_z2);
-    
-    auto num_re = Engine::mul(exp_term_num, Engine::sub(cos_z2, exp_z2));
-    auto num_im = Engine::mul(exp_term_num, sin_z2);
+
+    auto num_re = exp_term_num * (cos_z2 - exp_z2);
+    auto num_im = exp_term_num * sin_z2;
     auto Num = Engine::make_complex(num_re, num_im);
-    
-    auto arg_z1 = Engine::mul(minus_two, z1_re);
-    auto exp_z1 = Engine::exp(Engine::mul(minus_two, z1_im));
+
+    auto arg_z1 = minus_two * z1_re;
+    auto exp_z1 = Engine::exp(minus_two * z1_im);
     auto cos_z1 = Engine::cos(arg_z1);
     auto sin_z1 = Engine::sin(arg_z1);
-    
-    auto denom_re = Engine::sub(cos_z1, exp_z1);
+
+    auto denom_re = cos_z1 - exp_z1;
     auto denom_im = sin_z1;
     auto Denom = Engine::make_complex(denom_re, denom_im);
-    
-    auto Q_curr = Engine::div(Num, Denom); 
+
+    auto Q_curr = Num / Denom;
     Engine::store(Q_curr, &Q_l[0]);
 
-    auto ratio = Engine::div(x_lm1, x_l);
-    auto ratio_sq = Engine::mul(ratio, ratio);
+    auto ratio = x_lm1 / x_l;
+    auto ratio_sq = ratio * ratio;
     auto ratio_sq_c = Engine::make_complex(ratio_sq, Engine::set(0.0));
 
     const size_t lanes = Engine::Lanes();
@@ -217,20 +197,20 @@ void computeLayerCoeffsHelper(
         
         auto d1_n = Engine::load(&D1_mlxl[n*lanes]);
         auto d3_nm1 = Engine::load(&D3_mlxl[(n-1)*lanes]);
-        
-        auto term1 = Engine::add(Engine::mul(z1, d1_n), n_c);
-        auto term2 = Engine::sub(n_c, Engine::mul(z1, d3_nm1));
-        auto Num_n = Engine::mul(term1, term2);
-        
+
+        auto term1 = (z1 * d1_n) + n_c;
+        auto term2 = n_c - (z1 * d3_nm1);
+        auto Num_n = term1 * term2;
+
         auto d1_m1_n = Engine::load(&D1_mlxlM1[n*lanes]);
         auto d3_m1_nm1 = Engine::load(&D3_mlxlM1[(n-1)*lanes]);
-        
-        auto term3 = Engine::add(Engine::mul(z2, d1_m1_n), n_c);
-        auto term4 = Engine::sub(n_c, Engine::mul(z2, d3_m1_nm1));
-        auto Denom_n = Engine::mul(term3, term4);
-        
-        auto factor = Engine::mul(ratio_sq_c, Q_curr);
-        Q_curr = Engine::div(Engine::mul(factor, Num_n), Denom_n);
+
+        auto term3 = (z2 * d1_m1_n) + n_c;
+        auto term4 = n_c - (z2 * d3_m1_nm1);
+        auto Denom_n = term3 * term4;
+
+        auto factor = ratio_sq_c * Q_curr;
+        Q_curr = (factor * Num_n) / Denom_n;
         Engine::store(Q_curr, &Q_l[n*lanes]);
         
         // Ha
@@ -240,22 +220,22 @@ void computeLayerCoeffsHelper(
         if ((l - 1) == pl) {
              auto neg_one = Engine::set(-1.0);
              auto neg_one_c = Engine::make_complex(neg_one, Engine::set(0.0));
-             G1_ha = Engine::mul(d1_m1_n, neg_one_c);
+             G1_ha = d1_m1_n * neg_one_c;
              auto d3_m1_n = Engine::load(&D3_mlxlM1[n*lanes]);
-             G2_ha = Engine::mul(d3_m1_n, neg_one_c);
+             G2_ha = d3_m1_n * neg_one_c;
         } else {
-             auto term_ha = Engine::mul(m_l, ha_prev);
-             G1_ha = Engine::sub(term_ha, Engine::mul(m_lm1, d1_m1_n));
-             auto d3_m1_n = Engine::load(&D3_mlxlM1[n*lanes]);
-             G2_ha = Engine::sub(term_ha, Engine::mul(m_lm1, d3_m1_n));
+          auto term_ha = m_l * ha_prev;
+          G1_ha = term_ha - (m_lm1 * d1_m1_n);
+          auto d3_m1_n = Engine::load(&D3_mlxlM1[n * lanes]);
+          G2_ha = term_ha - (m_lm1 * d3_m1_n);
         }
 
-        auto Temp_ha = Engine::mul(Q_curr, G1_ha);
+        auto Temp_ha = Q_curr * G1_ha;
         auto d1_n_curr = Engine::load(&D1_mlxl[n*lanes]);
         auto d3_n = Engine::load(&D3_mlxl[n*lanes]);
-        auto Num_ha = Engine::sub(Engine::mul(G2_ha, d1_n_curr), Engine::mul(Temp_ha, d3_n));
-        auto Denom_ha = Engine::sub(G2_ha, Temp_ha);
-        auto Ha_curr = Engine::div(Num_ha, Denom_ha);
+        auto Num_ha = (G2_ha * d1_n_curr) - (Temp_ha * d3_n);
+        auto Denom_ha = G2_ha - Temp_ha;
+        auto Ha_curr = Num_ha / Denom_ha;
         Engine::store(Ha_curr, &Ha_l[(n-1)*lanes]);
 
         // Hb
@@ -266,16 +246,16 @@ void computeLayerCoeffsHelper(
              G1_hb = hb_prev;
              G2_hb = hb_prev;
         } else {
-             auto term_hb = Engine::mul(m_lm1, hb_prev);
-             G1_hb = Engine::sub(term_hb, Engine::mul(m_l, d1_m1_n));
-             auto d3_m1_n = Engine::load(&D3_mlxlM1[n*lanes]);
-             G2_hb = Engine::sub(term_hb, Engine::mul(m_l, d3_m1_n));
+          auto term_hb = m_lm1 * hb_prev;
+          G1_hb = term_hb - (m_l * d1_m1_n);
+          auto d3_m1_n = Engine::load(&D3_mlxlM1[n * lanes]);
+          G2_hb = term_hb - (m_l * d3_m1_n);
         }
 
-        auto Temp_hb = Engine::mul(Q_curr, G1_hb);
-        auto Num_hb = Engine::sub(Engine::mul(G2_hb, d1_n_curr), Engine::mul(Temp_hb, d3_n));
-        auto Denom_hb = Engine::sub(G2_hb, Temp_hb);
-        auto Hb_curr = Engine::div(Num_hb, Denom_hb);
+        auto Temp_hb = Q_curr * G1_hb;
+        auto Num_hb = (G2_hb * d1_n_curr) - (Temp_hb * d3_n);
+        auto Denom_hb = G2_hb - Temp_hb;
+        auto Hb_curr = Num_hb / Denom_hb;
         Engine::store(Hb_curr, &Hb_l[(n-1)*lanes]);
     }
 }
@@ -322,8 +302,8 @@ void calcScattCoeffsKernel(
         auto x_fl = get_x(fl);
         auto m_fl = get_m(fl);
         auto zero = Engine::set(0.0);
-        auto z1 = Engine::mul(Engine::make_complex(x_fl, zero), m_fl);
-        
+        auto z1 = Engine::make_complex(x_fl, zero) * m_fl;
+
         evalDownwardD1<FloatType, Engine>(z1, D1_mlxl);
         evalUpwardD3<FloatType, Engine>(z1, D1_mlxl, D3_mlxl, PsiXL); // PsiXL used as temp buffer
     }
@@ -343,9 +323,9 @@ void calcScattCoeffsKernel(
         auto m_lm1 = get_m(l-1);
         
         auto zero = Engine::set(0.0);
-        auto z1 = Engine::mul(Engine::make_complex(x_l, zero), m_l);
-        auto z2 = Engine::mul(Engine::make_complex(x_lm1, zero), m_l);
-        
+        auto z1 = Engine::make_complex(x_l, zero) * m_l;
+        auto z2 = Engine::make_complex(x_lm1, zero) * m_l;
+
         evalDownwardD1<FloatType, Engine>(z1, D1_mlxl);
         evalUpwardD3<FloatType, Engine>(z1, D1_mlxl, D3_mlxl, PsiXL); // PsiXL temp
         
@@ -371,7 +351,7 @@ void calcScattCoeffsKernel(
     for (int n = 0; n <= nmax; ++n) {
         auto psi = Engine::load(&PsiXL[n*lanes]);
         auto psi_zeta = Engine::load(&ZetaXL[n*lanes]);
-        auto zeta = Engine::div(psi_zeta, psi);
+        auto zeta = psi_zeta / psi;
         Engine::store(zeta, &ZetaXL[n*lanes]);
     }
     
@@ -403,7 +383,7 @@ void calcScattCoeffsKernel(
                   n_val, x_L, zero_c, one_c,
                   psi_np1, zeta_np1, psi_n, zeta_n
              );
-             bn_val = Engine::div(psi_np1, zeta_np1);
+             bn_val = psi_np1 / zeta_np1;
         }
         
         Engine::store(an_val, &an[n*lanes]);
@@ -1219,44 +1199,44 @@ void sumMieSeriesKernel(
         an = Engine::select(mask, an, Engine::make_complex(zero, zero));
         bn = Engine::select(mask, bn, Engine::make_complex(zero, zero));
 
-        auto n2p1 = Engine::add(Engine::add(vn, vn), one);
-        auto n_plus_1 = Engine::add(vn, one);
-        auto n_sq_plus_n = Engine::mul(vn, n_plus_1);
+        auto n2p1 = (vn + vn) + one;
+        auto n_plus_1 = vn + one;
+        auto n_sq_plus_n = vn * n_plus_1;
 
-        auto an_plus_bn = Engine::add(an, bn);
-        auto term_ext = Engine::mul(n2p1, Engine::get_real(an_plus_bn));
-        Qext = Engine::add(Qext, term_ext);
+        auto an_plus_bn = an + bn;
+        auto term_ext = n2p1 * Engine::get_real(an_plus_bn);
+        Qext = Qext + term_ext;
 
-        auto an_sq = Engine::add(Engine::mul(Engine::get_real(an), Engine::get_real(an)), 
-                                 Engine::mul(Engine::get_imag(an), Engine::get_imag(an)));
-        auto bn_sq = Engine::add(Engine::mul(Engine::get_real(bn), Engine::get_real(bn)), 
-                                 Engine::mul(Engine::get_imag(bn), Engine::get_imag(bn)));
-        auto term_sca = Engine::mul(n2p1, Engine::add(an_sq, bn_sq));
-        Qsca = Engine::add(Qsca, term_sca);
+        auto an_sq = (Engine::get_real(an) * Engine::get_real(an)) +
+                     (Engine::get_imag(an) * Engine::get_imag(an));
+        auto bn_sq = (Engine::get_real(bn) * Engine::get_real(bn)) +
+                     (Engine::get_imag(bn) * Engine::get_imag(bn));
+        auto term_sca = n2p1 * (an_sq + bn_sq);
+        Qsca = Qsca + term_sca;
 
         RealV sign = (n % 2 == 0) ? one : Engine::set(-1.0);
-        auto an_minus_bn = Engine::sub(an, bn);
-        auto term_bk = Engine::mul(Engine::make_complex(Engine::mul(n2p1, sign), zero), an_minus_bn);
-        Qbk = Engine::add(Qbk, term_bk);
+        auto an_minus_bn = an - bn;
+        auto term_bk = Engine::make_complex(n2p1 * sign, zero) * an_minus_bn;
+        Qbk = Qbk + term_bk;
 
         if (n > 1) {
-             auto nm1 = Engine::sub(vn, one);
-             auto factor1 = Engine::div(Engine::mul(nm1, n_plus_1), vn);
-             
-             auto re_aa = Engine::add(Engine::mul(Engine::get_real(an_prev), Engine::get_real(an)),
-                                      Engine::mul(Engine::get_imag(an_prev), Engine::get_imag(an)));
-             auto re_bb = Engine::add(Engine::mul(Engine::get_real(bn_prev), Engine::get_real(bn)),
-                                      Engine::mul(Engine::get_imag(bn_prev), Engine::get_imag(bn)));
-             
-             auto term_pr1 = Engine::mul(factor1, Engine::add(re_aa, re_bb));
-             Qpr = Engine::add(Qpr, term_pr1);
+          auto nm1 = vn - one;
+          auto factor1 = (nm1 * n_plus_1) / vn;
+
+          auto re_aa = (Engine::get_real(an_prev) * Engine::get_real(an)) +
+                       (Engine::get_imag(an_prev) * Engine::get_imag(an));
+          auto re_bb = (Engine::get_real(bn_prev) * Engine::get_real(bn)) +
+                       (Engine::get_imag(bn_prev) * Engine::get_imag(bn));
+
+          auto term_pr1 = factor1 * (re_aa + re_bb);
+          Qpr = Qpr + term_pr1;
         }
-        
-        auto factor2 = Engine::div(n2p1, n_sq_plus_n);
-        auto re_ab = Engine::add(Engine::mul(Engine::get_real(an), Engine::get_real(bn)),
-                                 Engine::mul(Engine::get_imag(an), Engine::get_imag(bn)));
-        auto term_pr2 = Engine::mul(factor2, re_ab);
-        Qpr = Engine::add(Qpr, term_pr2);
+
+        auto factor2 = n2p1 / n_sq_plus_n;
+        auto re_ab = (Engine::get_real(an) * Engine::get_real(bn)) +
+                     (Engine::get_imag(an) * Engine::get_imag(bn));
+        auto term_pr2 = factor2 * re_ab;
+        Qpr = Qpr + term_pr2;
 
         an_prev = an;
         bn_prev = bn;
@@ -1272,28 +1252,28 @@ void sumMieSeriesKernel(
                     pi_next = Engine::make_complex(one, zero);
                     tau_n = Engine::make_complex(mu[k], zero);
                 } else {
-                    auto nm1 = Engine::sub(vn, one);
-                    auto n2m1 = Engine::sub(Engine::add(vn, vn), one);
-                    
-                    auto t1 = Engine::mul(n2m1, Engine::mul(mu[k], Engine::get_real(pi_curr[k])));
-                    auto t2 = Engine::mul(vn, Engine::get_real(pi_prev[k]));
-                    auto pi_val = Engine::div(Engine::sub(t1, t2), nm1);
-                    pi_next = Engine::make_complex(pi_val, zero);
-                    
-                    auto t3 = Engine::mul(vn, Engine::mul(mu[k], pi_val));
-                    auto t4 = Engine::mul(n_plus_1, Engine::get_real(pi_curr[k]));
-                    auto tau_val = Engine::sub(t3, t4);
-                    tau_n = Engine::make_complex(tau_val, zero);
-                    
-                    pi_prev[k] = pi_curr[k];
-                    pi_curr[k] = pi_next;
+                  auto nm1 = vn - one;
+                  auto n2m1 = (vn + vn) - one;
+
+                  auto t1 = n2m1 * (mu[k] * Engine::get_real(pi_curr[k]));
+                  auto t2 = vn * Engine::get_real(pi_prev[k]);
+                  auto pi_val = (t1 - t2) / nm1;
+                  pi_next = Engine::make_complex(pi_val, zero);
+
+                  auto t3 = vn * (mu[k] * pi_val);
+                  auto t4 = n_plus_1 * Engine::get_real(pi_curr[k]);
+                  auto tau_val = t3 - t4;
+                  tau_n = Engine::make_complex(tau_val, zero);
+
+                  pi_prev[k] = pi_curr[k];
+                  pi_curr[k] = pi_next;
                 }
-                
-                auto term_S1 = Engine::add(Engine::mul(an, pi_curr[k]), Engine::mul(bn, tau_n));
-                S1[k] = Engine::add(S1[k], Engine::mul(Engine::make_complex(factor, zero), term_S1));
-                
-                auto term_S2 = Engine::add(Engine::mul(an, tau_n), Engine::mul(bn, pi_curr[k]));
-                S2[k] = Engine::add(S2[k], Engine::mul(Engine::make_complex(factor, zero), term_S2));
+
+                auto term_S1 = (an * pi_curr[k]) + (bn * tau_n);
+                S1[k] = S1[k] + (Engine::make_complex(factor, zero) * term_S1);
+
+                auto term_S2 = (an * tau_n) + (bn * pi_curr[k]);
+                S2[k] = S2[k] + (Engine::make_complex(factor, zero) * term_S2);
             }
         }
     }
