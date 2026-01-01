@@ -146,3 +146,31 @@ install(FILES
     nmie-nearfield.hpp
     DESTINATION include/scattnlay
 )
+
+if(BUILD_PYTHON_EXT)
+    # scattnlay_dp
+    pybind11_add_module(scattnlay_dp pb11-wrapper.cc)
+    target_link_libraries(scattnlay_dp PRIVATE nmie_obj_dp)
+    
+    if(ENABLE_MP)
+        # scattnlay_mp
+        pybind11_add_module(scattnlay_mp pb11-wrapper.cc)
+        target_compile_definitions(scattnlay_mp PRIVATE MULTI_PRECISION=100)
+        target_link_libraries(scattnlay_mp PRIVATE nmie_obj_mp)
+    endif()
+
+    if(WITH_HWY)
+        # scattnlay_simd
+        pybind11_add_module(scattnlay_simd pb11-wrapper.cc)
+        target_compile_definitions(scattnlay_simd PRIVATE BUILD_SIMD_MODULE WITH_HWY "HWY_DISABLED_TARGETS=0x4000000")
+        target_link_libraries(scattnlay_simd PRIVATE nmie_obj_dp)
+    endif()
+    
+    install(TARGETS scattnlay_dp DESTINATION scattnlay)
+    if(ENABLE_MP)
+        install(TARGETS scattnlay_mp DESTINATION scattnlay)
+    endif()
+    if(WITH_HWY)
+        install(TARGETS scattnlay_simd DESTINATION scattnlay)
+    endif()
+endif()

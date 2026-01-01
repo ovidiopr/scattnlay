@@ -29,23 +29,31 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from scattnlay_dp import mie_dp, mesomie_dp
+try:
+    from .scattnlay_dp import mie_dp, mesomie_dp
+except ImportError:
+    from scattnlay_dp import mie_dp, mesomie_dp
 import numpy as np
 import sys
 
 mie_mp = None
 # mesomie_mp = None
 try:
-    from scattnlay_mp import mie_mp as mie_mp_
+    try:
+        from .scattnlay_mp import mie_mp as mie_mp_
+    except ImportError:
+        from scattnlay_mp import mie_mp as mie_mp_
     mie_mp = mie_mp_()
     # from scattnlay_mp import mesomie_mp as mesomie_mp_
     # mesomie_mp = mesomie_mp_()
 except:
     pass
-
 mie_simd = None
 try:
-    import scattnlay_simd
+    try:
+        from . import scattnlay_simd
+    except ImportError:
+        import scattnlay_simd
     # Create a compatibility wrapper so it behaves like mie_dp/mie_mp classes
     class MieSIMDWrapper:
         def RunMieBatch(self, x, m, theta=None):

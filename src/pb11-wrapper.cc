@@ -43,7 +43,7 @@
 
 namespace py = pybind11;
 
-#ifdef WITH_HWY
+#ifdef BUILD_SIMD_MODULE
 #include "nmie-batch.hpp"
 
 // Define a helper for Python batch calls
@@ -90,7 +90,7 @@ PYBIND11_MODULE(scattnlay_simd, m) {
     m.def("RunMieBatch", &RunMieBatchPy, "Run Mie calculation for a batch of particles using SIMD",
           py::arg("x"), py::arg("m"), py::arg("theta") = py::array_t<double>());
 }
-#else // WITH_HWY
+#else // BUILD_SIMD_MODULE
 
 //******************************************************************************
 template <typename T>
@@ -190,4 +190,4 @@ PYBIND11_MODULE(scattnlay_dp, m)
   m.doc() = "The Python version of scattnlay";
   declare_nmie<nmie::FloatType>(m, precision_name);
 }
-#endif // WITH_HWY
+#endif // BUILD_SIMD_MODULE

@@ -13,8 +13,8 @@
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "ENABLE_MP": "OFF",
-        "WITH_HWY": "OFF"
+        "ENABLE_MP": "ON",
+        "WITH_HWY": "ON"
       }
     },
     {

@@ -1,22 +1,13 @@
 #!/bin/bash
 set -e
 
+echo "--- Running C++ Tests (Includes Tox via CTest) ---"
+# Since your CMakeLists.txt adds tox as a test, this covers C++ and Python.
+ctest --test-dir build --output-on-failure
 
-echo "Testing..."
-if [ -d "build" ]; then
-    cd build
-    ctest --output-on-failure
-    cd ..
-else
-    echo "build not found, skipping."
-fi
+echo "--- Running Vue3/WASM Tests ---"
+cd guiapp
+pnpm test
+cd ..
 
-echo "Running Vitest..."
-if [ -d "guiapp" ]; then
-    cd guiapp
-    pnpm install
-    pnpm test
-    cd ..
-fi
-
-echo "All tests completed."
+echo "All tests passed."

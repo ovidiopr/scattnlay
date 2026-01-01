@@ -31,8 +31,30 @@ message("  C++ Compiler: ${CMAKE_CXX_COMPILER_ID} "
 message("  Installation prefix: ${CMAKE_INSTALL_PREFIX}")
 
 # Set options
-option(ENABLE_MP "Use multiple precision" OFF)
-option(WITH_HWY "Enable Google Highway SIMD" OFF)
+option(BUILD_PYTHON_EXT "Build Python extensions" OFF)
+option(STRICT_BUILD "Fail if Boost or Highway are missing" OFF)
+
+# 1. Boost (Multi-Precision)
+find_package(Boost 1.60.0 QUIET COMPONENTS headers)
+if(Boost_FOUND)
+    set(ENABLE_MP ON)
+else()
+    if(STRICT_BUILD)
+        message(FATAL_ERROR "STRICT_BUILD: Boost not found.")
+    endif()
+    set(ENABLE_MP OFF)
+endif()
+
+# 2. Highway (SIMD)
+find_package(hwy QUIET)
+if(hwy_FOUND)
+    set(WITH_HWY ON)
+else()
+    if(STRICT_BUILD)
+        message(FATAL_ERROR "STRICT_BUILD: Google Highway not found.")
+    endif()
+    set(WITH_HWY OFF)
+endif()
 
 include(FetchContent)
 
@@ -101,7 +123,10 @@ target_compile_options(project_optimization INTERFACE
 
 # --- TARGET CONFIGURATION ---
 add_subdirectory(src)
-add_subdirectory(examples)
+
+if(NOT BUILD_PYTHON_EXT)
+    add_subdirectory(examples)
+endif()
 
 #
 # Copy all python scripts to the build directory.
@@ -117,7 +142,7 @@ foreach (_script ${Python_SCRIPTS})
     )
 endforeach ()
 
-if(NOT EMSCRIPTEN)
+if(NOT EMSCRIPTEN AND NOT BUILD_PYTHON_EXT)
     enable_testing()
     add_subdirectory(tests)
     
