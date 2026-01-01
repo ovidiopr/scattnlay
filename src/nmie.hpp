@@ -429,7 +429,7 @@ class MultiLayerMie {
   std::vector<std::vector<FloatType>> coords_;
   std::vector<std::vector<FloatType>> coords_polar_;
 
- private:
+ protected:
   unsigned int calcNstop(FloatType xL = -1);
   unsigned int calcNmax(FloatType xL = -1);
 

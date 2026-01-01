@@ -5,7 +5,7 @@ echo "--- 1. Installing Python Extension + CLI Tools ---"
 # --no-build-isolation: Uses the libraries already in your environment (numpy, etc.)
 # This prevents pip from creating a slow virtual environment for every build.
 # STRICT_BUILD=ON ensures we don't skip SIMD/MP during dev.
-pip install -e . --no-build-isolation -v -Ccmake.define.STRICT_BUILD=ON -Cbuild-dir=build_native
+pip install -e . --no-build-isolation -v -Ccmake.define.STRICT_BUILD=ON -Ccmake.define.WITH_HWY=ON -Cbuild-dir=build_native
 
 echo "--- 2. Building WASM Assets ---"
 if [ -n "$EMSDK" ]; then

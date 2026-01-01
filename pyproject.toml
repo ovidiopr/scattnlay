@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.10", "pybind11>=2.10", "numpy"]
+requires = ["scikit-build-core>=0.10", "nanobind>=2.4.0", "numpy"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -12,6 +12,7 @@ requires-python = ">=3.8"
 dependencies = ["numpy"]
 
 [tool.scikit-build]
+
 wheel.install-dir = "."
 sdist.include = ["scattnlay/*", "src/*", "examples/*", "tests/*", "cmake/*"]
 # Force scikit-build-core to use your existing 'build' directory

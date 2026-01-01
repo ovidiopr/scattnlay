@@ -2,6 +2,7 @@
   "name": "scattnlay-guiapp",
   "version": "0.0.2",
   "description": "Mie scattering simulations",
+  "type": "module",
   "productName": "Scattnlay",
   "author": "Konstantin Ladutenko <kostyfisik@gmail.com>",
   "private": true,
@@ -45,7 +46,7 @@
     "vitest": "^1.0.0"
   },
   "engines": {
-    "node": "^20 || ^18 || ^16",
+    "node": ">=16",
     "npm": ">= 6.13.4",
     "yarn": ">= 1.21.1"
   }

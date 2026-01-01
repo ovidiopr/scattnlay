@@ -1,31 +1,5 @@
 ## Sources for python extension
-#set(_scattnlay_python_sources
-#        ${CMAKE_CURRENT_LIST_DIR}/nmie.hpp
-#        ${CMAKE_CURRENT_LIST_DIR}/nmie.cc
-#        ${CMAKE_CURRENT_LIST_DIR}/nmie-precision.hpp
-#        ${CMAKE_CURRENT_LIST_DIR}/special-functions-impl.hpp
-#        ${CMAKE_CURRENT_LIST_DIR}/nmie-basic.hpp
-#        ${CMAKE_CURRENT_LIST_DIR}/nmie-nearfield.hpp
-#        ${CMAKE_CURRENT_LIST_DIR}/pb11_wrapper.cc)
-#
-## Define python extension
-#add_library(python3-scattnlay SHARED ${_scattnlay_python_sources})
-#if (${ENABLE_MP} AND ${Boost_FOUND})
-#    target_link_libraries(python3-scattnlay PRIVATE Boost::headers ${Python_LIBRARIES})
-#else()
-#    target_link_libraries(python3-scattnlay PRIVATE ${Python_LIBRARIES})
-#endif()
-#target_include_directories(python3-scattnlay PRIVATE ${NUMPY_INCLUDE_DIR} ${PYBIND11_INCLUDE_DIR})
-#set_target_properties(python3-scattnlay PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-
-#set_target_properties(
-#        python3-scattnlay
-#        PROPERTIES
-#        PREFIX ""
-#        OUTPUT_NAME "scattnlay"
-#        SUFFIX "${EXT_SUFFIX}"
-#        LINKER_LANGUAGE C
-#)
+# (Moved to end of file inside BUILD_PYTHON_EXT block)
 
 # Sources for far field calculation
 set(_scattnlay_farfield_sources
@@ -149,21 +123,28 @@ install(FILES
 
 if(BUILD_PYTHON_EXT)
     # scattnlay_dp
-    pybind11_add_module(scattnlay_dp pb11-wrapper.cc)
+    nanobind_add_module(scattnlay_dp LTO nb-wrapper.cc)
     target_link_libraries(scattnlay_dp PRIVATE nmie_obj_dp)
+    target_compile_options(scattnlay_dp PRIVATE -Wno-nested-anon-types -Wno-zero-length-array)
+    if(WITH_HWY)
+        target_link_libraries(scattnlay_dp PRIVATE hwy::hwy)
+        target_compile_definitions(scattnlay_dp PRIVATE WITH_HWY "HWY_DISABLED_TARGETS=0x4000000")
+    endif()
     
     if(ENABLE_MP)
         # scattnlay_mp
-        pybind11_add_module(scattnlay_mp pb11-wrapper.cc)
+        nanobind_add_module(scattnlay_mp LTO nb-wrapper.cc)
         target_compile_definitions(scattnlay_mp PRIVATE MULTI_PRECISION=100)
         target_link_libraries(scattnlay_mp PRIVATE nmie_obj_mp)
+        target_compile_options(scattnlay_mp PRIVATE -Wno-nested-anon-types -Wno-zero-length-array)
     endif()
 
     if(WITH_HWY)
         # scattnlay_simd
-        pybind11_add_module(scattnlay_simd pb11-wrapper.cc)
+        nanobind_add_module(scattnlay_simd LTO nb-wrapper.cc)
         target_compile_definitions(scattnlay_simd PRIVATE BUILD_SIMD_MODULE WITH_HWY "HWY_DISABLED_TARGETS=0x4000000")
-        target_link_libraries(scattnlay_simd PRIVATE nmie_obj_dp)
+        target_link_libraries(scattnlay_simd PRIVATE nmie_obj_dp hwy::hwy)
+        target_compile_options(scattnlay_simd PRIVATE -Wno-nested-anon-types -Wno-zero-length-array)
     endif()
     
     install(TARGETS scattnlay_dp DESTINATION scattnlay)

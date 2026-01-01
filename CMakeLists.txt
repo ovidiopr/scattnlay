@@ -34,6 +34,12 @@ message("  Installation prefix: ${CMAKE_INSTALL_PREFIX}")
 option(BUILD_PYTHON_EXT "Build Python extensions" OFF)
 option(STRICT_BUILD "Fail if Boost or Highway are missing" OFF)
 option(BUILD_EXAMPLES "Build examples" OFF)
+option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
+
+if(ENABLE_ASAN)
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+endif()
 
 # 1. Boost (Multi-Precision)
 find_package(Boost 1.60.0 QUIET COMPONENTS headers)
@@ -79,16 +85,14 @@ if(NOT EMSCRIPTEN)
     FetchContent_MakeAvailable(GTest)
 endif()
 
-# Pybind11 (for Python bindings)
+# Nanobind (for Python bindings)
 if(NOT EMSCRIPTEN)
-    find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-    FetchContent_Declare(
-        pybind11
-        GIT_REPOSITORY https://github.com/pybind/pybind11.git
-        GIT_TAG        v3.0.1
-        FIND_PACKAGE_ARGS NAMES pybind11
-    )
-    FetchContent_MakeAvailable(pybind11)
+    find_package(Python COMPONENTS Interpreter Development REQUIRED)
+    find_package(nanobind CONFIG QUIET)
+    if(NOT nanobind_FOUND)
+        FetchContent_Declare(nanobind GIT_REPOSITORY https://github.com/wjakob/nanobind.git GIT_TAG v2.4.0)
+        FetchContent_MakeAvailable(nanobind)
+    endif()
 endif()
 
 # Google Highway (SIMD)
@@ -142,6 +146,9 @@ foreach (_script ${Python_SCRIPTS})
             COPYONLY
     )
 endforeach ()
+
+# Install Python scripts
+install(FILES scattnlay/__init__.py scattnlay/main.py DESTINATION scattnlay)
 
 if(NOT EMSCRIPTEN)
     enable_testing()
