@@ -123,8 +123,8 @@ nb::dict RunMieBatchPy(
     res["Albedo"] = MoveVectorToNdarray(std::move(output.Albedo));
     
     if (!output.S1.empty()) {
-        res["S1"] = MoveNestedVector2DToNdarray(std::move(output.S1));
-        res["S2"] = MoveNestedVector2DToNdarray(std::move(output.S2));
+        res["S1"] = MoveVector2DToNdarray(std::move(output.S1));
+        res["S2"] = MoveVector2DToNdarray(std::move(output.S2));
     }
 
     return res;

@@ -13,23 +13,7 @@ public:
 
     // Advanced: multi-dimensional field data
     auto GetFieldE() {
-        size_t rows = this->E_.size();
-        auto* flattened = new std::vector<std::complex<double>>();
-        flattened->reserve(rows * 3);
-        
-        if constexpr (std::is_same_v<FloatType, double>) {
-            for (auto& row : this->E_) flattened->insert(flattened->end(), row.begin(), row.end());
-        } else {
-            for (auto& row : this->E_) {
-                for (auto& val : row) {
-                    flattened->emplace_back(static_cast<double>(val.real()), static_cast<double>(val.imag()));
-                }
-            }
-        }
-
-        size_t shape[2] = { rows, 3 };
-        nb::capsule owner(flattened, [](void *p) noexcept { delete reinterpret_cast<std::vector<std::complex<double>>*>(p); });
-        return nb::ndarray<nb::numpy, std::complex<double>, nb::shape<-1, 3>>(flattened->data(), 2, shape, owner);
+        return MoveVector2DToNdarray(ConvertComplexVectorVector<double>(this->E_));
     }
 
     void SetLayersSize(double x) {
@@ -110,24 +94,7 @@ public:
     auto GetBn() { return MoveVectorToNdarray(ConvertComplexVector<double>(this->bn_)); }
     
     auto GetFieldH() {
-        // Similar to GetFieldE, handle 2D complex vector
-        size_t rows = this->H_.size();
-        auto* flattened = new std::vector<std::complex<double>>();
-        flattened->reserve(rows * 3);
-        
-        if constexpr (std::is_same_v<FloatType, double>) {
-            for (auto& row : this->H_) flattened->insert(flattened->end(), row.begin(), row.end());
-        } else {
-            for (auto& row : this->H_) {
-                for (auto& val : row) {
-                    flattened->emplace_back(static_cast<double>(val.real()), static_cast<double>(val.imag()));
-                }
-            }
-        }
-
-        size_t shape[2] = { rows, 3 };
-        nb::capsule owner(flattened, [](void *p) noexcept { delete reinterpret_cast<std::vector<std::complex<double>>*>(p); });
-        return nb::ndarray<nb::numpy, std::complex<double>, nb::shape<-1, 3>>(flattened->data(), 2, shape, owner);
+        return MoveVector2DToNdarray(ConvertComplexVectorVector<double>(this->H_));
     }
 
     auto GetFieldEabs() { return MoveVectorToNdarray(ConvertVector<double>(this->Eabs_)); }
