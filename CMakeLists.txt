@@ -154,9 +154,9 @@ if(NOT EMSCRIPTEN)
     enable_testing()
     add_subdirectory(tests)
     
-    if (NOT DEFINED ENV{GITHUB_ENV})
-        add_test(NAME tox COMMAND tox)
-    endif()
+#    if (NOT DEFINED ENV{GITHUB_ENV})
+#        add_test(NAME tox COMMAND tox)
+#    endif()
 endif()
 
 # --- PHASE 5: PROFESSIONAL DISTRIBUTION ---

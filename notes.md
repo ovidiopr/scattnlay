@@ -1,8 +1,8 @@
 # Overall prirorities
 
 # libs
-- [ ] c++20
-- [ ] nanobind 
+- [X] c++20
+- [X] nanobind 
 
 # Algorithms?
 
@@ -12,14 +12,20 @@
 
 
 # Core
-- [X] complete SIMD operations for far-field calculations
+- [ ] complete SIMD operations for far-field calculations
+  - [X] Qsca\Qext\Qback
+  - [ ] S1\S2
 - [ ] complete SIMD operations for nearfield calculations 
+
+- [ ] verify SIMD speedup for WASM/Emscripten builds (both nearfield and far-field)
+
 - [ ] implemnt multicore processing for spectra\nearfield\far-field
   calculations
   - No need to paralleize sing mie calculation over several hosts, so
     multicore should be sufficient -> OpenMP?
   - OpenMP seems to be supported by WASM\Emscripten?
 
+ - [ ] verify multicore speedup for WASM/Emscripten builds (both nearfield and far-field)
 
 
 # Testing
@@ -33,25 +39,11 @@
 
 # Ideas for Improvements
 
+
 ## Performance Improvements
-Remove np.atleast_1d inside loops: In scattnlay/main.py, you
-repeatedly call np.vstack. For large spectra (e.g., 10,000 points),
-this leads to O(N2) memory copying. It is better to pre-allocate the
-results array:
-code Python
 
-        
-    # Instead of vstack
-    Qext = np.empty(x.shape[0])
-    for i, xi in enumerate(x):
-        # ... compute ...
-        Qext[i] = res
+- ?      
 
-      
-
-## Dependency Management
-
-    pyproject.toml: The dynamic = ["dependencies"] tag is present, but usually, it's better to explicitly list numpy and pybind11 under dependencies to ensure a clean install from PyPI without needing a requirements.txt.
 
 ## Akima Spline
 
