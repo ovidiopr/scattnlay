@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
-echo "--- Running C++ Tests (Includes Tox via CTest) ---"
-# Since your CMakeLists.txt adds tox as a test, this covers C++ and Python.
-ctest --test-dir build --output-on-failure
+echo "--- 1. Running C++ Tests & Python Tox (via CTest) ---"
+# This runs your GoogleTest binaries AND triggers Tox (as defined in your CMakeLists.txt)
+ctest --test-dir build_native --output-on-failure
 
-echo "--- Running Vue3/WASM Tests ---"
+echo "--- 2. Running Vue3/Frontend Vitest ---"
 cd guiapp
 pnpm test
 cd ..
 
-echo "All tests passed."
+echo "All tests passed!"

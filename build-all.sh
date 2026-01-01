@@ -1,17 +1,26 @@
 #!/bin/bash
 set -e
 
-echo "--- Building C++ Core (Default Preset) ---"
-cmake --preset default
-cmake --build --preset default
+echo "--- 1. Installing Python Extension + CLI Tools ---"
+# --no-build-isolation: Uses the libraries already in your environment (numpy, etc.)
+# This prevents pip from creating a slow virtual environment for every build.
+# STRICT_BUILD=ON ensures we don't skip SIMD/MP during dev.
+pip install -e . --no-build-isolation -v -Ccmake.define.STRICT_BUILD=ON -Cbuild-dir=build_native
 
-echo "--- Building Vue3 Frontend (Pnpm/Quasar) ---"
+echo "--- 2. Building WASM Assets ---"
+if [ -n "$EMSDK" ]; then
+    echo "EMSDK found. Building WASM..."
+    cmake --preset wasm-release -B build
+    cmake --build build
+else
+    echo "WARNING: EMSDK not found. Skipping WASM build."
+fi
+
+echo "--- 3. Building Vue3 Frontend ---"
+# WASM must still be handled separately as it uses a different toolchain (Emscripten)
 cd guiapp
 pnpm install
 pnpm build
 cd ..
 
-echo "--- Building Python Extension (Editable/Strict) ---"
-# We use editable mode for development. STRICT_BUILD=ON ensures
-# we have Boost and Highway properly configured.
-pip install -e . -v -Ccmake.args="-DSTRICT_BUILD=ON"
+echo "Build All completed."

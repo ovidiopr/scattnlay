@@ -33,6 +33,7 @@ message("  Installation prefix: ${CMAKE_INSTALL_PREFIX}")
 # Set options
 option(BUILD_PYTHON_EXT "Build Python extensions" OFF)
 option(STRICT_BUILD "Fail if Boost or Highway are missing" OFF)
+option(BUILD_EXAMPLES "Build examples" OFF)
 
 # 1. Boost (Multi-Precision)
 find_package(Boost 1.60.0 QUIET COMPONENTS headers)
@@ -124,7 +125,7 @@ target_compile_options(project_optimization INTERFACE
 # --- TARGET CONFIGURATION ---
 add_subdirectory(src)
 
-if(NOT BUILD_PYTHON_EXT)
+if(NOT BUILD_PYTHON_EXT OR BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
@@ -142,7 +143,7 @@ foreach (_script ${Python_SCRIPTS})
     )
 endforeach ()
 
-if(NOT EMSCRIPTEN AND NOT BUILD_PYTHON_EXT)
+if(NOT EMSCRIPTEN)
     enable_testing()
     add_subdirectory(tests)
     

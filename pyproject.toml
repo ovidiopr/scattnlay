@@ -13,8 +13,12 @@ dependencies = ["numpy"]
 
 [tool.scikit-build]
 wheel.install-dir = "."
-sdist.include = ["scattnlay/*", "src/*"]
+sdist.include = ["scattnlay/*", "src/*", "examples/*", "tests/*", "cmake/*"]
+# Force scikit-build-core to use your existing 'build' directory
+build-dir = "build"
 
 [tool.scikit-build.cmake.define]
 BUILD_PYTHON_EXT = "ON"
 STRICT_BUILD = "OFF"
+# Ensure the CLI tools are built even when installing via pip
+BUILD_EXAMPLES = "ON"

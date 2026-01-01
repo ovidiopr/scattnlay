@@ -1,5 +1,9 @@
 # Overall prirorities
 
+# libs
+- [ ] c++20
+- [ ] nanobind 
+
 # Algorithms?
 
 - [X] Du algorithm for large complex refractive indices?
