@@ -44,8 +44,8 @@
 
 namespace nmie {
 
-template <typename FloatType = double>
-class MultiLayerMieWeb : public MultiLayerMieApplied<FloatType> {
+template <typename FloatType = double, MathEngine Engine = DefaultEngine<FloatType>>
+class MultiLayerMieWeb : public MultiLayerMieApplied<FloatType, Engine> {
   // Will throw for any error!
  public:
   emscripten::val GetFieldEabs();

@@ -67,9 +67,9 @@ emscripten::val toJSFloat64Array(const std::vector<double>& v) {
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-emscripten::val MultiLayerMieWeb<FloatType>::GetFieldEabs() {
-  auto Eabs = this->MultiLayerMie<FloatType>::GetFieldEabs();
+template <typename FloatType, MathEngine Engine>
+emscripten::val MultiLayerMieWeb<FloatType, Engine>::GetFieldEabs() {
+  auto Eabs = this->MultiLayerMie<FloatType, Engine>::GetFieldEabs();
   return toJSFloat64Array(Eabs);
 }
 // ********************************************************************** //

@@ -393,7 +393,7 @@ void calcScattCoeffsKernel(
 // ********************************************************************** //
 // Calculates S1 - equation (25a)                                         //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 std::complex<FloatType> calc_S1(
     int n,
     std::complex<FloatType> an,
@@ -407,7 +407,7 @@ std::complex<FloatType> calc_S1(
 // Calculates S2 - equation (25b) (it's the same as (25a), just switches  //
 // Pi and Tau)                                                            //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 std::complex<FloatType> calc_S2(
     int n,
     std::complex<FloatType> an,
@@ -503,9 +503,9 @@ void calcSParams(
 // ********************************************************************** //
 // Returns previously calculated Qext                                     //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetQext() {
+outputType MultiLayerMie<FloatType, Engine>::GetQext() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -515,9 +515,9 @@ outputType MultiLayerMie<FloatType>::GetQext() {
 // ********************************************************************** //
 // Returns previously calculated Qabs                                     //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetQabs() {
+outputType MultiLayerMie<FloatType, Engine>::GetQabs() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -527,9 +527,9 @@ outputType MultiLayerMie<FloatType>::GetQabs() {
 // ********************************************************************** //
 // Returns previously calculated Qsca                                     //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetQsca() {
+outputType MultiLayerMie<FloatType, Engine>::GetQsca() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -539,9 +539,9 @@ outputType MultiLayerMie<FloatType>::GetQsca() {
 // ********************************************************************** //
 // Returns previously calculated Qbk                                      //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetQbk() {
+outputType MultiLayerMie<FloatType, Engine>::GetQbk() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -551,9 +551,9 @@ outputType MultiLayerMie<FloatType>::GetQbk() {
 // ********************************************************************** //
 // Returns previously calculated Qpr                                      //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetQpr() {
+outputType MultiLayerMie<FloatType, Engine>::GetQpr() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -563,9 +563,9 @@ outputType MultiLayerMie<FloatType>::GetQpr() {
 // ********************************************************************** //
 // Returns previously calculated asymmetry factor                         //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetAsymmetryFactor() {
+outputType MultiLayerMie<FloatType, Engine>::GetAsymmetryFactor() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -575,9 +575,9 @@ outputType MultiLayerMie<FloatType>::GetAsymmetryFactor() {
 // ********************************************************************** //
 // Returns previously calculated Albedo                                   //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetAlbedo() {
+outputType MultiLayerMie<FloatType, Engine>::GetAlbedo() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -587,8 +587,8 @@ outputType MultiLayerMie<FloatType>::GetAlbedo() {
 // ********************************************************************** //
 // Returns previously calculated S1                                       //
 // ********************************************************************** //
-template <typename FloatType>
-std::vector<std::complex<FloatType>> MultiLayerMie<FloatType>::GetS1() {
+template <typename FloatType, MathEngine Engine>
+std::vector<std::complex<FloatType>> MultiLayerMie<FloatType, Engine>::GetS1() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -598,8 +598,8 @@ std::vector<std::complex<FloatType>> MultiLayerMie<FloatType>::GetS1() {
 // ********************************************************************** //
 // Returns previously calculated S2                                       //
 // ********************************************************************** //
-template <typename FloatType>
-std::vector<std::complex<FloatType>> MultiLayerMie<FloatType>::GetS2() {
+template <typename FloatType, MathEngine Engine>
+std::vector<std::complex<FloatType>> MultiLayerMie<FloatType, Engine>::GetS2() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -609,8 +609,8 @@ std::vector<std::complex<FloatType>> MultiLayerMie<FloatType>::GetS2() {
 // ********************************************************************** //
 // Modify scattering (theta) angles                                       //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetAngles(const std::vector<FloatType>& angles) {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::SetAngles(const std::vector<FloatType>& angles) {
   MarkUncalculated();
   theta_ = angles;
 }
@@ -618,8 +618,8 @@ void MultiLayerMie<FloatType>::SetAngles(const std::vector<FloatType>& angles) {
 // ********************************************************************** //
 // Modify size of all layers                                             //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetLayersSize(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::SetLayersSize(
     const std::vector<FloatType>& layer_size) {
   MarkUncalculated();
   size_param_.clear();
@@ -639,8 +639,8 @@ void MultiLayerMie<FloatType>::SetLayersSize(
 // ********************************************************************** //
 // Modify refractive index of all layers                                  //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetLayersIndex(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::SetLayersIndex(
     const std::vector<std::complex<FloatType>>& index) {
   MarkUncalculated();
   refractive_index_ = index;
@@ -649,8 +649,8 @@ void MultiLayerMie<FloatType>::SetLayersIndex(
 // ********************************************************************** //
 // Modify coordinates for field calculation                               //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetFieldCoords(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::SetFieldCoords(
     const std::vector<std::vector<FloatType>>& coords) {
   if (coords.size() != 3)
     throw std::invalid_argument(
@@ -665,8 +665,8 @@ void MultiLayerMie<FloatType>::SetFieldCoords(
 // ********************************************************************** //
 // Modify index of PEC layer                                              //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetPECLayer(int layer_position) {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::SetPECLayer(int layer_position) {
   MarkUncalculated();
   if (layer_position < 0 && layer_position != -1)
     throw std::invalid_argument("Error! Layers are numbered from 0!");
@@ -676,8 +676,8 @@ void MultiLayerMie<FloatType>::SetPECLayer(int layer_position) {
 // ********************************************************************** //
 // Set maximun number of terms to be used                                 //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetMaxTerms(int nmax) {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::SetMaxTerms(int nmax) {
   MarkUncalculated();
   nmax_preset_ = nmax;
 }
@@ -685,8 +685,8 @@ void MultiLayerMie<FloatType>::SetMaxTerms(int nmax) {
 // ********************************************************************** //
 // Get total size parameter of particle                                   //
 // ********************************************************************** //
-template <typename FloatType>
-FloatType MultiLayerMie<FloatType>::GetSizeParameter() {
+template <typename FloatType, MathEngine Engine>
+FloatType MultiLayerMie<FloatType, Engine>::GetSizeParameter() {
   if (size_param_.size() > 0)
     return size_param_.back();
   else
@@ -696,8 +696,8 @@ FloatType MultiLayerMie<FloatType>::GetSizeParameter() {
 // ********************************************************************** //
 // Mark uncalculated                                                      //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::MarkUncalculated() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::MarkUncalculated() {
   isExpCoeffsCalc_ = false;
   isScaCoeffsCalc_ = false;
 
@@ -706,8 +706,8 @@ void MultiLayerMie<FloatType>::MarkUncalculated() {
 // ********************************************************************** //
 // Clear layer information                                                //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::ClearLayers() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::ClearLayers() {
   MarkUncalculated();
   size_param_.clear();
   refractive_index_.clear();
@@ -732,8 +732,8 @@ unsigned int LeRu_near_field_cutoff(const std::complex<FloatType> zz) {
 // ********************************************************************** //
 // Calculate calcNstop - equation (17)                                    //
 // ********************************************************************** //
-template <typename FloatType>
-unsigned int MultiLayerMie<FloatType>::calcNstop(FloatType xL) {
+template <typename FloatType, MathEngine Engine>
+unsigned int MultiLayerMie<FloatType, Engine>::calcNstop(FloatType xL) {
   unsigned int nmax = 0;
   // Wiscombe
   if (xL < size_param_.back())
@@ -755,8 +755,8 @@ unsigned int MultiLayerMie<FloatType>::calcNstop(FloatType xL) {
 // ********************************************************************** //
 // Maximum number of terms required for the calculation                   //
 // ********************************************************************** //
-template <typename FloatType>
-unsigned int MultiLayerMie<FloatType>::calcNmax(FloatType xL) {
+template <typename FloatType, MathEngine Engine>
+unsigned int MultiLayerMie<FloatType, Engine>::calcNmax(FloatType xL) {
   const int pl = PEC_layer_position_;
   const unsigned int first_layer = (pl > 0) ? pl : 0;
   unsigned int ri, riM1, nmax = 0;
@@ -790,8 +790,8 @@ unsigned int MultiLayerMie<FloatType>::calcNmax(FloatType xL) {
 // ********************************************************************** //
 // Calculate an - equation (5)                                            //
 // ********************************************************************** //
-template <typename FloatType>
-std::complex<FloatType> MultiLayerMie<FloatType>::calc_an(
+template <typename FloatType, MathEngine Engine>
+std::complex<FloatType> MultiLayerMie<FloatType, Engine>::calc_an(
     int n,
     FloatType XL,
     std::complex<FloatType> Ha,
@@ -807,8 +807,8 @@ std::complex<FloatType> MultiLayerMie<FloatType>::calc_an(
 // ********************************************************************** //
 // Calculate bn - equation (6)                                            //
 // ********************************************************************** //
-template <typename FloatType>
-std::complex<FloatType> MultiLayerMie<FloatType>::calc_bn(
+template <typename FloatType, MathEngine Engine>
+std::complex<FloatType> MultiLayerMie<FloatType, Engine>::calc_bn(
     int n,
     FloatType XL,
     std::complex<FloatType> Hb,
@@ -835,8 +835,8 @@ std::complex<FloatType> MultiLayerMie<FloatType>::calc_bn(
 // Output parameters:
 //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions
 //****************************************************************************
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcD1D3(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcD1D3(
     const std::complex<FloatType> z,
     std::vector<std::complex<FloatType>>& D1,
     std::vector<std::complex<FloatType>>& D3) {
@@ -857,8 +857,8 @@ void MultiLayerMie<FloatType>::calcD1D3(
 // Output parameters:
 //   Psi, Zeta: Riccati-Bessel functions
 //*****************************************************************************
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcPsiZeta(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcPsiZeta(
     std::complex<FloatType> z,
     std::vector<std::complex<FloatType>>& Psi,
     std::vector<std::complex<FloatType>>& Zeta) {
@@ -876,8 +876,8 @@ void MultiLayerMie<FloatType>::calcPsiZeta(
   //    evalUpwardZeta(z, D3, Zeta);
 }
 
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcPiTauAllTheta(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcPiTauAllTheta(
     const double from_Theta,
     const double to_Theta,
     std::vector<std::vector<FloatType>>& Pi,
@@ -910,8 +910,8 @@ void MultiLayerMie<FloatType>::calcPiTauAllTheta(
 //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) -
 //   (26c)
 //*******************************************************************************
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcPiTau(const FloatType& costheta,
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcPiTau(const FloatType& costheta,
                                          std::vector<FloatType>& Pi,
                                          std::vector<FloatType>& Tau) {
   int nmax = Pi.size();
@@ -952,9 +952,9 @@ void MultiLayerMie<FloatType>::calcPiTau(const FloatType& costheta,
 // Output parameters:
 //   Mo1n, Me1n, No1n, Ne1n: Complex vector spherical harmonics
 //*****************************************************************************
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename evalType>
-void MultiLayerMie<FloatType>::calcSpherHarm(
+void MultiLayerMie<FloatType, Engine>::calcSpherHarm(
     const std::complex<evalType> Rho,
     const evalType Theta,
     const evalType Phi,
@@ -1011,8 +1011,8 @@ void MultiLayerMie<FloatType>::calcSpherHarm(
 // Return value:
 //   Number of multipolar expansion terms used for the calculations
 //********************************************************************************
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcScattCoeffs() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcScattCoeffs() {
   isScaCoeffsCalc_ = false;
   an_.clear();
   bn_.clear();
@@ -1040,78 +1040,32 @@ void MultiLayerMie<FloatType>::calcScattCoeffs() {
   // between different arrays. The change was done to optimize memory usage.  //
   //**************************************************************************//
   
-  // Determine lanes and engine type
-#ifdef WITH_HWY
-  if constexpr (std::is_same_v<FloatType, double>) {
-      using Engine = HighwayEngine<double>;
-      size_t lanes = Engine::Lanes();
-      MieBuffers<double, Engine> buffers;
-      buffers.resize(nmax_, L);
-      
-      auto get_x_hwy = [&](int l) { return Engine::set(x[l]); };
-      auto get_m_hwy = [&](int l) { 
-        auto m_val = m[l];
-        return Engine::make_complex(
-            Engine::set(m_val.real()), 
-            Engine::set(m_val.imag())
-        ); 
-      };
-      
-      std::vector<std::complex<double>> an_buf((nmax_ + 1) * lanes), bn_buf((nmax_ + 1) * lanes);
-
-      calcScattCoeffsKernel<double, Engine>(
-        nmax_, L, pl, get_x_hwy, get_m_hwy,
-        buffers, an_buf, bn_buf
-      );
-      
-      an_.resize(nmax_);
-      bn_.resize(nmax_);
-      for(int n=0; n<nmax_; ++n) {
-        an_[n] = an_buf[n * lanes];
-        bn_[n] = bn_buf[n * lanes];
-      }
-  } else {
-      using Engine = ScalarEngine<FloatType>;
-      MieBuffers<FloatType, Engine> buffers;
-      buffers.resize(nmax_, L);
-      
-      auto get_x = [&](int l) { return x[l]; };
-      auto get_m = [&](int l) { return m[l]; };
-      
-      std::vector<std::complex<FloatType>> an_buf(nmax_ + 1), bn_buf(nmax_ + 1);
-      
-      calcScattCoeffsKernel<FloatType, Engine>(
-        nmax_, L, pl, get_x, get_m,
-        buffers, an_buf, bn_buf
-      );
-      an_.resize(nmax_);
-      bn_.resize(nmax_);
-      for(int n=0; n<nmax_; ++n) {
-          an_[n] = an_buf[n];
-          bn_[n] = bn_buf[n];
-      }
-  }
-#else
-  using Engine = ScalarEngine<FloatType>;
+  size_t lanes = Engine::Lanes();
   MieBuffers<FloatType, Engine> buffers;
   buffers.resize(nmax_, L);
   
-  auto get_x = [&](int l) { return x[l]; };
-  auto get_m = [&](int l) { return m[l]; };
+  auto get_x = [&](int l) { return Engine::set(x[l]); };
+  auto get_m = [&](int l) { 
+    auto m_val = m[l];
+    return Engine::make_complex(
+        Engine::set(m_val.real()), 
+        Engine::set(m_val.imag())
+    ); 
+  };
   
-  std::vector<std::complex<FloatType>> an_buf(nmax_ + 1), bn_buf(nmax_ + 1);
+  std::vector<std::complex<FloatType>> an_buf((nmax_ + 1) * lanes), bn_buf((nmax_ + 1) * lanes);
 
   calcScattCoeffsKernel<FloatType, Engine>(
-      nmax_, L, pl, get_x, get_m,
-      buffers, an_buf, bn_buf
+    nmax_, L, pl, get_x, get_m,
+    buffers, an_buf, bn_buf
   );
+  
   an_.resize(nmax_);
   bn_.resize(nmax_);
   for(int n=0; n<nmax_; ++n) {
-      an_[n] = an_buf[n];
-      bn_[n] = bn_buf[n];
+    an_[n] = an_buf[n * lanes];
+    bn_[n] = bn_buf[n * lanes];
   }
-#endif
 
   FloatType a0 = 0, b0 = 0;
 
@@ -1343,8 +1297,8 @@ void finalizeMieResults(const typename Engine::RealV x,
 // Return value:
 //   Number of multipolar expansion terms used for the calculations
 //*******************************************************************************
-template <typename FloatType>
-void MultiLayerMie<FloatType>::RunMieCalculation() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::RunMieCalculation() {
   if (size_param_.size() != refractive_index_.size())
     throw std::invalid_argument(
         "Each size parameter should have only one index!");

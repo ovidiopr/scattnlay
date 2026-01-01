@@ -104,8 +104,8 @@ int nMieApplied(const unsigned int L,
                 std::vector<std::complex<double> >& S1,
                 std::vector<std::complex<double> >& S2);
 
-template <typename FloatType = double>
-class MultiLayerMieApplied : public MultiLayerMie<FloatType> {
+template <typename FloatType = double, MathEngine Engine = DefaultEngine<FloatType>>
+class MultiLayerMieApplied : public MultiLayerMie<FloatType, Engine> {
   // Will throw for any error!
  public:
   void RunMieCalculation();
@@ -143,7 +143,7 @@ class MultiLayerMieApplied : public MultiLayerMie<FloatType> {
   }
   // Set parameters in applied units
   void SetWavelength(FloatType wavelength) {
-    this->MultiLayerMie<FloatType>::MarkUncalculated();
+    this->MultiLayerMie<FloatType, Engine>::MarkUncalculated();
     wavelength_ = wavelength;
   };
   // It is possible to set only a multilayer target to run calculaitons.
@@ -171,7 +171,7 @@ class MultiLayerMieApplied : public MultiLayerMie<FloatType> {
 
   // Set common parameters
   void SetModeNmaxAndType(int mode_n, int mode_type) {
-    this->MultiLayerMie<FloatType>::SetModeNmaxAndType(mode_n, mode_type);
+    this->MultiLayerMie<FloatType, Engine>::SetModeNmaxAndType(mode_n, mode_type);
   };
   void SetAnglesForPattern(FloatType from_angle,
                            FloatType to_angle,
@@ -205,9 +205,9 @@ class MultiLayerMieApplied : public MultiLayerMie<FloatType> {
   std::vector<FloatType> GetPatternUnpolarized();
 
   // Dimensionless
-  FloatType GetQsca() { return this->MultiLayerMie<FloatType>::GetQsca(); };
-  FloatType GetQabs() { return this->MultiLayerMie<FloatType>::GetQabs(); };
-  FloatType GetQext() { return this->MultiLayerMie<FloatType>::GetQext(); };
+  FloatType GetQsca() { return this->MultiLayerMie<FloatType, Engine>::GetQsca(); };
+  FloatType GetQabs() { return this->MultiLayerMie<FloatType, Engine>::GetQabs(); };
+  FloatType GetQext() { return this->MultiLayerMie<FloatType, Engine>::GetQext(); };
   // Size parameter units
   std::vector<FloatType> GetLayerWidthSP();
   // Same as to get target and coating index

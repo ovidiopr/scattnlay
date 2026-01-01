@@ -8,6 +8,7 @@ struct HighwayEngine {
   using D = hn::ScalableTag<T>;
   using V = hn::Vec<D>;
   using M = hn::Mask<D>;
+  using MaskV = M;
   
   // Wrapper for V to support operator overloading
   struct RealV {

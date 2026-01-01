@@ -47,6 +47,8 @@
 //**********************************************************************************//
 #include <complex>
 #include <vector>
+#include <concepts>
+#include <type_traits>
 
 #ifdef WITH_HWY
 #include "hwy/highway.h"
@@ -75,6 +77,17 @@ namespace nmm = std;
 typedef double FloatType;
 // typedef float FloatType;
 #endif  // MULTI_PRECISION
+
+template <typename T>
+concept MathEngine = requires(typename T::RealV v, typename T::ComplexV z, typename T::MaskV m) {
+  typename T::RealV;
+  typename T::ComplexV;
+  typename T::MaskV;
+  { T::Lanes() } -> std::convertible_to<size_t>;
+  { T::sin(v) } -> std::same_as<typename T::RealV>;
+  { T::cos(v) } -> std::same_as<typename T::RealV>;
+  { T::abs(v) } -> std::same_as<typename T::RealV>;
+};
 
 template <typename T>
 struct ScalarEngine {
@@ -199,6 +212,14 @@ std::vector<ToFloatType> ConvertVector(const std::vector<FromFloatType> x) {
   }
   return new_x;
 }
+
+#ifdef WITH_HWY
+template <typename FloatType>
+using DefaultEngine = std::conditional_t<std::is_same_v<FloatType, double>, HighwayEngine<double>, ScalarEngine<FloatType>>;
+#else
+template <typename FloatType>
+using DefaultEngine = ScalarEngine<FloatType>;
+#endif
 
 template <typename FloatType, typename Engine>
 struct MieBuffers {

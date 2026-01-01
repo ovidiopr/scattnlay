@@ -494,8 +494,8 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcExpanCoeffs() {
+  template <typename FloatType, MathEngine Engine>
+  void MultiLayerMie<FloatType, Engine>::calcExpanCoeffs() {
     if (!isScaCoeffsCalc_)
       throw std::invalid_argument("(calcExpanCoeffs) You should calculate external coefficients first!");
 
@@ -609,8 +609,8 @@ namespace nmie {
   }  // end of   void MultiLayerMie::calcExpanCoeffs()
 
 
-  template <typename FloatType>
-  void MultiLayerMie<FloatType>::convertFieldsFromSphericalToCartesian() {
+  template <typename FloatType, MathEngine Engine>
+  void MultiLayerMie<FloatType, Engine>::convertFieldsFromSphericalToCartesian() {
     long total_points = coords_polar_.size();
     E_.clear(); H_.clear();
     Eabs_.clear(); Habs_.clear();
@@ -657,8 +657,8 @@ namespace nmie {
   // Output parameters:                                                               //
   //   E, H: Complex electric and magnetic fields                                     //
   //**********************************************************************************//
-  template <typename FloatType>  template <typename evalType>
-  void MultiLayerMie<FloatType>::calcFieldByComponents(const evalType Rho,
+  template <typename FloatType, MathEngine Engine>  template <typename evalType>
+  void MultiLayerMie<FloatType, Engine>::calcFieldByComponents(const evalType Rho,
                                   const evalType Theta, const evalType Phi,
                                   const std::vector<std::complex<evalType> > &Psi,
                                   const std::vector<std::complex<evalType> > &D1n,
@@ -853,8 +853,8 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  template <typename FloatType>
-  void MultiLayerMie<FloatType>::RunFieldCalculation(bool isMarkUnconverged) {
+  template <typename FloatType, MathEngine Engine>
+  void MultiLayerMie<FloatType, Engine>::RunFieldCalculation(bool isMarkUnconverged) {
     (void)isMarkUnconverged;
     // Calculate scattering coefficients an_ and bn_
     calcScattCoeffs();
@@ -881,12 +881,6 @@ namespace nmie {
         Hs_[i].resize(3);
     }
 
-#ifdef WITH_HWY
-    using Engine = HighwayEngine<FloatType>;
-#else
-    using Engine = ScalarEngine<FloatType>;
-#endif
-
     MieBuffers<FloatType, Engine> buffers;
     buffers.resize(nmax_, 1);
 
@@ -905,7 +899,6 @@ namespace nmie {
     convertFieldsFromSphericalToCartesian();
   }  //  end of MultiLayerMie::RunFieldCalculation()
 
-// TODO do we really need this eval_delta()?
 template <typename FloatType>
 double eval_delta(const unsigned int steps, const double from_value, const double to_value) {
   auto delta = std::abs(from_value - to_value);
@@ -920,8 +913,8 @@ double eval_delta(const unsigned int steps, const double from_value, const doubl
 
 // ml - refractive index
 // l - Layer number
-template <typename FloatType> template <typename evalType>
-void MultiLayerMie<FloatType>::GetIndexAtRadius(const evalType Rho,
+template <typename FloatType, MathEngine Engine> template <typename evalType>
+void MultiLayerMie<FloatType, Engine>::GetIndexAtRadius(const evalType Rho,
                                                 std::complex<evalType> &ml,
                                                 unsigned int &l) {
   l = 0;
@@ -937,15 +930,15 @@ void MultiLayerMie<FloatType>::GetIndexAtRadius(const evalType Rho,
     ml = ConvertComplex<evalType>(refractive_index_[l]);
   }
 }
-template <typename FloatType> template <typename evalType>
-void MultiLayerMie<FloatType>::GetIndexAtRadius(const evalType Rho,
+template <typename FloatType, MathEngine Engine> template <typename evalType>
+void MultiLayerMie<FloatType, Engine>::GetIndexAtRadius(const evalType Rho,
                                                 std::complex<evalType> &ml) {
   unsigned int l;
   GetIndexAtRadius(Rho, ml, l);
 }
 
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcMieSeriesNeededToConverge(const FloatType Rho, int nmax_in) {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcMieSeriesNeededToConverge(const FloatType Rho, int nmax_in) {
   if (nmax_in < 1) {
     auto required_near_field_nmax = calcNmax(Rho);
     SetMaxTerms(required_near_field_nmax);
@@ -961,8 +954,8 @@ void MultiLayerMie<FloatType>::calcMieSeriesNeededToConverge(const FloatType Rho
 }
 
 
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const double from_Rho, const double to_Rho,
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcRadialOnlyDependantFunctions(const double from_Rho, const double to_Rho,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &Psi,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &D1n,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &Zeta,
@@ -998,8 +991,8 @@ void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const double fro
 
 // input parameters:
 //         outer_arc_points: will be increased to the nearest power of 2.
-template <typename FloatType>
-void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_points,
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::RunFieldCalculationPolar(const int outer_arc_points,
                                                         const int radius_points,
                                                         const double from_Rho, const double to_Rho,
                                                         const double from_Theta, const double to_Theta,
@@ -1067,23 +1060,23 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
 }
 
 
-template <typename FloatType>
-void MultiLayerMie<FloatType>::UpdateConvergenceStatus(std::vector<bool> isConvergedE, std::vector<bool> isConvergedH) {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::UpdateConvergenceStatus(std::vector<bool> isConvergedE, std::vector<bool> isConvergedH) {
   for (int i = 0; i< 3; i++) isConvergedE_[i] = isConvergedE_[i] && isConvergedE[i];
   for (int i = 0; i< 3; i++) isConvergedH_[i] = isConvergedH_[i] && isConvergedH[i];
 }
 
 
-template <typename FloatType>
-bool MultiLayerMie<FloatType>::GetFieldConvergence () {
+template <typename FloatType, MathEngine Engine>
+bool MultiLayerMie<FloatType, Engine>::GetFieldConvergence () {
   bool convergence = true;
   for (auto conv:isConvergedE_) convergence = convergence && conv;
   for (auto conv:isConvergedH_) convergence = convergence && conv;
   return convergence;
 }
 
-template <typename FloatType>
-void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int first_side_points,
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::RunFieldCalculationCartesian(const int first_side_points,
                                                             const int second_side_points,
                                                             const double relative_side_length,
                                                             const int plane_selected,
@@ -1121,7 +1114,7 @@ void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int first_side
     throw std::invalid_argument("Error! Wrong dimension of field monitor points for cartesian grid!");
   SetFieldCoords({Xp, Yp, Zp});
   RunFieldCalculation(isMarkUnconverged);
-}  // end of void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(...)
+}  // end of void MultiLayerMie<FloatType, Engine>::RunFieldCalculationCartesian(...)
 
 }  // end of namespace nmie
 #endif  // SRC_NMIE_NEARFIELD_HPP_

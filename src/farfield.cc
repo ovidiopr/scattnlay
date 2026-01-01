@@ -35,10 +35,11 @@
 #include <string>
 #include <vector>
 #include <cstdio>
+#include <numbers>
 
 #include "nmie.hpp"
 
-const double PI=3.14159265358979323846;
+const double PI = std::numbers::pi_v<double>;
 
 //***********************************************************************************//
 // This is the main function of 'scattnlay', here we read the parameters as          //
