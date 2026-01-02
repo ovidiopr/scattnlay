@@ -12,5 +12,6 @@ ctest --test-dir build --output-on-failure
 ./build/tests/test_nearfield_simd_benchmark
 ./build/tests/test_farfield_simd_benchmark
 
+tox
 
 echo "All tests passed!"
