@@ -31,14 +31,14 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 try:
     try:
-        from .scattnlay_dp import mie_dp, mesomie_dp, mie_scalar as mie_scalar_class
+        from .scattnlay_dp import mie_dp, mesomie_dp, mie_scalar as mie_scalar_class, Planes
     except ImportError:
-        from scattnlay_dp import mie_dp, mesomie_dp, mie_scalar as mie_scalar_class
+        from scattnlay_dp import mie_dp, mesomie_dp, mie_scalar as mie_scalar_class, Planes
 except ImportError:
     try:
-        from .scattnlay_dp import mie_dp, mesomie_dp
+        from .scattnlay_dp import mie_dp, mesomie_dp, Planes
     except ImportError:
-        from scattnlay_dp import mie_dp, mesomie_dp
+        from scattnlay_dp import mie_dp, mesomie_dp, Planes
     mie_scalar_class = None
 import numpy as np
 import sys

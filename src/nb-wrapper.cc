@@ -15,13 +15,19 @@ namespace nb = nanobind;
 template <typename FloatType, typename Engine>
 void declare_mie(nb::module_& m, const std::string& pyclass_name) {
     using mie_typed = nmie::PyMultiLayerMie<FloatType, Engine>;
-    
+
     nb::class_<mie_typed>(m, pyclass_name.c_str())
         .def(nb::init<>())
-        .def("SetLayersSize", nb::overload_cast<double>(&mie_typed::SetLayersSize))
-        .def("SetLayersSize", nb::overload_cast<nb::ndarray<double, nb::c_contig>>(&mie_typed::SetLayersSize))
-        .def("SetLayersIndex", nb::overload_cast<std::complex<double>>(&mie_typed::SetLayersIndex))
-        .def("SetLayersIndex", nb::overload_cast<nb::ndarray<std::complex<double>, nb::c_contig>>(&mie_typed::SetLayersIndex))
+        .def("SetLayersSize",
+             nb::overload_cast<double>(&mie_typed::SetLayersSize))
+        .def("SetLayersSize",
+             nb::overload_cast<nb::ndarray<double, nb::c_contig>>(
+                 &mie_typed::SetLayersSize))
+        .def("SetLayersIndex", nb::overload_cast<std::complex<double>>(
+                                   &mie_typed::SetLayersIndex))
+        .def("SetLayersIndex",
+             nb::overload_cast<nb::ndarray<std::complex<double>, nb::c_contig>>(
+                 &mie_typed::SetLayersIndex))
         .def("SetAngles", &mie_typed::SetAngles)
         .def("SetFieldCoords", &mie_typed::SetFieldCoords)
         .def("SetPECLayer", &mie_typed::SetPECLayer)
@@ -30,12 +36,30 @@ void declare_mie(nb::module_& m, const std::string& pyclass_name) {
         .def("GetMaxTerms", &mie_typed::GetMaxTerms)
         .def("SetModeNmaxAndType", &mie_typed::SetModeNmaxAndType)
         .def("RunMieCalculation", &mie_typed::RunMieCalculation)
-        .def("RunFieldCalculation", &mie_typed::RunFieldCalculation, nb::arg("isMarkUnconverged") = true)
+        .def("RunFieldCalculation", &mie_typed::RunFieldCalculation,
+             nb::arg("isMarkUnconverged") = true)
+        .def(
+            "RunFieldCalculationCartesian",
+            [](mie_typed& self, int first_side_points, int second_side_points,
+               double relative_side_length, nmie::Planes plane_selected,
+               double at_x, double at_y, double at_z, bool isMarkUnconverged,
+               int nmax_in) {
+              self.RunFieldCalculationCartesian(
+                  first_side_points, second_side_points, relative_side_length,
+                  static_cast<int>(plane_selected), at_x, at_y, at_z,
+                  isMarkUnconverged, nmax_in);
+            },
+            nb::arg("first_side_points") = 2, nb::arg("second_side_points") = 2,
+            nb::arg("relative_side_length") = 2.0,
+            nb::arg("plane_selected") = nmie::Planes::kEk,
+            nb::arg("at_x") = 0.0, nb::arg("at_y") = 0.0, nb::arg("at_z") = 0.0,
+            nb::arg("isMarkUnconverged") = true, nb::arg("nmax_in") = -1)
         .def("RunFieldCalculationPolar", &mie_typed::RunFieldCalculationPolar,
              nb::arg("outer_arc_points") = 1, nb::arg("radius_points") = 1,
              nb::arg("from_Rho") = 0, nb::arg("to_Rho") = 1,
-             nb::arg("from_Theta") = 0, nb::arg("to_Theta") = 3.14159265358979323,
-             nb::arg("from_Phi") = 0, nb::arg("to_Phi") = 3.14159265358979323,
+             nb::arg("from_Theta") = 0,
+             nb::arg("to_Theta") = 3.14159265358979323, nb::arg("from_Phi") = 0,
+             nb::arg("to_Phi") = 3.14159265358979323,
              nb::arg("isMarkUnconverged") = true, nb::arg("nmax_in") = -1)
         .def("calcScattCoeffs", &mie_typed::calcScattCoeffs)
         .def("calcExpanCoeffs", &mie_typed::calcExpanCoeffs)
@@ -63,31 +87,59 @@ void declare_mie(nb::module_& m, const std::string& pyclass_name) {
 
 template <typename FloatType>
 void declare_mesomie(nb::module_& m, const std::string& pyclass_name) {
-    using mesomie = nmie::MesoMie<FloatType>;
-    nb::class_<mesomie>(m, pyclass_name.c_str())
-        .def(nb::init<>())
-        .def("calc_Q", &mesomie::calc_Q)
-        .def("calc_ab", &mesomie::calc_ab, nb::arg("R") = 1, nb::arg("xd") = 1,
-             nb::arg("xm") = 1, nb::arg("eps_d") = 1, nb::arg("eps_m") = 1,
-             nb::arg("d_parallel") = 0, nb::arg("d_perp") = 0)
-        .def("GetQext", &mesomie::template GetQext<double>)
-        .def("GetQsca", &mesomie::template GetQsca<double>);
+  using mesomie = nmie::MesoMie<FloatType>;
+  nb::class_<mesomie>(m, pyclass_name.c_str())
+      .def(nb::init<>())
+      .def("calc_Q", &mesomie::calc_Q)
+      .def("calc_ab", &mesomie::calc_ab, nb::arg("R") = 1, nb::arg("xd") = 1,
+           nb::arg("xm") = 1, nb::arg("eps_d") = 1, nb::arg("eps_m") = 1,
+           nb::arg("d_parallel") = 0, nb::arg("d_perp") = 0)
+      .def("GetQext", &mesomie::template GetQext<double>)
+      .def("GetQsca", &mesomie::template GetQsca<double>);
 }
 
 #ifdef MULTI_PRECISION
 std::string precision_name = "_mp";
 NB_MODULE(scattnlay_mp, m) {
-    m.doc() = "The Python version of scattnlay (nanobind)";
-    declare_mie<nmie::FloatType, nmie::DefaultEngine<nmie::FloatType>>(m, "mie_mp");
-    declare_mesomie<nmie::FloatType>(m, "mesomie_mp");
+  m.doc() = "The Python version of scattnlay (nanobind)";
+
+  try {
+    nb::handle h = nb::type<nmie::Planes>();
+    if (!nb::hasattr(m, "Planes")) {
+      m.attr("Planes") = h;
+    }
+  } catch (...) {
+    nb::enum_<nmie::Planes>(m, "Planes")
+        .value("kEk", nmie::Planes::kEk)
+        .value("kHk", nmie::Planes::kHk)
+        .value("kEH", nmie::Planes::kEH)
+        .export_values();
+  }
+
+  declare_mie<nmie::FloatType, nmie::DefaultEngine<nmie::FloatType>>(m,
+                                                                     "mie_mp");
+  declare_mesomie<nmie::FloatType>(m, "mesomie_mp");
 }
 #else
 std::string precision_name = "_dp";
 NB_MODULE(scattnlay_dp, m) {
-    m.doc() = "The Python version of scattnlay (nanobind)";
-    
-    declare_mie<double, nmie::DefaultEngine<double>>(m, "mie_dp");
-    declare_mesomie<double>(m, "mesomie_dp");
+  m.doc() = "The Python version of scattnlay (nanobind)";
+
+  try {
+    nb::handle h = nb::type<nmie::Planes>();
+    if (!nb::hasattr(m, "Planes")) {
+      m.attr("Planes") = h;
+    }
+  } catch (...) {
+    nb::enum_<nmie::Planes>(m, "Planes")
+        .value("kEk", nmie::Planes::kEk)
+        .value("kHk", nmie::Planes::kHk)
+        .value("kEH", nmie::Planes::kEH)
+        .export_values();
+  }
+
+  declare_mie<double, nmie::DefaultEngine<double>>(m, "mie_dp");
+  declare_mesomie<double>(m, "mesomie_dp");
 
 #ifdef WITH_HWY
     declare_mie<double, nmie::ScalarEngine<double>>(m, "mie_scalar");
