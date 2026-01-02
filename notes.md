@@ -15,7 +15,7 @@
 - [ ] complete SIMD operations for far-field calculations
   - [X] Qsca\Qext\Qback
   - [ ] S1\S2
-- [ ] complete SIMD operations for nearfield calculations 
+- [X] complete SIMD operations for nearfield calculations 
 
 - [ ] verify SIMD speedup for WASM/Emscripten builds (both nearfield and far-field)
 

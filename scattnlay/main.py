@@ -99,13 +99,12 @@ else:
 
 def scattcoeffs_(x, m, nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
-        from scattnlay_mp import mie_mp as mie_
+        mie_ = type(mie_mp)
     else:
         if mp:
             print('Failed to load multiprecision module, using double precision instead...',
                   file=sys.stderr)
-        from scattnlay_dp import mie_dp as mie_
-        # from scattnlay_mp import mie_mp as mie_
+        mie_ = mie_dp
     mie = mie_()
     mie.SetLayersSize(x)
     mie.SetLayersIndex(m)
@@ -186,13 +185,12 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
 
 def expancoeffs_(x, m, nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
-        from scattnlay_mp import mie_mp as mie_
+        mie_ = type(mie_mp)
     else:
         if mp:
             print('Failed to load multiprecision module, using double precision instead...',
                   file=sys.stderr)
-        from scattnlay_dp import mie_dp as mie_
-        # from scattnlay_mp import mie_mp as mie_
+        mie_ = mie_dp
     mie = mie_()
     mie.SetLayersSize(x)
     mie.SetLayersIndex(m)
@@ -283,12 +281,12 @@ def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
 
 def scattnlay_(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
-        from scattnlay_mp import mie_mp as mie_
+        mie_ = type(mie_mp)
     else:
         if mp:
             print('Failed to load multiprecision module, using double precision instead...',
                   file=sys.stderr)
-        from scattnlay_dp import mie_dp as mie_
+        mie_ = mie_dp
     mie = mie_()
     mie.SetLayersSize(x)
     mie.SetLayersIndex(m)
@@ -376,13 +374,12 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
 
 def fieldnlay_(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
-        from scattnlay_mp import mie_mp as mie_
+        mie_ = type(mie_mp)
     else:
         if mp:
             print('Failed to load multiprecision module, using double precision instead...',
                   file=sys.stderr)
-        from scattnlay_dp import mie_dp as mie_
-        # from scattnlay_mp import mie_mp as mie_
+        mie_ = mie_dp
     mie = mie_()
     mie.SetLayersSize(x)
     mie.SetLayersIndex(m)

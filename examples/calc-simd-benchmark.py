@@ -1,7 +1,7 @@
 import numpy as np
 import time
 try:
-    from scattnlay import mie, mie_simd
+    from scattnlay import mie_scalar, mie_simd
 except ImportError:
     # Fallback for running directly from source/build without installation
     import sys
@@ -9,7 +9,7 @@ except ImportError:
     # Try to find the build directory
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../build_simd/scattnlay')))
     try:
-        from scattnlay import mie, mie_simd
+        from scattnlay import mie_scalar, mie_simd
     except ImportError:
         print("Could not import scattnlay.mie or mie_simd. Ensure the project is built with SIMD support.")
         sys.exit(1)
@@ -22,7 +22,7 @@ def run_benchmark():
     # --- Configuration ---
     R = 100.0
     m_val = 4.0 + 0.01j
-    wl_points = 1000
+    wl_points = 1024
     wl = np.linspace(400.0, 1000.0, wl_points)
     x = 2.0 * np.pi * R / wl
     m = np.full(wl_points, m_val, dtype=np.complex128)
@@ -34,12 +34,12 @@ def run_benchmark():
     def execute_scalar():
         qext, qsca, qabs = [], [], []
         for xi in x:
-            mie.SetLayersSize(np.array([xi]))
-            mie.SetLayersIndex(np.array([m_val]))
-            mie.RunMieCalculation()
-            qext.append(mie.GetQext())
-            qsca.append(mie.GetQsca())
-            qabs.append(mie.GetQabs())
+            mie_scalar.SetLayersSize(np.array([xi]))
+            mie_scalar.SetLayersIndex(np.array([m_val]))
+            mie_scalar.RunMieCalculation()
+            qext.append(mie_scalar.GetQext())
+            qsca.append(mie_scalar.GetQsca())
+            qabs.append(mie_scalar.GetQabs())
         return np.array(qext), np.array(qsca), np.array(qabs)
 
     print("Warming up scalar version...")
