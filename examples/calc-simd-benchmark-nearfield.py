@@ -40,7 +40,7 @@ def run_benchmark(x_in, m_in):
     x = np.array([x_in], dtype=np.float64)
     m = np.array([m_in], dtype=np.complex128)
     
-    npts = 400
+    npts = 1024
     limit = 2.0 * x[0, -1]  # Plot up to 2x the particle radius
     scan = np.linspace(-limit, limit, npts)
     

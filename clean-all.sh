@@ -10,7 +10,7 @@ find . -name "__pycache__" -type d -exec rm -rf {} +
 
 # 3. Clean Vue3 GUI
 cd guiapp
-rm -rf dist/ node_modules/
+rm -rf dist/ 
 rm public/wasm/nmiejs.*
 cd ..
 
