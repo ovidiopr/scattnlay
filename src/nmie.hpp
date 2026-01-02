@@ -342,7 +342,9 @@ class MultiLayerMie {
   void SetAngles(const std::vector<FloatType>& angles);
 
   // Modify coordinates for field calculation
-  void SetFieldCoords(const std::vector<std::vector<FloatType>>& coords);
+  void SetFieldCoords(std::vector<std::vector<FloatType>> coords) {
+    coords_ = std::move(coords);
+  }
 
   // Modify index of PEC layer
   void SetPECLayer(int layer_position = 0);

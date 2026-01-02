@@ -8,7 +8,14 @@ class PyMultiLayerMie : public MultiLayerMie<FloatType, Engine> {
 public:
     // Verify: Call GetS1() from Python and check 's1.base' is not None (shows it shares memory)
     auto GetS1() { 
-        return MoveVectorToNdarray(ConvertComplexVector<double>(this->S1_)); 
+        if constexpr (std::is_same_v<FloatType, double>) {
+            size_t shape[1] = { this->S1_.size() };
+            return nb::ndarray<nb::numpy, std::complex<double>, nb::shape<-1>>(
+                this->S1_.data(), 1, shape, nb::cast(this)
+            );
+        } else {
+            return MoveVectorToNdarray(ConvertComplexVector<double>(this->S1_)); 
+        }
     }
 
     // Advanced: multi-dimensional field data
@@ -71,25 +78,30 @@ public:
     }
 
     void SetFieldCoords(nb::ndarray<double, nb::c_contig> xp, nb::ndarray<double, nb::c_contig> yp, nb::ndarray<double, nb::c_contig> zp) {
-        auto v_xp = NdarrayToVector(xp);
-        auto v_yp = NdarrayToVector(yp);
-        auto v_zp = NdarrayToVector(zp);
+        // Constructor-based copy from pointer is fast, but we only want to do it once
+        std::vector<FloatType> v_xp(xp.data(), xp.data() + xp.size());
+        std::vector<FloatType> v_yp(yp.data(), yp.data() + yp.size());
+        std::vector<FloatType> v_zp(zp.data(), zp.data() + zp.size());
         
         if constexpr (std::is_same_v<FloatType, double>) {
-            this->MultiLayerMie<FloatType, Engine>::SetFieldCoords({v_xp, v_yp, v_zp});
+            this->MultiLayerMie<FloatType, Engine>::SetFieldCoords({std::move(v_xp), std::move(v_yp), std::move(v_zp)});
         } else {
-            std::vector<FloatType> v_xp_conv, v_yp_conv, v_zp_conv;
-            v_xp_conv.reserve(v_xp.size());
-            v_yp_conv.reserve(v_yp.size());
-            v_zp_conv.reserve(v_zp.size());
-            for (const auto& val : v_xp) v_xp_conv.push_back(static_cast<FloatType>(val));
-            for (const auto& val : v_yp) v_yp_conv.push_back(static_cast<FloatType>(val));
-            for (const auto& val : v_zp) v_zp_conv.push_back(static_cast<FloatType>(val));
-            this->MultiLayerMie<FloatType, Engine>::SetFieldCoords({v_xp_conv, v_yp_conv, v_zp_conv});
+            // For non-double types, we still need to convert, so we can't avoid the copy/conversion
+            // But we can still use the new signature of SetFieldCoords
+            this->MultiLayerMie<FloatType, Engine>::SetFieldCoords({std::move(v_xp), std::move(v_yp), std::move(v_zp)});
         }
     }
 
-    auto GetS2() { return MoveVectorToNdarray(ConvertComplexVector<double>(this->S2_)); }
+    auto GetS2() { 
+        if constexpr (std::is_same_v<FloatType, double>) {
+            size_t shape[1] = { this->S2_.size() };
+            return nb::ndarray<nb::numpy, std::complex<double>, nb::shape<-1>>(
+                this->S2_.data(), 1, shape, nb::cast(this)
+            );
+        } else {
+            return MoveVectorToNdarray(ConvertComplexVector<double>(this->S2_)); 
+        }
+    }
     auto GetAn() { return MoveVectorToNdarray(ConvertComplexVector<double>(this->an_)); }
     auto GetBn() { return MoveVectorToNdarray(ConvertComplexVector<double>(this->bn_)); }
     
@@ -97,8 +109,26 @@ public:
         return MoveVector2DToNdarray(ConvertComplexVectorVector<double>(this->H_));
     }
 
-    auto GetFieldEabs() { return MoveVectorToNdarray(ConvertVector<double>(this->Eabs_)); }
-    auto GetFieldHabs() { return MoveVectorToNdarray(ConvertVector<double>(this->Habs_)); }
+    auto GetFieldEabs() { 
+        if constexpr (std::is_same_v<FloatType, double>) {
+            size_t shape[1] = { this->Eabs_.size() };
+            return nb::ndarray<nb::numpy, double, nb::shape<-1>>(
+                this->Eabs_.data(), 1, shape, nb::cast(this)
+            );
+        } else {
+            return MoveVectorToNdarray(ConvertVector<double>(this->Eabs_)); 
+        }
+    }
+    auto GetFieldHabs() { 
+        if constexpr (std::is_same_v<FloatType, double>) {
+            size_t shape[1] = { this->Habs_.size() };
+            return nb::ndarray<nb::numpy, double, nb::shape<-1>>(
+                this->Habs_.data(), 1, shape, nb::cast(this)
+            );
+        } else {
+            return MoveVectorToNdarray(ConvertVector<double>(this->Habs_)); 
+        }
+    }
 
     auto GetLayerAn() { return MoveVector2DToNdarray(ConvertComplexVectorVector<double>(this->aln_)); }
     auto GetLayerBn() { return MoveVector2DToNdarray(ConvertComplexVectorVector<double>(this->bln_)); }

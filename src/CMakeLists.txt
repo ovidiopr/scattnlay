@@ -20,6 +20,10 @@ set(_scattnlay_nearfield_sources
 add_library(nmie_obj_dp OBJECT ${CMAKE_CURRENT_LIST_DIR}/nmie.cc)
 target_include_directories(nmie_obj_dp PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_link_libraries(nmie_obj_dp PUBLIC project_warnings project_optimization)
+set_target_properties(nmie_obj_dp PROPERTIES 
+    POSITION_INDEPENDENT_CODE ON
+    INTERPROCEDURAL_OPTIMIZATION ON
+)
 
 # Multi Precision Object Library
 if(Boost_FOUND)
@@ -27,6 +31,10 @@ if(Boost_FOUND)
     target_compile_definitions(nmie_obj_mp PRIVATE MULTI_PRECISION=100)
     target_link_libraries(nmie_obj_mp PUBLIC Boost::headers project_warnings project_optimization)
     target_include_directories(nmie_obj_mp PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+    set_target_properties(nmie_obj_mp PROPERTIES 
+        POSITION_INDEPENDENT_CODE ON
+        INTERPROCEDURAL_OPTIMIZATION ON
+    )
 endif()
 
 # Double Precision Targets

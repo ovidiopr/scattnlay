@@ -647,20 +647,7 @@ void MultiLayerMie<FloatType, Engine>::SetLayersIndex(
 }
 
 // ********************************************************************** //
-// Modify coordinates for field calculation                               //
-// ********************************************************************** //
-template <typename FloatType, MathEngine Engine>
-void MultiLayerMie<FloatType, Engine>::SetFieldCoords(
-    const std::vector<std::vector<FloatType>>& coords) {
-  if (coords.size() != 3)
-    throw std::invalid_argument(
-        "Error! Wrong dimension of field monitor points!");
-  if (coords[0].size() != coords[1].size() ||
-      coords[0].size() != coords[2].size())
-    throw std::invalid_argument(
-        "Error! Missing coordinates for field monitor points!");
-  coords_ = coords;
-}
+
 
 // ********************************************************************** //
 // Modify index of PEC layer                                              //
