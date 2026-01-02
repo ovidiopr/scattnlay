@@ -22,7 +22,7 @@ def run_benchmark():
     # --- Configuration ---
     R = 100.0
     m_val = 4.0 + 0.01j
-    wl_points = 1024
+    wl_points = 1000
     wl = np.linspace(400.0, 1000.0, wl_points)
     x = 2.0 * np.pi * R / wl
     m = np.full(wl_points, m_val, dtype=np.complex128)

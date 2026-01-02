@@ -9,5 +9,8 @@ ctest --test-dir build --output-on-failure
 # cd guiapp
 # pnpm test
 # cd ..
+./build/tests/test_nearfield_simd_benchmark
+./build/tests/test_farfield_simd_benchmark
+
 
 echo "All tests passed!"

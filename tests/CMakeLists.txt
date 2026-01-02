@@ -61,6 +61,20 @@ if(GTest_FOUND)
         )
         add_test(NAME "test_bulk_sphere_simd"
             COMMAND "test_bulk_sphere_simd")
+
+    add_executable(test_farfield_simd_benchmark test_farfield_simd_benchmark.cc)
+    target_link_libraries(test_farfield_simd_benchmark PRIVATE 
+        GTest::gtest GTest::gtest_main hwy::hwy nmie_obj_dp project_optimization)
+    target_compile_definitions(test_farfield_simd_benchmark PRIVATE 
+        WITH_HWY "HWY_DISABLED_TARGETS=0x4000000")
+    add_test(NAME test_farfield_simd_benchmark COMMAND test_farfield_simd_benchmark)
+
+    add_executable(test_nearfield_simd_benchmark test_nearfield_simd_benchmark.cc)
+    target_link_libraries(test_nearfield_simd_benchmark PRIVATE 
+        GTest::gtest GTest::gtest_main hwy::hwy nmie_obj_dp project_optimization)
+    target_compile_definitions(test_nearfield_simd_benchmark PRIVATE 
+        WITH_HWY "HWY_DISABLED_TARGETS=0x4000000")
+    add_test(NAME test_nearfield_simd_benchmark COMMAND test_nearfield_simd_benchmark)
     endif()
 
     add_executable("test_bulk_sphere" test_bulk_sphere.cc)
