@@ -3,7 +3,7 @@
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-from scattnlay import fieldnlay, mie
+from scattnlay import fieldnlay, mie, mie_scalar, Planes
 
 epsilon_Si = 13.64 + 0.047j
 epsilon_Ag = -28.05 + 1.525j
@@ -54,25 +54,36 @@ def run_benchmark(x_in, m_in):
     # 2. Standard Calculation (Scalar/Double Precision)
     start_std = time.perf_counter()
     # fieldnlay returns: terms, E, H
-    _, E_std, _ = fieldnlay(x, m, coordX, coordY, coordZ)
+    mie_scalar.SetLayersSize(x_in)
+    mie_scalar.SetLayersIndex(m_in)
+    mie_scalar.SetFieldCoords(coordX, coordY, coordZ)
+    mie_scalar.RunFieldCalculation(isMarkUnconverged=True)
+    E_std = mie_scalar.GetFieldE()
     end_std = time.perf_counter()
     time_std = end_std - start_std
 
     # Calculate Field Magnitude |E|/|E0|
-    # E shape is (1, points, 3)
-    Enorm_std = np.sqrt(np.sum(np.abs(E_std[0])**2, axis=1)).reshape((npts, npts))
+    # E shape is (points, 3)
+    Enorm_std = np.sqrt(np.sum(np.abs(E_std)**2, axis=1)).reshape((npts, npts)).T
 
     # 3. SIMD Calculation 
     # Note: We use the class interface to specifically target the SIMD path if available
-    nmie_simd = mie
     start_simd = time.perf_counter()
-    # In the current main.py, fieldnlay uses the default mie_dp. 
-    # We run it again to compare or use a specific SIMD class if the user has one bound.
-    _, E_simd, _ = fieldnlay(x, m, coordX, coordY, coordZ) 
+    # Use internal Cartesian generator for maximum SIMD efficiency
+    mie.SetLayersSize(x_in)
+    mie.SetLayersIndex(m_in)
+    mie.RunFieldCalculationCartesian(
+        first_side_points=npts,
+        second_side_points=npts,
+        relative_side_length=2.0,
+        plane_selected=Planes.kEk,
+        isMarkUnconverged=True
+    )
+    E_simd = mie.GetFieldE()
     end_simd = time.perf_counter()
     time_simd = end_simd - start_simd
     
-    Enorm_simd = np.sqrt(np.sum(np.abs(E_simd[0])**2, axis=1)).reshape((npts, npts))
+    Enorm_simd = np.sqrt(np.sum(np.abs(E_simd)**2, axis=1)).reshape((npts, npts))
 
     # 4. Accuracy Assessment
     rel_diff = np.abs(Enorm_std - Enorm_simd) / (Enorm_std + 1e-15)
@@ -103,14 +114,14 @@ def run_benchmark(x_in, m_in):
 
     # Draw particle boundaries
     for ax in [ax1, ax2]:
-        for r in x[0]:
-            circle = plt.Circle((0, 0), r, color='white', fill=False, linestyle='--', alpha=0.5)
-            ax.add_artist(circle)
+        # for r in x[0]:
+        #     circle = plt.Circle((0, 0), r, color='white', fill=False, linestyle='--', alpha=0.5)
+        #     ax.add_artist(circle)
         ax.set_xlabel(f"x (size parameter)")
         ax.set_ylabel(f"y (size parameter)")
 
     plt.tight_layout()
-    plt.savefig("nearfield_simd_benchmark.png")
+    plt.savefig("nearfield_simd_benchmark.png",dpi=600 )
     print("\nBenchmark plot saved to 'nearfield_simd_benchmark.png'")
     # plt.show()
 

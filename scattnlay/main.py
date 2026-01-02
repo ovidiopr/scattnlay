@@ -99,11 +99,8 @@ else:
 
 def scattcoeffs_(x, m, nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
-        mie_ = type(mie_mp)
+        mie_ = type(mie_mp) # Get class from existing instance
     else:
-        if mp:
-            print('Failed to load multiprecision module, using double precision instead...',
-                  file=sys.stderr)
         mie_ = mie_dp
     mie = mie_()
     mie.SetLayersSize(x)
@@ -187,9 +184,6 @@ def expancoeffs_(x, m, nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
         mie_ = type(mie_mp)
     else:
-        if mp:
-            print('Failed to load multiprecision module, using double precision instead...',
-                  file=sys.stderr)
         mie_ = mie_dp
     mie = mie_()
     mie.SetLayersSize(x)
@@ -283,9 +277,6 @@ def scattnlay_(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
         mie_ = type(mie_mp)
     else:
-        if mp:
-            print('Failed to load multiprecision module, using double precision instead...',
-                  file=sys.stderr)
         mie_ = mie_dp
     mie = mie_()
     mie.SetLayersSize(x)
@@ -379,10 +370,7 @@ def fieldnlay_(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
         if mp:
             print('Failed to load multiprecision module, using double precision instead...',
                   file=sys.stderr)
-        mie_ = mie_dp
-    mie = mie_()
-    mie.SetLayersSize(x)
-    mie.SetLayersIndex(m)
+        SetLayersIndex(m)
     mie.SetPECLayer(pl)
     mie.SetMaxTerms(nmax)
     mie.SetFieldCoords(xp, yp, zp)
