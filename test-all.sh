@@ -9,9 +9,10 @@ ctest --test-dir build --output-on-failure
 # cd guiapp
 # pnpm test
 # cd ..
-./build/tests/test_nearfield_simd_benchmark
-./build/tests/test_farfield_simd_benchmark
 
 tox
 
+./build/tests/test_nearfield_simd_benchmark | grep -e "Speedup:" -e "time:" -e "Avg" -e "RUN"
+./build/tests/test_farfield_simd_benchmark | grep -e "Speedup:" -e "time:" -e "Avg" -e "RUN"
+python3 tests/test_simd_benchmarks.py 
 echo "All tests passed!"

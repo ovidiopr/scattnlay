@@ -30,9 +30,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 try:
-    from .scattnlay_dp import mie_dp, mesomie_dp
+    try:
+        from .scattnlay_dp import mie_dp, mesomie_dp, mie_scalar as mie_scalar_class
+    except ImportError:
+        from scattnlay_dp import mie_dp, mesomie_dp, mie_scalar as mie_scalar_class
 except ImportError:
-    from scattnlay_dp import mie_dp, mesomie_dp
+    try:
+        from .scattnlay_dp import mie_dp, mesomie_dp
+    except ImportError:
+        from scattnlay_dp import mie_dp, mesomie_dp
+    mie_scalar_class = None
 import numpy as np
 import sys
 
@@ -83,6 +90,11 @@ except ImportError:
 
 mie = mie_dp()
 mesomie = mesomie_dp()
+
+if mie_scalar_class:
+    mie_scalar = mie_scalar_class()
+else:
+    mie_scalar = mie_dp()
 
 
 def scattcoeffs_(x, m, nmax=-1, pl=-1, mp=False):

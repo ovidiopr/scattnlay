@@ -12,10 +12,9 @@
 
 namespace nb = nanobind;
 
-template <typename FloatType>
-void declare_nmie(nb::module_& m, const std::string& typestr) {
-    using mie_typed = nmie::PyMultiLayerMie<FloatType>;
-    std::string pyclass_name = std::string("mie") + typestr;
+template <typename FloatType, typename Engine>
+void declare_mie(nb::module_& m, const std::string& pyclass_name) {
+    using mie_typed = nmie::PyMultiLayerMie<FloatType, Engine>;
     
     nb::class_<mie_typed>(m, pyclass_name.c_str())
         .def(nb::init<>())
@@ -60,10 +59,12 @@ void declare_nmie(nb::module_& m, const std::string& typestr) {
         .def("GetLayerBn", &mie_typed::GetLayerBn)
         .def("GetLayerCn", &mie_typed::GetLayerCn)
         .def("GetLayerDn", &mie_typed::GetLayerDn);
+}
 
+template <typename FloatType>
+void declare_mesomie(nb::module_& m, const std::string& pyclass_name) {
     using mesomie = nmie::MesoMie<FloatType>;
-    std::string mesomie_name = std::string("mesomie") + typestr;
-    nb::class_<mesomie>(m, mesomie_name.c_str())
+    nb::class_<mesomie>(m, pyclass_name.c_str())
         .def(nb::init<>())
         .def("calc_Q", &mesomie::calc_Q)
         .def("calc_ab", &mesomie::calc_ab, nb::arg("R") = 1, nb::arg("xd") = 1,
@@ -73,19 +74,26 @@ void declare_nmie(nb::module_& m, const std::string& typestr) {
         .def("GetQsca", &mesomie::template GetQsca<double>);
 }
 
-
-
 #ifdef MULTI_PRECISION
 std::string precision_name = "_mp";
-NB_MODULE(scattnlay_mp, m)
+NB_MODULE(scattnlay_mp, m) {
+    m.doc() = "The Python version of scattnlay (nanobind)";
+    declare_mie<nmie::FloatType, nmie::DefaultEngine<nmie::FloatType>>(m, "mie_mp");
+    declare_mesomie<nmie::FloatType>(m, "mesomie_mp");
+}
 #else
 std::string precision_name = "_dp";
-NB_MODULE(scattnlay_dp, m)
-#endif
-{
+NB_MODULE(scattnlay_dp, m) {
     m.doc() = "The Python version of scattnlay (nanobind)";
-    declare_nmie<nmie::FloatType>(m, precision_name);
+    
+    declare_mie<double, nmie::DefaultEngine<double>>(m, "mie_dp");
+    declare_mesomie<double>(m, "mesomie_dp");
+
+#ifdef WITH_HWY
+    declare_mie<double, nmie::ScalarEngine<double>>(m, "mie_scalar");
+#endif
 }
+#endif
 
 #ifdef BUILD_SIMD_MODULE
 #include "nmie-batch.hpp"

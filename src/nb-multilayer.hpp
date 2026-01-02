@@ -3,8 +3,8 @@
 #include "nmie.hpp"
 
 namespace nmie {
-template <typename FloatType>
-class PyMultiLayerMie : public MultiLayerMie<FloatType> {
+template <typename FloatType, typename Engine = DefaultEngine<FloatType>>
+class PyMultiLayerMie : public MultiLayerMie<FloatType, Engine> {
 public:
     // Verify: Call GetS1() from Python and check 's1.base' is not None (shows it shares memory)
     auto GetS1() { 
@@ -18,20 +18,20 @@ public:
 
     void SetLayersSize(double x) {
         std::vector<FloatType> v = {static_cast<FloatType>(x)};
-        this->MultiLayerMie<FloatType>::SetLayersSize(v);
+        this->MultiLayerMie<FloatType, Engine>::SetLayersSize(v);
     }
 
     void SetLayersSize(nb::ndarray<double, nb::c_contig> x) {
         auto v = NdarrayToVector(x);
         if constexpr (std::is_same_v<FloatType, double>) {
-            this->MultiLayerMie<FloatType>::SetLayersSize(v);
+            this->MultiLayerMie<FloatType, Engine>::SetLayersSize(v);
         } else {
             std::vector<FloatType> v_conv;
             v_conv.reserve(v.size());
             for (const auto& val : v) {
                 v_conv.push_back(static_cast<FloatType>(val));
             }
-            this->MultiLayerMie<FloatType>::SetLayersSize(v_conv);
+            this->MultiLayerMie<FloatType, Engine>::SetLayersSize(v_conv);
         }
     }
 
@@ -39,34 +39,34 @@ public:
         std::vector<std::complex<FloatType>> v = {
             std::complex<FloatType>(static_cast<FloatType>(m.real()), static_cast<FloatType>(m.imag()))
         };
-        this->MultiLayerMie<FloatType>::SetLayersIndex(v);
+        this->MultiLayerMie<FloatType, Engine>::SetLayersIndex(v);
     }
 
     void SetLayersIndex(nb::ndarray<std::complex<double>, nb::c_contig> x) {
         auto v = NdarrayToVector(x);
         if constexpr (std::is_same_v<FloatType, double>) {
-            this->MultiLayerMie<FloatType>::SetLayersIndex(v);
+            this->MultiLayerMie<FloatType, Engine>::SetLayersIndex(v);
         } else {
             std::vector<std::complex<FloatType>> v_conv;
             v_conv.reserve(v.size());
             for (const auto& val : v) {
                 v_conv.emplace_back(static_cast<FloatType>(val.real()), static_cast<FloatType>(val.imag()));
             }
-            this->MultiLayerMie<FloatType>::SetLayersIndex(v_conv);
+            this->MultiLayerMie<FloatType, Engine>::SetLayersIndex(v_conv);
         }
     }
 
     void SetAngles(nb::ndarray<double, nb::c_contig> x) {
         auto v = NdarrayToVector(x);
         if constexpr (std::is_same_v<FloatType, double>) {
-            this->MultiLayerMie<FloatType>::SetAngles(v);
+            this->MultiLayerMie<FloatType, Engine>::SetAngles(v);
         } else {
             std::vector<FloatType> v_conv;
             v_conv.reserve(v.size());
             for (const auto& val : v) {
                 v_conv.push_back(static_cast<FloatType>(val));
             }
-            this->MultiLayerMie<FloatType>::SetAngles(v_conv);
+            this->MultiLayerMie<FloatType, Engine>::SetAngles(v_conv);
         }
     }
 
@@ -76,7 +76,7 @@ public:
         auto v_zp = NdarrayToVector(zp);
         
         if constexpr (std::is_same_v<FloatType, double>) {
-            this->MultiLayerMie<FloatType>::SetFieldCoords({v_xp, v_yp, v_zp});
+            this->MultiLayerMie<FloatType, Engine>::SetFieldCoords({v_xp, v_yp, v_zp});
         } else {
             std::vector<FloatType> v_xp_conv, v_yp_conv, v_zp_conv;
             v_xp_conv.reserve(v_xp.size());
@@ -85,7 +85,7 @@ public:
             for (const auto& val : v_xp) v_xp_conv.push_back(static_cast<FloatType>(val));
             for (const auto& val : v_yp) v_yp_conv.push_back(static_cast<FloatType>(val));
             for (const auto& val : v_zp) v_zp_conv.push_back(static_cast<FloatType>(val));
-            this->MultiLayerMie<FloatType>::SetFieldCoords({v_xp_conv, v_yp_conv, v_zp_conv});
+            this->MultiLayerMie<FloatType, Engine>::SetFieldCoords({v_xp_conv, v_yp_conv, v_zp_conv});
         }
     }
 

@@ -31,7 +31,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from scattnlay.main import scattcoeffs, expancoeffs, scattnlay, fieldnlay
-from scattnlay.main import mie, mie_mp, mie_simd
+from scattnlay.main import mie, mie_mp, mie_simd, mie_scalar
 from scattnlay.main import mesomie  # , mesomie_mp
 # import scattnlay_dp
 # print('using scattnlay from ', scattnlay_dp.__file__)

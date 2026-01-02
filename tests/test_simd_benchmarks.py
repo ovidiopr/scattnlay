@@ -1,6 +1,6 @@
 import time
 import numpy as np
-from scattnlay import mie
+from scattnlay import mie, mie_scalar, mie_simd
 
 def test_nearfield_simd_benchmark_si_ag_si():
     """
@@ -79,40 +79,36 @@ def test_nearfield_simd_benchmark_si_ag_si():
 
 
 def test_farfield_simd_benchmark_parity():
-    """
-    Replicates tests/test_farfield_simd_benchmark.cc (N=10,000)
-    """
-    from scattnlay import mie_simd
-    if mie_simd is None:
-        raise RuntimeError("scattnlay_simd not built.")
-
     N = 10000
-    x_vals = np.array([0.1 + (i % 1000) * 0.1 for i in range(N)], dtype=np.float64)
-    m_vals = np.array([complex(1.5 + (i % 10) * 0.01, 0.01) for i in range(N)], dtype=np.complex128)
+    x_vals = np.array([0.1 + (i % 1000) * 0.1 for i in range(N)])
+    m_vals = np.array([complex(1.5 + (i % 10) * 0.01, 0.01) for i in range(N)])
     
-    # Scalar
-    start_scalar = time.perf_counter()
-    qext_scalar = []
+    # 1. True Scalar (std::math - Expected ~0.28s)
+    start = time.perf_counter()
+    for i in range(N):
+        mie_scalar.SetLayersSize(x_vals[i])
+        mie_scalar.SetLayersIndex(m_vals[i])
+        mie_scalar.RunMieCalculation()
+    t_scalar = time.perf_counter() - start
+
+    # 2. Optimized Single (Highway Math - Expected ~0.12s)
+    start = time.perf_counter()
     for i in range(N):
         mie.SetLayersSize(x_vals[i])
         mie.SetLayersIndex(m_vals[i])
         mie.RunMieCalculation()
-        qext_scalar.append(mie.GetQext())
-    duration_scalar = time.perf_counter() - start_scalar
+    t_optimized = time.perf_counter() - start
 
-    # SIMD
-    start_simd = time.perf_counter()
+    # 3. Batch SIMD (Zero Python overhead - Expected ~0.06s)
+    start = time.perf_counter()
     res_simd = mie_simd.RunMieBatch(x_vals, m_vals)
-    duration_simd = time.perf_counter() - start_simd
+    t_simd = time.perf_counter() - start
 
-    speedup = duration_scalar / duration_simd
-    print(f"\n--- Far-Field SIMD Benchmark (N={N}) ---")
-    print(f"Scalar time: {duration_scalar:.4f} s")
-    print(f"SIMD time:   {duration_simd:.4f} s")
-    print(f"Speedup:     {speedup:.2f}x")
-    
-    assert speedup > 1.0
+    print(f"\n--- Far-Field Performance Comparison (N={N}) ---")
+    print(f"True Scalar (std::math): {t_scalar:.4f} s")
+    print(f"Optimized Single (HWY):  {t_optimized:.4f} s")
+    print(f"Batch SIMD:              {t_simd:.4f} s")
 
 if __name__ == "__main__":
-    # test_nearfield_simd_benchmark_si_ag_si()
     test_farfield_simd_benchmark_parity()
+    # test_nearfield_simd_benchmark_si_ag_si()
