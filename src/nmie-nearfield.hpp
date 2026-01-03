@@ -475,6 +475,103 @@ void RunFieldKernel(
 namespace nmie {
   //class implementation
 
+template <typename FloatType, typename Engine>
+void calcExpanCoeffsKernel(
+    int nmax,
+    const std::vector<std::complex<FloatType>>& refractive_index,
+    const std::vector<FloatType>& size_param,
+    int PEC_layer_position,
+    MieBuffers<FloatType, Engine>& buffers) {
+
+    auto& aln = buffers.aln;
+    auto& bln = buffers.bln;
+    auto& cln = buffers.cln;
+    auto& dln = buffers.dln;
+    auto& an = buffers.an;
+    auto& bn = buffers.bn;
+
+    aln.clear(); bln.clear(); cln.clear(); dln.clear();
+
+    std::complex<FloatType> c_one(1.0, 0.0), c_zero(0.0, 0.0);
+
+    const int L = refractive_index.size();
+
+    aln.resize(L + 1);
+    bln.resize(L + 1);
+    cln.resize(L + 1);
+    dln.resize(L + 1);
+    for (int l = 0; l <= L; l++) {
+      aln[l].resize(nmax, static_cast<FloatType>(0.0));
+      bln[l].resize(nmax, static_cast<FloatType>(0.0));
+      cln[l].resize(nmax, static_cast<FloatType>(0.0));
+      dln[l].resize(nmax, static_cast<FloatType>(0.0));
+    }
+
+    size_t lanes = Engine::Lanes();
+
+    // Yang, paragraph under eq. A3
+    // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
+    for (int n = 0; n < nmax; n++) {
+      aln[L][n] = an[n * lanes]; // Take first lane
+      bln[L][n] = bn[n * lanes];
+      cln[L][n] = c_one;
+      dln[L][n] = c_one;
+    }
+
+    std::vector<std::complex<FloatType> > D1z(nmax + 1), D1z1(nmax + 1), D3z(nmax + 1), D3z1(nmax + 1);
+    std::vector<std::complex<FloatType> > Psiz(nmax + 1), Psiz1(nmax + 1), Zetaz(nmax + 1), Zetaz1(nmax + 1);
+    std::complex<FloatType> denomZeta, denomPsi, T1, T2, T3, T4;
+
+    auto &m = refractive_index;
+    std::vector< std::complex<FloatType> > m1(L);
+
+    for (int l = 0; l < L - 1; l++) m1[l] = m[l + 1];
+    m1[L - 1] = std::complex<FloatType> (1.0, 0.0);
+
+    std::complex<FloatType> z, z1;
+    for (int l = L - 1; l >= 0; l--) {
+      if (l <= PEC_layer_position) { // We are inside a PEC. All coefficients must be zero!!!
+        for (int n = 0; n < nmax; n++) {
+          aln[l][n] = c_zero;
+          bln[l][n] = c_zero;
+          cln[l][n] = c_zero;
+          dln[l][n] = c_zero;
+        }
+      } else { // Regular material
+        z = size_param[l]*m[l];
+        z1 = size_param[l]*m1[l];
+
+        calcD1D3(z, nmax, D1z, D3z);
+        calcD1D3(z1, nmax, D1z1, D3z1);
+        calcPsiZeta(z, nmax, Psiz, Zetaz);
+        calcPsiZeta(z1, nmax, Psiz1, Zetaz1);
+
+        for (int n = 0; n < nmax; n++) {
+          int n1 = n + 1;
+
+          denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
+          denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
+
+          T1 =  aln[l + 1][n]*Zetaz1[n1] - dln[l + 1][n]*Psiz1[n1];
+          T2 = (bln[l + 1][n]*Zetaz1[n1] - cln[l + 1][n]*Psiz1[n1])*m[l]/m1[l];
+
+          T3 = (dln[l + 1][n]*D1z1[n1]*Psiz1[n1] - aln[l + 1][n]*D3z1[n1]*Zetaz1[n1])*m[l]/m1[l];
+          T4 =  cln[l + 1][n]*D1z1[n1]*Psiz1[n1] - bln[l + 1][n]*D3z1[n1]*Zetaz1[n1];
+
+          aln[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
+          bln[l][n] = (D1z[n1]*T2 + T4)/denomZeta;
+          cln[l][n] = (D3z[n1]*T2 + T4)/denomPsi;
+          dln[l][n] = (D3z[n1]*T1 + T3)/denomPsi;
+        }
+      }
+    }
+    
+    for (int n = 0; n < nmax; ++n) {
+      aln[0][n] = 0.0;
+      bln[0][n] = 0.0;
+    }
+}
+
   //**********************************************************************************//
   // This function calculates the expansion coefficients inside the particle,         //
   // required to calculate the near-field parameters.                                 //
@@ -553,10 +650,10 @@ namespace nmie {
         z = size_param_[l]*m[l];
         z1 = size_param_[l]*m1[l];
 
-        calcD1D3(z, D1z, D3z);
-        calcD1D3(z1, D1z1, D3z1);
-        calcPsiZeta(z, Psiz, Zetaz);
-        calcPsiZeta(z1, Psiz1, Zetaz1);
+        calcD1D3(z, nmax_, D1z, D3z);
+        calcD1D3(z1, nmax_, D1z1, D3z1);
+        calcPsiZeta(z, nmax_, Psiz, Zetaz);
+        calcPsiZeta(z1, nmax_, Psiz1, Zetaz1);
 
         for (int n = 0; n < nmax_; n++) {
           int n1 = n + 1;

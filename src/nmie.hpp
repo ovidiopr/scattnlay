@@ -230,6 +230,18 @@ const FloatType mu_ = 4.0 * PI_ * 1.0e-7;
 
 //******************************************************************************
 //******************************************************************************
+template <typename FloatType>
+void calcD1D3(std::complex<FloatType> z,
+              int nmax,
+              std::vector<std::complex<FloatType>>& D1,
+              std::vector<std::complex<FloatType>>& D3);
+
+template <typename FloatType>
+void calcPsiZeta(std::complex<FloatType> z,
+                 int nmax,
+                 std::vector<std::complex<FloatType>>& Psi,
+                 std::vector<std::complex<FloatType>>& Zeta);
+
 template <typename FloatType = double, MathEngine Engine = DefaultEngine<FloatType>>
 class MultiLayerMie {
  public:
@@ -453,15 +465,6 @@ class MultiLayerMie {
                                   std::complex<FloatType> PsiXLM1,
                                   std::complex<FloatType> ZetaXLM1) const;
 
-
-
-  void calcD1D3(std::complex<FloatType> z,
-                std::vector<std::complex<FloatType>>& D1,
-                std::vector<std::complex<FloatType>>& D3) const;
-
-  void calcPsiZeta(std::complex<FloatType> x,
-                   std::vector<std::complex<FloatType>>& Psi,
-                   std::vector<std::complex<FloatType>>& Zeta) const;
   void calcPiTau(const FloatType& costheta,
                  std::vector<FloatType>& Pi,
                  std::vector<FloatType>& Tau) const;

@@ -822,12 +822,13 @@ std::complex<FloatType> MultiLayerMie<FloatType, Engine>::calc_bn(
 // Output parameters:
 //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions
 //****************************************************************************
-template <typename FloatType, MathEngine Engine>
-void MultiLayerMie<FloatType, Engine>::calcD1D3(
+template <typename FloatType>
+void calcD1D3(
     const std::complex<FloatType> z,
+    int nmax,
     std::vector<std::complex<FloatType>>& D1,
-    std::vector<std::complex<FloatType>>& D3) const {
-  std::vector<std::complex<FloatType>> PsiZeta(nmax_ + 1);
+    std::vector<std::complex<FloatType>>& D3) {
+  std::vector<std::complex<FloatType>> PsiZeta(nmax + 1);
   evalDownwardD1<FloatType>(z, D1);
   evalUpwardD3<FloatType>(z, D1, D3, PsiZeta);
 }
@@ -844,13 +845,14 @@ void MultiLayerMie<FloatType, Engine>::calcD1D3(
 // Output parameters:
 //   Psi, Zeta: Riccati-Bessel functions
 //*****************************************************************************
-template <typename FloatType, MathEngine Engine>
-void MultiLayerMie<FloatType, Engine>::calcPsiZeta(
+template <typename FloatType>
+void calcPsiZeta(
     std::complex<FloatType> z,
+    int nmax,
     std::vector<std::complex<FloatType>>& Psi,
-    std::vector<std::complex<FloatType>>& Zeta) const {
-  std::vector<std::complex<FloatType>> D1(nmax_ + 1), D3(nmax_ + 1),
-      PsiZeta(nmax_ + 1);
+    std::vector<std::complex<FloatType>>& Zeta) {
+  std::vector<std::complex<FloatType>> D1(nmax + 1), D3(nmax + 1),
+      PsiZeta(nmax + 1);
   // First, calculate the logarithmic derivatives
   evalDownwardD1<FloatType>(z, D1);
   // Now, use the upward recurrence to calculate Psi equations (20ab)

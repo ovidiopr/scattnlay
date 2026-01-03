@@ -95,6 +95,17 @@ if(GTest_FOUND)
     add_test(NAME "test_stateless_coeffs"
         COMMAND "test_stateless_coeffs")
 
+    find_package(OpenMP)
+    add_executable("test_openmp_field" test_openmp_field.cc)
+    target_link_libraries("test_openmp_field" PRIVATE 
+        GTest::gtest GTest::gtest_main
+        project_optimization
+    )
+    if(OpenMP_CXX_FOUND)
+        target_link_libraries("test_openmp_field" PRIVATE OpenMP::OpenMP_CXX)
+    endif()
+    add_test(NAME "test_openmp_field" COMMAND "test_openmp_field")
+
     if(Boost_FOUND)
         add_executable("test_bulk_sphere_multi_precision" test_bulk_sphere.cc)
         target_compile_options("test_bulk_sphere_multi_precision"
