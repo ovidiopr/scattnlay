@@ -444,6 +444,8 @@ class MultiLayerMie {
   std::vector<std::vector<FloatType>> coords_polar_;
 
  protected:
+  void RunMieCalculationStateless(MieBuffers<FloatType, Engine>& buf) const;
+
   unsigned int calcNstop(FloatType xL = -1) const;
   unsigned int calcNmax(FloatType xL = -1) const;
 

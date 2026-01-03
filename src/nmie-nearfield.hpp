@@ -177,10 +177,10 @@ void RunFieldKernel(
     int nmax,
     const std::vector<FloatType>& size_param,
     const std::vector<std::complex<FloatType>>& refractive_index,
-    const std::vector<std::vector<std::complex<FloatType>>>& aln,
-    const std::vector<std::vector<std::complex<FloatType>>>& bln,
-    const std::vector<std::vector<std::complex<FloatType>>>& cln,
-    const std::vector<std::vector<std::complex<FloatType>>>& dln,
+    const typename MieBuffers<FloatType, Engine>::VectorC& aln,
+    const typename MieBuffers<FloatType, Engine>::VectorC& bln,
+    const typename MieBuffers<FloatType, Engine>::VectorC& cln,
+    const typename MieBuffers<FloatType, Engine>::VectorC& dln,
     MieBuffers<FloatType, Engine>& buffers,
     std::vector<std::vector<std::complex<FloatType>>>& Es,
     std::vector<std::vector<std::complex<FloatType>>>& Hs,
@@ -195,38 +195,7 @@ void RunFieldKernel(
   std::vector<int> layer_buf(lanes);
   std::vector<size_t> original_indices(lanes);
 
-  // Flatten coefficients for SIMD access
-  const size_t layers = aln.size();
-  const size_t flat_size = layers * nmax * lanes;
-  std::vector<FloatType> aln_re_flat(flat_size), aln_im_flat(flat_size);
-  std::vector<FloatType> bln_re_flat(flat_size), bln_im_flat(flat_size);
-  std::vector<FloatType> cln_re_flat(flat_size), cln_im_flat(flat_size);
-  std::vector<FloatType> dln_re_flat(flat_size), dln_im_flat(flat_size);
-
-  for (size_t l = 0; l < layers; ++l) {
-    for (int n = 0; n < nmax; ++n) {
-      FloatType are = aln[l][n].real();
-      FloatType aim = aln[l][n].imag();
-      FloatType bre = bln[l][n].real();
-      FloatType bim = bln[l][n].imag();
-      FloatType cre = cln[l][n].real();
-      FloatType cim = cln[l][n].imag();
-      FloatType dre = dln[l][n].real();
-      FloatType dim = dln[l][n].imag();
-
-      size_t base_idx = l * nmax * lanes + n * lanes;
-      for (size_t j = 0; j < lanes; ++j) {
-        aln_re_flat[base_idx + j] = are;
-        aln_im_flat[base_idx + j] = aim;
-        bln_re_flat[base_idx + j] = bre;
-        bln_im_flat[base_idx + j] = bim;
-        cln_re_flat[base_idx + j] = cre;
-        cln_im_flat[base_idx + j] = cim;
-        dln_re_flat[base_idx + j] = dre;
-        dln_im_flat[base_idx + j] = dim;
-      }
-    }
-  }
+  const size_t stride = (nmax + 1) * lanes;
 
   // Loop over batches
   for (size_t i = 0; i < count; i += lanes) {
@@ -339,18 +308,26 @@ void RunFieldKernel(
 
     for (size_t j = 0; j < lanes; ++j) {
       int l = layer_buf[j];
-      size_t layer_offset = l * nmax * lanes;
+      size_t layer_offset = l * stride;
       for (int n = 0; n < nmax; ++n) {
         size_t idx = n * lanes + j;
-        size_t src_idx = layer_offset + idx;
-        aln_re_all[idx] = aln_re_flat[src_idx];
-        aln_im_all[idx] = aln_im_flat[src_idx];
-        bln_re_all[idx] = bln_re_flat[src_idx];
-        bln_im_all[idx] = bln_im_flat[src_idx];
-        cln_re_all[idx] = cln_re_flat[src_idx];
-        cln_im_all[idx] = cln_im_flat[src_idx];
-        dln_re_all[idx] = dln_re_flat[src_idx];
-        dln_im_all[idx] = dln_im_flat[src_idx];
+        size_t src_idx = layer_offset + n * lanes + j;
+        
+        auto val_aln = aln[src_idx];
+        aln_re_all[idx] = val_aln.real();
+        aln_im_all[idx] = val_aln.imag();
+        
+        auto val_bln = bln[src_idx];
+        bln_re_all[idx] = val_bln.real();
+        bln_im_all[idx] = val_bln.imag();
+        
+        auto val_cln = cln[src_idx];
+        cln_re_all[idx] = val_cln.real();
+        cln_im_all[idx] = val_cln.imag();
+        
+        auto val_dln = dln[src_idx];
+        dln_re_all[idx] = val_dln.real();
+        dln_im_all[idx] = val_dln.imag();
       }
     }
 
@@ -490,32 +467,25 @@ void calcExpanCoeffsKernel(
     auto& an = buffers.an;
     auto& bn = buffers.bn;
 
-    aln.clear(); bln.clear(); cln.clear(); dln.clear();
-
-    std::complex<FloatType> c_one(1.0, 0.0), c_zero(0.0, 0.0);
-
     const int L = refractive_index.size();
-
-    aln.resize(L + 1);
-    bln.resize(L + 1);
-    cln.resize(L + 1);
-    dln.resize(L + 1);
-    for (int l = 0; l <= L; l++) {
-      aln[l].resize(nmax, static_cast<FloatType>(0.0));
-      bln[l].resize(nmax, static_cast<FloatType>(0.0));
-      cln[l].resize(nmax, static_cast<FloatType>(0.0));
-      dln[l].resize(nmax, static_cast<FloatType>(0.0));
-    }
+    buffers.updateSize(nmax, L, 0);
 
     size_t lanes = Engine::Lanes();
+    size_t stride = (nmax + 1) * lanes;
+
+    std::complex<FloatType> c_one(1.0, 0.0), c_zero(0.0, 0.0);
 
     // Yang, paragraph under eq. A3
     // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
     for (int n = 0; n < nmax; n++) {
-      aln[L][n] = an[n * lanes]; // Take first lane
-      bln[L][n] = bn[n * lanes];
-      cln[L][n] = c_one;
-      dln[L][n] = c_one;
+      size_t idx = L * stride + n * lanes;
+      // Replicate for all lanes
+      for (size_t j = 0; j < lanes; ++j) {
+        aln[idx + j] = an[n * lanes]; // Assuming an is replicated or we take first lane
+        bln[idx + j] = bn[n * lanes];
+        cln[idx + j] = c_one;
+        dln[idx + j] = c_one;
+      }
     }
 
     std::vector<std::complex<FloatType> > D1z(nmax + 1), D1z1(nmax + 1), D3z(nmax + 1), D3z1(nmax + 1);
@@ -532,10 +502,13 @@ void calcExpanCoeffsKernel(
     for (int l = L - 1; l >= 0; l--) {
       if (l <= PEC_layer_position) { // We are inside a PEC. All coefficients must be zero!!!
         for (int n = 0; n < nmax; n++) {
-          aln[l][n] = c_zero;
-          bln[l][n] = c_zero;
-          cln[l][n] = c_zero;
-          dln[l][n] = c_zero;
+          size_t idx = l * stride + n * lanes;
+          for (size_t j = 0; j < lanes; ++j) {
+            aln[idx + j] = c_zero;
+            bln[idx + j] = c_zero;
+            cln[idx + j] = c_zero;
+            dln[idx + j] = c_zero;
+          }
         }
       } else { // Regular material
         z = size_param[l]*m[l];
@@ -552,23 +525,41 @@ void calcExpanCoeffsKernel(
           denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
           denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
 
-          T1 =  aln[l + 1][n]*Zetaz1[n1] - dln[l + 1][n]*Psiz1[n1];
-          T2 = (bln[l + 1][n]*Zetaz1[n1] - cln[l + 1][n]*Psiz1[n1])*m[l]/m1[l];
+          size_t next_idx = (l + 1) * stride + n * lanes;
+          // Read from first lane (assuming replication)
+          auto aln_next = aln[next_idx];
+          auto bln_next = bln[next_idx];
+          auto cln_next = cln[next_idx];
+          auto dln_next = dln[next_idx];
 
-          T3 = (dln[l + 1][n]*D1z1[n1]*Psiz1[n1] - aln[l + 1][n]*D3z1[n1]*Zetaz1[n1])*m[l]/m1[l];
-          T4 =  cln[l + 1][n]*D1z1[n1]*Psiz1[n1] - bln[l + 1][n]*D3z1[n1]*Zetaz1[n1];
+          T1 =  aln_next*Zetaz1[n1] - dln_next*Psiz1[n1];
+          T2 = (bln_next*Zetaz1[n1] - cln_next*Psiz1[n1])*m[l]/m1[l];
 
-          aln[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
-          bln[l][n] = (D1z[n1]*T2 + T4)/denomZeta;
-          cln[l][n] = (D3z[n1]*T2 + T4)/denomPsi;
-          dln[l][n] = (D3z[n1]*T1 + T3)/denomPsi;
+          T3 = (dln_next*D1z1[n1]*Psiz1[n1] - aln_next*D3z1[n1]*Zetaz1[n1])*m[l]/m1[l];
+          T4 =  cln_next*D1z1[n1]*Psiz1[n1] - bln_next*D3z1[n1]*Zetaz1[n1];
+
+          size_t curr_idx = l * stride + n * lanes;
+          auto val_aln = (D1z[n1]*T1 + T3)/denomZeta;
+          auto val_bln = (D1z[n1]*T2 + T4)/denomZeta;
+          auto val_cln = (D3z[n1]*T2 + T4)/denomPsi;
+          auto val_dln = (D3z[n1]*T1 + T3)/denomPsi;
+
+          for (size_t j = 0; j < lanes; ++j) {
+            aln[curr_idx + j] = val_aln;
+            bln[curr_idx + j] = val_bln;
+            cln[curr_idx + j] = val_cln;
+            dln[curr_idx + j] = val_dln;
+          }
         }
       }
     }
     
     for (int n = 0; n < nmax; ++n) {
-      aln[0][n] = 0.0;
-      bln[0][n] = 0.0;
+      size_t idx = 0 * stride + n * lanes;
+      for (size_t j = 0; j < lanes; ++j) {
+        aln[idx + j] = 0.0;
+        bln[idx + j] = 0.0;
+      }
     }
 }
 
@@ -979,7 +970,34 @@ void calcExpanCoeffsKernel(
     }
 
     MieBuffers<FloatType, Engine> buffers;
-    buffers.resize(nmax_, 1);
+    buffers.resize(nmax_, 1, 0);
+
+    // Flatten coefficients
+    size_t lanes = Engine::Lanes();
+    size_t stride = (nmax_ + 1) * lanes;
+    size_t total_size = (L + 1) * stride;
+    
+    typename MieBuffers<FloatType, Engine>::VectorC aln_flat(total_size);
+    typename MieBuffers<FloatType, Engine>::VectorC bln_flat(total_size);
+    typename MieBuffers<FloatType, Engine>::VectorC cln_flat(total_size);
+    typename MieBuffers<FloatType, Engine>::VectorC dln_flat(total_size);
+    
+    for (size_t l = 0; l <= L; ++l) {
+      for (int n = 0; n < nmax_; ++n) {
+        size_t idx = l * stride + n * lanes;
+        auto val_aln = aln_[l][n];
+        auto val_bln = bln_[l][n];
+        auto val_cln = cln_[l][n];
+        auto val_dln = dln_[l][n];
+        
+        for (size_t j = 0; j < lanes; ++j) {
+           aln_flat[idx + j] = val_aln;
+           bln_flat[idx + j] = val_bln;
+           cln_flat[idx + j] = val_cln;
+           dln_flat[idx + j] = val_dln;
+        }
+      }
+    }
 
     RunFieldKernel<FloatType, Engine>(
         coords_[0], coords_[1], coords_[2],
@@ -987,7 +1005,7 @@ void calcExpanCoeffsKernel(
         nmax_,
         size_param_,
         refractive_index_,
-        aln_, bln_, cln_, dln_,
+        aln_flat, bln_flat, cln_flat, dln_flat,
         buffers,
         Es_, Hs_,
         coords_polar_

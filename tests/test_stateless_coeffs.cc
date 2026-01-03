@@ -38,8 +38,8 @@ TEST(StatelessCoeffs, DuTable1) {
 
     // Stateless calculation
     nmie::MieBuffers<double, nmie::ScalarEngine<double>> buffers;
-    buffers.resize(nmax, 1);
-    buffers.updateSize(nmax, 1);
+    buffers.resize(nmax, 1, 0);
+    buffers.updateSize(nmax, 1, 0);
 
     auto get_x = [&](int l) { return x_val; };
     auto get_m = [&](int l) { return m_val; };

@@ -19,8 +19,8 @@ TEST(OpenMPField, ParallelExecution) {
   
   // 1. Calculate Scattering Coeffs (an, bn)
   nmie::MieBuffers<double, nmie::ScalarEngine<double>> master_buffers;
-  master_buffers.resize(nmax, 1);
-  master_buffers.updateSize(nmax, 1);
+  master_buffers.resize(nmax, 1, 0);
+  master_buffers.updateSize(nmax, 1, 0);
 
   auto get_x = [&](int l) { return x; };
   auto get_m = [&](int l) { return m; };
@@ -55,7 +55,7 @@ TEST(OpenMPField, ParallelExecution) {
   {
       // Thread-local buffers
       nmie::MieBuffers<double, nmie::ScalarEngine<double>> thread_buffers;
-      thread_buffers.resize(nmax, 1); // Resize for scratch space
+      thread_buffers.resize(nmax, 1, 0); // Resize for scratch space
       
       #pragma omp for
       for (int i = 0; i < num_points; ++i) {
@@ -74,7 +74,7 @@ TEST(OpenMPField, ParallelExecution) {
   #pragma omp parallel
   {
       nmie::MieBuffers<double, nmie::ScalarEngine<double>> thread_buffers;
-      thread_buffers.resize(nmax, 1);
+      thread_buffers.resize(nmax, 1, 0);
 
       #pragma omp for schedule(static)
       for (int i = 0; i < num_points; i += 100) { // Process in blocks of 100

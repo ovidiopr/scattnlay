@@ -1031,7 +1031,7 @@ void MultiLayerMie<FloatType, Engine>::calcScattCoeffs() {
   
   size_t lanes = Engine::Lanes();
   MieBuffers<FloatType, Engine> buffers;
-  buffers.resize(nmax_, L);
+  buffers.resize(nmax_, L, 0);
   
   auto get_x = [&](int l) { return Engine::set(x[l]); };
   auto get_m = [&](int l) { 
@@ -1236,6 +1236,15 @@ void sumMieSeriesKernel(const int nmax,
   buffers.g = Engine::select(mask_sca,
                              (buffers.Qext - buffers.Qpr) / buffers.Qsca, zero);
   buffers.albedo = Engine::select(mask_ext, buffers.Qsca / buffers.Qext, zero);
+
+  // Store results to _res fields
+  buffers.Qext_res = Engine::to_scalar(buffers.Qext);
+  buffers.Qsca_res = Engine::to_scalar(buffers.Qsca);
+  buffers.Qabs_res = Engine::to_scalar(buffers.Qabs);
+  buffers.Qbk_res = Engine::to_scalar(buffers.Qbk);
+  buffers.Qpr_res = Engine::to_scalar(buffers.Qpr);
+  buffers.g_res = Engine::to_scalar(buffers.g);
+  buffers.albedo_res = Engine::to_scalar(buffers.albedo);
 }
 
 template <typename FloatType, typename Engine>
@@ -1304,7 +1313,8 @@ void finalizeMieResults(const typename Engine::RealV x,
 //   Number of multipolar expansion terms used for the calculations
 //*******************************************************************************
 template <typename FloatType, MathEngine Engine>
-void MultiLayerMie<FloatType, Engine>::RunMieCalculation() {
+void MultiLayerMie<FloatType, Engine>::RunMieCalculationStateless(
+    MieBuffers<FloatType, Engine>& buffers) const {
   if (size_param_.size() != refractive_index_.size())
     throw std::invalid_argument(
         "Each size parameter should have only one index!");
@@ -1313,39 +1323,84 @@ void MultiLayerMie<FloatType, Engine>::RunMieCalculation() {
 
   const std::vector<FloatType>& x = size_param_;
 
+  // Initialize the scattering parameters
+  buffers.Qext_res = 0.0;
+  buffers.Qsca_res = 0.0;
+  buffers.Qabs_res = 0.0;
+  buffers.Qbk_res = 0.0;
+  buffers.Qpr_res = 0.0;
+
+  buffers.g_res = 0.0;
+  buffers.albedo_res = 0.0;
+
+  // Initialize the scattering amplitudes
+  // buffers.S1_res and S2_res are scalar vectors.
+  // We need SIMD vectors for the kernel.
+  std::vector<typename Engine::ComplexV> S1_simd(theta_.size());
+  std::vector<typename Engine::ComplexV> S2_simd(theta_.size());
+
+  // Prepare an and bn for SIMD kernel
+  // sumMieSeriesKernel expects interleaved/SIMD-ready data
+  // We need to broadcast an_ and bn_ to all lanes
+  size_t lanes = Engine::Lanes();
+  std::vector<std::complex<FloatType>> an_simd(nmax_ * lanes);
+  std::vector<std::complex<FloatType>> bn_simd(nmax_ * lanes);
+  
+  for (int n = 0; n < nmax_; ++n) {
+      for (size_t l = 0; l < lanes; ++l) {
+          an_simd[n * lanes + l] = an_[n];
+          bn_simd[n * lanes + l] = bn_[n];
+      }
+  }
+
+  sumMieSeriesKernel<FloatType, Engine>(
+      nmax_, 
+      Engine::set(static_cast<FloatType>(nmax_)), 
+      Engine::set(x.back()), 
+      an_simd.data(), bn_simd.data(),
+      theta_, buffers, S1_simd, S2_simd);
+
+  // Copy back S1_simd to buffers.S1_res
+  buffers.S1_res.resize(theta_.size());
+  buffers.S2_res.resize(theta_.size());
+  for (size_t i = 0; i < theta_.size(); ++i) {
+    buffers.S1_res[i] = std::complex<FloatType>(
+        Engine::to_scalar(Engine::get_real(S1_simd[i])), 
+        Engine::to_scalar(Engine::get_imag(S1_simd[i])));
+    buffers.S2_res[i] = std::complex<FloatType>(
+        Engine::to_scalar(Engine::get_real(S2_simd[i])), 
+        Engine::to_scalar(Engine::get_imag(S2_simd[i])));
+  }
+}
+
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::RunMieCalculation() {
+  if (size_param_.size() != refractive_index_.size())
+    throw std::invalid_argument(
+        "Each size parameter should have only one index!");
+  if (size_param_.size() == 0)
+    throw std::invalid_argument("Initialize model first!");
+
   // MarkUncalculated();
 
   // Calculate scattering coefficients
   if (!isScaCoeffsCalc_)
     calcScattCoeffs();
 
-  // Initialize the scattering parameters
-  Qext_ = 0.0;
-  Qsca_ = 0.0;
-  Qabs_ = 0.0;
-  Qbk_ = 0.0;
-  Qpr_ = 0.0;
+  MieBuffers<FloatType, Engine> buffers;
+  buffers.updateSize(nmax_, size_param_.size(), theta_.size());
 
-  asymmetry_factor_ = 0.0;
-  albedo_ = 0.0;
+  RunMieCalculationStateless(buffers);
 
-  // Initialize the scattering amplitudes
-  S1_.assign(theta_.size(), std::complex<FloatType>(0.0, 0.0));
-  S2_.assign(theta_.size(), std::complex<FloatType>(0.0, 0.0));
-
-  MieBuffers<FloatType, ScalarEngine<FloatType>> buffers;
-
-  sumMieSeriesKernel<FloatType, ScalarEngine<FloatType>>(
-      nmax_, static_cast<FloatType>(nmax_), x.back(), an_.data(), bn_.data(),
-      theta_, buffers, S1_, S2_);
-
-  Qext_ = buffers.Qext;
-  Qsca_ = buffers.Qsca;
-  Qabs_ = buffers.Qabs;
-  Qbk_ = buffers.Qbk;
-  Qpr_ = buffers.Qpr;
-  asymmetry_factor_ = buffers.g;
-  albedo_ = buffers.albedo;
+  Qext_ = buffers.Qext_res;
+  Qsca_ = buffers.Qsca_res;
+  Qabs_ = buffers.Qabs_res;
+  Qbk_ = buffers.Qbk_res;
+  Qpr_ = buffers.Qpr_res;
+  asymmetry_factor_ = buffers.g_res;
+  albedo_ = buffers.albedo_res;
+  S1_ = buffers.S1_res;
+  S2_ = buffers.S2_res;
 
   isMieCalculated_ = true;
 }

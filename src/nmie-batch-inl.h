@@ -43,7 +43,7 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
     int global_nmax = static_cast<int>(std::round(global_max_x + 11 * std::pow(global_max_x, 1.0/3.0) + 16));
 
     nmie::MieBuffers<FloatType, Engine> buffers;
-    buffers.resize(global_nmax, 1);
+    buffers.resize(global_nmax, 1, 0);
     
     for (size_t i = 0; i < N; i += lanes) {
         size_t current_batch_size = std::min(lanes, N - i);
@@ -68,7 +68,7 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
 
         int calc_nmax = static_cast<int>(std::round(max_x + 11 * std::pow(max_x, 1.0/3.0) + 16));
         
-        buffers.updateSize(calc_nmax, 1);
+        buffers.updateSize(calc_nmax, 1, 0);
 
         // Getters for the kernel
         // For batch processing of single spheres, we treat it as L=1.

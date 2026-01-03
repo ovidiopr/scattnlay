@@ -53,8 +53,8 @@ public:
                 batch_nmax = static_cast<int>(std::round(max_x + 11 * std::pow(max_x, 1.0/3.0) + 16));
             }
 
-            buffers.resize(batch_nmax, L_);
-            buffers.updateSize(batch_nmax, L_);
+            buffers.resize(batch_nmax, L_, 0);
+            buffers.updateSize(batch_nmax, L_, 0);
             
             auto load_val = [&](const std::vector<FloatType>& v, size_t offset) {
                 alignas(64) FloatType tmp[64] = {0};

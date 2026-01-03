@@ -33,6 +33,7 @@ struct HighwayEngine {
   template <typename U> using Vector = std::vector<U>;
 
   static size_t Lanes() { return hn::Lanes(D()); }
+  static inline T to_scalar(RealV v) { return hn::GetLane(v.v); }
 
   // Represents a batch of complex numbers (Real vectors, Imag vectors)
   struct ComplexV { 

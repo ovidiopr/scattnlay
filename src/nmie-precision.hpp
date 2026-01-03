@@ -45,10 +45,11 @@
 //                                                                                  //
 // Hereinafter all equations numbers refer to [2] //
 //**********************************************************************************//
+#include <array>
 #include <complex>
-#include <vector>
 #include <concepts>
 #include <type_traits>
+#include <vector>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -113,6 +114,7 @@ struct ScalarEngine {
 
   // Memory Operations
   static inline RealV set(T val) { return val; }
+  static inline T to_scalar(RealV v) { return v; }
   static inline void store_interleaved(ComplexV z, std::complex<T>* ptr) { *ptr = z; }
   static inline ComplexV load_interleaved(const std::complex<T>* ptr) { return *ptr; }
 
@@ -242,14 +244,20 @@ struct MieBuffers {
 
   // Stateless buffers
   VectorC an, bn;
-  std::vector<std::vector<std::complex<FloatType>>> aln, bln, cln, dln;
+  VectorC aln, bln, cln, dln;
 
   typename Engine::RealV Qext, Qsca, Qabs, Qbk, Qpr, g, albedo;
 
-  void resize(int nmax, int L) {
+  // Result storage
+  FloatType Qext_res, Qsca_res, Qabs_res, Qbk_res, Qpr_res, g_res, albedo_res;
+  std::array<char, 3> isConvergedE_res = {0, 0, 0};
+  std::array<char, 3> isConvergedH_res = {0, 0, 0};
+  std::vector<std::complex<FloatType>> S1_res, S2_res;
+
+  void resize(int nmax, int L, int theta_size) {
     size_t lanes = Engine::Lanes();
     size_t size = (nmax + 1) * lanes;
-    size_t total_size = size * L;
+    size_t total_size = size * (L + 1);
 
     if (D1.size() < size)
       D1.resize(size);
@@ -274,13 +282,27 @@ struct MieBuffers {
 
     if (an.size() < size) an.resize(size);
     if (bn.size() < size) bn.resize(size);
+
+    if (aln.size() < total_size)
+      aln.resize(total_size);
+    if (bln.size() < total_size)
+      bln.resize(total_size);
+    if (cln.size() < total_size)
+      cln.resize(total_size);
+    if (dln.size() < total_size)
+      dln.resize(total_size);
+
+    if (S1_res.size() < static_cast<size_t>(theta_size))
+      S1_res.resize(theta_size);
+    if (S2_res.size() < static_cast<size_t>(theta_size))
+      S2_res.resize(theta_size);
   }
 
-  void updateSize(int nmax, int L_in) {
+  void updateSize(int nmax, int L_in, int theta_size) {
     size_t L = static_cast<size_t>(L_in);
     size_t lanes = Engine::Lanes();
     size_t size = (nmax + 1) * lanes;
-    size_t total_size = size * L;
+    size_t total_size = size * (L + 1);
 
     if (D1.capacity() < size) D1.reserve(size);
     if (D3.capacity() < size) D3.reserve(size);
@@ -299,17 +321,32 @@ struct MieBuffers {
     if (an.capacity() < size) an.reserve(size);
     if (bn.capacity() < size) bn.reserve(size);
 
-    if (aln.size() < L) aln.resize(L);
-    if (bln.size() < L) bln.resize(L);
-    if (cln.size() < L) cln.resize(L);
-    if (dln.size() < L) dln.resize(L);
+    if (aln.capacity() < total_size)
+      aln.reserve(total_size);
+    if (bln.capacity() < total_size)
+      bln.reserve(total_size);
+    if (cln.capacity() < total_size)
+      cln.reserve(total_size);
+    if (dln.capacity() < total_size)
+      dln.reserve(total_size);
 
-    for (size_t i = 0; i < L; ++i) {
-      if (aln[i].capacity() < size) aln[i].reserve(size);
-      if (bln[i].capacity() < size) bln[i].reserve(size);
-      if (cln[i].capacity() < size) cln[i].reserve(size);
-      if (dln[i].capacity() < size) dln[i].reserve(size);
-    }
+    if (aln.size() < total_size)
+      aln.resize(total_size);
+    if (bln.size() < total_size)
+      bln.resize(total_size);
+    if (cln.size() < total_size)
+      cln.resize(total_size);
+    if (dln.size() < total_size)
+      dln.resize(total_size);
+
+    if (S1_res.capacity() < static_cast<size_t>(theta_size))
+      S1_res.reserve(theta_size);
+    if (S2_res.capacity() < static_cast<size_t>(theta_size))
+      S2_res.reserve(theta_size);
+    if (S1_res.size() < static_cast<size_t>(theta_size))
+      S1_res.resize(theta_size);
+    if (S2_res.size() < static_cast<size_t>(theta_size))
+      S2_res.resize(theta_size);
   }
 };
 
