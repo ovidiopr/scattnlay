@@ -45,10 +45,6 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
     nmie::MieBuffers<FloatType, Engine> buffers;
     buffers.resize(global_nmax, 1);
     
-    std::vector<std::complex<FloatType>> an_vec, bn_vec;
-    an_vec.reserve((global_nmax + 1) * lanes);
-    bn_vec.reserve((global_nmax + 1) * lanes);
-
     for (size_t i = 0; i < N; i += lanes) {
         size_t current_batch_size = std::min(lanes, N - i);
         alignas(64) FloatType xb[64] = {0}, mrb[64] = {0}, mib[64] = {0}, nb[64] = {0};
@@ -72,8 +68,7 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
 
         int calc_nmax = static_cast<int>(std::round(max_x + 11 * std::pow(max_x, 1.0/3.0) + 16));
         
-        an_vec.resize((calc_nmax + 1) * lanes);
-        bn_vec.resize((calc_nmax + 1) * lanes);
+        buffers.updateSize(calc_nmax, 1);
 
         // Getters for the kernel
         // For batch processing of single spheres, we treat it as L=1.
@@ -84,7 +79,7 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
 
         nmie::calcScattCoeffsKernel<FloatType, Engine>(
             calc_nmax, 1, -1, get_x, get_m,
-            buffers, an_vec, bn_vec
+            buffers
         );
 
         typename Engine::RealV vQext = hn::Zero(d), vQsca = hn::Zero(d), vQpr_sum = hn::Zero(d);
@@ -96,8 +91,8 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
         nmie::sumMieSeriesKernel<FloatType, Engine>(
             calc_nmax,
             vnmax,
-            an_vec.data(),
-            bn_vec.data(),
+            buffers.an.data(),
+            buffers.bn.data(),
             input.theta,
             vQext,
             vQsca,

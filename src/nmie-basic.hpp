@@ -265,9 +265,7 @@ void calcScattCoeffsKernel(
     int pl,
     XGetter get_x,
     MGetter get_m,
-    MieBuffers<FloatType, Engine>& buffers,
-    std::vector<std::complex<FloatType>>& an,
-    std::vector<std::complex<FloatType>>& bn
+    MieBuffers<FloatType, Engine>& buffers
 ) {
     int fl = (pl > 0) ? pl : 0;
     int lanes = Engine::Lanes();
@@ -283,6 +281,8 @@ void calcScattCoeffsKernel(
     auto& Q = buffers.Q;
     auto& Ha = buffers.Ha;
     auto& Hb = buffers.Hb;
+    auto& an = buffers.an;
+    auto& bn = buffers.bn;
 
     // Layer fl (first layer)
     if (fl == pl) {
@@ -720,7 +720,7 @@ unsigned int LeRu_near_field_cutoff(const std::complex<FloatType> zz) {
 // Calculate calcNstop - equation (17)                                    //
 // ********************************************************************** //
 template <typename FloatType, MathEngine Engine>
-unsigned int MultiLayerMie<FloatType, Engine>::calcNstop(FloatType xL) {
+unsigned int MultiLayerMie<FloatType, Engine>::calcNstop(FloatType xL) const {
   unsigned int nmax = 0;
   // Wiscombe
   if (xL < size_param_.back())
@@ -743,7 +743,7 @@ unsigned int MultiLayerMie<FloatType, Engine>::calcNstop(FloatType xL) {
 // Maximum number of terms required for the calculation                   //
 // ********************************************************************** //
 template <typename FloatType, MathEngine Engine>
-unsigned int MultiLayerMie<FloatType, Engine>::calcNmax(FloatType xL) {
+unsigned int MultiLayerMie<FloatType, Engine>::calcNmax(FloatType xL) const {
   const int pl = PEC_layer_position_;
   const unsigned int first_layer = (pl > 0) ? pl : 0;
   unsigned int ri, riM1, nmax = 0;
@@ -786,7 +786,7 @@ std::complex<FloatType> MultiLayerMie<FloatType, Engine>::calc_an(
     std::complex<FloatType> PsiXL,
     std::complex<FloatType> ZetaXL,
     std::complex<FloatType> PsiXLM1,
-    std::complex<FloatType> ZetaXLM1) {
+    std::complex<FloatType> ZetaXLM1) const {
   return nmie::calc_an<FloatType, ScalarEngine<FloatType>, std::complex<FloatType>>(
       n, XL, Ha, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
 }
@@ -803,7 +803,7 @@ std::complex<FloatType> MultiLayerMie<FloatType, Engine>::calc_bn(
     std::complex<FloatType> PsiXL,
     std::complex<FloatType> ZetaXL,
     std::complex<FloatType> PsiXLM1,
-    std::complex<FloatType> ZetaXLM1) {
+    std::complex<FloatType> ZetaXLM1) const {
   return nmie::calc_bn<FloatType, ScalarEngine<FloatType>, std::complex<FloatType>>(
       n, XL, Hb, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
 }
@@ -826,7 +826,7 @@ template <typename FloatType, MathEngine Engine>
 void MultiLayerMie<FloatType, Engine>::calcD1D3(
     const std::complex<FloatType> z,
     std::vector<std::complex<FloatType>>& D1,
-    std::vector<std::complex<FloatType>>& D3) {
+    std::vector<std::complex<FloatType>>& D3) const {
   std::vector<std::complex<FloatType>> PsiZeta(nmax_ + 1);
   evalDownwardD1<FloatType>(z, D1);
   evalUpwardD3<FloatType>(z, D1, D3, PsiZeta);
@@ -848,7 +848,7 @@ template <typename FloatType, MathEngine Engine>
 void MultiLayerMie<FloatType, Engine>::calcPsiZeta(
     std::complex<FloatType> z,
     std::vector<std::complex<FloatType>>& Psi,
-    std::vector<std::complex<FloatType>>& Zeta) {
+    std::vector<std::complex<FloatType>>& Zeta) const {
   std::vector<std::complex<FloatType>> D1(nmax_ + 1), D3(nmax_ + 1),
       PsiZeta(nmax_ + 1);
   // First, calculate the logarithmic derivatives
@@ -900,7 +900,7 @@ void MultiLayerMie<FloatType, Engine>::calcPiTauAllTheta(
 template <typename FloatType, MathEngine Engine>
 void MultiLayerMie<FloatType, Engine>::calcPiTau(const FloatType& costheta,
                                          std::vector<FloatType>& Pi,
-                                         std::vector<FloatType>& Tau) {
+                                         std::vector<FloatType>& Tau) const {
   int nmax = Pi.size();
   if (Pi.size() != Tau.size())
     throw std::invalid_argument(
@@ -953,7 +953,7 @@ void MultiLayerMie<FloatType, Engine>::calcSpherHarm(
     std::vector<std::complex<evalType>>& Mo1n,
     std::vector<std::complex<evalType>>& Me1n,
     std::vector<std::complex<evalType>>& No1n,
-    std::vector<std::complex<evalType>>& Ne1n) {
+    std::vector<std::complex<evalType>>& Ne1n) const {
   // using eq 4.50 in BH
   std::complex<evalType> c_zero(0.0, 0.0);
 
@@ -1040,18 +1040,16 @@ void MultiLayerMie<FloatType, Engine>::calcScattCoeffs() {
     ); 
   };
   
-  std::vector<std::complex<FloatType>> an_buf((nmax_ + 1) * lanes), bn_buf((nmax_ + 1) * lanes);
-
   calcScattCoeffsKernel<FloatType, Engine>(
     nmax_, L, pl, get_x, get_m,
-    buffers, an_buf, bn_buf
+    buffers
   );
   
   an_.resize(nmax_);
   bn_.resize(nmax_);
   for(int n=0; n<nmax_; ++n) {
-    an_[n] = an_buf[n * lanes];
-    bn_[n] = bn_buf[n * lanes];
+    an_[n] = buffers.an[n * lanes];
+    bn_[n] = buffers.bn[n * lanes];
   }
 
   FloatType a0 = 0, b0 = 0;

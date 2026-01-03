@@ -50,6 +50,10 @@
 #include <concepts>
 #include <type_traits>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #ifdef WITH_HWY
 #include "hwy/highway.h"
 #include "hwy/contrib/math/math-inl.h"
@@ -62,7 +66,13 @@
 
 namespace nmie {
 
-
+  inline void setNumThreads(int n) {
+#ifdef _OPENMP
+    omp_set_num_threads(n);
+#else
+    (void)n;
+#endif
+  }
 
 #ifdef WITH_HWY
 namespace hn = hwy::HWY_NAMESPACE;
@@ -230,6 +240,10 @@ struct MieBuffers {
   VectorC D1, D3, D1_prev, D3_prev, Psi, Zeta, PsiZeta;
   VectorC Q, Ha, Hb;
 
+  // Stateless buffers
+  VectorC an, bn;
+  std::vector<std::vector<std::complex<FloatType>>> aln, bln, cln, dln;
+
   void resize(int nmax, int L) {
     size_t lanes = Engine::Lanes();
     size_t size = (nmax + 1) * lanes;
@@ -254,6 +268,45 @@ struct MieBuffers {
       Q.resize(total_size);
       Ha.resize(total_size);
       Hb.resize(total_size);
+    }
+
+    if (an.size() < size) an.resize(size);
+    if (bn.size() < size) bn.resize(size);
+  }
+
+  void updateSize(int nmax, int L_in) {
+    size_t L = static_cast<size_t>(L_in);
+    size_t lanes = Engine::Lanes();
+    size_t size = (nmax + 1) * lanes;
+    size_t total_size = size * L;
+
+    if (D1.capacity() < size) D1.reserve(size);
+    if (D3.capacity() < size) D3.reserve(size);
+    if (D1_prev.capacity() < size) D1_prev.reserve(size);
+    if (D3_prev.capacity() < size) D3_prev.reserve(size);
+    if (Psi.capacity() < size) Psi.reserve(size);
+    if (Zeta.capacity() < size) Zeta.reserve(size);
+    if (PsiZeta.capacity() < size) PsiZeta.reserve(size);
+
+    if (Q.capacity() < total_size) {
+      Q.reserve(total_size);
+      Ha.reserve(total_size);
+      Hb.reserve(total_size);
+    }
+
+    if (an.capacity() < size) an.reserve(size);
+    if (bn.capacity() < size) bn.reserve(size);
+
+    if (aln.size() < L) aln.resize(L);
+    if (bln.size() < L) bln.resize(L);
+    if (cln.size() < L) cln.resize(L);
+    if (dln.size() < L) dln.resize(L);
+
+    for (size_t i = 0; i < L; ++i) {
+      if (aln[i].capacity() < size) aln[i].reserve(size);
+      if (bln[i].capacity() < size) bln[i].reserve(size);
+      if (cln[i].capacity() < size) cln[i].reserve(size);
+      if (dln[i].capacity() < size) dln[i].reserve(size);
     }
   }
 };

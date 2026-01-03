@@ -87,6 +87,14 @@ if(GTest_FOUND)
     add_test(NAME "test_bulk_sphere"
         COMMAND "test_bulk_sphere")
 
+    add_executable("test_stateless_coeffs" test_stateless_coeffs.cc)
+    target_link_libraries("test_stateless_coeffs" PRIVATE 
+        GTest::gtest GTest::gtest_main
+        project_optimization
+    )
+    add_test(NAME "test_stateless_coeffs"
+        COMMAND "test_stateless_coeffs")
+
     if(Boost_FOUND)
         add_executable("test_bulk_sphere_multi_precision" test_bulk_sphere.cc)
         target_compile_options("test_bulk_sphere_multi_precision"

@@ -39,7 +39,6 @@ public:
         const size_t lanes = Engine::Lanes();
         
         MieBuffers<FloatType, Engine> buffers;
-        std::vector<std::complex<FloatType>> an_vec, bn_vec;
 
         for (size_t i = 0; i < num_spheres_; i += lanes) {
             size_t current_batch_size = std::min(lanes, num_spheres_ - i);
@@ -55,8 +54,7 @@ public:
             }
 
             buffers.resize(batch_nmax, L_);
-            an_vec.resize((batch_nmax + 1) * lanes);
-            bn_vec.resize((batch_nmax + 1) * lanes);
+            buffers.updateSize(batch_nmax, L_);
             
             auto load_val = [&](const std::vector<FloatType>& v, size_t offset) {
                 alignas(64) FloatType tmp[64] = {0};
@@ -85,7 +83,7 @@ public:
 
             calcScattCoeffsKernel<FloatType, Engine>(
                 batch_nmax, L_, -1, get_x, get_m,
-                buffers, an_vec, bn_vec
+                buffers
             );
             
             // Calculate vnmax
@@ -108,8 +106,8 @@ public:
                 auto n_val = Engine::set(static_cast<FloatType>(n+1));
                 auto active_mask = Engine::le(n_val, vnmax);
                 
-                auto an_val = Engine::load(&an_vec[n*lanes]);
-                auto bn_val = Engine::load(&bn_vec[n*lanes]);
+                auto an_val = Engine::load(&buffers.an[n*lanes]);
+                auto bn_val = Engine::load(&buffers.bn[n*lanes]);
                 
                 // Sanitize NaNs
                 auto an_re_raw = Engine::get_real(an_val);
@@ -125,8 +123,8 @@ public:
                 bn_val = Engine::select(nan_mask_bn, zero_c, bn_val);
                 
                 // Store back sanitized values
-                Engine::store(an_val, &an_vec[n*lanes]);
-                Engine::store(bn_val, &bn_vec[n*lanes]);
+                Engine::store(an_val, &buffers.an[n*lanes]);
+                Engine::store(bn_val, &buffers.bn[n*lanes]);
                 
                 an_val = Engine::select(active_mask, an_val, zero_c);
                 bn_val = Engine::select(active_mask, bn_val, zero_c);

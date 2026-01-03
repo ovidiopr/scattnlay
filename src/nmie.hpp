@@ -432,8 +432,8 @@ class MultiLayerMie {
   std::vector<std::vector<FloatType>> coords_polar_;
 
  protected:
-  unsigned int calcNstop(FloatType xL = -1);
-  unsigned int calcNmax(FloatType xL = -1);
+  unsigned int calcNstop(FloatType xL = -1) const;
+  unsigned int calcNmax(FloatType xL = -1) const;
 
   std::complex<FloatType> calc_an(int n,
                                   FloatType XL,
@@ -442,7 +442,7 @@ class MultiLayerMie {
                                   std::complex<FloatType> PsiXL,
                                   std::complex<FloatType> ZetaXL,
                                   std::complex<FloatType> PsiXLM1,
-                                  std::complex<FloatType> ZetaXLM1);
+                                  std::complex<FloatType> ZetaXLM1) const;
 
   std::complex<FloatType> calc_bn(int n,
                                   FloatType XL,
@@ -451,20 +451,20 @@ class MultiLayerMie {
                                   std::complex<FloatType> PsiXL,
                                   std::complex<FloatType> ZetaXL,
                                   std::complex<FloatType> PsiXLM1,
-                                  std::complex<FloatType> ZetaXLM1);
+                                  std::complex<FloatType> ZetaXLM1) const;
 
 
 
   void calcD1D3(std::complex<FloatType> z,
                 std::vector<std::complex<FloatType>>& D1,
-                std::vector<std::complex<FloatType>>& D3);
+                std::vector<std::complex<FloatType>>& D3) const;
 
   void calcPsiZeta(std::complex<FloatType> x,
                    std::vector<std::complex<FloatType>>& Psi,
-                   std::vector<std::complex<FloatType>>& Zeta);
+                   std::vector<std::complex<FloatType>>& Zeta) const;
   void calcPiTau(const FloatType& costheta,
                  std::vector<FloatType>& Pi,
-                 std::vector<FloatType>& Tau);
+                 std::vector<FloatType>& Tau) const;
 
   template <typename evalType = FloatType>
   void calcSpherHarm(const std::complex<evalType> Rho,
@@ -478,7 +478,7 @@ class MultiLayerMie {
                      std::vector<std::complex<evalType>>& Mo1n,
                      std::vector<std::complex<evalType>>& Me1n,
                      std::vector<std::complex<evalType>>& No1n,
-                     std::vector<std::complex<evalType>>& Ne1n);
+                     std::vector<std::complex<evalType>>& Ne1n) const;
 
   template <typename evalType = FloatType>
   void calcFieldByComponents(const evalType Rho,
