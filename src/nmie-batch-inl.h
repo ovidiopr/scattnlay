@@ -82,41 +82,29 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
             buffers
         );
 
-        typename Engine::RealV vQext = hn::Zero(d), vQsca = hn::Zero(d), vQpr_sum = hn::Zero(d);
-        typename Engine::ComplexV vQbk = {hn::Zero(d), hn::Zero(d)};
-        
         std::vector<typename Engine::ComplexV> vS1(num_angles, {hn::Zero(d), hn::Zero(d)});
         std::vector<typename Engine::ComplexV> vS2(num_angles, {hn::Zero(d), hn::Zero(d)});
         
         nmie::sumMieSeriesKernel<FloatType, Engine>(
             calc_nmax,
             vnmax,
+            vx,
             buffers.an.data(),
             buffers.bn.data(),
             input.theta,
-            vQext,
-            vQsca,
-            vQpr_sum,
-            vQbk,
+            buffers,
             vS1,
             vS2
         );
 
-        typename Engine::RealV vQext_final, vQsca_final, vQabs_final, vQbk_final, vQpr_final, vG_final, vAlbedo_final;
-        
-        nmie::finalizeMieResults<FloatType, Engine>(
-            vx, vQext, vQsca, vQpr_sum, vQbk,
-            vQext_final, vQsca_final, vQabs_final, vQbk_final, vQpr_final, vG_final, vAlbedo_final
-        );
-        
         alignas(64) FloatType r_ext[64], r_sca[64], r_abs[64], r_bk[64], r_pr[64], r_g[64], r_albedo[64];
-        hn::Store(vQext_final.v, d, r_ext);
-        hn::Store(vQsca_final.v, d, r_sca);
-        hn::Store(vQabs_final.v, d, r_abs);
-        hn::Store(vQbk_final.v, d, r_bk);
-        hn::Store(vQpr_final.v, d, r_pr);
-        hn::Store(vG_final.v, d, r_g);
-        hn::Store(vAlbedo_final.v, d, r_albedo);
+        hn::Store(buffers.Qext.v, d, r_ext);
+        hn::Store(buffers.Qsca.v, d, r_sca);
+        hn::Store(buffers.Qabs.v, d, r_abs);
+        hn::Store(buffers.Qbk.v, d, r_bk);
+        hn::Store(buffers.Qpr.v, d, r_pr);
+        hn::Store(buffers.g.v, d, r_g);
+        hn::Store(buffers.albedo.v, d, r_albedo);
 
         for (size_t j = 0; j < current_batch_size; ++j) {
             output.Qext[i + j] = r_ext[j];

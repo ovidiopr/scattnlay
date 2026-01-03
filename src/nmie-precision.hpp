@@ -244,6 +244,8 @@ struct MieBuffers {
   VectorC an, bn;
   std::vector<std::vector<std::complex<FloatType>>> aln, bln, cln, dln;
 
+  typename Engine::RealV Qext, Qsca, Qabs, Qbk, Qpr, g, albedo;
+
   void resize(int nmax, int L) {
     size_t lanes = Engine::Lanes();
     size_t size = (nmax + 1) * lanes;

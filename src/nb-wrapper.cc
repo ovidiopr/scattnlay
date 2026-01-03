@@ -119,6 +119,7 @@ NB_MODULE(scattnlay_mp, m) {
   declare_mie<nmie::FloatType, nmie::DefaultEngine<nmie::FloatType>>(m,
                                                                      "mie_mp");
   declare_mesomie<nmie::FloatType>(m, "mesomie_mp");
+  m.def("setNumThreads", &nmie::setNumThreads);
 }
 #else
 std::string precision_name = "_dp";
@@ -144,6 +145,7 @@ NB_MODULE(scattnlay_dp, m) {
 #ifdef WITH_HWY
     declare_mie<double, nmie::ScalarEngine<double>>(m, "mie_scalar");
 #endif
+  m.def("setNumThreads", &nmie::setNumThreads);
 }
 #endif
 

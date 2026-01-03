@@ -81,6 +81,8 @@ EMSCRIPTEN_BINDINGS(c) {
       .function("GetQabs", &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::GetQabs)
       ;
 #endif
+
+  function("setNumThreads", &nmie::setNumThreads);
 }
 
 // namespace nmie {

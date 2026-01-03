@@ -1088,135 +1088,154 @@ void MultiLayerMie<FloatType, Engine>::calcScattCoeffs() {
 }  // end of MultiLayerMie::calcScattCoeffs()
 
 template <typename FloatType, typename Engine>
-void sumMieSeriesKernel(
-    const int nmax,
-    const typename Engine::RealV vnmax,
-    const std::complex<FloatType>* an_ptr,
-    const std::complex<FloatType>* bn_ptr,
-    const std::vector<FloatType>& theta,
-    typename Engine::RealV& Qext,
-    typename Engine::RealV& Qsca,
-    typename Engine::RealV& Qpr,
-    typename Engine::ComplexV& Qbk,
-    std::vector<typename Engine::ComplexV>& S1,
-    std::vector<typename Engine::ComplexV>& S2
-) {
-    using ComplexV = typename Engine::ComplexV;
-    using RealV = typename Engine::RealV;
-    
-    auto zero = Engine::set(0.0);
-    auto one = Engine::set(1.0);
-    
-    Qext = zero;
-    Qsca = zero;
-    Qpr = zero;
-    Qbk = Engine::make_complex(zero, zero);
-    
-    size_t num_angles = theta.size();
-    for(size_t k=0; k<num_angles; ++k) {
-        S1[k] = Engine::make_complex(zero, zero);
-        S2[k] = Engine::make_complex(zero, zero);
+void sumMieSeriesKernel(const int nmax,
+                        const typename Engine::RealV vnmax,
+                        const typename Engine::RealV x,
+                        const std::complex<FloatType>* an_ptr,
+                        const std::complex<FloatType>* bn_ptr,
+                        const std::vector<FloatType>& theta,
+                        MieBuffers<FloatType, Engine>& buffers,
+                        std::vector<typename Engine::ComplexV>& S1,
+                        std::vector<typename Engine::ComplexV>& S2) {
+  using ComplexV = typename Engine::ComplexV;
+  using RealV = typename Engine::RealV;
+
+  auto zero = Engine::set(0.0);
+  auto one = Engine::set(1.0);
+
+  auto Qext_sum = zero;
+  auto Qsca_sum = zero;
+  auto Qpr_sum = zero;
+  auto Qbk_sum = Engine::make_complex(zero, zero);
+
+  size_t num_angles = theta.size();
+  for (size_t k = 0; k < num_angles; ++k) {
+    S1[k] = Engine::make_complex(zero, zero);
+    S2[k] = Engine::make_complex(zero, zero);
+  }
+
+  std::vector<ComplexV> pi_prev(num_angles, Engine::make_complex(zero, zero));
+  std::vector<ComplexV> pi_curr(num_angles, Engine::make_complex(one, zero));
+  std::vector<RealV> mu(num_angles);
+  for (size_t k = 0; k < num_angles; ++k) {
+    mu[k] = Engine::set(nmm::cos(theta[k]));
+  }
+
+  ComplexV an_prev = Engine::make_complex(zero, zero);
+  ComplexV bn_prev = Engine::make_complex(zero, zero);
+
+  for (int n = 1; n < nmax; ++n) {
+    auto vn = Engine::set(static_cast<FloatType>(n));
+    auto mask = Engine::le(vn, vnmax);
+
+    size_t offset = (n - 1) * Engine::Lanes();
+    auto an = Engine::load(&an_ptr[offset]);
+    auto bn = Engine::load(&bn_ptr[offset]);
+
+    an = Engine::select(mask, an, Engine::make_complex(zero, zero));
+    bn = Engine::select(mask, bn, Engine::make_complex(zero, zero));
+
+    auto n2p1 = (vn + vn) + one;
+    auto n_plus_1 = vn + one;
+    auto n_sq_plus_n = vn * n_plus_1;
+
+    auto an_plus_bn = an + bn;
+    auto term_ext = n2p1 * Engine::get_real(an_plus_bn);
+    Qext_sum = Qext_sum + term_ext;
+
+    auto an_sq = (Engine::get_real(an) * Engine::get_real(an)) +
+                 (Engine::get_imag(an) * Engine::get_imag(an));
+    auto bn_sq = (Engine::get_real(bn) * Engine::get_real(bn)) +
+                 (Engine::get_imag(bn) * Engine::get_imag(bn));
+    auto term_sca = n2p1 * (an_sq + bn_sq);
+    Qsca_sum = Qsca_sum + term_sca;
+
+    RealV sign = (n % 2 == 0) ? one : Engine::set(-1.0);
+    auto an_minus_bn = an - bn;
+    auto term_bk = Engine::make_complex(n2p1 * sign, zero) * an_minus_bn;
+    Qbk_sum = Qbk_sum + term_bk;
+
+    if (n > 1) {
+      auto nm1 = vn - one;
+      auto factor1 = (nm1 * n_plus_1) / vn;
+
+      auto re_aa = (Engine::get_real(an_prev) * Engine::get_real(an)) +
+                   (Engine::get_imag(an_prev) * Engine::get_imag(an));
+      auto re_bb = (Engine::get_real(bn_prev) * Engine::get_real(bn)) +
+                   (Engine::get_imag(bn_prev) * Engine::get_imag(bn));
+
+      auto term_pr1 = factor1 * (re_aa + re_bb);
+      Qpr_sum = Qpr_sum + term_pr1;
     }
 
-    std::vector<ComplexV> pi_prev(num_angles, Engine::make_complex(zero, zero));
-    std::vector<ComplexV> pi_curr(num_angles, Engine::make_complex(one, zero));
-    std::vector<RealV> mu(num_angles);
-    for(size_t k=0; k<num_angles; ++k) {
-        mu[k] = Engine::set(nmm::cos(theta[k]));
-    }
+    auto factor2 = n2p1 / n_sq_plus_n;
+    auto re_ab = (Engine::get_real(an) * Engine::get_real(bn)) +
+                 (Engine::get_imag(an) * Engine::get_imag(bn));
+    auto term_pr2 = factor2 * re_ab;
+    Qpr_sum = Qpr_sum + term_pr2;
 
-    ComplexV an_prev = Engine::make_complex(zero, zero);
-    ComplexV bn_prev = Engine::make_complex(zero, zero);
-    
-    for (int n = 1; n < nmax; ++n) {
-        auto vn = Engine::set(static_cast<FloatType>(n));
-        auto mask = Engine::le(vn, vnmax);
-        
-        size_t offset = (n - 1) * Engine::Lanes();
-        auto an = Engine::load(&an_ptr[offset]);
-        auto bn = Engine::load(&bn_ptr[offset]);
-        
-        an = Engine::select(mask, an, Engine::make_complex(zero, zero));
-        bn = Engine::select(mask, bn, Engine::make_complex(zero, zero));
+    an_prev = an;
+    bn_prev = bn;
 
-        auto n2p1 = (vn + vn) + one;
-        auto n_plus_1 = vn + one;
-        auto n_sq_plus_n = vn * n_plus_1;
+    if (num_angles > 0) {
+      auto factor = factor2;
 
-        auto an_plus_bn = an + bn;
-        auto term_ext = n2p1 * Engine::get_real(an_plus_bn);
-        Qext = Qext + term_ext;
+      for (size_t k = 0; k < num_angles; ++k) {
+        ComplexV pi_next = Engine::make_complex(zero, zero);
+        ComplexV tau_n = Engine::make_complex(zero, zero);
 
-        auto an_sq = (Engine::get_real(an) * Engine::get_real(an)) +
-                     (Engine::get_imag(an) * Engine::get_imag(an));
-        auto bn_sq = (Engine::get_real(bn) * Engine::get_real(bn)) +
-                     (Engine::get_imag(bn) * Engine::get_imag(bn));
-        auto term_sca = n2p1 * (an_sq + bn_sq);
-        Qsca = Qsca + term_sca;
-
-        RealV sign = (n % 2 == 0) ? one : Engine::set(-1.0);
-        auto an_minus_bn = an - bn;
-        auto term_bk = Engine::make_complex(n2p1 * sign, zero) * an_minus_bn;
-        Qbk = Qbk + term_bk;
-
-        if (n > 1) {
+        if (n == 1) {
+          pi_next = Engine::make_complex(one, zero);
+          tau_n = Engine::make_complex(mu[k], zero);
+        } else {
           auto nm1 = vn - one;
-          auto factor1 = (nm1 * n_plus_1) / vn;
+          auto n2m1 = (vn + vn) - one;
 
-          auto re_aa = (Engine::get_real(an_prev) * Engine::get_real(an)) +
-                       (Engine::get_imag(an_prev) * Engine::get_imag(an));
-          auto re_bb = (Engine::get_real(bn_prev) * Engine::get_real(bn)) +
-                       (Engine::get_imag(bn_prev) * Engine::get_imag(bn));
+          auto t1 = n2m1 * (mu[k] * Engine::get_real(pi_curr[k]));
+          auto t2 = vn * Engine::get_real(pi_prev[k]);
+          auto pi_val = (t1 - t2) / nm1;
+          pi_next = Engine::make_complex(pi_val, zero);
 
-          auto term_pr1 = factor1 * (re_aa + re_bb);
-          Qpr = Qpr + term_pr1;
+          auto t3 = vn * (mu[k] * pi_val);
+          auto t4 = n_plus_1 * Engine::get_real(pi_curr[k]);
+          auto tau_val = t3 - t4;
+          tau_n = Engine::make_complex(tau_val, zero);
+
+          pi_prev[k] = pi_curr[k];
+          pi_curr[k] = pi_next;
         }
 
-        auto factor2 = n2p1 / n_sq_plus_n;
-        auto re_ab = (Engine::get_real(an) * Engine::get_real(bn)) +
-                     (Engine::get_imag(an) * Engine::get_imag(bn));
-        auto term_pr2 = factor2 * re_ab;
-        Qpr = Qpr + term_pr2;
+        auto term_S1 = (an * pi_curr[k]) + (bn * tau_n);
+        S1[k] = S1[k] + (Engine::make_complex(factor, zero) * term_S1);
 
-        an_prev = an;
-        bn_prev = bn;
-
-        if (num_angles > 0) {
-            auto factor = factor2;
-            
-            for(size_t k=0; k<num_angles; ++k) {
-                ComplexV pi_next = Engine::make_complex(zero, zero);
-                ComplexV tau_n = Engine::make_complex(zero, zero);
-                
-                if (n == 1) {
-                    pi_next = Engine::make_complex(one, zero);
-                    tau_n = Engine::make_complex(mu[k], zero);
-                } else {
-                  auto nm1 = vn - one;
-                  auto n2m1 = (vn + vn) - one;
-
-                  auto t1 = n2m1 * (mu[k] * Engine::get_real(pi_curr[k]));
-                  auto t2 = vn * Engine::get_real(pi_prev[k]);
-                  auto pi_val = (t1 - t2) / nm1;
-                  pi_next = Engine::make_complex(pi_val, zero);
-
-                  auto t3 = vn * (mu[k] * pi_val);
-                  auto t4 = n_plus_1 * Engine::get_real(pi_curr[k]);
-                  auto tau_val = t3 - t4;
-                  tau_n = Engine::make_complex(tau_val, zero);
-
-                  pi_prev[k] = pi_curr[k];
-                  pi_curr[k] = pi_next;
-                }
-
-                auto term_S1 = (an * pi_curr[k]) + (bn * tau_n);
-                S1[k] = S1[k] + (Engine::make_complex(factor, zero) * term_S1);
-
-                auto term_S2 = (an * tau_n) + (bn * pi_curr[k]);
-                S2[k] = S2[k] + (Engine::make_complex(factor, zero) * term_S2);
-            }
-        }
+        auto term_S2 = (an * tau_n) + (bn * pi_curr[k]);
+        S2[k] = S2[k] + (Engine::make_complex(factor, zero) * term_S2);
+      }
     }
+  }
+
+  // Finalize results
+  auto two = Engine::set(2.0);
+  auto four = Engine::set(4.0);
+  auto x2 = x * x;
+  auto norm = two / x2;
+
+  buffers.Qext = Qext_sum * norm;
+  buffers.Qsca = Qsca_sum * norm;
+  buffers.Qpr = buffers.Qext - (four * Qpr_sum / x2);
+  buffers.Qabs = buffers.Qext - buffers.Qsca;
+
+  auto qbk_mag_sq = (Engine::get_real(Qbk_sum) * Engine::get_real(Qbk_sum)) +
+                    (Engine::get_imag(Qbk_sum) * Engine::get_imag(Qbk_sum));
+  buffers.Qbk = qbk_mag_sq / x2;
+
+  auto threshold = Engine::set(1e-12);
+  auto mask_sca = Engine::gt(buffers.Qsca, threshold);
+  auto mask_ext = Engine::gt(buffers.Qext, threshold);
+
+  buffers.g = Engine::select(mask_sca,
+                             (buffers.Qext - buffers.Qpr) / buffers.Qsca, zero);
+  buffers.albedo = Engine::select(mask_ext, buffers.Qsca / buffers.Qext, zero);
 }
 
 template <typename FloatType, typename Engine>
@@ -1314,25 +1333,19 @@ void MultiLayerMie<FloatType, Engine>::RunMieCalculation() {
   S1_.assign(theta_.size(), std::complex<FloatType>(0.0, 0.0));
   S2_.assign(theta_.size(), std::complex<FloatType>(0.0, 0.0));
 
-  std::complex<FloatType> Qbktmp(0.0, 0.0);
+  MieBuffers<FloatType, ScalarEngine<FloatType>> buffers;
 
   sumMieSeriesKernel<FloatType, ScalarEngine<FloatType>>(
-      nmax_,
-      static_cast<FloatType>(nmax_),
-      an_.data(),
-      bn_.data(),
-      theta_,
-      Qext_,
-      Qsca_,
-      Qpr_,
-      Qbktmp,
-      S1_,
-      S2_
-  );
+      nmax_, static_cast<FloatType>(nmax_), x.back(), an_.data(), bn_.data(),
+      theta_, buffers, S1_, S2_);
 
-  finalizeMieResults<FloatType, ScalarEngine<FloatType>>(
-      x.back(), Qext_, Qsca_, Qpr_, Qbktmp, Qext_, Qsca_, Qabs_, Qbk_, Qpr_,
-      asymmetry_factor_, albedo_);
+  Qext_ = buffers.Qext;
+  Qsca_ = buffers.Qsca;
+  Qabs_ = buffers.Qabs;
+  Qbk_ = buffers.Qbk;
+  Qpr_ = buffers.Qpr;
+  asymmetry_factor_ = buffers.g;
+  albedo_ = buffers.albedo;
 
   isMieCalculated_ = true;
 }
