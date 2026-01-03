@@ -60,7 +60,10 @@ else()
     if(STRICT_BUILD)
         message(FATAL_ERROR "STRICT_BUILD: Google Highway not found.")
     endif()
-    set(WITH_HWY OFF)
+    # Do not force OFF if user requested it, so FetchContent can run
+    if(NOT DEFINED WITH_HWY)
+        set(WITH_HWY OFF)
+    endif()
 endif()
 
 include(FetchContent)

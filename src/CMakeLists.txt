@@ -43,7 +43,14 @@ target_link_libraries(scattnlay-dp PRIVATE nmie_obj_dp project_warnings project_
 set_target_properties(scattnlay-dp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 if(WITH_HWY)
-    target_link_libraries(nmie_obj_dp PUBLIC hwy::hwy)
+    if(TARGET hwy::hwy)
+        target_link_libraries(nmie_obj_dp PUBLIC hwy::hwy)
+    elseif(TARGET hwy)
+        target_link_libraries(nmie_obj_dp PUBLIC hwy)
+    else()
+        message(FATAL_ERROR "WITH_HWY is ON, but neither hwy::hwy nor hwy targets are found.")
+    endif()
+
     # 0x4000000 disables HWY_NEON_BF16 (bit 26) which causes namespace errors on Clang/macOS
     target_compile_definitions(nmie_obj_dp PUBLIC 
         WITH_HWY 
@@ -84,7 +91,11 @@ if(EMSCRIPTEN)
     )
 
     add_executable(nmiejs nmie-js-wrapper.cc)
-    target_link_libraries(nmiejs PRIVATE wasm_options)
+    target_link_libraries(nmiejs PRIVATE wasm_options nmie_obj_dp)
+    target_compile_options(nmiejs PRIVATE -Wno-gnu-zero-variadic-macro-arguments)
+    if(WITH_HWY)
+        target_compile_definitions(nmiejs PRIVATE WITH_HWY)
+    endif()
     set_target_properties(nmiejs PROPERTIES SUFFIX ".js")
 
     # Update copy command to put files in public/wasm for reliable asset fetching
