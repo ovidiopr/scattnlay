@@ -590,8 +590,6 @@ void calcExpanCoeffsKernel(
     isExpCoeffsCalc_ = false;
     aln_.clear(); bln_.clear(); cln_.clear(); dln_.clear();
 
-    std::complex<FloatType> c_one(1.0, 0.0), c_zero(0.0, 0.0);
-
     const int L = refractive_index_.size();
 
     aln_.resize(L + 1);
@@ -605,70 +603,27 @@ void calcExpanCoeffsKernel(
       dln_[l].resize(nmax_, static_cast<FloatType>(0.0));
     }
 
-    // Yang, paragraph under eq. A3
-    // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
-    for (int n = 0; n < nmax_; n++) {
-      aln_[L][n] = an_[n];
-      bln_[L][n] = bn_[n];
-      cln_[L][n] = c_one;
-      dln_[L][n] = c_one;
+    MieBuffers<FloatType, Engine> buffers;
+    buffers.resize(nmax_, L, 0);
+
+    size_t lanes = Engine::Lanes();
+    for (int n = 0; n < nmax_; ++n) {
+      buffers.an[n * lanes] = an_[n];
+      buffers.bn[n * lanes] = bn_[n];
     }
 
-    std::vector<std::complex<FloatType> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
-    std::vector<std::complex<FloatType> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
-    std::complex<FloatType> denomZeta, denomPsi, T1, T2, T3, T4;
+    calcExpanCoeffsKernel(nmax_, refractive_index_, size_param_, PEC_layer_position_, buffers);
 
-    auto &m = refractive_index_;
-    std::vector< std::complex<FloatType> > m1(L);
-
-    for (int l = 0; l < L - 1; l++) m1[l] = m[l + 1];
-    m1[L - 1] = std::complex<FloatType> (1.0, 0.0);
-
-    std::complex<FloatType> z, z1;
-    for (int l = L - 1; l >= 0; l--) {
-      if (l <= PEC_layer_position_) { // We are inside a PEC. All coefficients must be zero!!!
-        for (int n = 0; n < nmax_; n++) {
-          // aln
-          aln_[l][n] = c_zero;
-          // bln
-          bln_[l][n] = c_zero;
-          // cln
-          cln_[l][n] = c_zero;
-          // dln
-          dln_[l][n] = c_zero;
-        }
-      } else { // Regular material, just do the calculation
-        z = size_param_[l]*m[l];
-        z1 = size_param_[l]*m1[l];
-
-        calcD1D3(z, nmax_, D1z, D3z);
-        calcD1D3(z1, nmax_, D1z1, D3z1);
-        calcPsiZeta(z, nmax_, Psiz, Zetaz);
-        calcPsiZeta(z1, nmax_, Psiz1, Zetaz1);
-
-        for (int n = 0; n < nmax_; n++) {
-          int n1 = n + 1;
-
-          denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
-          denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
-
-          T1 =  aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
-          T2 = (bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1])*m[l]/m1[l];
-
-          T3 = (dln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - aln_[l + 1][n]*D3z1[n1]*Zetaz1[n1])*m[l]/m1[l];
-          T4 =  cln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - bln_[l + 1][n]*D3z1[n1]*Zetaz1[n1];
-
-          // aln
-          aln_[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
-          // bln
-          bln_[l][n] = (D1z[n1]*T2 + T4)/denomZeta;
-          // cln
-          cln_[l][n] = (D3z[n1]*T2 + T4)/denomPsi;
-          // dln
-          dln_[l][n] = (D3z[n1]*T1 + T3)/denomPsi;
-        }  // end of all n
-      }  // end PEC condition
-    }  // end of all l
+    size_t stride = (nmax_ + 1) * lanes;
+    for (int l = 0; l <= L; l++) {
+      for (int n = 0; n < nmax_; n++) {
+        size_t idx = l * stride + n * lanes;
+        aln_[l][n] = buffers.aln[idx];
+        bln_[l][n] = buffers.bln[idx];
+        cln_[l][n] = buffers.cln[idx];
+        dln_[l][n] = buffers.dln[idx];
+      }
+    }
 
     int print_precision = 16;
 #ifdef MULTI_PRECISION
