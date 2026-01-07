@@ -258,9 +258,9 @@ class MultiLayerMie {
   const double convergence_threshold_ = 1e-25;
   const double nearfield_convergence_threshold_ = 1e-14;
 #endif
-  void RunMieCalculation();
+  void RunMieCalculation() const;
 
-  void RunFieldCalculation(bool isMarkUnconverged = true);
+  void RunFieldCalculation(bool isMarkUnconverged = true) const;
 
   void RunFieldCalculationPolar(
       const int outer_arc_points = 1,
@@ -272,7 +272,7 @@ class MultiLayerMie {
       const double from_Phi = 0,
       const double to_Phi = static_cast<double>(3.14159265358979323),
       const bool isMarkUnconverged = true,
-      int nmax_in = -1);
+      int nmax_in = -1) const;
 
   void RunFieldCalculationCartesian(const int first_side_points = 2,
                                     const int second_side_points = 2,
@@ -282,11 +282,11 @@ class MultiLayerMie {
                                     const double at_y = 0,
                                     const double at_z = 0,
                                     const bool isMarkUnconverged = true,
-                                    const int nmax_in = -1);
+                                    const int nmax_in = -1) const;
 
 
-  void calcScattCoeffs();
-  void calcExpanCoeffs();
+  void calcScattCoeffs() const;
+  void calcExpanCoeffs() const;
   //****************************************************************************
   // Return calculation results
   //****************************************************************************
@@ -345,16 +345,16 @@ class MultiLayerMie {
   template <typename evalType = FloatType>
   void GetIndexAtRadius(const evalType Rho,
                         std::complex<evalType>& ml,
-                        unsigned int& l);
+                        unsigned int& l) const;
 
   template <typename evalType = FloatType>
-  void GetIndexAtRadius(const evalType Rho, std::complex<evalType>& ml);
+  void GetIndexAtRadius(const evalType Rho, std::complex<evalType>& ml) const;
 
   // Modify scattering (theta) angles
   void SetAngles(const std::vector<FloatType>& angles);
 
   // Modify coordinates for field calculation
-  void SetFieldCoords(std::vector<std::vector<FloatType>> coords) {
+  void SetFieldCoords(std::vector<std::vector<FloatType>> coords) const {
     coords_ = std::move(coords);
   }
 
@@ -368,7 +368,7 @@ class MultiLayerMie {
   };
 
   // Set a fixed value for the maximum number of terms
-  void SetMaxTerms(int nmax);
+  void SetMaxTerms(int nmax) const;
 
   // Get maximum number of terms
   int GetMaxTerms() {
@@ -382,7 +382,7 @@ class MultiLayerMie {
   // Clear layer information
   void ClearLayers();
 
-  void MarkUncalculated();
+  void MarkUncalculated() const;
 
   // Read parameters
   // Get total size parameter of particle
@@ -421,7 +421,7 @@ class MultiLayerMie {
   std::vector<FloatType> GetFieldHabs() {
     return Habs_;
   };
-  bool GetFieldConvergence();
+  bool GetFieldConvergence() const;
 
   // Get fields in spherical coordinates.
   std::vector<std::vector<std::complex<FloatType>>> GetFieldEs() {
@@ -437,11 +437,11 @@ class MultiLayerMie {
   // Refractive index for all layers
   std::vector<std::complex<FloatType>> refractive_index_;
   // Scattering coefficients
-  std::vector<std::complex<FloatType>> an_, bn_;
-  std::vector<std::vector<std::complex<FloatType>>> aln_, bln_, cln_, dln_;
+  mutable std::vector<std::complex<FloatType>> an_, bn_;
+  mutable std::vector<std::vector<std::complex<FloatType>>> aln_, bln_, cln_, dln_;
   // Points for field evaluation
-  std::vector<std::vector<FloatType>> coords_;
-  std::vector<std::vector<FloatType>> coords_polar_;
+  mutable std::vector<std::vector<FloatType>> coords_;
+  mutable std::vector<std::vector<FloatType>> coords_polar_;
 
  protected:
   void RunMieCalculationStateless(MieBuffers<FloatType, Engine>& buf) const;
@@ -499,13 +499,13 @@ class MultiLayerMie {
                              std::vector<std::complex<evalType>>& H,
                              std::vector<bool>& isConvergedE,
                              std::vector<bool>& isConvergedH,
-                             bool isMarkUnconverged);
+                             bool isMarkUnconverged) const;
 
-  bool isExpCoeffsCalc_ = false;
-  bool isScaCoeffsCalc_ = false;
-  bool isMieCalculated_ = false;
-  std::vector<bool> isConvergedE_ = {false, false, false};
-  std::vector<bool> isConvergedH_ = {false, false, false};
+  mutable bool isExpCoeffsCalc_ = false;
+  mutable bool isScaCoeffsCalc_ = false;
+  mutable bool isMieCalculated_ = false;
+  mutable std::vector<bool> isConvergedE_ = {false, false, false};
+  mutable std::vector<bool> isConvergedH_ = {false, false, false};
 
   // Scattering angles for scattering pattern in radians
   std::vector<FloatType> theta_;
@@ -517,26 +517,26 @@ class MultiLayerMie {
   int mode_type_ = Modes::kAll;
 
   // with calcNmax(int first_layer);
-  int nmax_ = -1;
-  int nmax_preset_ = -1;
-  int available_maximal_nmax_ = -1;
+  mutable int nmax_ = -1;
+  mutable int nmax_preset_ = -1;
+  mutable int available_maximal_nmax_ = -1;
 
   // Store result
-  FloatType Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0,
+  mutable FloatType Qsca_ = 0.0, Qext_ = 0.0, Qabs_ = 0.0, Qbk_ = 0.0, Qpr_ = 0.0,
             asymmetry_factor_ = 0.0, albedo_ = 0.0;
 
   // {X[], Y[], Z[]}
-  std::vector<std::vector<std::complex<FloatType>>> E_, H_;
-  std::vector<std::vector<std::complex<FloatType>>> Es_, Hs_;
-  std::vector<FloatType> Eabs_, Habs_;
+  mutable std::vector<std::vector<std::complex<FloatType>>> E_, H_;
+  mutable std::vector<std::vector<std::complex<FloatType>>> Es_, Hs_;
+  mutable std::vector<FloatType> Eabs_, Habs_;
 
-  std::vector<std::complex<FloatType>> S1_, S2_;
-  void calcMieSeriesNeededToConverge(const FloatType Rho, int nmax_in = -1);
+  mutable std::vector<std::complex<FloatType>> S1_, S2_;
+  void calcMieSeriesNeededToConverge(const FloatType Rho, int nmax_in = -1) const;
 
   void calcPiTauAllTheta(const double from_Theta,
                          const double to_Theta,
                          std::vector<std::vector<FloatType>>& Pi,
-                         std::vector<std::vector<FloatType>>& Tau);
+                         std::vector<std::vector<FloatType>>& Tau) const;
 
   void calcRadialOnlyDependantFunctions(
       const double from_Rho,
@@ -545,12 +545,12 @@ class MultiLayerMie {
       std::vector<std::vector<std::complex<FloatType>>>& D1n,
       std::vector<std::vector<std::complex<FloatType>>>& Zeta,
       std::vector<std::vector<std::complex<FloatType>>>& D3n,
-      int nmax_in = -1);
+      int nmax_in = -1) const;
 
-  void convertFieldsFromSphericalToCartesian();
+  void convertFieldsFromSphericalToCartesian() const;
 
   void UpdateConvergenceStatus(std::vector<bool> isConvergedE,
-                               std::vector<bool> isConvergedH);
+                               std::vector<bool> isConvergedH) const;
 };  // end of class MultiLayerMie
 
 //******************************************************************************

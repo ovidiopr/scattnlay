@@ -5,11 +5,13 @@ echo "--- 1. Installing Python Extension + CLI Tools ---"
 # --no-build-isolation: Uses the libraries already in your environment (numpy, etc.)
 # This prevents pip from creating a slow virtual environment for every build.
 # STRICT_BUILD=ON ensures we don't skip SIMD/MP during dev.
+export CMAKE_PREFIX_PATH="/opt/homebrew:$CMAKE_PREFIX_PATH"
 python3 -m pip install -e . \
     -C build-dir=build \
     -C cmake.define.CMAKE_BUILD_TYPE=Release \
     -C cmake.define.WITH_HWY=ON \
-    -C cmake.define.ENABLE_MP=ON
+    -C cmake.define.ENABLE_MP=ON \
+    -C cmake.define.ENABLE_OPENMP=ON
     
 echo "--- 2. Building WASM Assets ---"
 if [ -n "$EMSDK" ]; then

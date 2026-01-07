@@ -20,6 +20,9 @@ set(_scattnlay_nearfield_sources
 add_library(nmie_obj_dp OBJECT ${CMAKE_CURRENT_LIST_DIR}/nmie.cc)
 target_include_directories(nmie_obj_dp PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_link_libraries(nmie_obj_dp PUBLIC project_warnings project_optimization)
+if(OpenMP_FOUND)
+    target_link_libraries(nmie_obj_dp PUBLIC OpenMP::OpenMP_CXX)
+endif()
 set_target_properties(nmie_obj_dp PROPERTIES 
     POSITION_INDEPENDENT_CODE ON
     INTERPROCEDURAL_OPTIMIZATION ON
@@ -149,6 +152,9 @@ if(BUILD_PYTHON_EXT)
         target_link_libraries(scattnlay_dp PRIVATE hwy::hwy)
         target_compile_definitions(scattnlay_dp PRIVATE WITH_HWY "HWY_DISABLED_TARGETS=0x4000000")
     endif()
+    if(OpenMP_FOUND)
+        target_link_libraries(scattnlay_dp PRIVATE OpenMP::OpenMP_CXX)
+    endif()
     
     if(ENABLE_MP)
         # scattnlay_mp
@@ -156,6 +162,9 @@ if(BUILD_PYTHON_EXT)
         target_compile_definitions(scattnlay_mp PRIVATE MULTI_PRECISION=100)
         target_link_libraries(scattnlay_mp PRIVATE nmie_obj_mp)
         target_compile_options(scattnlay_mp PRIVATE -Wno-nested-anon-types -Wno-zero-length-array)
+        if(OpenMP_FOUND)
+            target_link_libraries(scattnlay_mp PRIVATE OpenMP::OpenMP_CXX)
+        endif()
     endif()
 
     if(WITH_HWY)
@@ -164,6 +173,9 @@ if(BUILD_PYTHON_EXT)
         target_compile_definitions(scattnlay_simd PRIVATE BUILD_SIMD_MODULE WITH_HWY "HWY_DISABLED_TARGETS=0x4000000")
         target_link_libraries(scattnlay_simd PRIVATE nmie_obj_dp hwy::hwy)
         target_compile_options(scattnlay_simd PRIVATE -Wno-nested-anon-types -Wno-zero-length-array)
+        if(OpenMP_FOUND)
+            target_link_libraries(scattnlay_simd PRIVATE OpenMP::OpenMP_CXX)
+        endif()
     endif()
     
     install(TARGETS scattnlay_dp DESTINATION scattnlay)

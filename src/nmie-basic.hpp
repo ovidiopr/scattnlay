@@ -664,7 +664,7 @@ void MultiLayerMie<FloatType, Engine>::SetPECLayer(int layer_position) {
 // Set maximun number of terms to be used                                 //
 // ********************************************************************** //
 template <typename FloatType, MathEngine Engine>
-void MultiLayerMie<FloatType, Engine>::SetMaxTerms(int nmax) {
+void MultiLayerMie<FloatType, Engine>::SetMaxTerms(int nmax) const {
   MarkUncalculated();
   nmax_preset_ = nmax;
 }
@@ -684,7 +684,7 @@ FloatType MultiLayerMie<FloatType, Engine>::GetSizeParameter() {
 // Mark uncalculated                                                      //
 // ********************************************************************** //
 template <typename FloatType, MathEngine Engine>
-void MultiLayerMie<FloatType, Engine>::MarkUncalculated() {
+void MultiLayerMie<FloatType, Engine>::MarkUncalculated() const {
   isExpCoeffsCalc_ = false;
   isScaCoeffsCalc_ = false;
 
@@ -870,7 +870,7 @@ void MultiLayerMie<FloatType, Engine>::calcPiTauAllTheta(
     const double from_Theta,
     const double to_Theta,
     std::vector<std::vector<FloatType>>& Pi,
-    std::vector<std::vector<FloatType>>& Tau) {
+    std::vector<std::vector<FloatType>>& Tau) const {
   const unsigned int perimeter_points = Pi.size();
   for (auto& val : Pi)
     val.resize(available_maximal_nmax_, static_cast<FloatType>(0.0));
@@ -1001,7 +1001,7 @@ void MultiLayerMie<FloatType, Engine>::calcSpherHarm(
 //   Number of multipolar expansion terms used for the calculations
 //********************************************************************************
 template <typename FloatType, MathEngine Engine>
-void MultiLayerMie<FloatType, Engine>::calcScattCoeffs() {
+void MultiLayerMie<FloatType, Engine>::calcScattCoeffs() const {
   isScaCoeffsCalc_ = false;
   an_.clear();
   bn_.clear();
@@ -1374,7 +1374,7 @@ void MultiLayerMie<FloatType, Engine>::RunMieCalculationStateless(
 }
 
 template <typename FloatType, MathEngine Engine>
-void MultiLayerMie<FloatType, Engine>::RunMieCalculation() {
+void MultiLayerMie<FloatType, Engine>::RunMieCalculation() const {
   if (size_param_.size() != refractive_index_.size())
     throw std::invalid_argument(
         "Each size parameter should have only one index!");

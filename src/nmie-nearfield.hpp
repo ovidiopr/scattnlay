@@ -181,27 +181,33 @@ void RunFieldKernel(
     const typename MieBuffers<FloatType, Engine>::VectorC& bln,
     const typename MieBuffers<FloatType, Engine>::VectorC& cln,
     const typename MieBuffers<FloatType, Engine>::VectorC& dln,
-    MieBuffers<FloatType, Engine>& buffers,
     std::vector<std::vector<std::complex<FloatType>>>& Es,
     std::vector<std::vector<std::complex<FloatType>>>& Hs,
     std::vector<std::vector<FloatType>>& coords_polar) {
   using RealV = typename Engine::RealV;
   using ComplexV = typename Engine::ComplexV;
   const size_t lanes = Engine::Lanes();
-
-  // Buffers
-  std::vector<FloatType> rho_buf(lanes), theta_buf(lanes), phi_buf(lanes);
-  std::vector<FloatType> ml_re_buf(lanes), ml_im_buf(lanes);
-  std::vector<int> layer_buf(lanes);
-  std::vector<size_t> original_indices(lanes);
-
   const size_t stride = (nmax + 1) * lanes;
 
   // Loop over batches
-  for (size_t i = 0; i < count; i += lanes) {
-    size_t n_process = std::min(lanes, count - i);
+  size_t num_batches = (count + lanes - 1) / lanes;
 
-    for (size_t j = 0; j < n_process; ++j) {
+  #pragma omp parallel
+  {
+      MieBuffers<FloatType, Engine> buffers;
+      buffers.resize(nmax, 1, 0);
+
+      std::vector<FloatType> rho_buf(lanes), theta_buf(lanes), phi_buf(lanes);
+      std::vector<FloatType> ml_re_buf(lanes), ml_im_buf(lanes);
+      std::vector<int> layer_buf(lanes);
+      std::vector<size_t> original_indices(lanes);
+
+      #pragma omp for schedule(guided)
+      for (size_t b = 0; b < num_batches; ++b) {
+        size_t i = b * lanes;
+        size_t n_process = std::min(lanes, count - i);
+
+        for (size_t j = 0; j < n_process; ++j) {
       size_t idx = start_index + i + j;
       FloatType x = Xp[idx];
       FloatType y = Yp[idx];
@@ -444,6 +450,7 @@ void RunFieldKernel(
       }
     }
   }
+  }
 }
 }
 
@@ -583,7 +590,7 @@ void calcExpanCoeffsKernel(
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   template <typename FloatType, MathEngine Engine>
-  void MultiLayerMie<FloatType, Engine>::calcExpanCoeffs() {
+  void MultiLayerMie<FloatType, Engine>::calcExpanCoeffs() const {
     if (!isScaCoeffsCalc_)
       throw std::invalid_argument("(calcExpanCoeffs) You should calculate external coefficients first!");
 
@@ -653,7 +660,7 @@ void calcExpanCoeffsKernel(
 
 
   template <typename FloatType, MathEngine Engine>
-  void MultiLayerMie<FloatType, Engine>::convertFieldsFromSphericalToCartesian() {
+  void MultiLayerMie<FloatType, Engine>::convertFieldsFromSphericalToCartesian() const {
     long total_points = coords_polar_.size();
     E_.clear(); H_.clear();
     Eabs_.clear(); Habs_.clear();
@@ -713,7 +720,7 @@ void calcExpanCoeffsKernel(
                                   std::vector<std::complex<evalType> > &H,
                                   std::vector<bool> &isConvergedE,
                                   std::vector<bool> &isConvergedH,
-                                  bool isMarkUnconverged)  {
+                                  bool isMarkUnconverged) const {
     auto nmax = Psi.size() - 1;
     std::complex<evalType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
 //    auto c_nan = ConvertComplex<FloatType>(std::complex<double>(std::nan(""), std::nan("")));
@@ -897,19 +904,44 @@ void calcExpanCoeffsKernel(
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
   template <typename FloatType, MathEngine Engine>
-  void MultiLayerMie<FloatType, Engine>::RunFieldCalculation(bool isMarkUnconverged) {
+  void MultiLayerMie<FloatType, Engine>::RunFieldCalculation(bool isMarkUnconverged) const {
     (void)isMarkUnconverged;
-    // Calculate scattering coefficients an_ and bn_
-    calcScattCoeffs();
-    // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
-    calcExpanCoeffs();
+
+    if (nmax_preset_ <= 0)
+      nmax_ = calcNmax();
+    else
+      nmax_ = nmax_preset_;
+
+    const unsigned L = refractive_index_.size();
+
+    MieBuffers<FloatType, Engine> buffers;
+    buffers.resize(nmax_, L, 0);
+
+    auto get_x = [&](int l) { return Engine::set(size_param_[l]); };
+    auto get_m = [&](int l) {
+       auto m_val = refractive_index_[l];
+       return Engine::make_complex(Engine::set(m_val.real()), Engine::set(m_val.imag()));
+    };
+
+    calcScattCoeffsKernel<FloatType, Engine>(
+      nmax_, L, PEC_layer_position_, get_x, get_m,
+      buffers
+    );
+
+    calcExpanCoeffsKernel(nmax_, refractive_index_, size_param_, PEC_layer_position_, buffers);
 
     // Zero out cln and dln for the outer layer (L) to avoid adding incident field twice
-    const unsigned L = refractive_index_.size();
-    std::complex<FloatType> c_zero_host(0.0, 0.0);
-    for (int n = 0; n < nmax_; n++) {
-      cln_[L][n] = c_zero_host;
-      dln_[L][n] = c_zero_host;
+    size_t lanes = Engine::Lanes();
+    size_t stride = (nmax_ + 1) * lanes;
+    std::complex<FloatType> c_zero_scalar(0.0, 0.0);
+    
+    size_t offset_L = L * stride;
+    for (int n = 0; n < nmax_; ++n) {
+        size_t idx_base = offset_L + n * lanes;
+        for (size_t j = 0; j < lanes; ++j) {
+            buffers.cln[idx_base + j] = c_zero_scalar;
+            buffers.dln[idx_base + j] = c_zero_scalar;
+        }
     }
 
     isConvergedE_ = {true, true, true}, isConvergedH_ = {true, true, true};
@@ -924,44 +956,16 @@ void calcExpanCoeffsKernel(
         Hs_[i].resize(3);
     }
 
-    MieBuffers<FloatType, Engine> buffers;
-    buffers.resize(nmax_, 1, 0);
-
-    // Flatten coefficients
-    size_t lanes = Engine::Lanes();
-    size_t stride = (nmax_ + 1) * lanes;
-    size_t total_size = (L + 1) * stride;
-    
-    typename MieBuffers<FloatType, Engine>::VectorC aln_flat(total_size);
-    typename MieBuffers<FloatType, Engine>::VectorC bln_flat(total_size);
-    typename MieBuffers<FloatType, Engine>::VectorC cln_flat(total_size);
-    typename MieBuffers<FloatType, Engine>::VectorC dln_flat(total_size);
-    
-    for (size_t l = 0; l <= L; ++l) {
-      for (int n = 0; n < nmax_; ++n) {
-        size_t idx = l * stride + n * lanes;
-        auto val_aln = aln_[l][n];
-        auto val_bln = bln_[l][n];
-        auto val_cln = cln_[l][n];
-        auto val_dln = dln_[l][n];
-        
-        for (size_t j = 0; j < lanes; ++j) {
-           aln_flat[idx + j] = val_aln;
-           bln_flat[idx + j] = val_bln;
-           cln_flat[idx + j] = val_cln;
-           dln_flat[idx + j] = val_dln;
-        }
-      }
-    }
-
     RunFieldKernel<FloatType, Engine>(
         coords_[0], coords_[1], coords_[2],
         0, total_points,
         nmax_,
         size_param_,
         refractive_index_,
-        aln_flat, bln_flat, cln_flat, dln_flat,
-        buffers,
+        buffers.aln, 
+        buffers.bln, 
+        buffers.cln, 
+        buffers.dln,
         Es_, Hs_,
         coords_polar_
     );
@@ -986,7 +990,7 @@ double eval_delta(const unsigned int steps, const double from_value, const doubl
 template <typename FloatType, MathEngine Engine> template <typename evalType>
 void MultiLayerMie<FloatType, Engine>::GetIndexAtRadius(const evalType Rho,
                                                 std::complex<evalType> &ml,
-                                                unsigned int &l) {
+                                                unsigned int &l) const {
   l = 0;
   if (Rho > size_param_.back()) {
     l = size_param_.size();
@@ -1002,13 +1006,13 @@ void MultiLayerMie<FloatType, Engine>::GetIndexAtRadius(const evalType Rho,
 }
 template <typename FloatType, MathEngine Engine> template <typename evalType>
 void MultiLayerMie<FloatType, Engine>::GetIndexAtRadius(const evalType Rho,
-                                                std::complex<evalType> &ml) {
+                                                std::complex<evalType> &ml) const {
   unsigned int l;
   GetIndexAtRadius(Rho, ml, l);
 }
 
 template <typename FloatType, MathEngine Engine>
-void MultiLayerMie<FloatType, Engine>::calcMieSeriesNeededToConverge(const FloatType Rho, int nmax_in) {
+void MultiLayerMie<FloatType, Engine>::calcMieSeriesNeededToConverge(const FloatType Rho, int nmax_in) const {
   if (nmax_in < 1) {
     auto required_near_field_nmax = calcNmax(Rho);
     SetMaxTerms(required_near_field_nmax);
@@ -1030,7 +1034,7 @@ void MultiLayerMie<FloatType, Engine>::calcRadialOnlyDependantFunctions(const do
                                                                 std::vector<std::vector<std::complex<FloatType> > > &D1n,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &Zeta,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &D3n,
-                                                                int nmax_in) {
+                                                                int nmax_in) const {
   auto radius_points = Psi.size();
   std::vector<std::vector<std::complex<FloatType> > > PsiZeta(radius_points);
   double delta_Rho = eval_delta<double>(radius_points, from_Rho, to_Rho);
@@ -1068,7 +1072,7 @@ void MultiLayerMie<FloatType, Engine>::RunFieldCalculationPolar(const int outer_
                                                         const double from_Theta, const double to_Theta,
                                                         const double from_Phi, const double to_Phi,
                                                         const bool isMarkUnconverged,
-                                                        int nmax_in) {
+                                                        int nmax_in) const {
   if (from_Rho > to_Rho || from_Theta > to_Theta || from_Phi > to_Phi
       || outer_arc_points < 1 || radius_points < 1
       || from_Rho < 0.)
@@ -1131,14 +1135,14 @@ void MultiLayerMie<FloatType, Engine>::RunFieldCalculationPolar(const int outer_
 
 
 template <typename FloatType, MathEngine Engine>
-void MultiLayerMie<FloatType, Engine>::UpdateConvergenceStatus(std::vector<bool> isConvergedE, std::vector<bool> isConvergedH) {
+void MultiLayerMie<FloatType, Engine>::UpdateConvergenceStatus(std::vector<bool> isConvergedE, std::vector<bool> isConvergedH) const {
   for (int i = 0; i< 3; i++) isConvergedE_[i] = isConvergedE_[i] && isConvergedE[i];
   for (int i = 0; i< 3; i++) isConvergedH_[i] = isConvergedH_[i] && isConvergedH[i];
 }
 
 
 template <typename FloatType, MathEngine Engine>
-bool MultiLayerMie<FloatType, Engine>::GetFieldConvergence () {
+bool MultiLayerMie<FloatType, Engine>::GetFieldConvergence () const {
   bool convergence = true;
   for (auto conv:isConvergedE_) convergence = convergence && conv;
   for (auto conv:isConvergedH_) convergence = convergence && conv;
@@ -1153,7 +1157,7 @@ void MultiLayerMie<FloatType, Engine>::RunFieldCalculationCartesian(const int fi
                                                             const double at_x, const double at_y,
                                                             const double at_z,
                                                             const bool isMarkUnconverged,
-                                                            const int nmax_in) {
+                                                            const int nmax_in) const {
   SetMaxTerms(nmax_in);
   std::vector<FloatType> Xp(0), Yp(0), Zp(0);
   if (size_param_.size()<1) throw "Expect size_param_ to have at least one element before running a simulation";

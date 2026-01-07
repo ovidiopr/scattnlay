@@ -42,10 +42,16 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
     }
     int global_nmax = static_cast<int>(std::round(global_max_x + 11 * std::pow(global_max_x, 1.0/3.0) + 16));
 
-    nmie::MieBuffers<FloatType, Engine> buffers;
-    buffers.resize(global_nmax, 1, 0);
-    
-    for (size_t i = 0; i < N; i += lanes) {
+    const size_t num_batches = (N + lanes - 1) / lanes;
+
+    #pragma omp parallel
+    {
+      nmie::MieBuffers<FloatType, Engine> buffers;
+      buffers.resize(global_nmax, 1, 0);
+
+      #pragma omp for schedule(dynamic)
+      for (size_t b = 0; b < num_batches; ++b) {
+        size_t i = b * lanes;
         size_t current_batch_size = std::min(lanes, N - i);
         alignas(64) FloatType xb[64] = {0}, mrb[64] = {0}, mib[64] = {0}, nb[64] = {0};
         
@@ -131,6 +137,7 @@ MieBatchOutput RunMieBatchImpl(const MieBatchInput& input) {
               }
             }
         }
+      }
     }
     return output;
 }

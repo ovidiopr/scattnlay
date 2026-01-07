@@ -114,6 +114,15 @@ if(ENABLE_MP)
     find_package(Boost 1.60.0 REQUIRED)
 endif()
 
+# OpenMP
+option(ENABLE_OPENMP "Enable OpenMP parallelization" ON)
+if(ENABLE_OPENMP)
+    find_package(OpenMP)
+    if(NOT OpenMP_FOUND)
+        message(WARNING "OpenMP not found. Parallelization disabled.")
+    endif()
+endif()
+
 # --- INTERFACE LIBRARIES FOR COMPILER FLAGS (Phase 3) ---
 # Create interface libraries to avoid global pollution
 
