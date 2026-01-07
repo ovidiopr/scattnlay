@@ -45,7 +45,7 @@ TEST(SIMDBenchmark, FarFieldParityAndSpeedup) {
     GTEST_SKIP() << "Skipping benchmark: SIMD (Highway) not enabled.";
 #endif
 
-    const int N = 10000;
+    const int N = 20000;
     MieBatchInput input;
     input.x.reserve(N);
     input.m.reserve(N);

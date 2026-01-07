@@ -118,6 +118,37 @@ endif()
 option(ENABLE_OPENMP "Enable OpenMP parallelization" ON)
 if(ENABLE_OPENMP)
     find_package(OpenMP)
+    # macOS fallback for AppleClang
+    if(NOT OpenMP_FOUND AND APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        find_program(BREW brew)
+        if(BREW)
+            execute_process(COMMAND ${BREW} --prefix libomp 
+                            OUTPUT_VARIABLE HOMEBREW_LIBOMP_PREFIX 
+                            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        endif()
+        
+        if(NOT HOMEBREW_LIBOMP_PREFIX)
+            set(HOMEBREW_LIBOMP_PREFIX "/opt/homebrew/opt/libomp")
+        endif()
+
+        find_path(OpenMP_CXX_INCLUDE_DIR omp.h PATHS "${HOMEBREW_LIBOMP_PREFIX}/include")
+        find_library(OpenMP_CXX_LIB_NAMES omp PATHS "${HOMEBREW_LIBOMP_PREFIX}/lib")
+
+        if(OpenMP_CXX_INCLUDE_DIR AND OpenMP_CXX_LIB_NAMES)
+            set(OpenMP_CXX_FLAGS "-Xpreprocessor" "-fopenmp" "-I${OpenMP_CXX_INCLUDE_DIR}")
+            set(OpenMP_CXX_FOUND TRUE)
+            set(OpenMP_FOUND TRUE)
+            
+            # Create the target manually if FindOpenMP didn't
+            if(NOT TARGET OpenMP::OpenMP_CXX)
+                add_library(OpenMP::OpenMP_CXX INTERFACE IMPORTED)
+                set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+                set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_LIB_NAMES})
+            endif()
+            message(STATUS "Found OpenMP (macOS fallback): ${OpenMP_CXX_LIB_NAMES}")
+        endif()
+    endif()
+
     if(NOT OpenMP_FOUND)
         message(WARNING "OpenMP not found. Parallelization disabled.")
     endif()

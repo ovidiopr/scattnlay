@@ -12,7 +12,7 @@ echo ""
 
 # 1. Scalar (Baseline)
 # Use smaller N to avoid waiting too long
-N_SCALAR=1000
+N_SCALAR=40000
 echo "[1] Scalar Baseline (Python Loop + Single Core C++)"
 echo "    N=$N_SCALAR"
 python3 examples/benchmark-full.py --mode scalar --points $N_SCALAR --repeats 3
@@ -22,7 +22,7 @@ echo ""
 N_SIMD=100000
 echo "[2] SIMD Serial (Batch + Highway, 1 Thread)"
 echo "    N=$N_SIMD"
-OMP_NUM_THREADS=1 python3 examples/benchmark-full.py --mode simd --points $N_SIMD --repeats 5
+OMP_NUM_THREADS=1 python3 examples/benchmark-full.py --mode simd --points $N_SIMD --repeats 3
 echo ""
 
 # 3. SIMD Parallel (Batch + Highway + OpenMP)
@@ -32,9 +32,10 @@ echo "    N=$N_SIMD"
 # Unset just in case
 unset OMP_NUM_THREADS
 # Or force to a high number to verify scaling
-export OMP_NUM_THREADS=8
+export OMP_NUM_THREADS=12
+N_SIMD=1000000
 echo "    OMP_NUM_THREADS=$OMP_NUM_THREADS"
-python3 examples/benchmark-full.py --mode simd --points $N_SIMD --repeats 10
+python3 examples/benchmark-full.py --mode simd --points $N_SIMD --repeats 3
 echo ""
 
 echo "=========================================================="
