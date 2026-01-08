@@ -67,7 +67,7 @@ def test_nearfield_simd_benchmark_si_ag_si():
 
 
 def test_farfield_simd_benchmark_parity():
-    N = 10000
+    N = 20000
     x_vals = np.array([0.1 + (i % 1000) * 0.1 for i in range(N)])
     m_vals = np.array([complex(1.5 + (i % 10) * 0.01, 0.01) for i in range(N)])
     

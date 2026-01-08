@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <iostream>
 #include <numbers>
+#include <string>
 #include <vector>
 #include "../src/nmie-basic.hpp"
 #include "../src/nmie-nearfield.hpp"
@@ -71,45 +72,63 @@ TEST(SIMDBenchmark, NearFieldMultilayerSiAgSi) {
 
   const int resolution = 256;
 
-  // 1. Run Benchmark via Helper for both Engines
+  // 1. Scalar Reference (1-core)
+  nmie::setNumThreads(1);
   auto scalar = measureNearFieldCartesian<ScalarEngine<double>>(x_vals, m_vals,
                                                                 resolution);
-  auto simd = measureNearFieldCartesian<DefaultEngine<double>>(x_vals, m_vals,
-                                                               resolution);
 
-  // 2. Calculate Parity (ignoring NaNs to ensure robustness)
-  double sum_rel_err = 0;
-  size_t valid_pts = 0;
-  size_t total_pts = scalar.Eabs.size();
+  auto report = [&](const std::string& label, const NearFieldBenchResult& res) {
+    double sum_rel_err = 0;
+    size_t valid_pts = 0;
+    size_t total_pts = scalar.Eabs.size();
 
-  for (size_t i = 0; i < total_pts; ++i) {
-    double s_val = scalar.Eabs[i];
-    double v_val = simd.Eabs[i];
+    for (size_t i = 0; i < total_pts; ++i) {
+      double s_val = scalar.Eabs[i];
+      double v_val = res.Eabs[i];
 
-    if (std::isfinite(s_val) && std::isfinite(v_val) && s_val > 1e-10) {
-      sum_rel_err += std::abs(v_val - s_val) / s_val;
-      valid_pts++;
+      if (std::isfinite(s_val) && std::isfinite(v_val) && s_val > 1e-10) {
+        sum_rel_err += std::abs(v_val - s_val) / s_val;
+        valid_pts++;
+      }
     }
-  }
 
-  double avg_err = (valid_pts > 0) ? (sum_rel_err / valid_pts) : 0.0;
-  double speedup = scalar.duration.count() / simd.duration.count();
+    double avg_err = (valid_pts > 0) ? (sum_rel_err / valid_pts) : 0.0;
 
-  // 3. Print Results
+    std::cout << label << ":" << std::endl;
+    std::cout << "  - time:   " << res.duration.count() << " s" << std::endl;
+    std::cout << "  - speedup: "
+              << scalar.duration.count() / res.duration.count() << "x"
+              << std::endl;
+    std::cout << "  - avg error:   " << avg_err << std::endl;
+
+    std::cout << " valid points " << valid_pts << " sum rel err " << sum_rel_err
+              << std::endl;
+    return avg_err;
+  };
+
+  // 2. SIMD 1-core
+  nmie::setNumThreads(1);
+  auto simd1 = measureNearFieldCartesian<DefaultEngine<double>>(x_vals, m_vals,
+                                                                resolution);
+
+  // 3. SIMD Multi-core
+  int num_cores = 6;
+  nmie::setNumThreads(num_cores);
+  auto simdn = measureNearFieldCartesian<DefaultEngine<double>>(x_vals, m_vals,
+                                                                resolution);
+
+  // 4. Print Results
   std::cout << "--- Near-Field Multilayer Benchmark (Si-Ag-Si) ---"
             << std::endl;
   std::cout << "Grid Size:     " << resolution << "x" << resolution
             << std::endl;
   std::cout << "Scalar time:   " << std::fixed << std::setprecision(4)
             << scalar.duration.count() << " s" << std::endl;
-  std::cout << "SIMD time:     " << simd.duration.count() << " s" << std::endl;
-  std::cout << "Speedup:       " << std::setprecision(2) << speedup << "x"
-            << std::endl;
-  std::cout << "Avg Rel Error: " << std::scientific << std::setprecision(2)
-            << avg_err << " (" << valid_pts << " valid points)" << std::endl;
 
-  // 4. Assertions
-  EXPECT_LT(avg_err, 1e-12);
-  EXPECT_GT(speedup, 1.0);
-  EXPECT_EQ(valid_pts, total_pts);  // Ensure high convergence rate
+  double err1 = report("SIMD 1-core", simd1);
+  report("SIMD " + std::to_string(num_cores) + "-core", simdn);
+
+  // 5. Assertions
+  EXPECT_LT(err1, 1e-12);
+  EXPECT_GT(scalar.duration.count() / simd1.duration.count(), 1.0);
 }
