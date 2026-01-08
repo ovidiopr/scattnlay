@@ -12,7 +12,7 @@ cd ..
 
 tox
 
-./build/tests/test_farfield_simd_benchmark | grep -e "Speedup:" -e "time:" -e "Avg" -e "RUN"
+./build/tests/test_farfield_simd_benchmark | grep -e "speedup:" -e "time:" -e "avg" -e "RUN" -e "SIMD"
 python3 tests/test_simd_benchmarks.py 
 ./build/tests/test_nearfield_simd_benchmark | grep -e "Speedup:" -e "time:" -e "Avg" -e "RUN"
 echo "All tests passed!"

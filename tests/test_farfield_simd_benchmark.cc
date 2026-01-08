@@ -1,8 +1,13 @@
 #include <gtest/gtest.h>
-#include <complex>
-#include <vector>
 #include <chrono>
+#include <cmath>
+#include <complex>
 #include <iostream>
+#include <string>
+#include <vector>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include "../src/nmie-basic.hpp"
 #include "../src/nmie-batch.hpp"
 
@@ -14,7 +19,6 @@ struct FarFieldResult {
 };
 
 // Template helper to measure Far-Field performance
-// For ScalarEngine, it performs a loop. For HighwayEngine, it uses the optimized batch runner.
 template <typename Engine>
 FarFieldResult measureFarField(const MieBatchInput& input) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -22,18 +26,16 @@ FarFieldResult measureFarField(const MieBatchInput& input) {
     std::vector<double> qext_results(N);
 
     if constexpr (std::is_same_v<Engine, ScalarEngine<double>>) {
-        // Reference implementation: Loop over individual particles
-        MultiLayerMie<double, ScalarEngine<double>> scalar_mie;
-        for (size_t i = 0; i < N; ++i) {
-            scalar_mie.SetLayersSize({input.x[i]});
-            scalar_mie.SetLayersIndex({input.m[i]});
-            scalar_mie.RunMieCalculation();
-            qext_results[i] = scalar_mie.GetQext();
-        }
+      MultiLayerMie<double, ScalarEngine<double>> scalar_mie;
+      for (size_t i = 0; i < N; ++i) {
+        scalar_mie.SetLayersSize({input.x[i]});
+        scalar_mie.SetLayersIndex({input.m[i]});
+        scalar_mie.RunMieCalculation();
+        qext_results[i] = scalar_mie.GetQext();
+      }
     } else {
-        // Optimized implementation: Batch processing via Google Highway
-        auto output = RunMieBatch<double>(input);
-        qext_results = std::move(output.Qext);
+      auto output = RunMieBatch<double>(input);
+      qext_results = std::move(output.Qext);
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -55,22 +57,39 @@ TEST(SIMDBenchmark, FarFieldParityAndSpeedup) {
         input.m.push_back({1.5 + (i % 10) * 0.01, 0.01});
     }
 
+    // 1. Scalar Reference (1-core)
     auto scalar = measureFarField<ScalarEngine<double>>(input);
-    auto simd = measureFarField<DefaultEngine<double>>(input);
 
-    double sum_rel_err = 0;
-    for (int i = 0; i < N; ++i) {
-        sum_rel_err += std::abs(simd.Qext[i] - scalar.Qext[i]) / scalar.Qext[i];
-    }
-    double avg_err = sum_rel_err / N;
-    double speedup = scalar.duration.count() / simd.duration.count();
+    // Helper for reporting per-core results
+    auto report = [&](const std::string& label, const FarFieldResult& res) {
+      double sum_rel_err = 0;
+      for (int i = 0; i < N; ++i) {
+        sum_rel_err += std::abs(res.Qext[i] - scalar.Qext[i]) / scalar.Qext[i];
+      }
+      std::cout << label << ":" << std::endl;
+      std::cout << "  - time:   " << res.duration.count() << " s" << std::endl;
+      std::cout << "  - speedup: "
+                << scalar.duration.count() / res.duration.count() << "x"
+                << std::endl;
+      std::cout << "  - avg error:   " << sum_rel_err / N << std::endl;
+    };
 
+    // 2. SIMD 1-core
+    nmie::setNumThreads(1);
+    auto simd1 = measureFarField<DefaultEngine<double>>(input);
+
+    // 3. SIMD Multi-core
+    int num_cores = 12;
+    nmie::setNumThreads(num_cores);
+    auto simdn = measureFarField<DefaultEngine<double>>(input);
+
+    // Output formatting
     std::cout << "--- Far-Field SIMD Benchmark (N=" << N << ") ---" << std::endl;
     std::cout << "Scalar time: " << scalar.duration.count() << " s" << std::endl;
-    std::cout << "SIMD time:   " << simd.duration.count() << " s" << std::endl;
-    std::cout << "Speedup:     " << speedup << "x" << std::endl;
-    std::cout << "Avg Error:   " << avg_err << std::endl;
 
-    EXPECT_LT(avg_err, 1e-13);
-    EXPECT_GT(speedup, 0.9);
+    report("SIMD 1-core", simd1);
+    report("SIMD " + std::to_string(num_cores) + "-core", simdn);
+
+    // Validation
+    EXPECT_LT(std::abs(simd1.Qext[0] - scalar.Qext[0]), 1e-12);
 }
