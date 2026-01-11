@@ -58,3 +58,4 @@ def read_refractive_index_from_yaml(filename, vacuum_wavelength, units="mkm", ki
     if len(data_out) == 1:
         return data_out[0]
     return data_out
+
