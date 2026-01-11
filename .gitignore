@@ -1,3 +1,4 @@
+scattnlay.txt
 # Compiled Object files
 *.slo
 *.lo
@@ -42,6 +43,8 @@ scattnlay-mp
 # CLion files
 .idea
 cmake-build-*
+CMakeFiles
+CMakeCache.txt
 
 # Temp
 *~
@@ -52,7 +55,13 @@ out.dot
 cov-int*
 cov-int
 build*
+_deps 
 .ipynb_checkpoints
+Temporary
+tests/Makefile
+src/Makefile
+examples/Makefile
+*.cmake
 
 # Local results
 tests/python/field.txt

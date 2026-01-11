@@ -1,7 +1,11 @@
-cmake_minimum_required(VERSION 3.15)
-project(scattnlay VERSION 2.4)
+cmake_minimum_required(VERSION 3.24) # Required for FetchContent FIND_PACKAGE_ARGS
+project(scattnlay VERSION 2.5)
 
 cmake_host_system_information(RESULT HOSTNAME QUERY HOSTNAME)
+
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 OLD)
+endif()
 
 message("Build type is: ${CMAKE_BUILD_TYPE}")
 message("Host OS System: ${CMAKE_HOST_SYSTEM}")
@@ -13,12 +17,9 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g ")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-add_compile_options(-W -Wall -pedantic -Werror)
-add_compile_options(-funroll-loops -fstrict-aliasing)
 
 
 # compiler details
@@ -29,79 +30,155 @@ message("  C++ Compiler: ${CMAKE_CXX_COMPILER_ID} "
 # installation details
 message("  Installation prefix: ${CMAKE_INSTALL_PREFIX}")
 
-# Find Boost
-set(BOOSTROOT $ENV{BOOST_DIR})
-if (USE_STATIC_LIBRARIES)
-    set(Boost_USE_STATIC_LIBS ON)
-endif ()
-set(Boost_USE_MULTITHREADED OFF)
-set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost)
 # Set options
-option(ENABLE_MP "Use multiple precision" OFF)
-if (Boost_FOUND)
-    if (${ENABLE_MP})
-        add_compile_options(-DMULTI_PRECISION=100)
-    endif ()
-    if (Boost_INCLUDE_DIRS)
-        if (${Boost_VERSION} VERSION_LESS 1.60.0)
-            message(FATAL_ERROR
-                    "Found Boost library is too old; required is version 1.60.0 or newer!")
-        endif ()
-        message("Found Boost include dir: ${Boost_INCLUDE_DIR}")
-        message("Found Boost library dir: ${Boost_LIBRARY_DIR}")
-        message("Found Boost libraries: ${Boost_LIBRARIES}")
-        include_directories(${Boost_INCLUDE_DIRS})
-    endif ()
+option(BUILD_PYTHON_EXT "Build Python extensions" OFF)
+option(STRICT_BUILD "Fail if Boost or Highway are missing" OFF)
+option(BUILD_EXAMPLES "Build examples" OFF)
+option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
+
+if(ENABLE_ASAN)
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
 endif()
 
-##Find Python, NumPy and PyBind11
-#find_package(Python COMPONENTS Interpreter Development)
-#
-#include_directories(${Python_INCLUDE_DIRS})
-#
-#message("Python_EXECUTABLE: ${Python_EXECUTABLE}")
-#message("Python_FOUND: ${Python_FOUND}")
-#message("Python_VERSION: ${Python_VERSION}")
-#message("Python_Development_FOUND: ${Python_Development_FOUND}")
-#message("Python_LIBRARIES: ${Python_LIBRARIES}")
-#message("Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
-#
-## Ensure that numpy is installed and read its include dir
-#exec_program(${Python_EXECUTABLE}
-#        ARGS "-c \"import numpy; print(numpy.get_include())\""
-#        OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
-#        RETURN_VALUE NUMPY_NOT_FOUND
-#        )
-#if (NUMPY_NOT_FOUND)
-#    message(FATAL_ERROR "NumPy headers not found")
-#endif ()
-#
-## Ensure that pybind11 is installed and read its include dir
-#exec_program(${Python_EXECUTABLE}
-#        ARGS "-c \"import pybind11; print(pybind11.get_include())\""
-#        OUTPUT_VARIABLE PYBIND11_INCLUDE_DIR
-#        RETURN_VALUE PYBIND11_NOT_FOUND
-#        )
-#if (PYBIND11_NOT_FOUND)
-#    message(FATAL_ERROR "PyBind11 headers not found")
-#endif ()
-#
-## Determine correct extension suffix
-#exec_program(${Python_EXECUTABLE}
-#        ARGS "-c \"import distutils.sysconfig; print(distutils.sysconfig.get_config_var('EXT_SUFFIX'))\""
-#        OUTPUT_VARIABLE EXT_SUFFIX
-#        RETURN_VALUE SUFFIX_NOT_FOUND
-#        )
-#if (SUFFIX_NOT_FOUND)
-#    message(FATAL_ERROR "Extension suffix not found")
-#endif ()
+# 1. Boost (Multi-Precision)
+find_package(Boost 1.60.0 QUIET COMPONENTS headers)
+if(Boost_FOUND)
+    set(ENABLE_MP ON)
+else()
+    if(STRICT_BUILD)
+        message(FATAL_ERROR "STRICT_BUILD: Boost not found.")
+    endif()
+    set(ENABLE_MP OFF)
+endif()
 
-#include_directories(src)
+# 2. Highway (SIMD)
+find_package(hwy QUIET)
+if(hwy_FOUND)
+    set(WITH_HWY ON)
+else()
+    if(STRICT_BUILD)
+        message(FATAL_ERROR "STRICT_BUILD: Google Highway not found.")
+    endif()
+    # Do not force OFF if user requested it, so FetchContent can run
+    if(NOT DEFINED WITH_HWY)
+        set(WITH_HWY OFF)
+    endif()
+endif()
+
+include(FetchContent)
+
+# Enable modern find-or-fetch behavior
+set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE ALWAYS CACHE STRING "Try find_package before fetching")
+
+if(POLICY CMP0169)
+  cmake_policy(SET CMP0169 OLD)
+endif()
+
+# --- DEPENDENCY MANAGEMENT (Modern FetchContent with FIND_PACKAGE_ARGS) ---
+
+# Google Test (for C++ tests)
+if(NOT EMSCRIPTEN)
+    FetchContent_Declare(
+        GTest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        v1.15.2
+        FIND_PACKAGE_ARGS NAMES GTest
+    )
+    FetchContent_MakeAvailable(GTest)
+endif()
+
+# Nanobind (for Python bindings)
+if(NOT EMSCRIPTEN)
+    find_package(Python COMPONENTS Interpreter Development REQUIRED)
+    find_package(nanobind CONFIG QUIET)
+    if(NOT nanobind_FOUND)
+        FetchContent_Declare(nanobind GIT_REPOSITORY https://github.com/wjakob/nanobind.git GIT_TAG v2.4.0)
+        FetchContent_MakeAvailable(nanobind)
+    endif()
+endif()
+
+# Google Highway (SIMD)
+if(WITH_HWY)
+    FetchContent_Declare(
+        hwy
+        GIT_REPOSITORY https://github.com/google/highway.git
+        GIT_TAG        1.2.0
+        FIND_PACKAGE_ARGS NAMES hwy
+    )
+    FetchContent_MakeAvailable(hwy)
+endif()
+
+# Boost (Multiprecision - header-only)
+if(ENABLE_MP)
+    find_package(Boost 1.60.0 REQUIRED)
+endif()
+
+# OpenMP
+option(ENABLE_OPENMP "Enable OpenMP parallelization" ON)
+if(ENABLE_OPENMP)
+    find_package(OpenMP)
+    # macOS fallback for AppleClang
+    if(NOT OpenMP_FOUND AND APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        find_program(BREW brew)
+        if(BREW)
+            execute_process(COMMAND ${BREW} --prefix libomp 
+                            OUTPUT_VARIABLE HOMEBREW_LIBOMP_PREFIX 
+                            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        endif()
+        
+        if(NOT HOMEBREW_LIBOMP_PREFIX)
+            set(HOMEBREW_LIBOMP_PREFIX "/opt/homebrew/opt/libomp")
+        endif()
+
+        find_path(OpenMP_CXX_INCLUDE_DIR omp.h PATHS "${HOMEBREW_LIBOMP_PREFIX}/include")
+        find_library(OpenMP_CXX_LIB_NAMES omp PATHS "${HOMEBREW_LIBOMP_PREFIX}/lib")
+
+        if(OpenMP_CXX_INCLUDE_DIR AND OpenMP_CXX_LIB_NAMES)
+            set(OpenMP_CXX_FLAGS "-Xpreprocessor" "-fopenmp" "-I${OpenMP_CXX_INCLUDE_DIR}")
+            set(OpenMP_CXX_FOUND TRUE)
+            set(OpenMP_FOUND TRUE)
+            
+            # Create the target manually if FindOpenMP didn't
+            if(NOT TARGET OpenMP::OpenMP_CXX)
+                add_library(OpenMP::OpenMP_CXX INTERFACE IMPORTED)
+                set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+                set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_LIB_NAMES})
+            endif()
+            message(STATUS "Found OpenMP (macOS fallback): ${OpenMP_CXX_LIB_NAMES}")
+        endif()
+    endif()
+
+    if(NOT OpenMP_FOUND)
+        message(WARNING "OpenMP not found. Parallelization disabled.")
+    endif()
+endif()
+
+# --- INTERFACE LIBRARIES FOR COMPILER FLAGS (Phase 3) ---
+# Create interface libraries to avoid global pollution
+
+# Warning flags
+add_library(project_warnings INTERFACE)
+target_compile_options(project_warnings INTERFACE
+    -W -Wall -pedantic -Werror
+)
+
+# Optimization flags
+add_library(project_optimization INTERFACE)
+target_compile_options(project_optimization INTERFACE
+    -funroll-loops -fstrict-aliasing
+)
+
+# --- TARGET CONFIGURATION ---
 add_subdirectory(src)
-add_subdirectory(examples)
+
+if(NOT BUILD_PYTHON_EXT OR BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+
 #
 # Copy all python scripts to the build directory.
+# TODO: Move this to scattnlay subdirectory for better organization (Phase 4)
 #
 set(Python_SCRIPTS scattnlay/__init__.py scattnlay/main.py)
 
@@ -113,13 +190,48 @@ foreach (_script ${Python_SCRIPTS})
     )
 endforeach ()
 
-enable_testing()
-add_subdirectory(tests)
-# add_test(NAME BuildExtWithPythonSetupPy
-#    COMMAND ${Python_EXECUTABLE} setup.py build_ext
-#     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+# Install Python scripts
+install(FILES scattnlay/__init__.py scattnlay/main.py DESTINATION scattnlay)
 
-if (NOT DEFINED ENV{GITHUB_ENV})
-    add_test(NAME tox
-             COMMAND tox)
+if(NOT EMSCRIPTEN)
+    enable_testing()
+    add_subdirectory(tests)
+    
+#    if (NOT DEFINED ENV{GITHUB_ENV})
+#        add_test(NAME tox COMMAND tox)
+#    endif()
 endif()
+
+# --- PHASE 5: PROFESSIONAL DISTRIBUTION ---
+# Export targets for other CMake projects to use scattnlay
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+# Install export set
+install(EXPORT scattnlayTargets
+    FILE scattnlayTargets.cmake
+    NAMESPACE scattnlay::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/scattnlay
+)
+
+# Create version file
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/scattnlayConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+# Create config file
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/scattnlayConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/scattnlayConfig.cmake"
+    @ONLY
+)
+
+# Install config and version files
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/scattnlayConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/scattnlayConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/scattnlay
+)

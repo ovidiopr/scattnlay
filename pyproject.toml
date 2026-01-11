@@ -1,24 +1,26 @@
 [build-system]
-requires = ["setuptools", "pybind11", "numpy"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core>=0.10", "nanobind>=2.4.0", "numpy"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "scattnlay"
-version = "2.4"
-requires-python = ">=3.8"
-authors = [
-    {name = "Ovidio Peña", email = "ovidio@bytesfall.com"},
-    {name = "Konstantin Ladutenko", email = "k.ladutenko@metalab.ifmo.ru"},
-]
-maintainers = [
-    {name = "Ovidio Peña", email = "ovidio@bytesfall.com"}
-]
+version = "2.5"
 description = "Calculation of the scattering of EM radiation by a multilayered sphere"
 readme = "README.md"
-license = {file = "LICENSE"}
-keywords = ["Light scattering"]
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Programming Language :: C++",
-    "Programming Language :: Python"
-]
+license = {text = "GPL-3.0-only"}
+requires-python = ">=3.8"
+dependencies = ["numpy"]
+
+[tool.scikit-build]
+
+wheel.install-dir = "."
+sdist.include = ["scattnlay/*", "src/*", "examples/*", "tests/*", "cmake/*"]
+# Force scikit-build-core to use your existing 'build' directory
+build-dir = "build"
+
+[tool.scikit-build.cmake.define]
+CMAKE_BUILD_TYPE = "Release"
+BUILD_PYTHON_EXT = "ON"
+STRICT_BUILD = "OFF"
+# Ensure the CLI tools are built even when installing via pip
+BUILD_EXAMPLES = "ON"

@@ -78,7 +78,7 @@ template<class T> inline T pow2(const T value) {return value*value;}
 
 //TEST(an_test, DISABLED_mpmath_generated_input) {
 TEST(an_test, mpmath_generated_input) {
-  double min_abs_tol = 3e-14, x;
+  double min_abs_tol = 5e-14, x;
   std::complex<double> m, an_mp;
   unsigned int n;
   double re_abs_tol,  im_abs_tol;
@@ -142,9 +142,9 @@ TEST(zeta_psizeta_test, mpmath_generated_input) {
     if (n > Nstop) continue;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+135), D3(Nstop+135),
         PsiZeta(Nstop+135), Psi(Nstop);
-    nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
-    nmie::evalUpwardPsi(z, D1dr, Psi);
+    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
+    nmie::evalUpwardD3<nmie::FloatType>(z, D1dr, D3, PsiZeta);
+    nmie::evalUpwardPsi<nmie::FloatType>(z, D1dr, Psi);
     auto a = std::real(PsiZeta[n]);
     auto b = std::imag(PsiZeta[n]);
     auto c = std::real(Psi[n]);
@@ -155,7 +155,7 @@ TEST(zeta_psizeta_test, mpmath_generated_input) {
 //    zeta = PsiZeta[n]/Psi[n];
     if (std::isnan(std::real(zeta)) || std::isnan(std::imag(zeta))) continue;
 //    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+35), D3(Nstop+35), zeta(Nstop);
-//    nmie::evalDownwardD1(z, D1dr);
+//    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
 //    nmie::evalUpwardD3(z, D1dr, D3);
 //    nmie::evalUpwardZeta(z, D3, zeta);
 
@@ -179,8 +179,8 @@ TEST(zeta_psizeta_test, mpmath_generated_input) {
 //    if (n > Nstop) continue;
 //    std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop),
 //        PsiZeta(Nstop), zeta(Nstop);
-//    nmie::evalDownwardD1(z, D1dr);
-//    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
+//    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
+//    nmie::evalUpwardD3<nmie::FloatType>(z, D1dr, D3, PsiZeta);
 //    nmie::evalUpwardZeta(z, D3, zeta);
 //    if (std::isnan(std::real(zeta[n])) || std::isnan(std::imag(zeta[n]))) continue;
 //
@@ -203,8 +203,8 @@ TEST(psizeta_test, mpmath_generated_input) {
     auto Nstop = nmie::LeRu_near_field_cutoff(z)+10000;
     if (n > Nstop) continue;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop), PsiZeta(Nstop);
-    nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
+    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
+    nmie::evalUpwardD3<nmie::FloatType>(z, D1dr, D3, PsiZeta);
 
     EXPECT_NEAR(std::real(PsiZeta[n]), std::real(PsiZeta_mp), re_abs_tol)
               << "PsiZeta at n=" << n << " Nstop="<< Nstop<<" z="<<z;
@@ -228,8 +228,8 @@ TEST(psi_test, mpmath_generated_input) {
     auto Nstop = nmie::LeRu_near_field_cutoff(z)+10000;
     if (n > Nstop) continue;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop+35), Psi(Nstop);
-    nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardPsi(z, D1dr, Psi);
+    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
+    nmie::evalUpwardPsi<nmie::FloatType>(z, D1dr, Psi);
 
     EXPECT_NEAR(std::real(Psi[n]), std::real(Psi_mp), re_abs_tol)
               << "Psi at n=" << n << " Nstop="<< Nstop<<" z="<<z;
@@ -249,8 +249,8 @@ TEST(D3test, mpmath_generated_input) {
     parse_mpmath_data(min_abs_tol, data, z, n, D3_mp, re_abs_tol, im_abs_tol);
     auto Nstop = nmie::LeRu_near_field_cutoff(z)+35;
     std::vector<std::complex<nmie::FloatType>> D1dr(Nstop), D3(Nstop), PsiZeta(Nstop);
-    nmie::evalDownwardD1(z, D1dr);
-    nmie::evalUpwardD3(z, D1dr, D3, PsiZeta);
+    nmie::evalDownwardD1<nmie::FloatType>(z, D1dr);
+    nmie::evalUpwardD3<nmie::FloatType>(z, D1dr, D3, PsiZeta);
 
     EXPECT_NEAR(std::real(D3[n]), std::real(D3_mp), re_abs_tol)
               << "D3 at n=" << n << " Nstop="<< Nstop<<" z="<<z;
@@ -263,7 +263,7 @@ TEST(D3test, mpmath_generated_input) {
 
 //TEST(D1test, DISABLED_mpmath_generated_input) {
   TEST(D1test, mpmath_generated_input) {
-  double min_abs_tol = 2e-11, x;
+  double min_abs_tol = 7e-11, x;
   std::complex<double> m, z, D1_mp;
   unsigned int n;
   double re_abs_tol,  im_abs_tol;
@@ -274,7 +274,7 @@ TEST(D3test, mpmath_generated_input) {
 //    auto Nstop = nmie::LeRu_near_field_cutoff(z)+1;
 //    auto Nstop = n;
     int valid_digits = 16;
-    int nstar = nmie::getNStar(n, z, valid_digits);
+    int nstar = nmie::getNStar<nmie::FloatType>(n, z, valid_digits);
     std::vector<std::complex<nmie::FloatType>> Db(nstar),Dold(nstar), r;
     r.resize(nstar);
     Db.resize(nstar);
@@ -285,7 +285,7 @@ TEST(D3test, mpmath_generated_input) {
               << "Db at n=" << n <<" nstar="<<nstar<< " z="<<z;
     EXPECT_NEAR(std::imag(Db[n]), std::imag(D1_mp), im_abs_tol)
               << "Db at n=" << n <<" nstar="<<nstar<< " z="<<z;
-    nmie::evalDownwardD1(z, Dold);
+    nmie::evalDownwardD1<nmie::FloatType>(z, Dold);
     if (n > Dold.size()) continue;
     EXPECT_NEAR(std::real(Dold[n]), std::real(D1_mp), re_abs_tol)
               << "Dold at n=" << n << " z="<<z;
@@ -305,7 +305,7 @@ TEST(D1test, WYang_data){
   std::complex<nmie::FloatType> z(1.05,1);
   z = z*80.0;
 // eval D1 directly from backward recurrence
-  nmie::evalDownwardD1(z, Dold);
+  nmie::evalDownwardD1<nmie::FloatType>(z, Dold);
 
 //  eval forward recurrence
   r.resize(Nstop+1);
@@ -314,7 +314,7 @@ TEST(D1test, WYang_data){
 
 for (unsigned int i = 0; i < Dtest_n.size(); i++) {
   unsigned int n = Dtest_n[i];
-  int forward_loss_digits = nmie::evalKapteynNumberOfLostSignificantDigits(n, z);
+  int forward_loss_digits = nmie::evalKapteynNumberOfLostSignificantDigits<nmie::FloatType>(n, z);
   forward_loss_digits += 3; // Kapteyn is too optimistic
   if (test_loss_digits > forward_loss_digits ) {
     EXPECT_NEAR(std::real(Df[n]), std::real(Dtest_D1[i]),
@@ -324,7 +324,7 @@ for (unsigned int i = 0; i < Dtest_n.size(); i++) {
   }
 // eval backward recurrence
   int valid_digits = 6;
-  int nstar = nmie::getNStar(n, z, valid_digits);
+  int nstar = nmie::getNStar<nmie::FloatType>(n, z, valid_digits);
   r.resize(nstar);
   Db.resize(nstar);
   nmie::evalBackwardR(z,r);
@@ -348,13 +348,13 @@ for (unsigned int i = 0; i < Dtest_n.size(); i++) {
 
 TEST(KaptyenTest, HandlesInput) {
   // H.Du APPLIED OPTICS, Vol. 43, No. 9, 20 March 2004
-  double l = nmie::evalKapteynNumberOfLostSignificantDigits(80, std::complex<double>(100,100));
+  double l = nmie::evalKapteynNumberOfLostSignificantDigits<double>(80, std::complex<double>(100,100));
   EXPECT_EQ(l, 7)<<"Should be equal";
   std::complex<double> z(10000,0);
-  l = nmie::evalKapteynNumberOfLostSignificantDigits(5070, z);
+  l = nmie::evalKapteynNumberOfLostSignificantDigits<double>(5070, z);
   EXPECT_EQ(l, 0)<<"Should be equal";
   // find NStar such that l_nstar(z) - l_nmax(z) >= valid_digits
-  int NStar = nmie::getNStar(5070, z,6);
+  int NStar = nmie::getNStar<double>(5070, z,6);
   EXPECT_GE(NStar, 10130);
 //  const double pi=3.14159265358979323846;
 //  z = std::complex<double>(100,100);

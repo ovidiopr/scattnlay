@@ -46,8 +46,8 @@ namespace nmie {
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::GetFailed() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::GetFailed() {
   FloatType faild_x = 9.42477796076938;
   // FloatType faild_x = 9.42477796076937;
   std::complex<FloatType> z(faild_x, 0.0);
@@ -71,8 +71,8 @@ void MultiLayerMieApplied<FloatType>::GetFailed() {
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::AddTargetLayer(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::AddTargetLayer(
     FloatType width,
     std::complex<FloatType> layer_index) {
   this->MarkUncalculated();
@@ -80,12 +80,12 @@ void MultiLayerMieApplied<FloatType>::AddTargetLayer(
     throw std::invalid_argument("Layer width should be positive!");
   target_width_.push_back(width);
   target_index_.push_back(layer_index);
-}  // end of void  MultiLayerMieApplied<FloatType>::AddTargetLayer(...)
+}  // end of void  MultiLayerMieApplied<FloatType, Engine>::AddTargetLayer(...)
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::AddTargetLayerReIm(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::AddTargetLayerReIm(
     FloatType width,
     FloatType re_layer_index,
     FloatType im_layer_index) {
@@ -95,12 +95,12 @@ void MultiLayerMieApplied<FloatType>::AddTargetLayerReIm(
   target_width_.push_back(width);
   target_index_.push_back(
       std::complex<FloatType>(re_layer_index, im_layer_index));
-}  // end of void  MultiLayerMieApplied<FloatType>::AddTargetLayer(...)
+}  // end of void  MultiLayerMieApplied<FloatType, Engine>::AddTargetLayer(...)
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::SetTargetPEC(FloatType radius) {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::SetTargetPEC(FloatType radius) {
   this->MarkUncalculated();
   if (target_width_.size() != 0 || target_index_.size() != 0)
     throw std::invalid_argument(
@@ -113,21 +113,21 @@ void MultiLayerMieApplied<FloatType>::SetTargetPEC(FloatType radius) {
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::SetCoatingIndex(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::SetCoatingIndex(
     std::vector<std::complex<FloatType> > index) {
   this->MarkUncalculated();
   coating_index_.clear();
   for (auto value : index)
     coating_index_.push_back(value);
 }  // end of void
-   // MultiLayerMieApplied<FloatType>::SetCoatingIndex(std::vector<complex>
+   // MultiLayerMieApplied<FloatType, Engine>::SetCoatingIndex(std::vector<complex>
    // index);
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::SetCoatingWidth(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::SetCoatingWidth(
     std::vector<FloatType> width) {
   this->MarkUncalculated();
   coating_width_.clear();
@@ -137,12 +137,12 @@ void MultiLayerMieApplied<FloatType>::SetCoatingWidth(
     else
       coating_width_.push_back(w);
 }
-// end of void MultiLayerMieApplied<FloatType>::SetCoatingWidth(...);
+// end of void MultiLayerMieApplied<FloatType, Engine>::SetCoatingWidth(...);
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::SetWidthSP(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::SetWidthSP(
     const std::vector<FloatType>& size_parameter) {
   this->MarkUncalculated();
   this->size_param_.clear();
@@ -158,23 +158,23 @@ void MultiLayerMieApplied<FloatType>::SetWidthSP(
     this->size_param_.push_back(layer_size_parameter);
   }
 }
-// end of void MultiLayerMieApplied<FloatType>::SetWidthSP(...);
+// end of void MultiLayerMieApplied<FloatType, Engine>::SetWidthSP(...);
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::SetIndexSP(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::SetIndexSP(
     const std::vector<std::complex<FloatType> >& index) {
   this->MarkUncalculated();
   // refractive_index_.clear();
   this->refractive_index_ = index;
   // for (auto value : index) refractive_index_.push_back(value);
-}  // end of void MultiLayerMieApplied<FloatType>::SetIndexSP(...);
+}  // end of void MultiLayerMieApplied<FloatType, Engine>::SetIndexSP(...);
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::SetFieldPointsSP(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::SetFieldPointsSP(
     const std::vector<std::vector<FloatType> >& coords_sp) {
   if (coords_sp.size() != 3)
     throw std::invalid_argument(
@@ -188,12 +188,12 @@ void MultiLayerMieApplied<FloatType>::SetFieldPointsSP(
   //   printf("%g, %g, %g\n", coords_sp_[0][i], coords_sp_[1][i],
   //   coords_sp_[2][i]);
   // }
-}  // end of void MultiLayerMieApplied<FloatType>::SetFieldPointsSP(...)
+}  // end of void MultiLayerMieApplied<FloatType, Engine>::SetFieldPointsSP(...)
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::GenerateSizeParameter() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::GenerateSizeParameter() {
   this->MarkUncalculated();
   this->size_param_.clear();
   FloatType radius = 0.0;
@@ -206,34 +206,34 @@ void MultiLayerMieApplied<FloatType>::GenerateSizeParameter() {
     this->size_param_.push_back(2 * nmie::PI_ * radius / wavelength_);
   }
   this->total_radius_ = radius;
-}  // end of void MultiLayerMieApplied<FloatType>::GenerateSizeParameter();
+}  // end of void MultiLayerMieApplied<FloatType, Engine>::GenerateSizeParameter();
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::GenerateIndex() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::GenerateIndex() {
   this->MarkUncalculated();
   this->refractive_index_.clear();
   for (auto index : this->target_index_)
     this->refractive_index_.push_back(index);
   for (auto index : this->coating_index_)
     this->refractive_index_.push_back(index);
-}  // end of void MultiLayerMieApplied<FloatType>::GenerateIndex();
+}  // end of void MultiLayerMieApplied<FloatType, Engine>::GenerateIndex();
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-FloatType MultiLayerMieApplied<FloatType>::GetTotalRadius() {
+template <typename FloatType, MathEngine Engine>
+FloatType MultiLayerMieApplied<FloatType, Engine>::GetTotalRadius() {
   if (!this->isMieCalculated())
     GenerateSizeParameter();
   return this->total_radius_;
-}  // end of FloatType MultiLayerMieApplied<FloatType>::GetTotalRadius();
+}  // end of FloatType MultiLayerMieApplied<FloatType, Engine>::GetTotalRadius();
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 std::vector<std::vector<FloatType> >
-MultiLayerMieApplied<FloatType>::GetSpectra(FloatType from_WL,
+MultiLayerMieApplied<FloatType, Engine>::GetSpectra(FloatType from_WL,
                                             FloatType to_WL,
                                             int samples) {
   if (!this->isMieCalculated())
@@ -263,8 +263,8 @@ MultiLayerMieApplied<FloatType>::GetSpectra(FloatType from_WL,
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::ClearTarget() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::ClearTarget() {
   this->MarkUncalculated();
   this->target_width_.clear();
   this->target_index_.clear();
@@ -272,8 +272,8 @@ void MultiLayerMieApplied<FloatType>::ClearTarget() {
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::ClearCoating() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::ClearCoating() {
   this->MarkUncalculated();
   this->coating_width_.clear();
   this->coating_index_.clear();
@@ -281,8 +281,8 @@ void MultiLayerMieApplied<FloatType>::ClearCoating() {
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::ClearLayers() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::ClearLayers() {
   this->MarkUncalculated();
   this->ClearTarget();
   this->ClearCoating();
@@ -290,8 +290,8 @@ void MultiLayerMieApplied<FloatType>::ClearLayers() {
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::ClearAllDesign() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::ClearAllDesign() {
   this->MarkUncalculated();
   this->ClearLayers();
   this->size_param_.clear();
@@ -304,8 +304,8 @@ void MultiLayerMieApplied<FloatType>::ClearAllDesign() {
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::ConvertToSP() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::ConvertToSP() {
   this->MarkUncalculated();
   if (target_width_.size() + coating_width_.size() == 0)
     return;  // Nothing to convert, we suppose that SP was set directly
@@ -318,14 +318,14 @@ void MultiLayerMieApplied<FloatType>::ConvertToSP() {
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::RunMieCalculation() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::RunMieCalculation() {
   ConvertToSP();
-  this->MultiLayerMie<FloatType>::RunMieCalculation();
+  this->MultiLayerMie<FloatType, Engine>::RunMieCalculation();
 }
 
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::RunFieldCalculationPolar(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::RunFieldCalculationPolar(
     const int outer_arc_points,
     const int radius_points,
     const double from_Rho,
@@ -338,13 +338,13 @@ void MultiLayerMieApplied<FloatType>::RunFieldCalculationPolar(
   ConvertToSP();  // Converts to size parameter units only the particle design,
   // so we need to convert input parameters too...
   const FloatType a = 2 * nmie::PI_ / wavelength_;
-  this->MultiLayerMie<FloatType>::RunFieldCalculationPolar(
+  this->MultiLayerMie<FloatType, Engine>::RunFieldCalculationPolar(
       outer_arc_points, radius_points, a * from_Rho, a * to_Rho, from_Theta,
       to_Theta, from_Phi, to_Phi, isIgnoreAvailableNmax == 0 ? false : true);
 }
 
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::RunFieldCalculationCartesian(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::RunFieldCalculationCartesian(
     const int first_side_points,
     const int second_side_points,
     const double relative_side_length,
@@ -355,7 +355,7 @@ void MultiLayerMieApplied<FloatType>::RunFieldCalculationCartesian(
     const int isIgnoreAvailableNmax) {
   //  std::cout<<'test'<<std::endl;
   ConvertToSP();
-  this->MultiLayerMie<FloatType>::RunFieldCalculationCartesian(
+  this->MultiLayerMie<FloatType, Engine>::RunFieldCalculationCartesian(
       first_side_points, second_side_points, relative_side_length,
       plane_selected, at_x, at_y, at_z,
       isIgnoreAvailableNmax == 0 ? false : true);
@@ -364,8 +364,8 @@ void MultiLayerMieApplied<FloatType>::RunFieldCalculationCartesian(
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMieApplied<FloatType>::GetExpanCoeffs(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMieApplied<FloatType, Engine>::GetExpanCoeffs(
     std::vector<std::vector<std::complex<FloatType> > >& aln,
     std::vector<std::vector<std::complex<FloatType> > >& bln,
     std::vector<std::vector<std::complex<FloatType> > >& cln,
@@ -380,7 +380,7 @@ void MultiLayerMieApplied<FloatType>::GetExpanCoeffs(
   cln = this->cln_;
   dln = this->dln_;
 
-}  // end of void MultiLayerMieApplied<FloatType>::GetExpanCoeffs( ...)
+}  // end of void MultiLayerMieApplied<FloatType, Engine>::GetExpanCoeffs( ...)
 // ********************************************************************** //
 // ********************************************************************** //
 // ********************************************************************** //

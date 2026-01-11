@@ -6,3 +6,5 @@
 .eslintrc.cjs
 /src-ssr
 /quasar.config.*.temporary.compiled*
+/public/wasm/
+

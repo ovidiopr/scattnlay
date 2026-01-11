@@ -29,33 +29,79 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from scattnlay_dp import mie_dp, mesomie_dp
+try:
+    try:
+        from .scattnlay_dp import mie_dp, mesomie_dp, mie_scalar as mie_scalar_class, Planes
+    except ImportError:
+        from scattnlay_dp import mie_dp, mesomie_dp, mie_scalar as mie_scalar_class, Planes
+except ImportError:
+    try:
+        from .scattnlay_dp import mie_dp, mesomie_dp, Planes
+    except ImportError:
+        from scattnlay_dp import mie_dp, mesomie_dp, Planes
+    mie_scalar_class = None
 import numpy as np
 import sys
 
 mie_mp = None
 # mesomie_mp = None
 try:
-    from scattnlay_mp import mie_mp as mie_mp_
+    try:
+        from .scattnlay_mp import mie_mp as mie_mp_
+    except ImportError:
+        from scattnlay_mp import mie_mp as mie_mp_
     mie_mp = mie_mp_()
     # from scattnlay_mp import mesomie_mp as mesomie_mp_
     # mesomie_mp = mesomie_mp_()
 except:
     pass
+mie_simd = None
+try:
+    try:
+        from . import scattnlay_simd
+    except ImportError:
+        import scattnlay_simd
+    # Create a compatibility wrapper so it behaves like mie_dp/mie_mp classes
+    class MieSIMDWrapper:
+        def RunMieBatch(self, x, m, theta=None):
+            if theta is None:
+                return scattnlay_simd.RunMieBatch(np.atleast_1d(x), np.atleast_1d(m))
+            else:
+                return scattnlay_simd.RunMieBatch(np.atleast_1d(x), np.atleast_1d(m), np.atleast_1d(theta))
+        
+        # Add basic methods for test parity
+        def SetLayersSize(self, x): self._x = x
+        def SetLayersIndex(self, m): self._m = m
+        def SetAngles(self, theta): self._theta = theta
+        def RunMieCalculation(self):
+            # For bulk test parity, simulate class behavior
+            if hasattr(self, '_theta'):
+                self._res = scattnlay_simd.RunMieBatch(np.atleast_1d(self._x), np.atleast_1d(self._m), np.atleast_1d(self._theta))
+            else:
+                self._res = scattnlay_simd.RunMieBatch(np.atleast_1d(self._x), np.atleast_1d(self._m))
+        def GetQext(self): return self._res['Qext'][0]
+        def GetQsca(self): return self._res['Qsca'][0]
+        def GetS1(self): return self._res['S1'][0]
+        def GetS2(self): return self._res['S2'][0]
+
+    mie_simd = MieSIMDWrapper()
+except ImportError:
+    pass
 
 mie = mie_dp()
 mesomie = mesomie_dp()
 
+if mie_scalar_class:
+    mie_scalar = mie_scalar_class()
+else:
+    mie_scalar = mie_dp()
+
 
 def scattcoeffs_(x, m, nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
-        from scattnlay_mp import mie_mp as mie_
+        mie_ = type(mie_mp) # Get class from existing instance
     else:
-        if mp:
-            print('Failed to load multiprecision module, using double precision instead...',
-                  file=sys.stderr)
-        from scattnlay_dp import mie_dp as mie_
-        # from scattnlay_mp import mie_mp as mie_
+        mie_ = mie_dp
     mie = mie_()
     mie.SetLayersSize(x)
     mie.SetLayersIndex(m)
@@ -107,37 +153,38 @@ def scattcoeffs(x, m, nmax=-1, pl=-1, mp=False):
         m = np.repeat(m[np.newaxis, :], x.shape[0], axis=0)
 
     if nmax == -1:
-        nstore = 0
+        if x.size > 0:
+            max_x = np.max(x)
+            nstore = int(max_x + 4.0 * max_x**(1.0/3.0) + 2.0) + 10
+        else:
+            nstore = 0
     else:
         nstore = nmax
 
-    terms = np.zeros((x.shape[0]), dtype=int)
-    an = np.zeros((0, nstore), dtype=complex)
-    bn = np.zeros((0, nstore), dtype=complex)
+    num_points = x.shape[0]
+    terms = np.zeros(num_points, dtype=int)
+    an = np.zeros((num_points, nstore), dtype=complex)
+    bn = np.zeros((num_points, nstore), dtype=complex)
 
     for i, xi in enumerate(x):
         terms[i], a, b = scattcoeffs_(xi, m[i], nmax=nmax, pl=pl, mp=mp)
 
         if terms[i] > nstore:
             nstore = terms[i]
-            an.resize((an.shape[0], nstore))
-            bn.resize((bn.shape[0], nstore))
+            an.resize((num_points, nstore), refcheck=False)
+            bn.resize((num_points, nstore), refcheck=False)
 
-        an = np.vstack((an, a))
-        bn = np.vstack((bn, b))
+        an[i, :terms[i]] = a
+        bn[i, :terms[i]] = b
 
     return terms, an, bn
 
 
 def expancoeffs_(x, m, nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
-        from scattnlay_mp import mie_mp as mie_
+        mie_ = type(mie_mp)
     else:
-        if mp:
-            print('Failed to load multiprecision module, using double precision instead...',
-                  file=sys.stderr)
-        from scattnlay_dp import mie_dp as mie_
-        # from scattnlay_mp import mie_mp as mie_
+        mie_ = mie_dp
     mie = mie_()
     mie.SetLayersSize(x)
     mie.SetLayersIndex(m)
@@ -192,42 +239,45 @@ def expancoeffs(x, m, nmax=-1, pl=-1, mp=False):
         m = np.repeat(m[np.newaxis, :], x.shape[0], axis=0)
 
     if nmax == -1:
-        nstore = 0
+        if x.size > 0:
+            max_x = np.max(x)
+            nstore = int(max_x + 4.0 * max_x**(1.0/3.0) + 2.0) + 10
+        else:
+            nstore = 0
     else:
         nstore = nmax
 
-    terms = np.zeros((x.shape[0]), dtype=int)
-    an = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
-    bn = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
-    cn = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
-    dn = np.zeros((0, x.shape[1]+1, nstore), dtype=complex)
+    num_points = x.shape[0]
+    num_layers = x.shape[1]
+    terms = np.zeros(num_points, dtype=int)
+    an = np.zeros((num_points, num_layers + 1, nstore), dtype=complex)
+    bn = np.zeros((num_points, num_layers + 1, nstore), dtype=complex)
+    cn = np.zeros((num_points, num_layers + 1, nstore), dtype=complex)
+    dn = np.zeros((num_points, num_layers + 1, nstore), dtype=complex)
 
     for i, xi in enumerate(x):
         terms[i], a, b, c, d = expancoeffs_(xi, m[i], nmax=nmax, pl=pl, mp=mp)
 
         if terms[i] > nstore:
             nstore = terms[i]
-            an.resize((an.shape[0], an.shape[1], nstore))
-            bn.resize((bn.shape[0], bn.shape[1], nstore))
-            cn.resize((cn.shape[0], cn.shape[1], nstore))
-            dn.resize((dn.shape[0], dn.shape[1], nstore))
+            an.resize((num_points, num_layers + 1, nstore), refcheck=False)
+            bn.resize((num_points, num_layers + 1, nstore), refcheck=False)
+            cn.resize((num_points, num_layers + 1, nstore), refcheck=False)
+            dn.resize((num_points, num_layers + 1, nstore), refcheck=False)
 
-        an = np.vstack((an, [a]))
-        bn = np.vstack((bn, [b]))
-        cn = np.vstack((cn, [c]))
-        dn = np.vstack((dn, [d]))
+        an[i, :, :terms[i]] = a
+        bn[i, :, :terms[i]] = b
+        cn[i, :, :terms[i]] = c
+        dn[i, :, :terms[i]] = d
 
     return terms, an, bn, cn, dn
 
 
 def scattnlay_(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
-        from scattnlay_mp import mie_mp as mie_
+        mie_ = type(mie_mp)
     else:
-        if mp:
-            print('Failed to load multiprecision module, using double precision instead...',
-                  file=sys.stderr)
-        from scattnlay_dp import mie_dp as mie_
+        mie_ = mie_dp
     mie = mie_()
     mie.SetLayersSize(x)
     mie.SetLayersIndex(m)
@@ -315,16 +365,12 @@ def scattnlay(x, m, theta=np.zeros(0, dtype=float), nmax=-1, pl=-1, mp=False):
 
 def fieldnlay_(x, m, xp, yp, zp, nmax=-1, pl=-1, mp=False):
     if mp and mie_mp:
-        from scattnlay_mp import mie_mp as mie_
+        mie_ = type(mie_mp)
     else:
         if mp:
             print('Failed to load multiprecision module, using double precision instead...',
                   file=sys.stderr)
-        from scattnlay_dp import mie_dp as mie_
-        # from scattnlay_mp import mie_mp as mie_
-    mie = mie_()
-    mie.SetLayersSize(x)
-    mie.SetLayersIndex(m)
+        SetLayersIndex(m)
     mie.SetPECLayer(pl)
     mie.SetMaxTerms(nmax)
     mie.SetFieldCoords(xp, yp, zp)

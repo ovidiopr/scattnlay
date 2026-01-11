@@ -33,6 +33,7 @@
 #include <cmath>
 #include <complex>
 #include <iostream>
+#include <numbers>
 #include <set>
 #include <stdexcept>
 #include <vector>
@@ -236,7 +237,7 @@ namespace shell_generator {
     auto field = [](double charge, double shift, std::vector<double> p){
       double r = std::sqrt(pow2(p[0]-shift) + pow2(p[1]) + pow2(p[2]) );
       //std::cout << "r: " << r << std::endl;
-      const double pi = 3.1415926535897932384626433832795;
+      const double pi = std::numbers::pi_v<double>;
       double ampl = charge/(4.0*pi*pow2(r));
       std::vector<double> field = {ampl*(p[0]-shift)/r, ampl*(p[1])/r, ampl*(p[2])/r};
       return field;
@@ -268,7 +269,7 @@ namespace shell_generator {
     // return field at point p from the charge, located at (shift, 0,0)
     auto field = [](double charge, double shift, std::vector<double> p){
       double r = std::sqrt(pow2(p[0]-shift) + pow2(p[1]) + pow2(p[2]) );
-      const double pi = 3.1415926535897932384626433832795;
+      const double pi = std::numbers::pi_v<double>;
       double ampl = charge/(4.0*pi*pow2(r));
       std::vector<double> field = {ampl*(p[0]-shift)/r, ampl*(p[1])/r, ampl*(p[2])/r};
       return field;
@@ -384,17 +385,18 @@ namespace shell_generator {
       auto vert = face_centers_[i];
       // Vector to unit product
       double r = norm(vert);
-      //std::vector<std::complex<double> > unit = { vert[0]/r, vert[1]/r, vert[2]/r};
-      // std::cout << norm(unit) << std::endl;
-      //const double pi = 3.1415926535897932384626433832795;
-      // std::vector<double> P = (1/(2.0))
-      //   *real(
-      //         dot(unit,E)*vconj(E) +
-      //         dot(unit,H)*vconj(H) +
-      //         (-1.0/2.0)*(dot(E,vconj(E))
-      //                     +dot(H,vconj(H))
-      //                     )*unit
-      //         );
+      // std::vector<std::complex<double> > unit = { vert[0]/r, vert[1]/r,
+      // vert[2]/r};
+      //  std::cout << norm(unit) << std::endl;
+      // const double pi = std::numbers::pi_v<double>;
+      //  std::vector<double> P = (1/(2.0))
+      //    *real(
+      //          dot(unit,E)*vconj(E) +
+      //          dot(unit,H)*vconj(H) +
+      //          (-1.0/2.0)*(dot(E,vconj(E))
+      //                      +dot(H,vconj(H))
+      //                      )*unit
+      //          );
 
       // std::vector<double> P = (1/(2.0))
       //   *real(
@@ -450,7 +452,7 @@ namespace shell_generator {
       double r = norm(vert);
       std::vector<std::complex<double> > unit = { vert[0]/r, vert[1]/r, vert[2]/r};
       // std::cout << norm(unit) << std::endl;
-      //const double pi = 3.1415926535897932384626433832795;
+      // const double pi = std::numbers::pi_v<double>;
       std::vector<double> P = (1/(2.0))
         *real(
               dot(unit,E)*vconj(E) +
@@ -514,7 +516,7 @@ namespace shell_generator {
        }
        //std::cout << " " << norm(vert) << " ";
      }
-     const double pi = 3.1415926535897932384626433832795;
+     const double pi = std::numbers::pi_v<double>;
      double area = 4.0*pi*pow2(scale);
      //face_area_ = area/faces_.size();
      per_vertice_area_ = area/vertices_.size();
@@ -562,7 +564,7 @@ namespace shell_generator {
     for (auto face:per_face_area_)
       total_flat_area += face;
     auto scale = norm(vertices_[0]);
-    const double pi = 3.1415926535897932384626433832795;
+    const double pi = std::numbers::pi_v<double>;
     double area = 4.0*pi*pow2(scale);
     face_area_ = area/faces_.size();
     double area_scale = area/total_flat_area;

@@ -62,50 +62,81 @@ namespace nmie {
 // Note, that Kapteyn seems to be too optimistic (at least by 3 digits
 // in some cases) for forward recurrence, see D1test with WYang_data
 //******************************************************************************
-template <typename FloatType>
-int evalKapteynNumberOfLostSignificantDigits(const int ni,
-                                             const std::complex<FloatType> zz) {
-  using std::abs;
-  using std::imag;
-  using std::log;
-  using std::real;
-  using std::round;
-  using std::sqrt;
-  std::complex<double> z = ConvertComplex<double>(zz);
-  if (abs(z) == 0.)
-    return 0;
-  auto n = static_cast<double>(ni);
-  auto one = std::complex<double>(1, 0);
-  auto lost_digits = round(  //
-      (                      //
-          abs(imag(z)) - log(2.) -
-          n * (real(log(z / n) + sqrt(one - pow2(z / n)) -
-                    log(one + sqrt(one - pow2(z / n)))  //
-                    )                                   //
-               )                                        //
-          ) /
-      log(10.)  //
-  );
-  return lost_digits;
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>>
+typename Engine::RealV evalKapteynNumberOfLostSignificantDigits(const int ni, const ComplexType zz) {
+  auto z = zz;
+  auto n_val = Engine::set(static_cast<FloatType>(ni));
+  auto one_val = Engine::set(1.0);
+  auto zero_val = Engine::set(0.0);
+  auto one = Engine::make_complex(one_val, zero_val);
+  
+  auto n_complex = Engine::make_complex(n_val, zero_val);
+  auto z_div_n = z / n_complex;
+  
+  auto z_div_n_sq = z_div_n * z_div_n;
+  auto one_minus_sq = one - z_div_n_sq;
+  auto sqrt_term = Engine::sqrt(one_minus_sq);
+  
+  auto log_z_div_n = Engine::log(z_div_n);
+  auto one_plus_sqrt = one + sqrt_term;
+  auto log_one_plus_sqrt = Engine::log(one_plus_sqrt);
+  
+  auto term = (log_z_div_n + sqrt_term) - log_one_plus_sqrt;
+  auto real_term = Engine::get_real(term);
+  auto n_times_real = n_val * real_term;
+  
+  auto imag_z = Engine::get_imag(z);
+  auto abs_imag_z = Engine::abs(imag_z);
+  auto log_2 = Engine::set(std::log(2.0));
+  
+  auto num = (abs_imag_z - log_2) - n_times_real;
+  auto log_10 = Engine::set(std::log(10.0));
+  
+  auto res = num / log_10;
+  auto half = Engine::set(0.5);
+  auto res_plus_half = res + half;
+  auto rounded = Engine::floor(res_plus_half);
+  
+  return rounded;
 }
 
 //******************************************************************************
-template <typename FloatType>
-int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
-  if (nmax == 0)
-    nmax = 1;
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>>
+int getNStar(int nmax, ComplexType z, const int valid_digits) {
+  if (nmax == 0) nmax = 1;
   int nstar = nmax;
-  auto z_dp = ConvertComplex<double>(z);
-  if (std::abs(z_dp) == 0.)
-    return nstar;
-  int forwardLoss = evalKapteynNumberOfLostSignificantDigits(nmax, z_dp);
-  int increment = static_cast<int>(
-      std::ceil(std::max(4 * std::pow(std::abs(z_dp), 1 / 3.0), 5.0)));
-  int backwardLoss = evalKapteynNumberOfLostSignificantDigits(nstar, z_dp);
-  while (backwardLoss - forwardLoss < valid_digits) {
+  (void)valid_digits;
+  
+  auto forwardLoss = evalKapteynNumberOfLostSignificantDigits<FloatType, Engine, ComplexType>(nmax, z);
+  
+  auto re = Engine::get_real(z);
+  auto im = Engine::get_imag(z);
+  auto abs_z_val = Engine::sqrt((re * re) + (im * im));
+  
+  auto pow_third = Engine::pow(abs_z_val, Engine::set(1.0/3.0));
+  auto four_pow = Engine::set(15.0) * pow_third;
+  auto max_val = Engine::max(four_pow, Engine::set(5.0));
+  auto increment_v = Engine::ceil(max_val);
+  
+  int increment = static_cast<int>(Engine::reduce_max(increment_v));
+  
+  auto max_abs_z_v = Engine::ceil(abs_z_val);
+  int max_abs_z = static_cast<int>(Engine::reduce_max(max_abs_z_v));
+
+  if (nstar < max_abs_z) nstar = max_abs_z;
+  nstar += increment;
+
+  int iter = 0;
+  while (iter++ < 100) {
+    auto backwardLoss = evalKapteynNumberOfLostSignificantDigits<FloatType, Engine, ComplexType>(nstar, z);
+    auto diff = backwardLoss - forwardLoss;
+    
+    auto max_diff = Engine::reduce_max(diff);
+    if (max_diff > valid_digits) break;
+    
     nstar += increment;
-    backwardLoss = evalKapteynNumberOfLostSignificantDigits(nstar, z_dp);
-  };
+  }
+
   return nstar;
 }
 
@@ -115,21 +146,46 @@ int getNStar(int nmax, std::complex<FloatType> z, const int valid_digits) {
 // see Eqs. 10-12 of [1] for details.
 // [1]H. Du, Mie-Scattering Calculation, Appl. Opt. 43, 1951 (2004).
 //******************************************************************************
-template <typename FloatType>
-std::complex<FloatType> complex_cot(const std::complex<FloatType> z) {
-  auto Remx = z.real();
-  auto Immx = z.imag();
-  int sign =
-      (Immx > 0) ? 1 : -1;  // use complex conj if needed for exp and return
-  auto exp = nmm::exp(-2 * sign * Immx);
-  auto tan = nmm::tan(Remx);
-  auto a = tan - exp * tan;
-  auto b = 1 + exp;
-  auto c = -1 + exp;
-  auto d = tan + exp * tan;
-  auto c_one = std::complex<FloatType>(0, 1);
-  return (a * c + b * d) / (pow2(c) + pow2(d)) +
-         c_one * (sign * (b * c - a * d) / (pow2(c) + pow2(d)));
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
+ComplexType complex_cot(const ComplexType z) {
+  auto Remx = Engine::get_real(z);
+  auto Immx = Engine::get_imag(z);
+  
+  auto sgn = Engine::sign(Immx);
+  
+  auto minus_two = Engine::set(-2.0);
+  auto arg = minus_two * sgn * Immx;
+  auto exp_val = Engine::exp(arg);
+  
+  auto tan_val = Engine::tan(Remx);
+  
+  auto exp_tan = exp_val * tan_val;
+  auto a = tan_val - exp_tan;
+  
+  auto one = Engine::set(1.0);
+  auto b = one + exp_val;
+  
+  auto minus_one = Engine::set(-1.0);
+  auto c = minus_one + exp_val;
+  
+  auto d = tan_val + exp_tan;
+  
+  auto c2 = c * c;
+  auto d2 = d * d;
+  auto denom = c2 + d2;
+  
+  auto ac = a * c;
+  auto bd = b * d;
+  auto num_re = ac + bd;
+  auto re = num_re / denom;
+  
+  auto bc = b * c;
+  auto ad = a * d;
+  auto diff = bc - ad;
+  auto num_im = sgn * diff;
+  auto im = num_im / denom;
+  
+  return Engine::make_complex(re, im);
 }
 
 //******************************************************************************
@@ -144,7 +200,7 @@ void evalForwardR(const std::complex<FloatType> z,
         "functions.\n");
   // r0 = cot(z)
   //  r[0] = nmm::cos(z)/nmm::sin(z);
-  r[0] = complex_cot(z);
+  r[0] = complex_cot<FloatType>(z);
   for (unsigned int n = 0; n < r.size() - 1; n++) {
     r[n + 1] = static_cast<FloatType>(1) /
                (                                          //
@@ -171,7 +227,7 @@ void evalBackwardR(const std::complex<FloatType> z,
     r[n] = -static_cast<FloatType>(1) / r[n + 1] +
            static_cast<FloatType>(2 * n + 1) / z;
   }
-  r[0] = complex_cot(z);
+  r[0] = complex_cot<FloatType>(z);
 }
 
 //******************************************************************************
@@ -372,100 +428,250 @@ void evalForwardD1(const std::complex<FloatType> z,
 //   z: Complex argument to evaluate D1 and D3
 //   nmax_: Maximum number of terms to calculate D1 and D3
 //
+// Helper to calculate nstar for scalar or SIMD
+template <typename FloatType, typename Engine, typename ComplexType>
+struct NStarCalculator {
+  static int get(int nmax, ComplexType z, int valid_digits) {
+    return nmie::getNStar<FloatType, Engine, ComplexType>(nmax, z, valid_digits);
+  }
+};
+
 // Output parameters:
 //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions
 //******************************************************************************
-template <typename FloatType>
-void evalDownwardD1(const std::complex<FloatType> z,
-                    std::vector<std::complex<FloatType>>& D1) {
-  int nmax = D1.size() - 1;
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+void evalDownwardD1(const ComplexType z,
+                    ContainerType& D1) {
+  int lanes = Engine::Lanes();
+  int nmax = (D1.size() / lanes) - 1;
   int valid_digits = 16;
 #ifdef MULTI_PRECISION
   valid_digits += MULTI_PRECISION;
 #endif
-  int nstar = nmie::getNStar(nmax, z, valid_digits);
-  D1.resize(nstar + 1);
+  int nstar = NStarCalculator<FloatType, Engine, ComplexType>::get(nmax, z, valid_digits);
+  D1.resize((nstar + 1) * lanes);
   // Downward recurrence for D1 - equations (16a) and (16b)
-  D1[nstar] = std::complex<FloatType>(0.0, 0.0);
-  std::complex<FloatType> c_one(1.0, 0.0);
-  const std::complex<FloatType> z_inv = std::complex<FloatType>(1.0, 0.0) / z;
+  auto zero = Engine::make_complex(Engine::set(0.0), Engine::set(0.0));
+  Engine::store(zero, &D1[nstar * lanes]);
+
+  auto c_one = Engine::make_complex(Engine::set(1.0), Engine::set(0.0));
+  auto z_inv = c_one / z;
+  
   for (unsigned int n = nstar; n > 0; n--) {
-    D1[n - 1] = static_cast<FloatType>(n) * z_inv -
-                c_one / (D1[n] + static_cast<FloatType>(n) * z_inv);
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto n_complex = Engine::make_complex(n_val, Engine::set(0.0));
+    auto term1 = n_complex * z_inv;
+    
+    auto d1_n = Engine::load(&D1[n * lanes]);
+    auto denom = d1_n + term1;
+    auto term2 = c_one / denom;
+    
+    auto res = term1 - term2;
+    Engine::store(res, &D1[(n - 1) * lanes]);
   }
   // Use D1[0] from upward recurrence
-  D1[0] = complex_cot(z);
-  D1.resize(nmax + 1);
+  auto cot_z = complex_cot<FloatType, Engine>(z);
+  Engine::store(cot_z, &D1[0]);
+  D1.resize((nmax + 1) * lanes);
   //  printf("D1[0] = (%16.15g, %16.15g) z=(%16.15g,%16.15g)\n",
   //  D1[0].real(),D1[0].imag(),
   //         z.real(),z.imag());
 }
 
 //******************************************************************************
-template <typename FloatType>
-void evalUpwardD3(const std::complex<FloatType> z,
-                  const std::vector<std::complex<FloatType>>& D1,
-                  std::vector<std::complex<FloatType>>& D3,
-                  std::vector<std::complex<FloatType>>& PsiZeta) {
-  int nmax = D1.size() - 1;
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+void evalUpwardD3(const ComplexType z,
+                  const ContainerType& D1,
+                  ContainerType& D3,
+                  ContainerType& PsiZeta) {
+  int lanes = Engine::Lanes();
+  int nmax = (D1.size() / lanes) - 1;
+  D3.resize((nmax + 1) * lanes);
+  PsiZeta.resize((nmax + 1) * lanes);
+
   // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
-  PsiZeta[0] = static_cast<FloatType>(0.5) *
-               (static_cast<FloatType>(1.0) -
-                std::complex<FloatType>(nmm::cos(2.0 * z.real()),
-                                        nmm::sin(2.0 * z.real())) *
-                    static_cast<FloatType>(nmm::exp(-2.0 * z.imag())));
-  D3[0] = std::complex<FloatType>(0.0, 1.0);
-  const std::complex<FloatType> z_inv = std::complex<FloatType>(1.0, 0.0) / z;
+  
+  auto two = Engine::set(2.0);
+  auto half = Engine::set(0.5);
+  auto one = Engine::set(1.0);
+  auto zero = Engine::set(0.0);
+  
+  auto z_re = Engine::get_real(z);
+  auto z_im = Engine::get_imag(z);
+  
+  auto two_z_re = two * z_re;
+  auto minus_two_z_im = Engine::set(-2.0) * z_im;
+  
+  auto cos_val = Engine::cos(two_z_re);
+  auto sin_val = Engine::sin(two_z_re);
+  auto exp_val = Engine::exp(minus_two_z_im);
+  
+  auto term_complex = Engine::make_complex(cos_val, sin_val);
+  auto exp_complex = Engine::make_complex(exp_val, zero);
+  
+  auto prod = term_complex * exp_complex;
+  
+  auto one_complex = Engine::make_complex(one, zero);
+  auto diff = one_complex - prod;
+  
+  auto half_complex = Engine::make_complex(half, zero);
+  auto psi_zeta_0 = half_complex * diff;
+  Engine::store(psi_zeta_0, &PsiZeta[0]);
+
+  auto d3_0 = Engine::make_complex(zero, one);
+  Engine::store(d3_0, &D3[0]);
+  
+  auto z_inv = one_complex / z;
+  auto i_complex = Engine::make_complex(zero, one);
+  
   for (int n = 1; n <= nmax; n++) {
-    PsiZeta[n] = PsiZeta[n - 1] *
-                 (static_cast<FloatType>(n) * z_inv - D1[n - 1]) *
-                 (static_cast<FloatType>(n) * z_inv - D3[n - 1]);
-    D3[n] = D1[n] + std::complex<FloatType>(0.0, 1.0) / PsiZeta[n];
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto n_complex = Engine::make_complex(n_val, zero);
+    
+    auto term = n_complex * z_inv;
+    
+    auto d1_nm1 = Engine::load(&D1[(n - 1) * lanes]);
+    auto d3_nm1 = Engine::load(&D3[(n - 1) * lanes]);
+
+    auto factor1 = term - d1_nm1;
+    auto factor2 = term - d3_nm1;
+    
+    auto psi_zeta_nm1 = Engine::load(&PsiZeta[(n - 1) * lanes]);
+    auto prod1 = psi_zeta_nm1 * factor1;
+    auto psi_zeta_n = prod1 * factor2;
+    Engine::store(psi_zeta_n, &PsiZeta[n * lanes]);
+    
+    auto term_div = i_complex / psi_zeta_n;
+    auto d1_n = Engine::load(&D1[n * lanes]);
+    auto d3_n = d1_n + term_div;
+    Engine::store(d3_n, &D3[n * lanes]);
   }
 }
 
-//******************************************************************************
-template <typename FloatType>
-std::complex<FloatType> complex_sin(const std::complex<FloatType> z) {
-  auto a = z.real();
-  auto b = z.imag();
-  auto i = std::complex<FloatType>(0, 1);
-  using nmm::cos;
-  using nmm::exp;
-  using nmm::sin;
-  return ((cos(a) + i * sin(a)) * exp(-b) - (cos(-a) + i * sin(-a)) * exp(b)) /
-         (static_cast<FloatType>(2) * i);
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType> >
+ComplexType complex_sin(const ComplexType z) {
+  auto a = Engine::get_real(z);
+  auto b = Engine::get_imag(z);
+  
+  auto zero = Engine::set(0.0);
+  auto two = Engine::set(2.0);
+  
+  // term1 = (cos(a) + i*sin(a)) * exp(-b)
+  auto cos_a = Engine::cos(a);
+  auto sin_a = Engine::sin(a);
+  auto exp_minus_b = Engine::exp(zero - b);
+  
+  auto e_ia = Engine::make_complex(cos_a, sin_a);
+  auto term1 = e_ia * Engine::make_complex(exp_minus_b, zero);
+  
+  // term2 = (cos(-a) + i*sin(-a)) * exp(b)
+  auto minus_a = zero - a;
+  auto cos_minus_a = Engine::cos(minus_a);
+  auto sin_minus_a = Engine::sin(minus_a);
+  auto exp_b = Engine::exp(b);
+  
+  auto e_minus_ia = Engine::make_complex(cos_minus_a, sin_minus_a);
+  auto term2 = e_minus_ia * Engine::make_complex(exp_b, zero);
+  
+  auto diff = term1 - term2;
+  auto two_i = Engine::make_complex(zero, two);
+  
+  return diff / two_i;
 }
 
 //******************************************************************************
-template <typename FloatType>
-void evalUpwardPsi(const std::complex<FloatType> z,
-                   const std::vector<std::complex<FloatType>> D1,
-                   std::vector<std::complex<FloatType>>& Psi) {
-  int nmax = Psi.size() - 1;
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+void evalUpwardPsi(const ComplexType z,
+                   const ContainerType& D1,
+                   ContainerType& Psi) {
+  int lanes = Engine::Lanes();
+  int nmax = (D1.size() / lanes) - 1;
+  Psi.resize((nmax + 1) * lanes);
+
   // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a)
   // - (21b)
-  Psi[0] = complex_sin(z);
+  auto psi_0 = complex_sin<FloatType, Engine, ComplexType>(z);
+  Engine::store(psi_0, &Psi[0]);
+  
+  auto one = Engine::set(1.0);
+  auto zero = Engine::set(0.0);
+  auto one_complex = Engine::make_complex(one, zero);
+  auto z_inv = one_complex / z;
+  
   for (int n = 1; n <= nmax; n++) {
-    Psi[n] = Psi[n - 1] * (std::complex<FloatType>(n, 0.0) / z - D1[n - 1]);
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto n_complex = Engine::make_complex(n_val, zero);
+    
+    auto term = n_complex * z_inv;
+    auto d1_nm1 = Engine::load(&D1[(n - 1) * lanes]);
+    auto factor = term - d1_nm1;
+    
+    auto psi_nm1 = Engine::load(&Psi[(n - 1) * lanes]);
+    auto psi_n = psi_nm1 * factor;
+    Engine::store(psi_n, &Psi[n * lanes]);
   }
+}
+
+//******************************************************************************
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType> >
+ComplexType complex_cos(const ComplexType z) {
+  auto a = Engine::get_real(z);
+  auto b = Engine::get_imag(z);
+  
+  auto zero = Engine::set(0.0);
+  auto two = Engine::set(2.0);
+  
+  auto cos_a = Engine::cos(a);
+  auto sin_a = Engine::sin(a);
+  auto exp_minus_b = Engine::exp(zero - b);
+  
+  auto e_ia = Engine::make_complex(cos_a, sin_a);
+  auto term1 = e_ia * Engine::make_complex(exp_minus_b, zero);
+  
+  auto minus_a = zero - a;
+  auto cos_minus_a = Engine::cos(minus_a);
+  auto sin_minus_a = Engine::sin(minus_a);
+  auto exp_b = Engine::exp(b);
+  
+  auto e_minus_ia = Engine::make_complex(cos_minus_a, sin_minus_a);
+  auto term2 = e_minus_ia * Engine::make_complex(exp_b, zero);
+  
+  auto sum = term1 + term2;
+  auto two_complex = Engine::make_complex(two, zero);
+  
+  return sum / two_complex;
 }
 
 //******************************************************************************
 // Sometimes in literature Zeta is also denoted as Ksi, it is a Riccati-Bessel
 // function of third kind.
 //******************************************************************************
-template <typename FloatType>
-void evalUpwardZeta(const std::complex<FloatType> z,
-                    const std::vector<std::complex<FloatType>> D3,
-                    std::vector<std::complex<FloatType>>& Zeta) {
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType = std::complex<FloatType>, typename ContainerType = std::vector<std::complex<FloatType> > >
+void evalUpwardZeta(const ComplexType z,
+                    const ContainerType& D3,
+                    ContainerType& Zeta) {
   int nmax = Zeta.size() - 1;
-  std::complex<FloatType> c_i(0.0, 1.0);
-  // Now, use the upward recurrence to calculate Zeta and Zeta - equations (20a)
-  // - (21b)
-  Zeta[0] = nmm::sin(z) - c_i * nmm::cos(z);
+  
+  auto zero = Engine::set(0.0);
+  auto one = Engine::set(1.0);
+  auto i_complex = Engine::make_complex(zero, one);
+  
+  // Zeta[0] = sin(z) - i * cos(z)
+  auto sin_z = complex_sin<FloatType, Engine, ComplexType>(z);
+  auto cos_z = complex_cos<FloatType, Engine, ComplexType>(z);
+  
+  Zeta[0] = sin_z - i_complex * cos_z;
+  
+  auto one_complex = Engine::make_complex(one, zero);
+  auto z_inv = one_complex / z;
+
   for (int n = 1; n <= nmax; n++) {
-    Zeta[n] = Zeta[n - 1] * (std::complex<FloatType>(n, 0.0) / z - D3[n - 1]);
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto n_complex = Engine::make_complex(n_val, zero);
+    
+    auto factor = n_complex * z_inv - D3[n - 1];
+    
+    Zeta[n] = Zeta[n - 1] * factor;
   }
 }
 
@@ -505,7 +711,7 @@ void evalUpwardZeta(const std::complex<FloatType> z,
 //   }
 // }
 //******************************************************************************
-template <typename FloatType>
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>>
 void evalPsiZetaD1D3(const std::complex<FloatType> cxd,
                      std::vector<std::complex<FloatType>>& Psi,
                      std::vector<std::complex<FloatType>>& Zeta,
@@ -519,9 +725,9 @@ void evalPsiZetaD1D3(const std::complex<FloatType> cxd,
     D3[n] = std::complex<FloatType>(0.0, 1.0);
   }
 
-  evalDownwardD1(cxd, D1);
-  evalUpwardPsi(cxd, D1, Psi);
-  evalUpwardD3(cxd, D1, D3, PsiZeta);
+  evalDownwardD1<FloatType, Engine>(cxd, D1);
+  evalUpwardPsi<FloatType, Engine>(cxd, D1, Psi);
+  evalUpwardD3<FloatType, Engine>(cxd, D1, D3, PsiZeta);
   for (unsigned int i = 0; i < Zeta.size(); i++) {
     Zeta[i] = PsiZeta[i] / Psi[i];
   }

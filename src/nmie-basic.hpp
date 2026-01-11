@@ -58,14 +58,454 @@
 
 namespace nmie {
 
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
+ComplexType calc_an(typename Engine::RealV n_real,
+                      typename Engine::RealV XL, 
+                      ComplexType Ha,
+                      ComplexType mL,
+                      ComplexType PsiXL,
+                      ComplexType ZetaXL,
+                      ComplexType PsiXLM1,
+                      ComplexType ZetaXLM1) {
+  auto term1 = (Ha / mL) + (n_real / XL);
+  auto Num = term1 * PsiXL - PsiXLM1;
+  auto Denom = term1 * ZetaXL - ZetaXLM1;
+  return Num / Denom;
+}
+
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
+ComplexType calc_an(int n,
+                      typename Engine::RealV XL, 
+                      ComplexType Ha,
+                      ComplexType mL,
+                      ComplexType PsiXL,
+                      ComplexType ZetaXL,
+                      ComplexType PsiXLM1,
+                      ComplexType ZetaXLM1) {
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    return calc_an<FloatType, Engine, ComplexType>(n_val, XL, Ha, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
+}
+
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
+ComplexType calc_bn(typename Engine::RealV n_real,
+                      typename Engine::RealV XL, 
+                      ComplexType Hb,
+                      ComplexType mL,
+                      ComplexType PsiXL,
+                      ComplexType ZetaXL,
+                      ComplexType PsiXLM1,
+                      ComplexType ZetaXLM1) {
+  auto term1 = (mL * Hb) + (n_real / XL);
+  auto Num = term1 * PsiXL - PsiXLM1;
+  auto Denom = term1 * ZetaXL - ZetaXLM1;
+  return Num / Denom;
+}
+
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>, typename ComplexType>
+ComplexType calc_bn(int n,
+                      typename Engine::RealV XL, 
+                      ComplexType Hb,
+                      ComplexType mL,
+                      ComplexType PsiXL,
+                      ComplexType ZetaXL,
+                      ComplexType PsiXLM1,
+                      ComplexType ZetaXLM1) {
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    return calc_bn<FloatType, Engine, ComplexType>(n_val, XL, Hb, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
+}
+
+template <typename FloatType,
+          typename Engine = ScalarEngine<FloatType>,
+          typename ComplexType>
+void computeAnBnBatch(typename Engine::RealV n_real,
+                      typename Engine::RealV XL,
+                      ComplexType Ha,
+                      ComplexType Hb,
+                      ComplexType mL,
+                      ComplexType PsiXL,
+                      ComplexType ZetaXL,
+                      ComplexType PsiXLM1,
+                      ComplexType ZetaXLM1,
+                      ComplexType& an,
+                      ComplexType& bn) {
+  an = calc_an<FloatType, Engine, ComplexType>(n_real, XL, Ha, mL, PsiXL,
+                                               ZetaXL, PsiXLM1, ZetaXLM1);
+  bn = calc_bn<FloatType, Engine, ComplexType>(n_real, XL, Hb, mL, PsiXL,
+                                               ZetaXL, PsiXLM1, ZetaXLM1);
+}
+
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>>
+void computeLayerCoeffsHelper(int nmax,
+                              int l,
+                              int pl,
+                              typename Engine::RealV x_l,
+                              typename Engine::RealV x_lm1,
+                              typename Engine::ComplexV m_l,
+                              typename Engine::ComplexV m_lm1,
+                              typename Engine::ComplexV z1,
+                              typename Engine::ComplexV z2,
+                              const std::complex<FloatType>* D1_mlxl,
+                              const std::complex<FloatType>* D3_mlxl,
+                              const std::complex<FloatType>* D1_mlxlM1,
+                              const std::complex<FloatType>* D3_mlxlM1,
+                              std::complex<FloatType>* Q_l,
+                              std::complex<FloatType>* Ha_l,
+                              std::complex<FloatType>* Hb_l,
+                              const std::complex<FloatType>* Ha_lm1,
+                              const std::complex<FloatType>* Hb_lm1) {
+  // Q[l][0] calculation
+  auto z1_re = Engine::get_real(z1);
+  auto z1_im = Engine::get_imag(z1);
+  auto z2_re = Engine::get_real(z2);
+  auto z2_im = Engine::get_imag(z2);
+
+  auto minus_two = Engine::set(-2.0);
+  auto exp_term_num = Engine::exp(minus_two * (z1_im - z2_im));
+
+  auto arg_z2 = minus_two * z2_re;
+  auto exp_z2 = Engine::exp(minus_two * z2_im);
+  auto cos_z2 = Engine::cos(arg_z2);
+  auto sin_z2 = Engine::sin(arg_z2);
+
+  auto num_re = exp_term_num * (cos_z2 - exp_z2);
+  auto num_im = exp_term_num * sin_z2;
+  auto Num = Engine::make_complex(num_re, num_im);
+
+  auto arg_z1 = minus_two * z1_re;
+  auto exp_z1 = Engine::exp(minus_two * z1_im);
+  auto cos_z1 = Engine::cos(arg_z1);
+  auto sin_z1 = Engine::sin(arg_z1);
+
+  auto denom_re = cos_z1 - exp_z1;
+  auto denom_im = sin_z1;
+  auto Denom = Engine::make_complex(denom_re, denom_im);
+
+  auto Q_curr = Num / Denom;
+  Engine::store(Q_curr, &Q_l[0]);
+
+  auto ratio = x_lm1 / x_l;
+  auto ratio_sq = ratio * ratio;
+  auto ratio_sq_c = Engine::make_complex(ratio_sq, Engine::set(0.0));
+
+  const size_t lanes = Engine::Lanes();
+
+  for (int n = 1; n <= nmax; ++n) {
+    auto n_val = Engine::set(static_cast<FloatType>(n));
+    auto n_c = Engine::make_complex(n_val, Engine::set(0.0));
+
+    auto d1_n = Engine::load(&D1_mlxl[n * lanes]);
+    auto d3_nm1 = Engine::load(&D3_mlxl[(n - 1) * lanes]);
+
+    auto term1 = (z1 * d1_n) + n_c;
+    auto term2 = n_c - (z1 * d3_nm1);
+    auto Num_n = term1 * term2;
+
+    auto d1_m1_n = Engine::load(&D1_mlxlM1[n * lanes]);
+    auto d3_m1_nm1 = Engine::load(&D3_mlxlM1[(n - 1) * lanes]);
+
+    auto term3 = (z2 * d1_m1_n) + n_c;
+    auto term4 = n_c - (z2 * d3_m1_nm1);
+    auto Denom_n = term3 * term4;
+
+    auto factor = ratio_sq_c * Q_curr;
+    Q_curr = (factor * Num_n) / Denom_n;
+    Engine::store(Q_curr, &Q_l[n * lanes]);
+
+    // Ha
+    typename Engine::ComplexV G1_ha, G2_ha;
+    auto ha_prev = Engine::load(&Ha_lm1[(n - 1) * lanes]);
+
+    if ((l - 1) == pl) {
+      auto neg_one = Engine::set(-1.0);
+      auto neg_one_c = Engine::make_complex(neg_one, Engine::set(0.0));
+      G1_ha = d1_m1_n * neg_one_c;
+      auto d3_m1_n = Engine::load(&D3_mlxlM1[n * lanes]);
+      G2_ha = d3_m1_n * neg_one_c;
+    } else {
+      auto term_ha = m_l * ha_prev;
+      G1_ha = term_ha - (m_lm1 * d1_m1_n);
+      auto d3_m1_n = Engine::load(&D3_mlxlM1[n * lanes]);
+      G2_ha = term_ha - (m_lm1 * d3_m1_n);
+    }
+
+    auto Temp_ha = Q_curr * G1_ha;
+    auto d1_n_curr = Engine::load(&D1_mlxl[n * lanes]);
+    auto d3_n = Engine::load(&D3_mlxl[n * lanes]);
+    auto Num_ha = (G2_ha * d1_n_curr) - (Temp_ha * d3_n);
+    auto Denom_ha = G2_ha - Temp_ha;
+    auto Ha_curr = Num_ha / Denom_ha;
+    Engine::store(Ha_curr, &Ha_l[(n - 1) * lanes]);
+
+    // Hb
+    typename Engine::ComplexV G1_hb, G2_hb;
+    auto hb_prev = Engine::load(&Hb_lm1[(n - 1) * lanes]);
+
+    if ((l - 1) == pl) {
+      G1_hb = hb_prev;
+      G2_hb = hb_prev;
+    } else {
+      auto term_hb = m_lm1 * hb_prev;
+      G1_hb = term_hb - (m_l * d1_m1_n);
+      auto d3_m1_n = Engine::load(&D3_mlxlM1[n * lanes]);
+      G2_hb = term_hb - (m_l * d3_m1_n);
+    }
+
+    auto Temp_hb = Q_curr * G1_hb;
+    auto Num_hb = (G2_hb * d1_n_curr) - (Temp_hb * d3_n);
+    auto Denom_hb = G2_hb - Temp_hb;
+    auto Hb_curr = Num_hb / Denom_hb;
+    Engine::store(Hb_curr, &Hb_l[(n - 1) * lanes]);
+  }
+}
+
+template <typename FloatType, typename Engine, typename XGetter, typename MGetter>
+void calcScattCoeffsKernel(
+    int nmax,
+    int L,
+    int pl,
+    XGetter get_x,
+    MGetter get_m,
+    MieBuffers<FloatType, Engine>& buffers
+) {
+    int fl = (pl > 0) ? pl : 0;
+    int lanes = Engine::Lanes();
+    size_t stride = (nmax + 1) * lanes;
+
+    // Aliases for buffers
+    auto& D1_mlxl = buffers.D1;
+    auto& D3_mlxl = buffers.D3;
+    auto& D1_mlxlM1 = buffers.D1_prev;
+    auto& D3_mlxlM1 = buffers.D3_prev;
+    auto& PsiXL = buffers.Psi;
+    auto& ZetaXL = buffers.Zeta;
+    auto& Q = buffers.Q;
+    auto& Ha = buffers.Ha;
+    auto& Hb = buffers.Hb;
+    auto& an = buffers.an;
+    auto& bn = buffers.bn;
+
+    // Layer fl (first layer)
+    if (fl == pl) {
+        // PEC
+        auto zero = Engine::set(0.0);
+        auto one = Engine::set(1.0);
+        auto minus_one = Engine::set(-1.0);
+        auto d1_val = Engine::make_complex(zero, minus_one);
+        auto d3_val = Engine::make_complex(zero, one);
+        
+        for (int n = 0; n <= nmax; ++n) {
+             Engine::store(d1_val, &D1_mlxl[n*lanes]);
+             Engine::store(d3_val, &D3_mlxl[n*lanes]);
+        }
+    } else {
+        auto x_fl = get_x(fl);
+        auto m_fl = get_m(fl);
+        auto zero = Engine::set(0.0);
+        auto z1 = Engine::make_complex(x_fl, zero) * m_fl;
+
+        evalDownwardD1<FloatType, Engine>(z1, D1_mlxl);
+        evalUpwardD3<FloatType, Engine>(z1, D1_mlxl, D3_mlxl, PsiXL); // PsiXL used as temp buffer
+    }
+    
+    // Ha, Hb for first layer
+    for (int n = 0; n < nmax; ++n) {
+        auto d1_np1 = Engine::load(&D1_mlxl[(n+1)*lanes]);
+        Engine::store(d1_np1, &Ha[fl * stride + n * lanes]);
+        Engine::store(d1_np1, &Hb[fl * stride + n * lanes]);
+    }
+    
+    // Loop layers
+    for (int l = fl + 1; l < L; ++l) {
+        auto x_l = get_x(l);
+        auto m_l = get_m(l);
+        auto x_lm1 = get_x(l-1);
+        auto m_lm1 = get_m(l-1);
+        
+        auto zero = Engine::set(0.0);
+        auto z1 = Engine::make_complex(x_l, zero) * m_l;
+        auto z2 = Engine::make_complex(x_lm1, zero) * m_l;
+
+        evalDownwardD1<FloatType, Engine>(z1, D1_mlxl);
+        evalUpwardD3<FloatType, Engine>(z1, D1_mlxl, D3_mlxl, PsiXL); // PsiXL temp
+        
+        evalDownwardD1<FloatType, Engine>(z2, D1_mlxlM1);
+        evalUpwardD3<FloatType, Engine>(z2, D1_mlxlM1, D3_mlxlM1, PsiXL); // PsiXL temp
+
+        computeLayerCoeffsHelper<FloatType, Engine>(
+            nmax, l, pl, x_l, x_lm1, m_l, m_lm1, z1, z2, D1_mlxl.data(),
+            D3_mlxl.data(), D1_mlxlM1.data(), D3_mlxlM1.data(), &Q[l * stride],
+            &Ha[l * stride], &Hb[l * stride], &Ha[(l - 1) * stride],
+            &Hb[(l - 1) * stride]);
+    }
+    
+    // PsiXL, ZetaXL for outer layer
+    auto x_L = get_x(L-1);
+    auto zero = Engine::set(0.0);
+    auto z_L = Engine::make_complex(x_L, zero);
+    
+    evalDownwardD1<FloatType, Engine>(z_L, D1_mlxl); // D1 temp
+    evalUpwardPsi<FloatType, Engine>(z_L, D1_mlxl, PsiXL);
+    evalUpwardD3<FloatType, Engine>(z_L, D1_mlxl, D3_mlxl, ZetaXL); // ZetaXL used as PsiZeta temp
+    
+    for (int n = 0; n <= nmax; ++n) {
+        auto psi = Engine::load(&PsiXL[n*lanes]);
+        auto psi_zeta = Engine::load(&ZetaXL[n*lanes]);
+        auto zeta = psi_zeta / psi;
+        Engine::store(zeta, &ZetaXL[n*lanes]);
+    }
+    
+    // an, bn calculation
+    auto m_L = get_m(L-1);
+    auto one = Engine::set(1.0);
+    auto one_c = Engine::make_complex(one, zero);
+    auto zero_c = Engine::make_complex(zero, zero);
+
+    for (int n = 0; n < nmax; ++n) {
+        typename Engine::ComplexV an_val, bn_val;
+        auto n_val = Engine::set(static_cast<FloatType>(n + 1));
+
+        auto ha = Engine::load(&Ha[(L - 1) * stride + n * lanes]);
+        auto hb = Engine::load(&Hb[(L - 1) * stride + n * lanes]);
+        auto psi_np1 = Engine::load(&PsiXL[(n+1)*lanes]);
+        auto zeta_np1 = Engine::load(&ZetaXL[(n+1)*lanes]);
+        auto psi_n = Engine::load(&PsiXL[n*lanes]);
+        auto zeta_n = Engine::load(&ZetaXL[n*lanes]);
+
+        if (pl < (L - 1)) {
+             computeAnBnBatch<FloatType, Engine>(
+                  n_val, x_L, ha, hb, m_L,
+                  psi_np1, zeta_np1, psi_n, zeta_n,
+                  an_val, bn_val
+             );
+        } else {
+             an_val = calc_an<FloatType, Engine>(
+                  n_val, x_L, zero_c, one_c,
+                  psi_np1, zeta_np1, psi_n, zeta_n
+             );
+             bn_val = psi_np1 / zeta_np1;
+        }
+        
+        Engine::store(an_val, &an[n*lanes]);
+        Engine::store(bn_val, &bn[n*lanes]);
+    }
+}
+
+// ********************************************************************** //
+// Calculates S1 - equation (25a)                                         //
+// ********************************************************************** //
+template <typename FloatType, MathEngine Engine>
+std::complex<FloatType> calc_S1(
+    int n,
+    std::complex<FloatType> an,
+    std::complex<FloatType> bn,
+    FloatType Pi,
+    FloatType Tau) {
+  return FloatType(n + n + 1) * (Pi * an + Tau * bn) / FloatType(n * n + n);
+}
+
+// ********************************************************************** //
+// Calculates S2 - equation (25b) (it's the same as (25a), just switches  //
+// Pi and Tau)                                                            //
+// ********************************************************************** //
+template <typename FloatType, MathEngine Engine>
+std::complex<FloatType> calc_S2(
+    int n,
+    std::complex<FloatType> an,
+    std::complex<FloatType> bn,
+    FloatType Pi,
+    FloatType Tau) {
+  return calc_S1(n, an, bn, Tau, Pi);
+}
+
+
+
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>>
+void calcQParams(
+    int n,
+    const std::complex<FloatType>& an,
+    const std::complex<FloatType>& bn,
+    const std::complex<FloatType>& an_next,
+    const std::complex<FloatType>& bn_next,
+    FloatType& Qext,
+    FloatType& Qsca,
+    FloatType& Qpr,
+    std::complex<FloatType>& Qbktmp,
+    int mode_n,
+    int mode_type
+) {
+    const int n1 = n + 1;
+    if (mode_n == Modes::kAll) {
+      // Equation (27)
+      Qext += (n1 + n1 + 1.0) * (an.real() + bn.real());
+      // Equation (28)
+      Qsca += (n1 + n1 + 1.0) *
+               (an.real() * an.real() + an.imag() * an.imag() +
+                bn.real() * bn.real() + bn.imag() * bn.imag());
+      // Equation (29)
+      Qpr += ((n1 * (n1 + 2.0) / (n1 + 1.0)) *
+                   ((an * std::conj(an_next) + bn * std::conj(bn_next))
+                        .real()) +
+               ((n1 + n1 + 1.0) / (n1 * (n1 + 1.0))) *
+                   (an * std::conj(bn)).real());
+      // Equation (33)
+      Qbktmp += (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) *
+                (an - bn);
+    } else if (n1 == mode_n) {
+      if (mode_type == Modes::kElectric || mode_type == Modes::kAll) {
+        Qext += (n1 + n1 + 1.0) * (an.real());
+        Qsca += (n1 + n1 + 1.0) * (an.real() * an.real() +
+                                    an.imag() * an.imag());
+        Qpr += std::nan("");
+        Qbktmp +=
+            (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (an);
+      }
+      if (mode_type == Modes::kMagnetic || mode_type == Modes::kAll) {
+        Qext += (n1 + n1 + 1.0) * (bn.real());
+        Qsca += (n1 + n1 + 1.0) * (bn.real() * bn.real() +
+                                    bn.imag() * bn.imag());
+        Qpr += std::nan("");
+        Qbktmp +=
+            (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (bn);
+      }
+    }
+}
+
+template <typename FloatType, typename Engine = ScalarEngine<FloatType>>
+void calcSParams(
+    int n,
+    const std::complex<FloatType>& an,
+    const std::complex<FloatType>& bn,
+    const FloatType& Pi,
+    const FloatType& Tau,
+    std::complex<FloatType>& S1,
+    std::complex<FloatType>& S2,
+    int mode_n,
+    int mode_type
+) {
+    const int n1 = n + 1;
+    if (mode_n == Modes::kAll) {
+        S1 += calc_S1<FloatType>(n1, an, bn, Pi, Tau);
+        S2 += calc_S2<FloatType>(n1, an, bn, Pi, Tau);
+    } else if (n1 == mode_n) {
+      if (mode_type == Modes::kElectric || mode_type == Modes::kAll) {
+          S1 += calc_S1<FloatType>(n1, an, std::complex<FloatType>(0), Pi, Tau);
+          S2 += calc_S2<FloatType>(n1, an, std::complex<FloatType>(0), Pi, Tau);
+      }
+      if (mode_type == Modes::kMagnetic || mode_type == Modes::kAll) {
+          S1 += calc_S1<FloatType>(n1, std::complex<FloatType>(0), bn, Pi, Tau);
+          S2 += calc_S2<FloatType>(n1, std::complex<FloatType>(0), bn, Pi, Tau);
+      }
+    }
+}
+
 // class implementation
 
 // ********************************************************************** //
 // Returns previously calculated Qext                                     //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetQext() {
+outputType MultiLayerMie<FloatType, Engine>::GetQext() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -75,9 +515,9 @@ outputType MultiLayerMie<FloatType>::GetQext() {
 // ********************************************************************** //
 // Returns previously calculated Qabs                                     //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetQabs() {
+outputType MultiLayerMie<FloatType, Engine>::GetQabs() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -87,9 +527,9 @@ outputType MultiLayerMie<FloatType>::GetQabs() {
 // ********************************************************************** //
 // Returns previously calculated Qsca                                     //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetQsca() {
+outputType MultiLayerMie<FloatType, Engine>::GetQsca() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -99,9 +539,9 @@ outputType MultiLayerMie<FloatType>::GetQsca() {
 // ********************************************************************** //
 // Returns previously calculated Qbk                                      //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetQbk() {
+outputType MultiLayerMie<FloatType, Engine>::GetQbk() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -111,9 +551,9 @@ outputType MultiLayerMie<FloatType>::GetQbk() {
 // ********************************************************************** //
 // Returns previously calculated Qpr                                      //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetQpr() {
+outputType MultiLayerMie<FloatType, Engine>::GetQpr() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -123,9 +563,9 @@ outputType MultiLayerMie<FloatType>::GetQpr() {
 // ********************************************************************** //
 // Returns previously calculated asymmetry factor                         //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetAsymmetryFactor() {
+outputType MultiLayerMie<FloatType, Engine>::GetAsymmetryFactor() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -135,9 +575,9 @@ outputType MultiLayerMie<FloatType>::GetAsymmetryFactor() {
 // ********************************************************************** //
 // Returns previously calculated Albedo                                   //
 // ********************************************************************** //
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename outputType>
-outputType MultiLayerMie<FloatType>::GetAlbedo() {
+outputType MultiLayerMie<FloatType, Engine>::GetAlbedo() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -147,8 +587,8 @@ outputType MultiLayerMie<FloatType>::GetAlbedo() {
 // ********************************************************************** //
 // Returns previously calculated S1                                       //
 // ********************************************************************** //
-template <typename FloatType>
-std::vector<std::complex<FloatType>> MultiLayerMie<FloatType>::GetS1() {
+template <typename FloatType, MathEngine Engine>
+std::vector<std::complex<FloatType>> MultiLayerMie<FloatType, Engine>::GetS1() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -158,8 +598,8 @@ std::vector<std::complex<FloatType>> MultiLayerMie<FloatType>::GetS1() {
 // ********************************************************************** //
 // Returns previously calculated S2                                       //
 // ********************************************************************** //
-template <typename FloatType>
-std::vector<std::complex<FloatType>> MultiLayerMie<FloatType>::GetS2() {
+template <typename FloatType, MathEngine Engine>
+std::vector<std::complex<FloatType>> MultiLayerMie<FloatType, Engine>::GetS2() {
   if (!isMieCalculated_)
     throw std::invalid_argument(
         "You should run calculations before result request!");
@@ -169,8 +609,8 @@ std::vector<std::complex<FloatType>> MultiLayerMie<FloatType>::GetS2() {
 // ********************************************************************** //
 // Modify scattering (theta) angles                                       //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetAngles(const std::vector<FloatType>& angles) {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::SetAngles(const std::vector<FloatType>& angles) {
   MarkUncalculated();
   theta_ = angles;
 }
@@ -178,8 +618,8 @@ void MultiLayerMie<FloatType>::SetAngles(const std::vector<FloatType>& angles) {
 // ********************************************************************** //
 // Modify size of all layers                                             //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetLayersSize(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::SetLayersSize(
     const std::vector<FloatType>& layer_size) {
   MarkUncalculated();
   size_param_.clear();
@@ -199,34 +639,21 @@ void MultiLayerMie<FloatType>::SetLayersSize(
 // ********************************************************************** //
 // Modify refractive index of all layers                                  //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetLayersIndex(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::SetLayersIndex(
     const std::vector<std::complex<FloatType>>& index) {
   MarkUncalculated();
   refractive_index_ = index;
 }
 
 // ********************************************************************** //
-// Modify coordinates for field calculation                               //
-// ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetFieldCoords(
-    const std::vector<std::vector<FloatType>>& coords) {
-  if (coords.size() != 3)
-    throw std::invalid_argument(
-        "Error! Wrong dimension of field monitor points!");
-  if (coords[0].size() != coords[1].size() ||
-      coords[0].size() != coords[2].size())
-    throw std::invalid_argument(
-        "Error! Missing coordinates for field monitor points!");
-  coords_ = coords;
-}
+
 
 // ********************************************************************** //
 // Modify index of PEC layer                                              //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetPECLayer(int layer_position) {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::SetPECLayer(int layer_position) {
   MarkUncalculated();
   if (layer_position < 0 && layer_position != -1)
     throw std::invalid_argument("Error! Layers are numbered from 0!");
@@ -236,8 +663,8 @@ void MultiLayerMie<FloatType>::SetPECLayer(int layer_position) {
 // ********************************************************************** //
 // Set maximun number of terms to be used                                 //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::SetMaxTerms(int nmax) {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::SetMaxTerms(int nmax) const {
   MarkUncalculated();
   nmax_preset_ = nmax;
 }
@@ -245,8 +672,8 @@ void MultiLayerMie<FloatType>::SetMaxTerms(int nmax) {
 // ********************************************************************** //
 // Get total size parameter of particle                                   //
 // ********************************************************************** //
-template <typename FloatType>
-FloatType MultiLayerMie<FloatType>::GetSizeParameter() {
+template <typename FloatType, MathEngine Engine>
+FloatType MultiLayerMie<FloatType, Engine>::GetSizeParameter() {
   if (size_param_.size() > 0)
     return size_param_.back();
   else
@@ -256,8 +683,8 @@ FloatType MultiLayerMie<FloatType>::GetSizeParameter() {
 // ********************************************************************** //
 // Mark uncalculated                                                      //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::MarkUncalculated() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::MarkUncalculated() const {
   isExpCoeffsCalc_ = false;
   isScaCoeffsCalc_ = false;
 
@@ -266,8 +693,8 @@ void MultiLayerMie<FloatType>::MarkUncalculated() {
 // ********************************************************************** //
 // Clear layer information                                                //
 // ********************************************************************** //
-template <typename FloatType>
-void MultiLayerMie<FloatType>::ClearLayers() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::ClearLayers() {
   MarkUncalculated();
   size_param_.clear();
   refractive_index_.clear();
@@ -292,8 +719,8 @@ unsigned int LeRu_near_field_cutoff(const std::complex<FloatType> zz) {
 // ********************************************************************** //
 // Calculate calcNstop - equation (17)                                    //
 // ********************************************************************** //
-template <typename FloatType>
-unsigned int MultiLayerMie<FloatType>::calcNstop(FloatType xL) {
+template <typename FloatType, MathEngine Engine>
+unsigned int MultiLayerMie<FloatType, Engine>::calcNstop(FloatType xL) const {
   unsigned int nmax = 0;
   // Wiscombe
   if (xL < size_param_.back())
@@ -315,8 +742,8 @@ unsigned int MultiLayerMie<FloatType>::calcNstop(FloatType xL) {
 // ********************************************************************** //
 // Maximum number of terms required for the calculation                   //
 // ********************************************************************** //
-template <typename FloatType>
-unsigned int MultiLayerMie<FloatType>::calcNmax(FloatType xL) {
+template <typename FloatType, MathEngine Engine>
+unsigned int MultiLayerMie<FloatType, Engine>::calcNmax(FloatType xL) const {
   const int pl = PEC_layer_position_;
   const unsigned int first_layer = (pl > 0) ? pl : 0;
   unsigned int ri, riM1, nmax = 0;
@@ -350,8 +777,8 @@ unsigned int MultiLayerMie<FloatType>::calcNmax(FloatType xL) {
 // ********************************************************************** //
 // Calculate an - equation (5)                                            //
 // ********************************************************************** //
-template <typename FloatType>
-std::complex<FloatType> MultiLayerMie<FloatType>::calc_an(
+template <typename FloatType, MathEngine Engine>
+std::complex<FloatType> MultiLayerMie<FloatType, Engine>::calc_an(
     int n,
     FloatType XL,
     std::complex<FloatType> Ha,
@@ -359,21 +786,16 @@ std::complex<FloatType> MultiLayerMie<FloatType>::calc_an(
     std::complex<FloatType> PsiXL,
     std::complex<FloatType> ZetaXL,
     std::complex<FloatType> PsiXLM1,
-    std::complex<FloatType> ZetaXLM1) {
-  std::complex<FloatType> Num = (Ha / mL + n / XL) * PsiXL - PsiXLM1;
-  std::complex<FloatType> Denom = (Ha / mL + n / XL) * ZetaXL - ZetaXLM1;
-  // std::cout<< std::setprecision(100)
-  //          << "Ql "        << PsiXL
-  //          << std::endl;
-
-  return Num / Denom;
+    std::complex<FloatType> ZetaXLM1) const {
+  return nmie::calc_an<FloatType, ScalarEngine<FloatType>, std::complex<FloatType>>(
+      n, XL, Ha, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
 }
 
 // ********************************************************************** //
 // Calculate bn - equation (6)                                            //
 // ********************************************************************** //
-template <typename FloatType>
-std::complex<FloatType> MultiLayerMie<FloatType>::calc_bn(
+template <typename FloatType, MathEngine Engine>
+std::complex<FloatType> MultiLayerMie<FloatType, Engine>::calc_bn(
     int n,
     FloatType XL,
     std::complex<FloatType> Hb,
@@ -381,39 +803,12 @@ std::complex<FloatType> MultiLayerMie<FloatType>::calc_bn(
     std::complex<FloatType> PsiXL,
     std::complex<FloatType> ZetaXL,
     std::complex<FloatType> PsiXLM1,
-    std::complex<FloatType> ZetaXLM1) {
-  std::complex<FloatType> Num = (mL * Hb + n / XL) * PsiXL - PsiXLM1;
-  std::complex<FloatType> Denom = (mL * Hb + n / XL) * ZetaXL - ZetaXLM1;
-
-  return Num / Denom;
+    std::complex<FloatType> ZetaXLM1) const {
+  return nmie::calc_bn<FloatType, ScalarEngine<FloatType>, std::complex<FloatType>>(
+      n, XL, Hb, mL, PsiXL, ZetaXL, PsiXLM1, ZetaXLM1);
 }
 
-// ********************************************************************** //
-// Calculates S1 - equation (25a)                                         //
-// ********************************************************************** //
-template <typename FloatType>
-std::complex<FloatType> MultiLayerMie<FloatType>::calc_S1(
-    int n,
-    std::complex<FloatType> an,
-    std::complex<FloatType> bn,
-    FloatType Pi,
-    FloatType Tau) {
-  return FloatType(n + n + 1) * (Pi * an + Tau * bn) / FloatType(n * n + n);
-}
 
-// ********************************************************************** //
-// Calculates S2 - equation (25b) (it's the same as (25a), just switches  //
-// Pi and Tau)                                                            //
-// ********************************************************************** //
-template <typename FloatType>
-std::complex<FloatType> MultiLayerMie<FloatType>::calc_S2(
-    int n,
-    std::complex<FloatType> an,
-    std::complex<FloatType> bn,
-    FloatType Pi,
-    FloatType Tau) {
-  return calc_S1(n, an, bn, Tau, Pi);
-}
 
 //****************************************************************************
 // This function calculates the logarithmic derivatives of the Riccati-Bessel
@@ -428,13 +823,14 @@ std::complex<FloatType> MultiLayerMie<FloatType>::calc_S2(
 //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions
 //****************************************************************************
 template <typename FloatType>
-void MultiLayerMie<FloatType>::calcD1D3(
+void calcD1D3(
     const std::complex<FloatType> z,
+    int nmax,
     std::vector<std::complex<FloatType>>& D1,
     std::vector<std::complex<FloatType>>& D3) {
-  std::vector<std::complex<FloatType>> PsiZeta(nmax_ + 1);
-  evalDownwardD1(z, D1);
-  evalUpwardD3(z, D1, D3, PsiZeta);
+  std::vector<std::complex<FloatType>> PsiZeta(nmax + 1);
+  evalDownwardD1<FloatType>(z, D1);
+  evalUpwardD3<FloatType>(z, D1, D3, PsiZeta);
 }
 
 //*****************************************************************************
@@ -450,30 +846,31 @@ void MultiLayerMie<FloatType>::calcD1D3(
 //   Psi, Zeta: Riccati-Bessel functions
 //*****************************************************************************
 template <typename FloatType>
-void MultiLayerMie<FloatType>::calcPsiZeta(
+void calcPsiZeta(
     std::complex<FloatType> z,
+    int nmax,
     std::vector<std::complex<FloatType>>& Psi,
     std::vector<std::complex<FloatType>>& Zeta) {
-  std::vector<std::complex<FloatType>> D1(nmax_ + 1), D3(nmax_ + 1),
-      PsiZeta(nmax_ + 1);
+  std::vector<std::complex<FloatType>> D1(nmax + 1), D3(nmax + 1),
+      PsiZeta(nmax + 1);
   // First, calculate the logarithmic derivatives
-  evalDownwardD1(z, D1);
+  evalDownwardD1<FloatType>(z, D1);
   // Now, use the upward recurrence to calculate Psi equations (20ab)
-  evalUpwardPsi(z, D1, Psi);
+  evalUpwardPsi<FloatType>(z, D1, Psi);
   // Now, use the upward recurrence to calculate Psi*Zeta equations (18ad)
-  evalUpwardD3(z, D1, D3, PsiZeta);
+  evalUpwardD3<FloatType>(z, D1, D3, PsiZeta);
   for (unsigned int i = 0; i < Zeta.size(); i++) {
     Zeta[i] = PsiZeta[i] / Psi[i];
   }
   //    evalUpwardZeta(z, D3, Zeta);
 }
 
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcPiTauAllTheta(
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcPiTauAllTheta(
     const double from_Theta,
     const double to_Theta,
     std::vector<std::vector<FloatType>>& Pi,
-    std::vector<std::vector<FloatType>>& Tau) {
+    std::vector<std::vector<FloatType>>& Tau) const {
   const unsigned int perimeter_points = Pi.size();
   for (auto& val : Pi)
     val.resize(available_maximal_nmax_, static_cast<FloatType>(0.0));
@@ -502,10 +899,10 @@ void MultiLayerMie<FloatType>::calcPiTauAllTheta(
 //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) -
 //   (26c)
 //*******************************************************************************
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcPiTau(const FloatType& costheta,
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcPiTau(const FloatType& costheta,
                                          std::vector<FloatType>& Pi,
-                                         std::vector<FloatType>& Tau) {
+                                         std::vector<FloatType>& Tau) const {
   int nmax = Pi.size();
   if (Pi.size() != Tau.size())
     throw std::invalid_argument(
@@ -544,9 +941,9 @@ void MultiLayerMie<FloatType>::calcPiTau(const FloatType& costheta,
 // Output parameters:
 //   Mo1n, Me1n, No1n, Ne1n: Complex vector spherical harmonics
 //*****************************************************************************
-template <typename FloatType>
+template <typename FloatType, MathEngine Engine>
 template <typename evalType>
-void MultiLayerMie<FloatType>::calcSpherHarm(
+void MultiLayerMie<FloatType, Engine>::calcSpherHarm(
     const std::complex<evalType> Rho,
     const evalType Theta,
     const evalType Phi,
@@ -558,7 +955,7 @@ void MultiLayerMie<FloatType>::calcSpherHarm(
     std::vector<std::complex<evalType>>& Mo1n,
     std::vector<std::complex<evalType>>& Me1n,
     std::vector<std::complex<evalType>>& No1n,
-    std::vector<std::complex<evalType>>& Ne1n) {
+    std::vector<std::complex<evalType>>& Ne1n) const {
   // using eq 4.50 in BH
   std::complex<evalType> c_zero(0.0, 0.0);
 
@@ -603,8 +1000,8 @@ void MultiLayerMie<FloatType>::calcSpherHarm(
 // Return value:
 //   Number of multipolar expansion terms used for the calculations
 //********************************************************************************
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcScattCoeffs() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcScattCoeffs() const {
   isScaCoeffsCalc_ = false;
   an_.clear();
   bn_.clear();
@@ -619,13 +1016,11 @@ void MultiLayerMie<FloatType>::calcScattCoeffs() {
   // or the index of the outermost PEC layer. In the latter case all layers //
   // below the PEC are discarded.                                           //
   // ***********************************************************************//
-  int fl = (pl > 0) ? pl : 0;
   if (nmax_preset_ <= 0)
     nmax_ = calcNmax();
   else
     nmax_ = nmax_preset_;
 
-  std::complex<FloatType> z1, z2;
   //**************************************************************************//
   // Note that since Fri, Nov 14, 2014 all arrays start from 0 (zero), which  //
   // means that index = layer number - 1 or index = n - 1. The only exception //
@@ -633,140 +1028,35 @@ void MultiLayerMie<FloatType>::calcScattCoeffs() {
   // for the index 0 (zero), hence it is important to consider this shift     //
   // between different arrays. The change was done to optimize memory usage.  //
   //**************************************************************************//
-  // Allocate memory to the arrays
-  std::vector<std::complex<FloatType>> D1_mlxl(nmax_ + 1), D1_mlxlM1(nmax_ + 1),
-      D3_mlxl(nmax_ + 1), D3_mlxlM1(nmax_ + 1);
-
-  std::vector<std::vector<std::complex<FloatType>>> Q(L), Ha(L), Hb(L);
-
-  for (int l = 0; l < L; l++) {
-    Q[l].resize(nmax_ + 1, static_cast<FloatType>(0.0));
-    Ha[l].resize(nmax_, static_cast<FloatType>(0.0));
-    Hb[l].resize(nmax_, static_cast<FloatType>(0.0));
+  
+  size_t lanes = Engine::Lanes();
+  MieBuffers<FloatType, Engine> buffers;
+  buffers.resize(nmax_, L, 0);
+  
+  auto get_x = [&](int l) { return Engine::set(x[l]); };
+  auto get_m = [&](int l) { 
+    auto m_val = m[l];
+    return Engine::make_complex(
+        Engine::set(m_val.real()), 
+        Engine::set(m_val.imag())
+    ); 
+  };
+  
+  calcScattCoeffsKernel<FloatType, Engine>(
+    nmax_, L, pl, get_x, get_m,
+    buffers
+  );
+  
+  an_.resize(nmax_);
+  bn_.resize(nmax_);
+  for(int n=0; n<nmax_; ++n) {
+    an_[n] = buffers.an[n * lanes];
+    bn_[n] = buffers.bn[n * lanes];
   }
 
-  an_.resize(nmax_, static_cast<FloatType>(0.0));
-  bn_.resize(nmax_, static_cast<FloatType>(0.0));
-
-  std::vector<std::complex<FloatType>> PsiXL(nmax_ + 1), ZetaXL(nmax_ + 1);
-
-  //*************************************************//
-  // Calculate D1 and D3 for z1 in the first layer   //
-  //*************************************************//
-  if (fl == pl) {  // PEC layer
-    for (int n = 0; n <= nmax_; n++) {
-      D1_mlxl[n] = std::complex<FloatType>(0.0, -1.0);
-      D3_mlxl[n] = std::complex<FloatType>(0.0, 1.0);
-    }
-  } else {  // Regular layer
-    z1 = x[fl] * m[fl];
-    // Calculate D1 and D3
-    calcD1D3(z1, D1_mlxl, D3_mlxl);
-  }
-
-  //******************************************************************//
-  // Calculate Ha and Hb in the first layer - equations (7a) and (8a) //
-  //******************************************************************//
-  for (int n = 0; n < nmax_; n++) {
-    Ha[fl][n] = D1_mlxl[n + 1];
-    Hb[fl][n] = D1_mlxl[n + 1];
-  }
-  //*****************************************************//
-  // Iteration from the second layer to the last one (L) //
-  //*****************************************************//
-  std::complex<FloatType> Temp, Num, Denom;
-  std::complex<FloatType> G1, G2;
-  for (int l = fl + 1; l < L; l++) {
-    //************************************************************//
-    // Calculate D1 and D3 for z1 and z2 in the layers fl + 1..L   //
-    //************************************************************//
-    z1 = x[l] * m[l];
-    z2 = x[l - 1] * m[l];
-    // Calculate D1 and D3 for z1
-    calcD1D3(z1, D1_mlxl, D3_mlxl);
-    // Calculate D1 and D3 for z2
-    calcD1D3(z2, D1_mlxlM1, D3_mlxlM1);
-
-    //*************************************************//
-    // Calculate Q, Ha and Hb in the layers fl + 1..L   //
-    //*************************************************//
-    // Upward recurrence for Q - equations (19a) and (19b)
-    Num =
-        std::complex<FloatType>(nmm::exp(-2.0 * (z1.imag() - z2.imag())), 0.0) *
-        std::complex<FloatType>(
-            nmm::cos(-2.0 * z2.real()) - nmm::exp(-2.0 * z2.imag()),
-            nmm::sin(-2.0 * z2.real()));
-    Denom = std::complex<FloatType>(
-        nmm::cos(-2.0 * z1.real()) - nmm::exp(-2.0 * z1.imag()),
-        nmm::sin(-2.0 * z1.real()));
-    Q[l][0] = Num / Denom;
-
-    for (int n = 1; n <= nmax_; n++) {
-      Num = (z1 * D1_mlxl[n] + FloatType(n)) *
-            (FloatType(n) - z1 * D3_mlxl[n - 1]);
-      Denom = (z2 * D1_mlxlM1[n] + FloatType(n)) *
-              (FloatType(n) - z2 * D3_mlxlM1[n - 1]);
-      Q[l][n] = ((pow2(x[l - 1] / x[l]) * Q[l][n - 1]) * Num) / Denom;
-    }
-    // Upward recurrence for Ha and Hb - equations (7b), (8b) and (12) - (15)
-    for (int n = 1; n <= nmax_; n++) {
-      // Ha
-      if ((l - 1) == pl) {  // The layer below the current one is a PEC layer
-        G1 = -D1_mlxlM1[n];
-        G2 = -D3_mlxlM1[n];
-      } else {
-        G1 = (m[l] * Ha[l - 1][n - 1]) - (m[l - 1] * D1_mlxlM1[n]);
-        G2 = (m[l] * Ha[l - 1][n - 1]) - (m[l - 1] * D3_mlxlM1[n]);
-      }  // end of if PEC
-      Temp = Q[l][n] * G1;
-      Num = (G2 * D1_mlxl[n]) - (Temp * D3_mlxl[n]);
-      Denom = G2 - Temp;
-      Ha[l][n - 1] = Num / Denom;
-      // Hb
-      if ((l - 1) == pl) {  // The layer below the current one is a PEC layer
-        G1 = Hb[l - 1][n - 1];
-        G2 = Hb[l - 1][n - 1];
-      } else {
-        G1 = (m[l - 1] * Hb[l - 1][n - 1]) - (m[l] * D1_mlxlM1[n]);
-        G2 = (m[l - 1] * Hb[l - 1][n - 1]) - (m[l] * D3_mlxlM1[n]);
-      }  // end of if PEC
-
-      Temp = Q[l][n] * G1;
-      Num = (G2 * D1_mlxl[n]) - (Temp * D3_mlxl[n]);
-      Denom = (G2 - Temp);
-      Hb[l][n - 1] = (Num / Denom);
-    }  // end of for Ha and Hb terms
-  }    // end of for layers iteration
-
-  //**************************************//
-  // Calculate Psi and Zeta for XL         //
-  //**************************************//
-  // Calculate PsiXL and ZetaXL
-  calcPsiZeta(std::complex<FloatType>(x[L - 1], 0.0), PsiXL, ZetaXL);
-
-  //*********************************************************************//
-  // Finally, we calculate the scattering coefficients (an and bn) and   //
-  // the angular functions (Pi and Tau). Note that for these arrays the  //
-  // first layer is 0 (zero), in future versions all arrays will follow  //
-  // this convention to save memory. (13 Nov, 2014)                      //
-  //*********************************************************************//
   FloatType a0 = 0, b0 = 0;
+
   for (int n = 0; n < nmax_; n++) {
-    //********************************************************************//
-    // Expressions for calculating an and bn coefficients are not valid if //
-    // there is only one PEC layer (ie, for a simple PEC sphere).          //
-    //********************************************************************//
-    if (pl < (L - 1)) {
-      an_[n] = calc_an(n + 1, x[L - 1], Ha[L - 1][n], m[L - 1], PsiXL[n + 1],
-                       ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
-      bn_[n] = calc_bn(n + 1, x[L - 1], Hb[L - 1][n], m[L - 1], PsiXL[n + 1],
-                       ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
-    } else {
-      an_[n] = calc_an(n + 1, x[L - 1], std::complex<FloatType>(0.0, 0.0),
-                       std::complex<FloatType>(1.0, 0.0), PsiXL[n + 1],
-                       ZetaXL[n + 1], PsiXL[n], ZetaXL[n]);
-      bn_[n] = PsiXL[n + 1] / ZetaXL[n + 1];
-    }
     if (n == 0) {
       a0 = cabs(an_[0]);
       b0 = cabs(bn_[0]);
@@ -782,25 +1072,217 @@ void MultiLayerMie<FloatType>::calcScattCoeffs() {
                 << " and b[nmax]/b[1]:" << cabs(bn_[n]) / b0 << std::endl;
     }
 
-    // TODO seems to provide not enough terms for near-field calclulation.
-    //      if (cabs(an_[n]) / a0 < convergence_threshold_ &&
-    //          cabs(bn_[n]) / b0 < convergence_threshold_) {
-    //        if (nmax_preset_ <= 0) nmax_ = n;
-    //        break;
-    //      }
-
     if (nmm::isnan(an_[n].real()) || nmm::isnan(an_[n].imag()) ||
         nmm::isnan(bn_[n].real()) || nmm::isnan(bn_[n].imag())) {
       std::cout
           << "nmax value was changed due to unexpected error!!! New values is "
           << n << " (was " << nmax_ << ")" << std::endl;
       nmax_ = n;
+      an_.resize(nmax_);
+      bn_.resize(nmax_);
       break;
     }
 
   }  // end of for an and bn terms
   isScaCoeffsCalc_ = true;
 }  // end of MultiLayerMie::calcScattCoeffs()
+
+template <typename FloatType, typename Engine>
+void sumMieSeriesKernel(const int nmax,
+                        const typename Engine::RealV vnmax,
+                        const typename Engine::RealV x,
+                        const std::complex<FloatType>* an_ptr,
+                        const std::complex<FloatType>* bn_ptr,
+                        const std::vector<FloatType>& theta,
+                        MieBuffers<FloatType, Engine>& buffers,
+                        std::vector<typename Engine::ComplexV>& S1,
+                        std::vector<typename Engine::ComplexV>& S2) {
+  using ComplexV = typename Engine::ComplexV;
+  using RealV = typename Engine::RealV;
+
+  auto zero = Engine::set(0.0);
+  auto one = Engine::set(1.0);
+
+  auto Qext_sum = zero;
+  auto Qsca_sum = zero;
+  auto Qpr_sum = zero;
+  auto Qbk_sum = Engine::make_complex(zero, zero);
+
+  size_t num_angles = theta.size();
+  for (size_t k = 0; k < num_angles; ++k) {
+    S1[k] = Engine::make_complex(zero, zero);
+    S2[k] = Engine::make_complex(zero, zero);
+  }
+
+  std::vector<ComplexV> pi_prev(num_angles, Engine::make_complex(zero, zero));
+  std::vector<ComplexV> pi_curr(num_angles, Engine::make_complex(one, zero));
+  std::vector<RealV> mu(num_angles);
+  for (size_t k = 0; k < num_angles; ++k) {
+    mu[k] = Engine::set(nmm::cos(theta[k]));
+  }
+
+  ComplexV an_prev = Engine::make_complex(zero, zero);
+  ComplexV bn_prev = Engine::make_complex(zero, zero);
+
+  for (int n = 1; n < nmax; ++n) {
+    auto vn = Engine::set(static_cast<FloatType>(n));
+    auto mask = Engine::le(vn, vnmax);
+
+    size_t offset = (n - 1) * Engine::Lanes();
+    auto an = Engine::load(&an_ptr[offset]);
+    auto bn = Engine::load(&bn_ptr[offset]);
+
+    an = Engine::select(mask, an, Engine::make_complex(zero, zero));
+    bn = Engine::select(mask, bn, Engine::make_complex(zero, zero));
+
+    auto n2p1 = (vn + vn) + one;
+    auto n_plus_1 = vn + one;
+    auto n_sq_plus_n = vn * n_plus_1;
+
+    auto an_plus_bn = an + bn;
+    auto term_ext = n2p1 * Engine::get_real(an_plus_bn);
+    Qext_sum = Qext_sum + term_ext;
+
+    auto an_sq = (Engine::get_real(an) * Engine::get_real(an)) +
+                 (Engine::get_imag(an) * Engine::get_imag(an));
+    auto bn_sq = (Engine::get_real(bn) * Engine::get_real(bn)) +
+                 (Engine::get_imag(bn) * Engine::get_imag(bn));
+    auto term_sca = n2p1 * (an_sq + bn_sq);
+    Qsca_sum = Qsca_sum + term_sca;
+
+    RealV sign = (n % 2 == 0) ? one : Engine::set(-1.0);
+    auto an_minus_bn = an - bn;
+    auto term_bk = Engine::make_complex(n2p1 * sign, zero) * an_minus_bn;
+    Qbk_sum = Qbk_sum + term_bk;
+
+    if (n > 1) {
+      auto nm1 = vn - one;
+      auto factor1 = (nm1 * n_plus_1) / vn;
+
+      auto re_aa = (Engine::get_real(an_prev) * Engine::get_real(an)) +
+                   (Engine::get_imag(an_prev) * Engine::get_imag(an));
+      auto re_bb = (Engine::get_real(bn_prev) * Engine::get_real(bn)) +
+                   (Engine::get_imag(bn_prev) * Engine::get_imag(bn));
+
+      auto term_pr1 = factor1 * (re_aa + re_bb);
+      Qpr_sum = Qpr_sum + term_pr1;
+    }
+
+    auto factor2 = n2p1 / n_sq_plus_n;
+    auto re_ab = (Engine::get_real(an) * Engine::get_real(bn)) +
+                 (Engine::get_imag(an) * Engine::get_imag(bn));
+    auto term_pr2 = factor2 * re_ab;
+    Qpr_sum = Qpr_sum + term_pr2;
+
+    an_prev = an;
+    bn_prev = bn;
+
+    if (num_angles > 0) {
+      auto factor = factor2;
+
+      for (size_t k = 0; k < num_angles; ++k) {
+        ComplexV pi_next = Engine::make_complex(zero, zero);
+        ComplexV tau_n = Engine::make_complex(zero, zero);
+
+        if (n == 1) {
+          pi_next = Engine::make_complex(one, zero);
+          tau_n = Engine::make_complex(mu[k], zero);
+        } else {
+          auto nm1 = vn - one;
+          auto n2m1 = (vn + vn) - one;
+
+          auto t1 = n2m1 * (mu[k] * Engine::get_real(pi_curr[k]));
+          auto t2 = vn * Engine::get_real(pi_prev[k]);
+          auto pi_val = (t1 - t2) / nm1;
+          pi_next = Engine::make_complex(pi_val, zero);
+
+          auto t3 = vn * (mu[k] * pi_val);
+          auto t4 = n_plus_1 * Engine::get_real(pi_curr[k]);
+          auto tau_val = t3 - t4;
+          tau_n = Engine::make_complex(tau_val, zero);
+
+          pi_prev[k] = pi_curr[k];
+          pi_curr[k] = pi_next;
+        }
+
+        auto term_S1 = (an * pi_curr[k]) + (bn * tau_n);
+        S1[k] = S1[k] + (Engine::make_complex(factor, zero) * term_S1);
+
+        auto term_S2 = (an * tau_n) + (bn * pi_curr[k]);
+        S2[k] = S2[k] + (Engine::make_complex(factor, zero) * term_S2);
+      }
+    }
+  }
+
+  // Finalize results
+  auto two = Engine::set(2.0);
+  auto four = Engine::set(4.0);
+  auto x2 = x * x;
+  auto norm = two / x2;
+
+  buffers.Qext = Qext_sum * norm;
+  buffers.Qsca = Qsca_sum * norm;
+  buffers.Qpr = buffers.Qext - (four * Qpr_sum / x2);
+  buffers.Qabs = buffers.Qext - buffers.Qsca;
+
+  auto qbk_mag_sq = (Engine::get_real(Qbk_sum) * Engine::get_real(Qbk_sum)) +
+                    (Engine::get_imag(Qbk_sum) * Engine::get_imag(Qbk_sum));
+  buffers.Qbk = qbk_mag_sq / x2;
+
+  auto threshold = Engine::set(1e-12);
+  auto mask_sca = Engine::gt(buffers.Qsca, threshold);
+  auto mask_ext = Engine::gt(buffers.Qext, threshold);
+
+  buffers.g = Engine::select(mask_sca,
+                             (buffers.Qext - buffers.Qpr) / buffers.Qsca, zero);
+  buffers.albedo = Engine::select(mask_ext, buffers.Qsca / buffers.Qext, zero);
+
+  // Store results to _res fields
+  buffers.Qext_res = Engine::to_scalar(buffers.Qext);
+  buffers.Qsca_res = Engine::to_scalar(buffers.Qsca);
+  buffers.Qabs_res = Engine::to_scalar(buffers.Qabs);
+  buffers.Qbk_res = Engine::to_scalar(buffers.Qbk);
+  buffers.Qpr_res = Engine::to_scalar(buffers.Qpr);
+  buffers.g_res = Engine::to_scalar(buffers.g);
+  buffers.albedo_res = Engine::to_scalar(buffers.albedo);
+}
+
+template <typename FloatType, typename Engine>
+void finalizeMieResults(const typename Engine::RealV x,
+                        const typename Engine::RealV Qext_sum,
+                        const typename Engine::RealV Qsca_sum,
+                        const typename Engine::RealV Qpr_sum,
+                        const typename Engine::ComplexV Qbk_sum,
+                        typename Engine::RealV& Qext,
+                        typename Engine::RealV& Qsca,
+                        typename Engine::RealV& Qabs,
+                        typename Engine::RealV& Qbk,
+                        typename Engine::RealV& Qpr,
+                        typename Engine::RealV& g,
+                        typename Engine::RealV& Albedo) {
+  auto two = Engine::set(2.0);
+  auto four = Engine::set(4.0);
+  auto x2 = x * x;
+  auto norm = two / x2;
+
+  Qext = Qext_sum * norm;
+  Qsca = Qsca_sum * norm;
+  Qpr = Qext - (four * Qpr_sum / x2);
+  Qabs = Qext - Qsca;
+
+  auto qbk_mag_sq = (Engine::get_real(Qbk_sum) * Engine::get_real(Qbk_sum)) +
+                    (Engine::get_imag(Qbk_sum) * Engine::get_imag(Qbk_sum));
+  Qbk = qbk_mag_sq / x2;
+
+  auto zero = Engine::set(0.0);
+  auto threshold = Engine::set(1e-12);
+
+  auto mask_sca = Engine::gt(Qsca, threshold);
+  auto mask_ext = Engine::gt(Qext, threshold);
+
+  g = Engine::select(mask_sca, (Qext - Qpr) / Qsca, zero);
+  Albedo = Engine::select(mask_ext, Qsca / Qext, zero);
+}
 
 //*******************************************************************************
 // This function calculates the actual scattering parameters and amplitudes
@@ -830,8 +1312,9 @@ void MultiLayerMie<FloatType>::calcScattCoeffs() {
 // Return value:
 //   Number of multipolar expansion terms used for the calculations
 //*******************************************************************************
-template <typename FloatType>
-void MultiLayerMie<FloatType>::RunMieCalculation() {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::RunMieCalculationStateless(
+    MieBuffers<FloatType, Engine>& buffers) const {
   if (size_param_.size() != refractive_index_.size())
     throw std::invalid_argument(
         "Each size parameter should have only one index!");
@@ -840,112 +1323,84 @@ void MultiLayerMie<FloatType>::RunMieCalculation() {
 
   const std::vector<FloatType>& x = size_param_;
 
+  // Initialize the scattering parameters
+  buffers.Qext_res = 0.0;
+  buffers.Qsca_res = 0.0;
+  buffers.Qabs_res = 0.0;
+  buffers.Qbk_res = 0.0;
+  buffers.Qpr_res = 0.0;
+
+  buffers.g_res = 0.0;
+  buffers.albedo_res = 0.0;
+
+  // Initialize the scattering amplitudes
+  // buffers.S1_res and S2_res are scalar vectors.
+  // We need SIMD vectors for the kernel.
+  std::vector<typename Engine::ComplexV> S1_simd(theta_.size());
+  std::vector<typename Engine::ComplexV> S2_simd(theta_.size());
+
+  // Prepare an and bn for SIMD kernel
+  // sumMieSeriesKernel expects interleaved/SIMD-ready data
+  // We need to broadcast an_ and bn_ to all lanes
+  size_t lanes = Engine::Lanes();
+  std::vector<std::complex<FloatType>> an_simd(nmax_ * lanes);
+  std::vector<std::complex<FloatType>> bn_simd(nmax_ * lanes);
+  
+  for (int n = 0; n < nmax_; ++n) {
+      for (size_t l = 0; l < lanes; ++l) {
+          an_simd[n * lanes + l] = an_[n];
+          bn_simd[n * lanes + l] = bn_[n];
+      }
+  }
+
+  sumMieSeriesKernel<FloatType, Engine>(
+      nmax_, 
+      Engine::set(static_cast<FloatType>(nmax_)), 
+      Engine::set(x.back()), 
+      an_simd.data(), bn_simd.data(),
+      theta_, buffers, S1_simd, S2_simd);
+
+  // Copy back S1_simd to buffers.S1_res
+  buffers.S1_res.resize(theta_.size());
+  buffers.S2_res.resize(theta_.size());
+  for (size_t i = 0; i < theta_.size(); ++i) {
+    buffers.S1_res[i] = std::complex<FloatType>(
+        Engine::to_scalar(Engine::get_real(S1_simd[i])), 
+        Engine::to_scalar(Engine::get_imag(S1_simd[i])));
+    buffers.S2_res[i] = std::complex<FloatType>(
+        Engine::to_scalar(Engine::get_real(S2_simd[i])), 
+        Engine::to_scalar(Engine::get_imag(S2_simd[i])));
+  }
+}
+
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::RunMieCalculation() const {
+  if (size_param_.size() != refractive_index_.size())
+    throw std::invalid_argument(
+        "Each size parameter should have only one index!");
+  if (size_param_.size() == 0)
+    throw std::invalid_argument("Initialize model first!");
+
   // MarkUncalculated();
 
   // Calculate scattering coefficients
   if (!isScaCoeffsCalc_)
     calcScattCoeffs();
 
-  // Initialize the scattering parameters
-  Qext_ = 0.0;
-  Qsca_ = 0.0;
-  Qabs_ = 0.0;
-  Qbk_ = 0.0;
-  Qpr_ = 0.0;
+  MieBuffers<FloatType, Engine> buffers;
+  buffers.updateSize(nmax_, size_param_.size(), theta_.size());
 
-  asymmetry_factor_ = 0.0;
-  albedo_ = 0.0;
+  RunMieCalculationStateless(buffers);
 
-  // Initialize the scattering amplitudes
-  std::vector<std::complex<FloatType>> tmp1(theta_.size(),
-                                            std::complex<FloatType>(0.0, 0.0));
-  S1_.swap(tmp1);
-  S2_ = S1_;
-  // Precalculate cos(theta) - gives about 5% speed up.
-  std::vector<FloatType> costheta(theta_.size(), static_cast<FloatType>(0.0));
-  for (unsigned int t = 0; t < theta_.size(); t++) {
-    costheta[t] = nmm::cos(theta_[t]);
-  }
-
-  std::vector<FloatType> Pi(nmax_), Tau(nmax_);
-
-  std::complex<FloatType> Qbktmp(0.0, 0.0);
-  std::vector<std::complex<FloatType>> Qbktmp_ch(nmax_ - 1, Qbktmp);
-  // By using downward recurrence we avoid loss of precision due to float
-  // rounding errors See:
-  // https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
-  //      http://en.wikipedia.org/wiki/Loss_of_significance
-  for (int n = nmax_ - 2; n >= 0; n--) {
-    //      for (int n = 0; n < nmax_; n++) {
-    const int n1 = n + 1;
-    if (mode_n_ == Modes::kAll) {
-      // Equation (27)
-      Qext_ += (n1 + n1 + 1.0) * (an_[n].real() + bn_[n].real());
-      // Equation (28)
-      Qsca_ += (n1 + n1 + 1.0) *
-               (an_[n].real() * an_[n].real() + an_[n].imag() * an_[n].imag() +
-                bn_[n].real() * bn_[n].real() + bn_[n].imag() * bn_[n].imag());
-      //        std::cout<<"n ="<< n1 << " ext:"<<Qext_ <<"
-      //        sca:"<<Qsca_<<std::endl;
-      // Equation (29)
-      Qpr_ += ((n1 * (n1 + 2.0) / (n1 + 1.0)) *
-                   ((an_[n] * std::conj(an_[n1]) + bn_[n] * std::conj(bn_[n1]))
-                        .real()) +
-               ((n1 + n1 + 1.0) / (n1 * (n1 + 1.0))) *
-                   (an_[n] * std::conj(bn_[n])).real());
-      // Equation (33)
-      Qbktmp += (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) *
-                (an_[n] - bn_[n]);
-      // Calculate the scattering amplitudes (S1 and S2) Equations (25a) - (25b)
-      for (unsigned int t = 0; t < theta_.size(); t++) {
-        calcPiTau(costheta[t], Pi, Tau);
-        S1_[t] += calc_S1(n1, an_[n], bn_[n], Pi[n], Tau[n]);
-        S2_[t] += calc_S2(n1, an_[n], bn_[n], Pi[n], Tau[n]);
-      }
-      continue;
-    }
-    if (n1 == mode_n_) {
-      if (mode_type_ == Modes::kElectric || mode_type_ == Modes::kAll) {
-        Qext_ += (n1 + n1 + 1.0) * (an_[n].real());
-        Qsca_ += (n1 + n1 + 1.0) * (an_[n].real() * an_[n].real() +
-                                    an_[n].imag() * an_[n].imag());
-        Qpr_ += std::nan("");
-        Qbktmp +=
-            (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (an_[n]);
-        for (unsigned int t = 0; t < theta_.size(); t++) {
-          calcPiTau(costheta[t], Pi, Tau);
-          S1_[t] += calc_S1(n1, an_[n], static_cast<std::complex<FloatType>>(0),
-                            Pi[n], Tau[n]);
-          S2_[t] += calc_S2(n1, an_[n], static_cast<std::complex<FloatType>>(0),
-                            Pi[n], Tau[n]);
-        }
-      }
-      if (mode_type_ == Modes::kMagnetic || mode_type_ == Modes::kAll) {
-        Qext_ += (n1 + n1 + 1.0) * (bn_[n].real());
-        Qsca_ += (n1 + n1 + 1.0) * (bn_[n].real() * bn_[n].real() +
-                                    bn_[n].imag() * bn_[n].imag());
-        Qpr_ += std::nan("");
-        Qbktmp +=
-            (FloatType)(n1 + n1 + 1.0) * (1.0 - 2.0 * (n1 % 2)) * (bn_[n]);
-        for (unsigned int t = 0; t < theta_.size(); t++) {
-          calcPiTau(costheta[t], Pi, Tau);
-          S1_[t] += calc_S1(n1, static_cast<std::complex<FloatType>>(0), bn_[n],
-                            Pi[n], Tau[n]);
-          S2_[t] += calc_S2(n1, static_cast<std::complex<FloatType>>(0), bn_[n],
-                            Pi[n], Tau[n]);
-        }
-      }
-    }
-  }
-  FloatType x2 = pow2(x.back());
-  Qext_ = 2.0 * (Qext_) / x2;                  // Equation (27)
-  Qsca_ = 2.0 * (Qsca_) / x2;                  // Equation (28)
-  Qpr_ = Qext_ - 4.0 * (Qpr_) / x2;            // Equation (29)
-  Qabs_ = Qext_ - Qsca_;                       // Equation (30)
-  albedo_ = Qsca_ / Qext_;                     // Equation (31)
-  asymmetry_factor_ = (Qext_ - Qpr_) / Qsca_;  // Equation (32)
-  Qbk_ = (Qbktmp.real() * Qbktmp.real() + Qbktmp.imag() * Qbktmp.imag()) /
-         x2;  // Equation (33)
+  Qext_ = buffers.Qext_res;
+  Qsca_ = buffers.Qsca_res;
+  Qabs_ = buffers.Qabs_res;
+  Qbk_ = buffers.Qbk_res;
+  Qpr_ = buffers.Qpr_res;
+  asymmetry_factor_ = buffers.g_res;
+  albedo_ = buffers.albedo_res;
+  S1_ = buffers.S1_res;
+  S2_ = buffers.S2_res;
 
   isMieCalculated_ = true;
 }

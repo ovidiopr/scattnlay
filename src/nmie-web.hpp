@@ -44,27 +44,27 @@
 
 namespace nmie {
 
-template <typename FloatType = double>
-class MultiLayerMieWeb : public MultiLayerMieApplied<FloatType> {
+template <typename FloatType = double, MathEngine Engine = DefaultEngine<FloatType>>
+class MultiLayerMieWeb : public MultiLayerMieApplied<FloatType, Engine> {
   // Will throw for any error!
  public:
   emscripten::val GetFieldEabs();
-  void ClearTarget() { this->MultiLayerMieApplied<FloatType>::ClearTarget(); };
+  void ClearTarget() { this->MultiLayerMieApplied<FloatType, Engine>::ClearTarget(); };
   void SetWavelength(FloatType wavelength) {
-    this->MultiLayerMieApplied<FloatType>::SetWavelength(wavelength);
+    this->MultiLayerMieApplied<FloatType, Engine>::SetWavelength(wavelength);
   };
   void SetModeNmaxAndType(int mode_n, int mode_type) {
-    this->MultiLayerMieApplied<FloatType>::SetModeNmaxAndType(mode_n,
+    this->MultiLayerMieApplied<FloatType, Engine>::SetModeNmaxAndType(mode_n,
                                                               mode_type);
   };
   void AddTargetLayerReIm(FloatType width,
                           FloatType re_layer_index,
                           FloatType im_layer_index) {
-    this->MultiLayerMieApplied<FloatType>::AddTargetLayerReIm(
+    this->MultiLayerMieApplied<FloatType, Engine>::AddTargetLayerReIm(
         width, re_layer_index, im_layer_index);
   };
   void RunMieCalculation() {
-    this->MultiLayerMieApplied<FloatType>::RunMieCalculation();
+    this->MultiLayerMieApplied<FloatType, Engine>::RunMieCalculation();
   };
   void RunFieldCalculationPolar(const int outer_arc_points,
                                 const int radius_points,
@@ -75,7 +75,7 @@ class MultiLayerMieWeb : public MultiLayerMieApplied<FloatType> {
                                 const double from_Phi,
                                 const double to_Phi,
                                 const int isIgnoreAvailableNmax) {
-    this->MultiLayerMieApplied<FloatType>::RunFieldCalculationPolar(
+    this->MultiLayerMieApplied<FloatType, Engine>::RunFieldCalculationPolar(
         outer_arc_points, radius_points, from_Rho, to_Rho, from_Theta, to_Theta,
         from_Phi, to_Phi, isIgnoreAvailableNmax);
   };
@@ -87,18 +87,18 @@ class MultiLayerMieWeb : public MultiLayerMieApplied<FloatType> {
                                     const double at_y,
                                     const double at_z,
                                     const int isIgnoreAvailableNmax) {
-    this->MultiLayerMieApplied<FloatType>::RunFieldCalculationCartesian(
+    this->MultiLayerMieApplied<FloatType, Engine>::RunFieldCalculationCartesian(
         first_side_points, second_side_points, relative_side_length,
         plane_selected, at_x, at_y, at_z, isIgnoreAvailableNmax);
   };
   FloatType GetQsca() {
-    return this->MultiLayerMieApplied<FloatType>::GetQsca();
+    return this->MultiLayerMieApplied<FloatType, Engine>::GetQsca();
   };
   FloatType GetQabs() {
-    return this->MultiLayerMieApplied<FloatType>::GetQabs();
+    return this->MultiLayerMieApplied<FloatType, Engine>::GetQabs();
   };
   FloatType GetQext() {
-    return this->MultiLayerMieApplied<FloatType>::GetQext();
+    return this->MultiLayerMieApplied<FloatType, Engine>::GetQext();
   };
 
 };  // end of class MultiLayerMieWeb

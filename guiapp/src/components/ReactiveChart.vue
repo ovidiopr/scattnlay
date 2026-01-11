@@ -86,10 +86,14 @@ export default defineComponent({
       window.removeEventListener('resize', plotlyReact);
     });
 
-    watch(props, () => {
-      chartLocal = cloneDeep(props.chart);
-      plotlyReact();
-    });
+    watch(
+      props,
+      () => {
+        chartLocal = cloneDeep(props.chart);
+        plotlyReact();
+      },
+      { deep: true }
+    );
 
     onActivated(() => {
       chartLocal = cloneDeep(props.chart);

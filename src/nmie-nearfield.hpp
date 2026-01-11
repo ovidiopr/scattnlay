@@ -51,11 +51,524 @@
 #include <iomanip>
 #include <stdexcept>
 #include <vector>
+#include "special-functions-impl.hpp"
+
+namespace nmie {
+template <typename FloatType, typename Engine>
+struct NearFieldKernelHelper {
+  using RealV = typename Engine::RealV;
+  using ComplexV = typename Engine::ComplexV;
+
+  static inline void calcSpherHarm(
+      const ComplexV Rho,
+      const RealV Theta,
+      const RealV Phi,
+      const ComplexV rn,
+      const ComplexV Dn,
+      const RealV Pi,
+      const RealV Tau,
+      const RealV n,
+      ComplexV Mo1n[3],
+      ComplexV Me1n[3],
+      ComplexV No1n[3],
+      ComplexV Ne1n[3]) {
+    
+    auto zero = Engine::set(0.0);
+    auto c_zero = Engine::make_complex(zero, zero);
+
+    auto sin_Phi = Engine::sin(Phi);
+    auto cos_Phi = Engine::cos(Phi);
+    auto sin_Theta = Engine::sin(Theta);
+
+    // Mo1n
+    Mo1n[0] = c_zero;
+    // Mo1n[1] = cos_Phi * Pi * rn / Rho;
+    auto term = cos_Phi * Pi;
+    Mo1n[1] = Engine::make_complex(term, zero) * rn / Rho;
+    // Mo1n[2] = -sin_Phi * Tau * rn / Rho;
+    term = sin_Phi * Tau;
+    auto neg_term = -term;
+    Mo1n[2] = Engine::make_complex(neg_term, zero) * rn / Rho;
+
+    // Me1n
+    Me1n[0] = c_zero;
+    // Me1n[1] = -sin_Phi * Pi * rn / Rho;
+    term = sin_Phi * Pi;
+    neg_term = -term;
+    Me1n[1] = Engine::make_complex(neg_term, zero) * rn / Rho;
+    // Me1n[2] = -cos_Phi * Tau * rn / Rho;
+    term = cos_Phi * Tau;
+    neg_term = -term;
+    Me1n[2] = Engine::make_complex(neg_term, zero) * rn / Rho;
+
+    // No1n
+    // No1n[0] = sin_Phi * (n * n + n) * sin_Theta * Pi * rn / Rho / Rho;
+    auto n_sq_plus_n = n * n + n;
+    auto factor = sin_Phi * n_sq_plus_n * sin_Theta * Pi;
+    No1n[0] = Engine::make_complex(factor, zero) * rn / Rho / Rho;
+
+    // No1n[1] = sin_Phi * Tau * Dn * rn / Rho;
+    term = sin_Phi * Tau;
+    No1n[1] = Engine::make_complex(term, zero) * Dn * rn / Rho;
+
+    // No1n[2] = cos_Phi * Pi * Dn * rn / Rho;
+    term = cos_Phi * Pi;
+    No1n[2] = Engine::make_complex(term, zero) * Dn * rn / Rho;
+
+    // Ne1n
+    // Ne1n[0] = cos_Phi * (n * n + n) * sin_Theta * Pi * rn / Rho / Rho;
+    factor = cos_Phi * n_sq_plus_n * sin_Theta * Pi;
+    Ne1n[0] = Engine::make_complex(factor, zero) * rn / Rho / Rho;
+
+    // Ne1n[1] = cos_Phi * Tau * Dn * rn / Rho;
+    term = cos_Phi * Tau;
+    Ne1n[1] = Engine::make_complex(term, zero) * Dn * rn / Rho;
+
+    // Ne1n[2] = -sin_Phi * Pi * Dn * rn / Rho;
+    term = sin_Phi * Pi;
+    neg_term = -term;
+    Ne1n[2] = Engine::make_complex(neg_term, zero) * Dn * rn / Rho;
+  }
+
+  static inline void calcPiTau(const RealV costheta,
+                               std::vector<RealV>& Pi,
+                               std::vector<RealV>& Tau) {
+    int nmax = Pi.size();
+    auto one = Engine::set(1.0);
+    auto two = Engine::set(2.0);
+    auto three = Engine::set(3.0);
+
+    Pi[0] = one;
+    Tau[0] = costheta;
+
+    if (nmax > 1) {
+      // Pi[1] = 3*costheta*Pi[0];
+      Pi[1] = three * costheta * Pi[0];
+      // Tau[1] = 2*costheta*Pi[1] - 3*Pi[0];
+      Tau[1] = two * costheta * Pi[1] - three * Pi[0];
+
+      for (int i = 2; i < nmax; i++) {
+        auto i_val = Engine::set((FloatType)i);
+        auto i_plus_1 = Engine::set((FloatType)(i + 1));
+        auto i_plus_2 = Engine::set((FloatType)(i + 2));
+        auto two_i_plus_1 = Engine::set((FloatType)(2 * i + 1));
+
+        // Pi[i] = ((2*i + 1)*costheta*Pi[i - 1] - (i + 1)*Pi[i - 2])/i;
+        auto term1 = two_i_plus_1 * costheta * Pi[i - 1];
+        auto term2 = i_plus_1 * Pi[i - 2];
+        Pi[i] = (term1 - term2) / i_val;
+
+        // Tau[i] = (i + 1)*costheta*Pi[i] - (i + 2)*Pi[i - 1];
+        term1 = i_plus_1 * costheta * Pi[i];
+        term2 = i_plus_2 * Pi[i - 1];
+        Tau[i] = term1 - term2;
+      }
+    }
+  }
+};
+
+template <typename FloatType, typename Engine>
+void RunFieldKernel(
+    const std::vector<FloatType>& Xp,
+    const std::vector<FloatType>& Yp,
+    const std::vector<FloatType>& Zp,
+    size_t start_index,
+    size_t count,
+    int nmax,
+    const std::vector<FloatType>& size_param,
+    const std::vector<std::complex<FloatType>>& refractive_index,
+    const typename MieBuffers<FloatType, Engine>::VectorC& aln,
+    const typename MieBuffers<FloatType, Engine>::VectorC& bln,
+    const typename MieBuffers<FloatType, Engine>::VectorC& cln,
+    const typename MieBuffers<FloatType, Engine>::VectorC& dln,
+    std::vector<std::vector<std::complex<FloatType>>>& Es,
+    std::vector<std::vector<std::complex<FloatType>>>& Hs,
+    std::vector<std::vector<FloatType>>& coords_polar) {
+  using RealV = typename Engine::RealV;
+  using ComplexV = typename Engine::ComplexV;
+  const size_t lanes = Engine::Lanes();
+  const size_t stride = (nmax + 1) * lanes;
+
+  // Loop over batches
+  size_t num_batches = (count + lanes - 1) / lanes;
+
+  #pragma omp parallel
+  {
+      MieBuffers<FloatType, Engine> buffers;
+      buffers.resize(nmax, 1, 0);
+
+      std::vector<FloatType> rho_buf(lanes), theta_buf(lanes), phi_buf(lanes);
+      std::vector<FloatType> ml_re_buf(lanes), ml_im_buf(lanes);
+      std::vector<int> layer_buf(lanes);
+      std::vector<size_t> original_indices(lanes);
+
+      #pragma omp for schedule(guided)
+      for (size_t b = 0; b < num_batches; ++b) {
+        size_t i = b * lanes;
+        size_t n_process = std::min(lanes, count - i);
+
+        for (size_t j = 0; j < n_process; ++j) {
+      size_t idx = start_index + i + j;
+      FloatType x = Xp[idx];
+      FloatType y = Yp[idx];
+      FloatType z = Zp[idx];
+
+      using nmm::acos;
+      using nmm::atan2;
+      using nmm::sqrt;
+      FloatType rho = sqrt(x * x + y * y + z * z);
+      FloatType theta = (rho > 0.0) ? acos(z / rho) : 0.0;
+      FloatType phi = atan2(y, x);
+      if (rho < 1e-5)
+        rho = 1e-5;
+
+      rho_buf[j] = rho;
+      theta_buf[j] = theta;
+      phi_buf[j] = phi;
+
+      coords_polar[idx] = {rho, theta, phi};
+
+      // GetIndexAtRadius logic
+      unsigned int l = 0;
+      std::complex<FloatType> ml;
+      if (rho > size_param.back()) {
+        l = size_param.size();
+        ml = std::complex<FloatType>(1.0, 0.0);
+      } else {
+        for (int k = size_param.size() - 1; k >= 0; k--) {
+          if (rho <= size_param[k]) {
+            l = k;
+          }
+        }
+        ml = refractive_index[l];
+      }
+
+      ml_re_buf[j] = ml.real();
+      ml_im_buf[j] = ml.imag();
+      layer_buf[j] = l;
+      original_indices[j] = idx;
+    }
+
+    // Fill remaining lanes with dummy data (copy of first)
+    for (size_t j = n_process; j < lanes; ++j) {
+      rho_buf[j] = rho_buf[0];
+      theta_buf[j] = theta_buf[0];
+      phi_buf[j] = phi_buf[0];
+      ml_re_buf[j] = ml_re_buf[0];
+      ml_im_buf[j] = ml_im_buf[0];
+      layer_buf[j] = layer_buf[0];
+    }
+
+    RealV rho_v = Engine::load(rho_buf.data());
+    RealV theta_v = Engine::load(theta_buf.data());
+    RealV phi_v = Engine::load(phi_buf.data());
+    ComplexV ml_v = Engine::make_complex(Engine::load(ml_re_buf.data()),
+                                         Engine::load(ml_im_buf.data()));
+
+    ComplexV rho_c = Engine::make_complex(rho_v, Engine::set(0.0));
+    ComplexV z = rho_c * ml_v;
+
+    auto& D1 = buffers.D1;
+    auto& D3 = buffers.D3;
+    auto& Psi = buffers.Psi;
+    auto& Zeta = buffers.Zeta;
+    auto& PsiZeta = buffers.PsiZeta;
+
+    evalDownwardD1<FloatType, Engine>(z, D1);
+    evalUpwardPsi<FloatType, Engine>(z, D1, Psi);
+    evalUpwardD3<FloatType, Engine>(z, D1, D3, PsiZeta);
+
+    for (int k = 0; k <= nmax; ++k) {
+      auto psi_zeta_k = Engine::load(&PsiZeta[k * lanes]);
+      auto psi_k = Engine::load(&Psi[k * lanes]);
+      auto zeta_k = psi_zeta_k / psi_k;
+      Engine::store(zeta_k, &Zeta[k * lanes]);
+    }
+
+    std::vector<RealV> Pi(nmax), Tau(nmax);
+    NearFieldKernelHelper<FloatType, Engine>::calcPiTau(Engine::cos(theta_v),
+                                                        Pi, Tau);
+
+    ComplexV E_v[3], H_v[3];
+    auto zero = Engine::set(0.0);
+    auto c_zero = Engine::make_complex(zero, zero);
+    for (int k = 0; k < 3; ++k) {
+      E_v[k] = c_zero;
+      H_v[k] = c_zero;
+    }
+
+    auto c_i = Engine::make_complex(zero, Engine::set(1.0));
+    auto c_one = Engine::make_complex(Engine::set(1.0), zero);
+
+    // ipow
+    ComplexV ipow[4] = {c_one, c_i,
+                        Engine::make_complex(Engine::set(-1.0), zero),
+                        Engine::make_complex(zero, Engine::set(-1.0))};
+
+    // Pre-gather coefficients to improve cache locality
+    // We transpose from [layer][n] to [n][lane]
+    std::vector<FloatType> aln_re_all(nmax * lanes), aln_im_all(nmax * lanes);
+    std::vector<FloatType> bln_re_all(nmax * lanes), bln_im_all(nmax * lanes);
+    std::vector<FloatType> cln_re_all(nmax * lanes), cln_im_all(nmax * lanes);
+    std::vector<FloatType> dln_re_all(nmax * lanes), dln_im_all(nmax * lanes);
+
+    for (size_t j = 0; j < lanes; ++j) {
+      int l = layer_buf[j];
+      size_t layer_offset = l * stride;
+      for (int n = 0; n < nmax; ++n) {
+        size_t idx = n * lanes + j;
+        size_t src_idx = layer_offset + n * lanes + j;
+        
+        auto val_aln = aln[src_idx];
+        aln_re_all[idx] = val_aln.real();
+        aln_im_all[idx] = val_aln.imag();
+        
+        auto val_bln = bln[src_idx];
+        bln_re_all[idx] = val_bln.real();
+        bln_im_all[idx] = val_bln.imag();
+        
+        auto val_cln = cln[src_idx];
+        cln_re_all[idx] = val_cln.real();
+        cln_im_all[idx] = val_cln.imag();
+        
+        auto val_dln = dln[src_idx];
+        dln_re_all[idx] = val_dln.real();
+        dln_im_all[idx] = val_dln.imag();
+      }
+    }
+
+    for (int n = 0; n < nmax; ++n) {
+      int n1 = n + 1;
+      auto rn = Engine::make_complex(Engine::set((FloatType)n1), zero);
+
+      ComplexV M1o1n[3], M1e1n[3], N1o1n[3], N1e1n[3];
+      ComplexV M3o1n[3], M3e1n[3], N3o1n[3], N3e1n[3];
+
+      NearFieldKernelHelper<FloatType, Engine>::calcSpherHarm(
+          z, theta_v, phi_v, Engine::load(&Psi[n1 * lanes]),
+          Engine::load(&D1[n1 * lanes]), Pi[n], Tau[n], Engine::get_real(rn),
+          M1o1n, M1e1n, N1o1n, N1e1n);
+      NearFieldKernelHelper<FloatType, Engine>::calcSpherHarm(
+          z, theta_v, phi_v, Engine::load(&Zeta[n1 * lanes]),
+          Engine::load(&D3[n1 * lanes]), Pi[n], Tau[n], Engine::get_real(rn),
+          M3o1n, M3e1n, N3o1n, N3e1n);
+
+      auto En = ipow[n1 % 4] *
+                Engine::make_complex(Engine::set((FloatType)(2 * n1 + 1)) /
+                                         Engine::set((FloatType)(n1 * n1 + n1)),
+                                     zero);
+
+      // Load pre-gathered coefficients
+      ComplexV aln_v =
+          Engine::make_complex(Engine::load(&aln_re_all[n * lanes]),
+                               Engine::load(&aln_im_all[n * lanes]));
+      ComplexV bln_v =
+          Engine::make_complex(Engine::load(&bln_re_all[n * lanes]),
+                               Engine::load(&bln_im_all[n * lanes]));
+      ComplexV cln_v =
+          Engine::make_complex(Engine::load(&cln_re_all[n * lanes]),
+                               Engine::load(&cln_im_all[n * lanes]));
+      ComplexV dln_v =
+          Engine::make_complex(Engine::load(&dln_re_all[n * lanes]),
+                               Engine::load(&dln_im_all[n * lanes]));
+
+      for (int k = 0; k < 3; ++k) {
+        // Ediff = En*(cln*M1o1n[i] - c_i*dln*N1e1n[i] + c_i*aln*N3e1n[i] -
+        // bln*M3o1n[i]);
+        auto term1 = cln_v * M1o1n[k];
+        auto term2 = c_i * dln_v * N1e1n[k];
+        auto term3 = c_i * aln_v * N3e1n[k];
+        auto term4 = bln_v * M3o1n[k];
+        auto Ediff = En * (term1 - term2 + term3 - term4);
+        E_v[k] = E_v[k] + Ediff;
+
+        // Hdiff = En*(-dln*M1e1n[i] - c_i*cln*N1o1n[i] + c_i*bln*N3o1n[i] +
+        // aln*M3e1n[i]);
+        term1 = (c_zero - dln_v) * M1e1n[k];
+        term2 = c_i * cln_v * N1o1n[k];
+        term3 = c_i * bln_v * N3o1n[k];
+        term4 = aln_v * M3e1n[k];
+        auto Hdiff = En * (term1 - term2 + term3 + term4);
+        H_v[k] = H_v[k] + Hdiff;
+      }
+    }
+
+    // Add incident field (Vectorized)
+    std::vector<FloatType> layer_f(lanes);
+    for (size_t j = 0; j < lanes; ++j)
+      layer_f[j] = static_cast<FloatType>(layer_buf[j]);
+    auto layer_v = Engine::load(layer_f.data());
+    auto outer_layer_val =
+        Engine::set(static_cast<FloatType>(refractive_index.size()));
+    auto mask_incident = Engine::eq(layer_v, outer_layer_val);
+
+    auto z_val = rho_v * Engine::cos(theta_v);
+    auto Ex = Engine::make_complex(Engine::cos(z_val), Engine::sin(z_val));
+
+    auto sin_theta = Engine::sin(theta_v);
+    auto cos_theta = Engine::cos(theta_v);
+    auto sin_phi = Engine::sin(phi_v);
+    auto cos_phi = Engine::cos(phi_v);
+
+    auto E_inc_rho = Ex * cos_phi * sin_theta;
+    auto E_inc_theta = Ex * cos_phi * cos_theta;
+    auto E_inc_phi = Ex * (zero - sin_phi);
+
+    E_v[0] = E_v[0] + Engine::select(mask_incident, E_inc_rho, c_zero);
+    E_v[1] = E_v[1] + Engine::select(mask_incident, E_inc_theta, c_zero);
+    E_v[2] = E_v[2] + Engine::select(mask_incident, E_inc_phi, c_zero);
+
+    auto Hy = Ex;
+    auto H_inc_rho = Hy * sin_theta * sin_phi;
+    auto H_inc_theta = Hy * cos_theta * sin_phi;
+    auto H_inc_phi = Hy * cos_phi;
+
+    H_v[0] = H_v[0] + Engine::select(mask_incident, H_inc_rho, c_zero);
+    H_v[1] = H_v[1] + Engine::select(mask_incident, H_inc_theta, c_zero);
+    H_v[2] = H_v[2] + Engine::select(mask_incident, H_inc_phi, c_zero);
+
+    // Apply magnetic field factor
+    auto hffact_v =
+        ml_v / Engine::set(static_cast<FloatType>(nmie::cc_ * nmie::mu_));
+    for (int k = 0; k < 3; ++k) {
+      H_v[k] = H_v[k] * hffact_v;
+    }
+
+    // Store results
+    std::vector<FloatType> E_re(lanes), E_im(lanes);
+    std::vector<FloatType> H_re(lanes), H_im(lanes);
+
+    for (int k = 0; k < 3; ++k) {
+      Engine::store(Engine::get_real(E_v[k]), E_re.data());
+      Engine::store(Engine::get_imag(E_v[k]), E_im.data());
+      Engine::store(Engine::get_real(H_v[k]), H_re.data());
+      Engine::store(Engine::get_imag(H_v[k]), H_im.data());
+
+      for (size_t j = 0; j < n_process; ++j) {
+        Es[original_indices[j]][k] = std::complex<FloatType>(E_re[j], E_im[j]);
+        Hs[original_indices[j]][k] = std::complex<FloatType>(H_re[j], H_im[j]);
+      }
+    }
+  }
+  }
+}
+}
 
 //#include "nmie.hpp"
 
 namespace nmie {
   //class implementation
+
+template <typename FloatType, typename Engine>
+void calcExpanCoeffsKernel(
+    int nmax,
+    const std::vector<std::complex<FloatType>>& refractive_index,
+    const std::vector<FloatType>& size_param,
+    int PEC_layer_position,
+    MieBuffers<FloatType, Engine>& buffers) {
+
+    auto& aln = buffers.aln;
+    auto& bln = buffers.bln;
+    auto& cln = buffers.cln;
+    auto& dln = buffers.dln;
+    auto& an = buffers.an;
+    auto& bn = buffers.bn;
+
+    const int L = refractive_index.size();
+    buffers.updateSize(nmax, L, 0);
+
+    size_t lanes = Engine::Lanes();
+    size_t stride = (nmax + 1) * lanes;
+
+    std::complex<FloatType> c_one(1.0, 0.0), c_zero(0.0, 0.0);
+
+    // Yang, paragraph under eq. A3
+    // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
+    for (int n = 0; n < nmax; n++) {
+      size_t idx = L * stride + n * lanes;
+      // Replicate for all lanes
+      for (size_t j = 0; j < lanes; ++j) {
+        aln[idx + j] = an[n * lanes]; // Assuming an is replicated or we take first lane
+        bln[idx + j] = bn[n * lanes];
+        cln[idx + j] = c_one;
+        dln[idx + j] = c_one;
+      }
+    }
+
+    std::vector<std::complex<FloatType> > D1z(nmax + 1), D1z1(nmax + 1), D3z(nmax + 1), D3z1(nmax + 1);
+    std::vector<std::complex<FloatType> > Psiz(nmax + 1), Psiz1(nmax + 1), Zetaz(nmax + 1), Zetaz1(nmax + 1);
+    std::complex<FloatType> denomZeta, denomPsi, T1, T2, T3, T4;
+
+    auto &m = refractive_index;
+    std::vector< std::complex<FloatType> > m1(L);
+
+    for (int l = 0; l < L - 1; l++) m1[l] = m[l + 1];
+    m1[L - 1] = std::complex<FloatType> (1.0, 0.0);
+
+    std::complex<FloatType> z, z1;
+    for (int l = L - 1; l >= 0; l--) {
+      if (l <= PEC_layer_position) { // We are inside a PEC. All coefficients must be zero!!!
+        for (int n = 0; n < nmax; n++) {
+          size_t idx = l * stride + n * lanes;
+          for (size_t j = 0; j < lanes; ++j) {
+            aln[idx + j] = c_zero;
+            bln[idx + j] = c_zero;
+            cln[idx + j] = c_zero;
+            dln[idx + j] = c_zero;
+          }
+        }
+      } else { // Regular material
+        z = size_param[l]*m[l];
+        z1 = size_param[l]*m1[l];
+
+        calcD1D3(z, nmax, D1z, D3z);
+        calcD1D3(z1, nmax, D1z1, D3z1);
+        calcPsiZeta(z, nmax, Psiz, Zetaz);
+        calcPsiZeta(z1, nmax, Psiz1, Zetaz1);
+
+        for (int n = 0; n < nmax; n++) {
+          int n1 = n + 1;
+
+          denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
+          denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
+
+          size_t next_idx = (l + 1) * stride + n * lanes;
+          // Read from first lane (assuming replication)
+          auto aln_next = aln[next_idx];
+          auto bln_next = bln[next_idx];
+          auto cln_next = cln[next_idx];
+          auto dln_next = dln[next_idx];
+
+          T1 =  aln_next*Zetaz1[n1] - dln_next*Psiz1[n1];
+          T2 = (bln_next*Zetaz1[n1] - cln_next*Psiz1[n1])*m[l]/m1[l];
+
+          T3 = (dln_next*D1z1[n1]*Psiz1[n1] - aln_next*D3z1[n1]*Zetaz1[n1])*m[l]/m1[l];
+          T4 =  cln_next*D1z1[n1]*Psiz1[n1] - bln_next*D3z1[n1]*Zetaz1[n1];
+
+          size_t curr_idx = l * stride + n * lanes;
+          auto val_aln = (D1z[n1]*T1 + T3)/denomZeta;
+          auto val_bln = (D1z[n1]*T2 + T4)/denomZeta;
+          auto val_cln = (D3z[n1]*T2 + T4)/denomPsi;
+          auto val_dln = (D3z[n1]*T1 + T3)/denomPsi;
+
+          for (size_t j = 0; j < lanes; ++j) {
+            aln[curr_idx + j] = val_aln;
+            bln[curr_idx + j] = val_bln;
+            cln[curr_idx + j] = val_cln;
+            dln[curr_idx + j] = val_dln;
+          }
+        }
+      }
+    }
+    
+    for (int n = 0; n < nmax; ++n) {
+      size_t idx = 0 * stride + n * lanes;
+      for (size_t j = 0; j < lanes; ++j) {
+        aln[idx + j] = 0.0;
+        bln[idx + j] = 0.0;
+      }
+    }
+}
 
   //**********************************************************************************//
   // This function calculates the expansion coefficients inside the particle,         //
@@ -76,15 +589,13 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  template <typename FloatType>
-  void MultiLayerMie<FloatType>::calcExpanCoeffs() {
+  template <typename FloatType, MathEngine Engine>
+  void MultiLayerMie<FloatType, Engine>::calcExpanCoeffs() const {
     if (!isScaCoeffsCalc_)
       throw std::invalid_argument("(calcExpanCoeffs) You should calculate external coefficients first!");
 
     isExpCoeffsCalc_ = false;
     aln_.clear(); bln_.clear(); cln_.clear(); dln_.clear();
-
-    std::complex<FloatType> c_one(1.0, 0.0), c_zero(0.0, 0.0);
 
     const int L = refractive_index_.size();
 
@@ -99,70 +610,27 @@ namespace nmie {
       dln_[l].resize(nmax_, static_cast<FloatType>(0.0));
     }
 
-    // Yang, paragraph under eq. A3
-    // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
-    for (int n = 0; n < nmax_; n++) {
-      aln_[L][n] = an_[n];
-      bln_[L][n] = bn_[n];
-      cln_[L][n] = c_one;
-      dln_[L][n] = c_one;
+    MieBuffers<FloatType, Engine> buffers;
+    buffers.resize(nmax_, L, 0);
+
+    size_t lanes = Engine::Lanes();
+    for (int n = 0; n < nmax_; ++n) {
+      buffers.an[n * lanes] = an_[n];
+      buffers.bn[n * lanes] = bn_[n];
     }
 
-    std::vector<std::complex<FloatType> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
-    std::vector<std::complex<FloatType> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
-    std::complex<FloatType> denomZeta, denomPsi, T1, T2, T3, T4;
+    calcExpanCoeffsKernel(nmax_, refractive_index_, size_param_, PEC_layer_position_, buffers);
 
-    auto &m = refractive_index_;
-    std::vector< std::complex<FloatType> > m1(L);
-
-    for (int l = 0; l < L - 1; l++) m1[l] = m[l + 1];
-    m1[L - 1] = std::complex<FloatType> (1.0, 0.0);
-
-    std::complex<FloatType> z, z1;
-    for (int l = L - 1; l >= 0; l--) {
-      if (l <= PEC_layer_position_) { // We are inside a PEC. All coefficients must be zero!!!
-        for (int n = 0; n < nmax_; n++) {
-          // aln
-          aln_[l][n] = c_zero;
-          // bln
-          bln_[l][n] = c_zero;
-          // cln
-          cln_[l][n] = c_zero;
-          // dln
-          dln_[l][n] = c_zero;
-        }
-      } else { // Regular material, just do the calculation
-        z = size_param_[l]*m[l];
-        z1 = size_param_[l]*m1[l];
-
-        calcD1D3(z, D1z, D3z);
-        calcD1D3(z1, D1z1, D3z1);
-        calcPsiZeta(z, Psiz, Zetaz);
-        calcPsiZeta(z1, Psiz1, Zetaz1);
-
-        for (int n = 0; n < nmax_; n++) {
-          int n1 = n + 1;
-
-          denomZeta = Zetaz[n1]*(D1z[n1] - D3z[n1]);
-          denomPsi  =  Psiz[n1]*(D1z[n1] - D3z[n1]);
-
-          T1 =  aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
-          T2 = (bln_[l + 1][n]*Zetaz1[n1] - cln_[l + 1][n]*Psiz1[n1])*m[l]/m1[l];
-
-          T3 = (dln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - aln_[l + 1][n]*D3z1[n1]*Zetaz1[n1])*m[l]/m1[l];
-          T4 =  cln_[l + 1][n]*D1z1[n1]*Psiz1[n1] - bln_[l + 1][n]*D3z1[n1]*Zetaz1[n1];
-
-          // aln
-          aln_[l][n] = (D1z[n1]*T1 + T3)/denomZeta;
-          // bln
-          bln_[l][n] = (D1z[n1]*T2 + T4)/denomZeta;
-          // cln
-          cln_[l][n] = (D3z[n1]*T2 + T4)/denomPsi;
-          // dln
-          dln_[l][n] = (D3z[n1]*T1 + T3)/denomPsi;
-        }  // end of all n
-      }  // end PEC condition
-    }  // end of all l
+    size_t stride = (nmax_ + 1) * lanes;
+    for (int l = 0; l <= L; l++) {
+      for (int n = 0; n < nmax_; n++) {
+        size_t idx = l * stride + n * lanes;
+        aln_[l][n] = buffers.aln[idx];
+        bln_[l][n] = buffers.bln[idx];
+        cln_[l][n] = buffers.cln[idx];
+        dln_[l][n] = buffers.dln[idx];
+      }
+    }
 
     int print_precision = 16;
 #ifdef MULTI_PRECISION
@@ -191,8 +659,8 @@ namespace nmie {
   }  // end of   void MultiLayerMie::calcExpanCoeffs()
 
 
-  template <typename FloatType>
-  void MultiLayerMie<FloatType>::convertFieldsFromSphericalToCartesian() {
+  template <typename FloatType, MathEngine Engine>
+  void MultiLayerMie<FloatType, Engine>::convertFieldsFromSphericalToCartesian() const {
     long total_points = coords_polar_.size();
     E_.clear(); H_.clear();
     Eabs_.clear(); Habs_.clear();
@@ -239,8 +707,8 @@ namespace nmie {
   // Output parameters:                                                               //
   //   E, H: Complex electric and magnetic fields                                     //
   //**********************************************************************************//
-  template <typename FloatType>  template <typename evalType>
-  void MultiLayerMie<FloatType>::calcFieldByComponents(const evalType Rho,
+  template <typename FloatType, MathEngine Engine>  template <typename evalType>
+  void MultiLayerMie<FloatType, Engine>::calcFieldByComponents(const evalType Rho,
                                   const evalType Theta, const evalType Phi,
                                   const std::vector<std::complex<evalType> > &Psi,
                                   const std::vector<std::complex<evalType> > &D1n,
@@ -252,7 +720,7 @@ namespace nmie {
                                   std::vector<std::complex<evalType> > &H,
                                   std::vector<bool> &isConvergedE,
                                   std::vector<bool> &isConvergedH,
-                                  bool isMarkUnconverged)  {
+                                  bool isMarkUnconverged) const {
     auto nmax = Psi.size() - 1;
     std::complex<evalType> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
 //    auto c_nan = ConvertComplex<FloatType>(std::complex<double>(std::nan(""), std::nan("")));
@@ -310,6 +778,7 @@ namespace nmie {
                          + c_i*aln*N3e1n[i] -     bln*M3o1n[i]);
         Hdiff = En*(     -dln*M1e1n[i] - c_i*cln*N1o1n[i]
                          + c_i*bln*N3o1n[i] +     aln*M3e1n[i]);
+        
         Ediff_ft = ConvertComplex<FloatType>(Ediff);
         Hdiff_ft = ConvertComplex<FloatType>(Hdiff);
         if ( nmm::isnan(Ediff_ft.real()) || nmm::isnan(Ediff_ft.imag()) ||
@@ -319,13 +788,16 @@ namespace nmie {
           break;
         }
         if (n>0) {
+          auto threshold_sq = nearfield_convergence_threshold_ * nearfield_convergence_threshold_;
+          auto E_norm = std::norm(E[i]);
+          auto H_norm = std::norm(H[i]);
           if (
-              (cabs(Ediff_prev[i]) <= cabs(E[i]) * nearfield_convergence_threshold_)
-                  &&  (cabs(Ediff) <= cabs(E[i]) * nearfield_convergence_threshold_)
+              (std::norm(Ediff_prev[i]) <= E_norm * threshold_sq)
+                  &&  (std::norm(Ediff) <= E_norm * threshold_sq)
               ) isConvergedE[i] = true;
           if (
-              (cabs(Hdiff_prev[i]) <= cabs(H[i]) * nearfield_convergence_threshold_)
-                  &&  (cabs(Hdiff) <= cabs(H[i]) * nearfield_convergence_threshold_)
+              (std::norm(Hdiff_prev[i]) <= H_norm * threshold_sq)
+                  &&  (std::norm(Hdiff) <= H_norm * threshold_sq)
               ) isConvergedH[i] = true;
         }
         Ediff_prev[i] = Ediff;
@@ -431,63 +903,76 @@ namespace nmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  template <typename FloatType>
-  void MultiLayerMie<FloatType>::RunFieldCalculation(bool isMarkUnconverged) {
-    // Calculate scattering coefficients an_ and bn_
-    calcScattCoeffs();
-    // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
-    calcExpanCoeffs();
-    std::vector<bool> isConvergedE = {false, false, false}, isConvergedH = {false, false, false};
+  template <typename FloatType, MathEngine Engine>
+  void MultiLayerMie<FloatType, Engine>::RunFieldCalculation(bool isMarkUnconverged) const {
+    (void)isMarkUnconverged;
+
+    if (nmax_preset_ <= 0)
+      nmax_ = calcNmax();
+    else
+      nmax_ = nmax_preset_;
+
+    const unsigned L = refractive_index_.size();
+
+    MieBuffers<FloatType, Engine> buffers;
+    buffers.resize(nmax_, L, 0);
+
+    auto get_x = [&](int l) { return Engine::set(size_param_[l]); };
+    auto get_m = [&](int l) {
+       auto m_val = refractive_index_[l];
+       return Engine::make_complex(Engine::set(m_val.real()), Engine::set(m_val.imag()));
+    };
+
+    calcScattCoeffsKernel<FloatType, Engine>(
+      nmax_, L, PEC_layer_position_, get_x, get_m,
+      buffers
+    );
+
+    calcExpanCoeffsKernel(nmax_, refractive_index_, size_param_, PEC_layer_position_, buffers);
+
+    // Zero out cln and dln for the outer layer (L) to avoid adding incident field twice
+    size_t lanes = Engine::Lanes();
+    size_t stride = (nmax_ + 1) * lanes;
+    std::complex<FloatType> c_zero_scalar(0.0, 0.0);
+    
+    size_t offset_L = L * stride;
+    for (int n = 0; n < nmax_; ++n) {
+        size_t idx_base = offset_L + n * lanes;
+        for (size_t j = 0; j < lanes; ++j) {
+            buffers.cln[idx_base + j] = c_zero_scalar;
+            buffers.dln[idx_base + j] = c_zero_scalar;
+        }
+    }
+
     isConvergedE_ = {true, true, true}, isConvergedH_ = {true, true, true};
     Es_.clear(); Hs_.clear(); coords_polar_.clear();
     long total_points = coords_[0].size();
-    for (int point = 0; point < total_points; point++) {
-      const FloatType &Xp = coords_[0][point];
-      const FloatType &Yp = coords_[1][point];
-      const FloatType &Zp = coords_[2][point];
+    
+    Es_.resize(total_points);
+    Hs_.resize(total_points);
+    coords_polar_.resize(total_points);
+    for(long i=0; i<total_points; ++i) {
+        Es_[i].resize(3);
+        Hs_[i].resize(3);
+    }
 
-      // Convert to spherical coordinates
-      auto Rho = nmm::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
-      // If Rho=0 then Theta is undefined. Just set it to zero to avoid problems
-      auto Theta = (Rho > 0.0) ? nmm::acos(Zp/Rho) : 0.0;
-      // std::atan2 should take care of any special cases, e.g.  Xp=Yp=0, etc.
-      auto Phi = nmm::atan2(Yp,Xp);
-      coords_polar_.push_back({Rho, Theta, Phi});
-      // Avoid convergence problems due to Rho too small
-      if (Rho < 1e-5) Rho = 1e-5;
+    RunFieldKernel<FloatType, Engine>(
+        coords_[0], coords_[1], coords_[2],
+        0, total_points,
+        nmax_,
+        size_param_,
+        refractive_index_,
+        buffers.aln, 
+        buffers.bln, 
+        buffers.cln, 
+        buffers.dln,
+        Es_, Hs_,
+        coords_polar_
+    );
 
-      //*******************************************************//
-      // external scattering field = incident + scattered      //
-      // BH p.92 (4.37), 94 (4.45), 95 (4.50)                  //
-      // assume: medium is non-absorbing; refim = 0; Uabs = 0  //
-      //*******************************************************//
-
-      // This array contains the fields in spherical coordinates
-      std::vector<std::complex<FloatType> > Es(3), Hs(3);
-
-      // Do the actual calculation of electric and magnetic field
-      std::vector<std::complex<FloatType> > Psi(nmax_ + 1), D1n(nmax_ + 1), Zeta(nmax_ + 1), D3n(nmax_ + 1);
-      std::vector<FloatType> Pi(nmax_), Tau(nmax_);
-      std::complex<FloatType> ml;
-      GetIndexAtRadius(Rho, ml);
-
-      // Calculate logarithmic derivative of the Ricatti-Bessel functions
-      calcD1D3(Rho*ml, D1n, D3n);
-      // Calculate Ricatti-Bessel functions
-      calcPsiZeta(Rho*ml, Psi, Zeta);
-      // Calculate angular functions Pi and Tau
-      calcPiTau(nmm::cos(Theta), Pi, Tau);
-
-      calcFieldByComponents(Rho, Theta, Phi, Psi, D1n, Zeta, D3n, Pi, Tau, Es, Hs,
-                            isConvergedE, isConvergedH, isMarkUnconverged);
-      UpdateConvergenceStatus(isConvergedE, isConvergedH);
-      Es_.push_back(Es);
-      Hs_.push_back(Hs);
-    }  // end of for all field coordinates
     convertFieldsFromSphericalToCartesian();
   }  //  end of MultiLayerMie::RunFieldCalculation()
 
-// TODO do we really need this eval_delta()?
 template <typename FloatType>
 double eval_delta(const unsigned int steps, const double from_value, const double to_value) {
   auto delta = std::abs(from_value - to_value);
@@ -502,10 +987,10 @@ double eval_delta(const unsigned int steps, const double from_value, const doubl
 
 // ml - refractive index
 // l - Layer number
-template <typename FloatType> template <typename evalType>
-void MultiLayerMie<FloatType>::GetIndexAtRadius(const evalType Rho,
+template <typename FloatType, MathEngine Engine> template <typename evalType>
+void MultiLayerMie<FloatType, Engine>::GetIndexAtRadius(const evalType Rho,
                                                 std::complex<evalType> &ml,
-                                                unsigned int &l) {
+                                                unsigned int &l) const {
   l = 0;
   if (Rho > size_param_.back()) {
     l = size_param_.size();
@@ -519,15 +1004,15 @@ void MultiLayerMie<FloatType>::GetIndexAtRadius(const evalType Rho,
     ml = ConvertComplex<evalType>(refractive_index_[l]);
   }
 }
-template <typename FloatType> template <typename evalType>
-void MultiLayerMie<FloatType>::GetIndexAtRadius(const evalType Rho,
-                                                std::complex<evalType> &ml) {
+template <typename FloatType, MathEngine Engine> template <typename evalType>
+void MultiLayerMie<FloatType, Engine>::GetIndexAtRadius(const evalType Rho,
+                                                std::complex<evalType> &ml) const {
   unsigned int l;
   GetIndexAtRadius(Rho, ml, l);
 }
 
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcMieSeriesNeededToConverge(const FloatType Rho, int nmax_in) {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcMieSeriesNeededToConverge(const FloatType Rho, int nmax_in) const {
   if (nmax_in < 1) {
     auto required_near_field_nmax = calcNmax(Rho);
     SetMaxTerms(required_near_field_nmax);
@@ -543,13 +1028,13 @@ void MultiLayerMie<FloatType>::calcMieSeriesNeededToConverge(const FloatType Rho
 }
 
 
-template <typename FloatType>
-void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const double from_Rho, const double to_Rho,
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::calcRadialOnlyDependantFunctions(const double from_Rho, const double to_Rho,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &Psi,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &D1n,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &Zeta,
                                                                 std::vector<std::vector<std::complex<FloatType> > > &D3n,
-                                                                int nmax_in) {
+                                                                int nmax_in) const {
   auto radius_points = Psi.size();
   std::vector<std::vector<std::complex<FloatType> > > PsiZeta(radius_points);
   double delta_Rho = eval_delta<double>(radius_points, from_Rho, to_Rho);
@@ -567,9 +1052,9 @@ void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const double fro
     std::complex<FloatType> ml;
     GetIndexAtRadius(Rho, ml);
     auto z = Rho*ml;
-    evalDownwardD1(z, D1n[j]);
-    evalUpwardPsi(z,  D1n[j], Psi[j]);
-    evalUpwardD3 (z, D1n[j], D3n[j], PsiZeta[j]);
+    evalDownwardD1<FloatType>(z, D1n[j]);
+    evalUpwardPsi<FloatType>(z,  D1n[j], Psi[j]);
+    evalUpwardD3<FloatType> (z, D1n[j], D3n[j], PsiZeta[j]);
     for (unsigned int k = 0; k < Zeta[j].size(); k++) {
       Zeta[j][k] = PsiZeta[j][k]/Psi[j][k];
     }
@@ -580,14 +1065,14 @@ void MultiLayerMie<FloatType>::calcRadialOnlyDependantFunctions(const double fro
 
 // input parameters:
 //         outer_arc_points: will be increased to the nearest power of 2.
-template <typename FloatType>
-void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_points,
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::RunFieldCalculationPolar(const int outer_arc_points,
                                                         const int radius_points,
                                                         const double from_Rho, const double to_Rho,
                                                         const double from_Theta, const double to_Theta,
                                                         const double from_Phi, const double to_Phi,
                                                         const bool isMarkUnconverged,
-                                                        int nmax_in) {
+                                                        int nmax_in) const {
   if (from_Rho > to_Rho || from_Theta > to_Theta || from_Phi > to_Phi
       || outer_arc_points < 1 || radius_points < 1
       || from_Rho < 0.)
@@ -649,30 +1134,30 @@ void MultiLayerMie<FloatType>::RunFieldCalculationPolar(const int outer_arc_poin
 }
 
 
-template <typename FloatType>
-void MultiLayerMie<FloatType>::UpdateConvergenceStatus(std::vector<bool> isConvergedE, std::vector<bool> isConvergedH) {
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::UpdateConvergenceStatus(std::vector<bool> isConvergedE, std::vector<bool> isConvergedH) const {
   for (int i = 0; i< 3; i++) isConvergedE_[i] = isConvergedE_[i] && isConvergedE[i];
   for (int i = 0; i< 3; i++) isConvergedH_[i] = isConvergedH_[i] && isConvergedH[i];
 }
 
 
-template <typename FloatType>
-bool MultiLayerMie<FloatType>::GetFieldConvergence () {
+template <typename FloatType, MathEngine Engine>
+bool MultiLayerMie<FloatType, Engine>::GetFieldConvergence () const {
   bool convergence = true;
   for (auto conv:isConvergedE_) convergence = convergence && conv;
   for (auto conv:isConvergedH_) convergence = convergence && conv;
   return convergence;
 }
 
-template <typename FloatType>
-void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int first_side_points,
+template <typename FloatType, MathEngine Engine>
+void MultiLayerMie<FloatType, Engine>::RunFieldCalculationCartesian(const int first_side_points,
                                                             const int second_side_points,
                                                             const double relative_side_length,
                                                             const int plane_selected,
                                                             const double at_x, const double at_y,
                                                             const double at_z,
                                                             const bool isMarkUnconverged,
-                                                            const int nmax_in) {
+                                                            const int nmax_in) const {
   SetMaxTerms(nmax_in);
   std::vector<FloatType> Xp(0), Yp(0), Zp(0);
   if (size_param_.size()<1) throw "Expect size_param_ to have at least one element before running a simulation";
@@ -703,7 +1188,7 @@ void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(const int first_side
     throw std::invalid_argument("Error! Wrong dimension of field monitor points for cartesian grid!");
   SetFieldCoords({Xp, Yp, Zp});
   RunFieldCalculation(isMarkUnconverged);
-}  // end of void MultiLayerMie<FloatType>::RunFieldCalculationCartesian(...)
+}  // end of void MultiLayerMie<FloatType, Engine>::RunFieldCalculationCartesian(...)
 
 }  // end of namespace nmie
 #endif  // SRC_NMIE_NEARFIELD_HPP_

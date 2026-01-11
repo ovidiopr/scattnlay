@@ -59,6 +59,30 @@ EMSCRIPTEN_BINDINGS(c) {
       .function("GetQabs", &nmie::MultiLayerMieWeb<double>::GetQabs)
       //              .function("bf",&nmie::MultiLayerMieWeb<double>::bf)
       ;
+
+#ifdef WITH_HWY
+  class_<nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>>("nmie_scalar")
+      .constructor<>()
+      .function("SetWavelength", &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::SetWavelength)
+      .function("AddTargetLayerReIm",
+                &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::AddTargetLayerReIm)
+      .function("SetModeNmaxAndType",
+                &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::SetModeNmaxAndType)
+      .function("ClearTarget", &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::ClearTarget)
+      .function("RunMieCalculation",
+                &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::RunMieCalculation)
+      .function("RunFieldCalculationPolar",
+                &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::RunFieldCalculationPolar)
+      .function("RunFieldCalculationCartesian",
+                &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::RunFieldCalculationCartesian)
+      .function("GetFieldEabs", &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::GetFieldEabs)
+      .function("GetQsca", &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::GetQsca)
+      .function("GetQext", &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::GetQext)
+      .function("GetQabs", &nmie::MultiLayerMieWeb<double, nmie::ScalarEngine<double>>::GetQabs)
+      ;
+#endif
+
+  function("setNumThreads", &nmie::setNumThreads);
 }
 
 // namespace nmie {

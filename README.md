@@ -11,9 +11,16 @@ Try to join our Gitter chat: [![Join the chat at https://gitter.im/scattnlay/Lob
  
 Fill the issue here: [Issues](https://github.com/ovidiopr/scattnlay/issues).
 
+AI era
+======
+
+- Version 2.5 (Dec 2025) Completed migration to CMake, added SIMD
+  acceleration using Google Highway.
+
+
 Stable releases
 ===============
-
+- Version 2.4 (Apr 10, 2024) The last hand-made release.
 - Version 2.0.1 (Jan 17, 2017). [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.248729.svg)](https://doi.org/10.5281/zenodo.248729)
 - Version 2.0.0 (Apr 1, 2016).
 - Version 1.0.0 (Nov 22, 2014).
@@ -38,20 +45,26 @@ Limited web version is available at https://physics.ifmo.ru/mie/
 
 Compile Code
 -------------
-To compile the source you will need a C++11 capable compiler. To use
-optional MultiPrecision feature you need to install
-Boost.Multiprecision library (package names are given in Ubuntu\Debian
-notation):
+To compile the source you will need a C++11 capable compiler.
 
- - **libboost-all-dev (>= 1.58.0)**
+### Dependencies
+
+**MultiPrecision (Optional):**
+ - Ubuntu/Debian: `sudo apt install libboost-all-dev`
+ - macOS: `brew install boost`
+
+**SIMD Acceleration (Optional, Recommended):**
+ - Ubuntu/Debian: `sudo apt install libhwy-dev`
+ - macOS: `brew install highway`
 
 To compile the Python extension you need [NumPy](http://www.numpy.org/):
 
  - **python-numpy (>= 1.0)**
  - **python-all-dev (any version)**
  - **python-numpy-dev (any version)**
- - **pybind11 (any version)**
 
+and **pybind11** (should be installed automatically via pyproject.toml)
+ 
 And to compile the Debian package you need some tools:
 
  - **debhelper (>=7.0.0)**
@@ -60,22 +73,32 @@ And to compile the Debian package you need some tools:
 
 Compilation options
 
- - **make source** - Create source package for Python extension
- - **make ext** - Create Python extension using C++ code
- - **make install** - Install Python extension on local system
- - **make rpm** - Generate a rpm package for Python extension
- - **make deb** - Generate a deb package for Python extension
- - **make standalone** - Create standalone programs (scattnlay and fieldnlay)
- - **make clean** - Delete temporal files
+```bash
+mkdir build && cd build
+cmake -B build -S .
+cmake --build build
+```
 
-There are also an experimental CMake project and it is possible to compile into JavaScript module (using Emscripten compiler).
+To build WebAssembly target (requires Emscripten):
+
+```bash
+emcmake cmake -B build_wasm -S .
+cmake --build build_wasm
 
 Python module
 
-To build and install Python module run from the source code directory:
+To build and install Python module run from the source code directory (SIMD support is enabled automatically if Highway is found):
 
 ```bash
-pip install . --user
+pip install .
+```
+
+### SIMD Benchmark
+
+To verify performance gains:
+
+```bash
+python examples/calc-simd-benchmark.py
 ```
 
 Binary install
@@ -97,7 +120,7 @@ You can also install it from PyPi via
 sudo pip install scattnlay
 ```
 
-You can also ```git clone``` and ```pip install -e .``` to develop python package.
+You can also ```git clone``` and ```python3 -m pip install -e .``` to develop python package.
 
 Use
 ----

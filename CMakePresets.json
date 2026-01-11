@@ -1,0 +1,171 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default Configuration",
+      "description": "Default build with double precision only",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_MP": "ON",
+        "WITH_HWY": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug Configuration",
+      "description": "Debug build with symbols and no optimization",
+      "inherits": "default",
+      "binaryDir": "${sourceDir}/build_debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "multiprecision",
+      "displayName": "Multi-Precision Build",
+      "description": "Enable Boost multiprecision support",
+      "inherits": "default",
+      "binaryDir": "${sourceDir}/build_mp",
+      "cacheVariables": {
+        "ENABLE_MP": "ON"
+      }
+    },
+    {
+      "name": "simd",
+      "displayName": "SIMD Build (Highway)",
+      "description": "Enable Google Highway SIMD optimizations",
+      "inherits": "default",
+      "binaryDir": "${sourceDir}/build_simd",
+      "cacheVariables": {
+        "WITH_HWY": "ON"
+      }
+    },
+    {
+      "name": "simd-mp",
+      "displayName": "SIMD + Multi-Precision",
+      "description": "Enable both SIMD and multiprecision",
+      "inherits": "default",
+      "binaryDir": "${sourceDir}/build_simd_mp",
+      "cacheVariables": {
+        "ENABLE_MP": "ON",
+        "WITH_HWY": "ON"
+      }
+    },
+    {
+      "name": "wasm-release",
+      "displayName": "WebAssembly Release",
+      "description": "Build for WebAssembly using Emscripten",
+      "binaryDir": "${sourceDir}/build_wasm",
+      "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_MP": "OFF",
+        "WITH_HWY": "OFF"
+      },
+      "condition": {
+        "type": "notEquals",
+        "lhs": "$env{EMSDK}",
+        "rhs": ""
+      }
+    },
+    {
+      "name": "linux-gcc",
+      "displayName": "Linux GCC",
+      "description": "Linux build with GCC compiler",
+      "inherits": "default",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "linux-clang",
+      "displayName": "Linux Clang",
+      "description": "Linux build with Clang compiler",
+      "inherits": "default",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "displayName": "Default Build",
+      "description": "Build all targets"
+    },
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "displayName": "Debug Build"
+    },
+    {
+      "name": "multiprecision",
+      "configurePreset": "multiprecision",
+      "displayName": "Multi-Precision Build"
+    },
+    {
+      "name": "simd",
+      "configurePreset": "simd",
+      "displayName": "SIMD Build"
+    },
+    {
+      "name": "simd-mp",
+      "configurePreset": "simd-mp",
+      "displayName": "SIMD + Multi-Precision Build"
+    },
+    {
+      "name": "wasm-release",
+      "configurePreset": "wasm-release",
+      "displayName": "WebAssembly Release Build"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "displayName": "Default Test",
+      "description": "Run all tests",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "displayName": "Debug Test",
+      "inherits": "default"
+    },
+    {
+      "name": "multiprecision",
+      "configurePreset": "multiprecision",
+      "displayName": "Multi-Precision Test",
+      "inherits": "default"
+    },
+    {
+      "name": "simd",
+      "configurePreset": "simd",
+      "displayName": "SIMD Test",
+      "inherits": "default"
+    }
+  ]
+}
